@@ -12,6 +12,7 @@ import {
   Snowflake,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { brandText } from '../../../config/brandText'
 import { CTA } from '../CTA'
 import { Reveal } from '../Reveal'
 import { SectionHeader } from '../SectionHeader'
@@ -472,8 +473,7 @@ export function ProductDiscoveryCTA({
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.045em] sm:text-4xl">{title}</h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-slate-200">{body}</p>
           <p className="mt-4 max-w-2xl text-xs leading-5 text-slate-300">
-            Research use only. Educational content only; not medical advice, dosing guidance, use
-            instructions, or a promise of outcomes.
+            {brandText.researchUseLabel}. {brandText.educationalDisclaimer}
           </p>
         </div>
         <div className="flex flex-wrap gap-3 lg:justify-end">

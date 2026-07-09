@@ -2,13 +2,13 @@ import { Eye, FileText, PackageCheck, ShieldCheck, Snowflake } from 'lucide-reac
 import { CTA } from './CTA'
 import { Reveal } from './Reveal'
 import { SectionHeader } from './SectionHeader'
-import { websiteCopy } from '../data/websiteCopy'
+import { brandText } from '../../config/brandText'
 
 const qualityPillars = [
   {
     icon: FileText,
     title: 'Documentation',
-    body: websiteCopy.documentationPromise,
+    body: brandText.documentationPromise,
   },
   {
     icon: ShieldCheck,
@@ -39,7 +39,7 @@ export function QualityHighlightsSection() {
         <SectionHeader
           eyebrow="Quality & Documentation"
           title="Built for teams that move from discovery to clinical readiness."
-          description={websiteCopy.brandPromise}
+          description={brandText.brandPromise}
         />
 
         <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-5">

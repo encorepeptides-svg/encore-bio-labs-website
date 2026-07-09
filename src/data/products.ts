@@ -1,4 +1,4 @@
-import { websiteCopy } from './websiteCopy'
+import { brandText } from '../../config/brandText'
 
 export type ProductVariant = {
   label: string
@@ -372,7 +372,7 @@ export const categoryContent: Record<string, CategoryContent> = {
 }
 
 const globalResearchDisclaimer =
-  websiteCopy.complianceDisclaimer
+  brandText.complianceDisclaimer
 
 const categoryPositioning: Record<string, string> = {
   'Metabolic & Weight Management':
@@ -1463,7 +1463,7 @@ function createPageContent(product: CatalogProduct): ProductPageContent {
         : []),
       {
         question: 'Can Encore Bio Labs provide documentation?',
-        answer: websiteCopy.documentationPromise,
+        answer: brandText.documentationPromise,
       },
       {
         question: `What storage context applies to ${product.name}?`,
@@ -1487,7 +1487,7 @@ function createPageContent(product: CatalogProduct): ProductPageContent {
       },
       {
         question: 'Is this a consumer health product?',
-        answer: websiteCopy.complianceDisclaimer,
+        answer: brandText.complianceDisclaimer,
       },
       {
         question: 'What information should be reviewed before inquiry?',

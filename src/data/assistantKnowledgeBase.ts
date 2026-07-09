@@ -1,5 +1,5 @@
 import { categoryNames, products, researchAreas } from './products'
-import { websiteCopy } from './websiteCopy'
+import { brandText } from '../../config/brandText'
 import { WHATSAPP_DISPLAY, WHATSAPP_PHONE } from '../lib/whatsapp'
 
 /**
@@ -14,8 +14,8 @@ import { WHATSAPP_DISPLAY, WHATSAPP_PHONE } from '../lib/whatsapp'
 
 export const companyInfo = {
   name: 'Encore Bio Labs',
-  tagline: websiteCopy.brandPromise,
-  positioning: `${websiteCopy.catalogPositioning} ${websiteCopy.complianceDisclaimer}`,
+  tagline: brandText.brandPromise,
+  positioning: `${brandText.catalogPositioning} ${brandText.complianceDisclaimer}`,
   location: 'El Paso, Texas',
 }
 
@@ -29,7 +29,7 @@ export const shippingInfo = {
 }
 
 export const policies = {
-  researchUseOnly: websiteCopy.complianceDisclaimer,
+  researchUseOnly: brandText.complianceDisclaimer,
   ordering:
     'Start with intake or WhatsApp; an Encore specialist confirms availability, quantity, pricing, and fulfillment requirements before procurement proceeds.',
   returns:
@@ -89,7 +89,7 @@ export type KnowledgeBaseFAQ = { question: string; answer: string }
 export const knowledgeBaseFAQs: KnowledgeBaseFAQ[] = [
   {
     question: 'Is this medical advice?',
-    answer: websiteCopy.complianceDisclaimer,
+    answer: brandText.complianceDisclaimer,
   },
   {
     question: 'How do I place an order?',

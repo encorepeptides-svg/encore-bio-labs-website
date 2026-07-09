@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import logo from '../assets/images/logo/encore-logo.png'
 import heroVideoPoster from '../assets/images/hero/hero-video-poster.jpg'
 import heroVideo from '../assets/videos/encore-hero.mp4'
-import { websiteCopy } from '../data/websiteCopy'
+import { brandText } from '../../config/brandText'
 
 const heroStats = [
   'Enterprise sourcing',
@@ -99,7 +99,7 @@ export function Hero() {
                 transition={{ duration: 0.7, ease: 'easeOut' }}
                 className="mt-4 max-w-xl text-sm leading-6 text-slate-500"
               >
-                {websiteCopy.brandPromise}
+                {brandText.brandPromise}
               </motion.p>
 
               <motion.div
@@ -126,7 +126,7 @@ export function Hero() {
                 transition={{ duration: 0.7, ease: 'easeOut' }}
                 className="mt-3 text-sm font-medium text-slate-600"
               >
-                {websiteCopy.complianceDisclaimer}
+                {brandText.complianceDisclaimer}
               </motion.p>
 
               <motion.div

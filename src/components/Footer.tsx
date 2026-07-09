@@ -1,6 +1,6 @@
 import { ArrowUpRight } from 'lucide-react'
 import logo from '../assets/images/logo/encore-logo.png'
-import { websiteCopy } from '../data/websiteCopy'
+import { brandText } from '../../config/brandText'
 
 const exploreLinks = [
   { label: 'Catalog', href: '/catalog' },
@@ -41,10 +41,10 @@ export function Footer() {
               className="h-12 w-auto"
             />
             <p className="mt-5 max-w-xl text-sm leading-6 text-slate-600">
-              {websiteCopy.brandPromise}
+              {brandText.brandPromise}
             </p>
             <p className="mt-5 max-w-2xl rounded-2xl border border-slate-900/10 bg-white/70 p-4 text-xs leading-5 text-slate-500">
-              {websiteCopy.complianceDisclaimer}
+              {brandText.complianceDisclaimer}
             </p>
           </div>
 
@@ -105,7 +105,7 @@ export function Footer() {
 
         <div className="mt-6 flex flex-col gap-4 border-t border-slate-900/10 pt-6 text-xs leading-5 text-slate-500 sm:flex-row sm:items-center sm:justify-between">
           <p>© 2026 Encore Bio Labs. All rights reserved.</p>
-          <p>{websiteCopy.complianceDisclaimer}</p>
+          <p>{brandText.complianceDisclaimer}</p>
         </div>
       </div>
     </footer>

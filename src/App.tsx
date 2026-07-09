@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { AnnouncementBar } from './components/AnnouncementBar'
+import { AlternateHomePage } from './components/AlternateHomePage'
 import { CategoryGrid } from './components/CategoryGrid'
 import { FAQPreviewSection } from './components/FAQPreviewSection'
 import { FeaturedProducts } from './components/FeaturedProducts'
@@ -101,6 +102,15 @@ function App() {
 
     if (pathname === '/about' || pathname === '/about/') {
       return <AboutPage />
+    }
+
+    if (
+      pathname === '/alternate-homepage' ||
+      pathname === '/alternate-homepage/' ||
+      pathname === '/home-v2' ||
+      pathname === '/home-v2/'
+    ) {
+      return <AlternateHomePage />
     }
 
     if (pathname === '/catalog' || pathname === '/catalog/') {

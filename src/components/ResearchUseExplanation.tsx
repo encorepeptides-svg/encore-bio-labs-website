@@ -1,7 +1,12 @@
 import { ArrowRight, ShieldCheck } from 'lucide-react'
+import { brandText } from '../../config/brandText'
 import { Reveal } from './Reveal'
 
-const complianceChips = ['Research use only', 'Documentation by request', 'Not medical advice']
+const complianceChips = [
+  brandText.researchUseLabel,
+  brandText.documentationLabel,
+  brandText.notMedicalAdviceLabel,
+]
 
 export function ResearchUseExplanation() {
   return (
@@ -13,9 +18,7 @@ export function ResearchUseExplanation() {
           </span>
           <div>
             <p className="text-base leading-7 text-slate-600">
-              Everything in this catalog is sold for laboratory research use only — not for human
-              or animal consumption, and nothing here is medical advice, dosing guidance, or a
-              treatment recommendation.
+              {brandText.complianceDisclaimer} {brandText.educationalDisclaimer}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               {complianceChips.map((chip) => (

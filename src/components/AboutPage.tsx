@@ -1,20 +1,16 @@
 import { ArrowRight, Check, CheckCircle2, FileText, LayoutGrid, MapPin, ShieldCheck, Truck, UserCheck, XCircle } from 'lucide-react'
 import { researchAreas } from '../data/products'
-import { websiteCopy } from '../data/websiteCopy'
+import { brandText } from '../../config/brandText'
 import { CTA } from './CTA'
 import { Reveal } from './Reveal'
 import { InternalLinkGrid } from './content/EditorialModules'
 
 const whatThisMeans = [
-  'We supply these materials for laboratory research use only',
-  'Not intended for human or animal consumption',
-  'Not a supplement, drug, or cosmetic product',
+  ...brandText.researchUsePoints,
 ]
 
 const whatThisDoesnt = [
-  'This is not medical advice, dosing guidance, use instructions, or a treatment recommendation',
-  'Nothing here suggests what a compound will do for you personally',
-  'It does not replace a conversation with a licensed healthcare provider',
+  ...brandText.researchUseBoundaries,
 ]
 
 const standards = [
@@ -86,7 +82,7 @@ export function AboutPage() {
               Compliance is part of the product experience.
             </h2>
             <p className="mt-4 text-sm leading-6 text-slate-600">
-              {websiteCopy.complianceDisclaimer} Encore Bio Labs does not provide medical advice,
+              {brandText.complianceDisclaimer} Encore Bio Labs does not provide medical advice,
               treatment recommendations, dosing protocols, or outcome promises.
             </p>
             <div className="mt-6 grid gap-3">

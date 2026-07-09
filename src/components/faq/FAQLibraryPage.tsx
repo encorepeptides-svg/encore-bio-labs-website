@@ -1,4 +1,5 @@
 import { ChevronDown } from 'lucide-react'
+import { brandText } from '../../../config/brandText'
 import { faqLibrary } from '../../data/faq'
 import { CTA } from '../CTA'
 import { Reveal } from '../Reveal'
@@ -106,10 +107,7 @@ export function FAQLibraryPage() {
             Research-Use-Only Reminder
           </p>
           <p className="mt-4 max-w-4xl text-lg leading-8 text-slate-100">
-            All products and information on this site are intended for laboratory research use only.
-            They are not intended for human or animal consumption, and nothing here should be read
-            as medical advice, dosing guidance, use instructions, a treatment recommendation, or a
-            promised outcome.
+            {brandText.sitewideResearchReminder}
           </p>
         </div>
       </section>

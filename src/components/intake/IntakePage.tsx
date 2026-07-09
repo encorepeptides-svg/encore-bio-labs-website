@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from 'lucide-react'
+import { brandText } from '../../../config/brandText'
 import { products } from '../../data/products'
 import {
   createLeadFromIntake,
@@ -772,9 +773,11 @@ function NotMedicalAdviceCard() {
           <ShieldCheck size={18} aria-hidden="true" />
         </span>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Not medical advice</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">
+            {brandText.notMedicalAdviceLabel}
+          </p>
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            Encore Bio Labs provides research-use-only educational information. The intake does not provide medical advice, diagnosis, treatment, prescription guidance, dosing guidance, or clinical care.
+            {brandText.intakeDisclaimer}
           </p>
         </div>
       </div>

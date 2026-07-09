@@ -1,4 +1,5 @@
 import { ArrowRight, BookOpen, GitCompare, GraduationCap, Waypoints } from 'lucide-react'
+import { brandText } from '../../../config/brandText'
 import { researchAreas } from '../../data/products'
 import {
   contentTypeLabels,
@@ -74,8 +75,7 @@ export function ResearchLibraryPage() {
             primary literature.
           </p>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
-            Educational content only. Not medical advice. Not a substitute for reading primary
-            research.
+            {brandText.researchLibraryDisclaimer}
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">

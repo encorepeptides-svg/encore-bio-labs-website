@@ -1,5 +1,5 @@
 import { products, type Product } from './products'
-import { websiteCopy } from './websiteCopy'
+import { brandText } from '../../config/brandText'
 
 export type MainGoal =
   | 'Metabolic Signaling'
@@ -318,7 +318,7 @@ export function generateRecommendation(data: IntakeFormData): Recommendation {
       .filter((product): product is Product => Boolean(product)),
     explanation: matched.explanation,
     confidenceScore,
-    disclaimer: websiteCopy.complianceDisclaimer,
+    disclaimer: brandText.complianceDisclaimer,
   }
 }
 
@@ -413,5 +413,5 @@ ${lead.recommendationSummary.explanation}
 
 A specialist can help review product options, documentation needs, quantities, and fulfillment timing.
 
-Important: ${websiteCopy.complianceDisclaimer}`
+Important: ${brandText.complianceDisclaimer}`
 }

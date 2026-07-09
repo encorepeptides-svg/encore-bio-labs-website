@@ -1,11 +1,12 @@
 import { FileText, ShieldCheck, Snowflake, TestTube2 } from 'lucide-react'
+import { brandText } from '../../config/brandText'
 import { SectionHeader } from './SectionHeader'
 
 const workflow = [
   {
     icon: TestTube2,
     title: 'Identity & purity documentation',
-    copy: 'Certificate of analysis availability can be requested through the intake process, product by product.',
+    copy: brandText.documentationPromise,
   },
   {
     icon: Snowflake,
@@ -86,10 +87,10 @@ export function QualitySection() {
             <div className="relative mt-4 flex flex-wrap gap-2 rounded-2xl border border-white/10 bg-white/7 p-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
               <span className="inline-flex items-center gap-2 rounded-full bg-white/8 px-3 py-2">
                 <ShieldCheck size={14} className="text-teal-200" />
-                Research use only
+                {brandText.researchUseLabel}
               </span>
-              <span className="rounded-full bg-white/8 px-3 py-2">Documentation by request</span>
-              <span className="rounded-full bg-white/8 px-3 py-2">Not medical advice</span>
+              <span className="rounded-full bg-white/8 px-3 py-2">{brandText.documentationLabel}</span>
+              <span className="rounded-full bg-white/8 px-3 py-2">{brandText.notMedicalAdviceLabel}</span>
             </div>
           </div>
         </div>

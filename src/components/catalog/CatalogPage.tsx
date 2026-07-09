@@ -1,5 +1,6 @@
 import { Check, FileText, Search, ShieldCheck, SlidersHorizontal, Snowflake, Sparkles, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { brandText } from '../../../config/brandText'
 import { categoryVisuals, products, type Product, type PurityGrade, type StockStatus } from '../../data/products'
 import { buildSrcSet, stemOf } from '../../lib/responsiveImages'
 import { CTA } from '../CTA'
@@ -222,19 +223,11 @@ function ProductCard({ product }: { product: Product }) {
 const researchUseCards = [
   {
     title: 'What this means',
-    points: [
-      'Sold for laboratory research use only',
-      'Not intended for human or animal consumption',
-      'Not a supplement, drug, or cosmetic product',
-    ],
+    points: [...brandText.researchUsePoints],
   },
   {
     title: "What this doesn't mean",
-    points: [
-      'This is not medical advice, dosing guidance, use instructions, or a treatment recommendation',
-      'Nothing here suggests what a compound will do for you personally',
-      'It does not replace a conversation with a licensed healthcare provider',
-    ],
+    points: [...brandText.researchUseBoundaries],
   },
 ]
 
@@ -242,7 +235,7 @@ const qualityCards = [
   {
     icon: FileText,
     title: 'Identity & purity documentation',
-    body: 'Certificate of analysis availability can be requested through the intake process, product by product.',
+    body: brandText.documentationPromise,
   },
   {
     icon: Snowflake,
@@ -252,7 +245,7 @@ const qualityCards = [
   {
     icon: ShieldCheck,
     title: 'Batch records',
-    body: 'Batch-level documentation is organized and available when requested.',
+    body: 'We organize batch-level documentation for qualified procurement and research review requests.',
   },
 ]
 
@@ -371,10 +364,10 @@ function ResearchUseQualitySection() {
               <div className="mt-6 flex flex-wrap gap-2 rounded-[1.25rem] border border-slate-900/10 bg-[#071724] p-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
                 <span className="inline-flex items-center gap-2 rounded-full bg-white/8 px-3 py-2">
                   <ShieldCheck size={14} aria-hidden="true" className="text-teal-200" />
-                  Research Use Only
+                  {brandText.researchUseLabel}
                 </span>
-                <span className="rounded-full bg-white/8 px-3 py-2">Documentation by Request</span>
-                <span className="rounded-full bg-white/8 px-3 py-2">Not Medical Advice</span>
+                <span className="rounded-full bg-white/8 px-3 py-2">{brandText.documentationLabel}</span>
+                <span className="rounded-full bg-white/8 px-3 py-2">{brandText.notMedicalAdviceLabel}</span>
               </div>
             </Reveal>
           </div>
