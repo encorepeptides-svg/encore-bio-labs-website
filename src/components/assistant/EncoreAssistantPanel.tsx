@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { ArrowUp, Sparkles, X } from 'lucide-react'
-import { useAssistant } from './AssistantProvider'
+import { useAssistant } from './assistantContext'
 import { AssistantMessage } from './AssistantMessage'
 import { UserMessage } from './UserMessage'
 import { TypingIndicator } from './TypingIndicator'

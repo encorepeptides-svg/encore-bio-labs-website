@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { products } from '../../data/products'
-import { AssistantProvider, useAssistant } from './AssistantProvider'
+import { AssistantProvider } from './AssistantProvider'
+import { useAssistant } from './assistantContext'
 import { FloatingWhatsAppButton } from './FloatingWhatsAppButton'
 import { EncoreAssistantButton } from './EncoreAssistantButton'
 import { EncoreAssistantPanel } from './EncoreAssistantPanel'
