@@ -41,19 +41,35 @@ const AssistantWidget = lazy(() =>
   import('./components/assistant/AssistantWidget').then((module) => ({ default: module.AssistantWidget })),
 )
 
+function getPathname() {
+  return typeof window === 'undefined' ? '/' : window.location.pathname
+}
+
+function getRouteParam(pattern: RegExp) {
+  const match = getPathname().match(pattern)
+  const value = match?.[1]
+
+  if (!value) {
+    return undefined
+  }
+
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    return undefined
+  }
+}
+
 function getProductSlugFromPath() {
-  const match = window.location.pathname.match(/^\/products\/([^/]+)\/?$/)
-  return match?.[1]
+  return getRouteParam(/^\/products\/([^/]+)\/?$/)
 }
 
 function getCategorySlugFromPath() {
-  const match = window.location.pathname.match(/^\/categories\/([^/]+)\/?$/)
-  return match?.[1]
+  return getRouteParam(/^\/categories\/([^/]+)\/?$/)
 }
 
 function getAdminLeadIdFromPath() {
-  const match = window.location.pathname.match(/^\/admin\/leads\/([^/]+)\/?$/)
-  return match?.[1]
+  return getRouteParam(/^\/admin\/leads\/([^/]+)\/?$/)
 }
 
 function HomePage() {
@@ -76,7 +92,7 @@ function App() {
   const productSlug = getProductSlugFromPath()
   const categorySlug = getCategorySlugFromPath()
   const adminLeadId = getAdminLeadIdFromPath()
-  const pathname = window.location.pathname
+  const pathname = getPathname()
 
   const page = (() => {
     if (pathname === '/intake' || pathname === '/intake/') {

@@ -29,8 +29,16 @@ import {
   WhoMayBenefit,
 } from './ProductPageSections'
 
+function findProductBySlug(slug: string) {
+  try {
+    return products.find((productEntry) => productEntry.slug === slug) ?? null
+  } catch {
+    return null
+  }
+}
+
 export function ProductPage({ slug }: { slug: string }) {
-  const product = products.find((productEntry) => productEntry.slug === slug)
+  const product = findProductBySlug(slug)
 
   if (!product) {
     return (
