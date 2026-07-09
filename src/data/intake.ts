@@ -1,4 +1,5 @@
 import { products, type Product } from './products'
+import { websiteCopy } from './websiteCopy'
 
 export type MainGoal =
   | 'Metabolic Signaling'
@@ -317,8 +318,7 @@ export function generateRecommendation(data: IntakeFormData): Recommendation {
       .filter((product): product is Product => Boolean(product)),
     explanation: matched.explanation,
     confidenceScore,
-    disclaimer:
-      'Research-use-only educational summary. This is not medical advice and does not provide use instructions, personal health direction, dosing guidance, or promised outcomes.',
+    disclaimer: websiteCopy.complianceDisclaimer,
   }
 }
 
@@ -411,7 +411,7 @@ ${productsList}
 Research summary:
 ${lead.recommendationSummary.explanation}
 
-A team member can help review product options and answer research-use-only questions.
+A specialist can help review product options, documentation needs, quantities, and fulfillment timing.
 
-Important: This information is for research-use-only educational purposes and is not medical advice, dosing guidance, use instructions, or personal health guidance.`
+Important: ${websiteCopy.complianceDisclaimer}`
 }

@@ -1,5 +1,6 @@
 import { ArrowUpRight } from 'lucide-react'
 import logo from '../assets/images/logo/encore-logo.png'
+import { websiteCopy } from '../data/websiteCopy'
 
 const exploreLinks = [
   { label: 'Catalog', href: '/catalog' },
@@ -40,15 +41,10 @@ export function Footer() {
               className="h-12 w-auto"
             />
             <p className="mt-5 max-w-xl text-sm leading-6 text-slate-600">
-              Encore Bio Labs is a premium research-use-only catalog brand
-              built around documentation, quality control, complete research
-              kits, and modern biotech presentation.
+              {websiteCopy.brandPromise}
             </p>
             <p className="mt-5 max-w-2xl rounded-2xl border border-slate-900/10 bg-white/70 p-4 text-xs leading-5 text-slate-500">
-              All products and information are intended for laboratory research
-              use only. They are not intended for human or animal consumption
-              and should not be read as medical advice, dosing guidance, use
-              instructions, treatment recommendations, or promised outcomes.
+              {websiteCopy.complianceDisclaimer}
             </p>
           </div>
 
@@ -109,7 +105,7 @@ export function Footer() {
 
         <div className="mt-6 flex flex-col gap-4 border-t border-slate-900/10 pt-6 text-xs leading-5 text-slate-500 sm:flex-row sm:items-center sm:justify-between">
           <p>© 2026 Encore Bio Labs. All rights reserved.</p>
-          <p>Research Use Only. Educational content only; no dosing guidance or treatment claims.</p>
+          <p>{websiteCopy.complianceDisclaimer}</p>
         </div>
       </div>
     </footer>

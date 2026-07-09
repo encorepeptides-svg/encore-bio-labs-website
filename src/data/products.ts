@@ -1,3 +1,5 @@
+import { websiteCopy } from './websiteCopy'
+
 export type ProductVariant = {
   label: string
   format: string
@@ -370,7 +372,7 @@ export const categoryContent: Record<string, CategoryContent> = {
 }
 
 const globalResearchDisclaimer =
-  'For laboratory research use only. Not for human or animal consumption. Educational information only; not medical advice, diagnosis, treatment, dosing guidance, use instructions, or a promise of outcomes.'
+  websiteCopy.complianceDisclaimer
 
 const categoryPositioning: Record<string, string> = {
   'Metabolic & Weight Management':
@@ -1461,8 +1463,7 @@ function createPageContent(product: CatalogProduct): ProductPageContent {
         : []),
       {
         question: 'Can Encore Bio Labs provide documentation?',
-        answer:
-          'Researchers can request available documentation, catalog format details, and product-specific handling context through the approved inquiry process.',
+        answer: websiteCopy.documentationPromise,
       },
       {
         question: `What storage context applies to ${product.name}?`,
@@ -1486,8 +1487,7 @@ function createPageContent(product: CatalogProduct): ProductPageContent {
       },
       {
         question: 'Is this a consumer health product?',
-        answer:
-          'No. Products and educational content are for laboratory research use only and are not positioned for consumer, clinical, or therapeutic use.',
+        answer: websiteCopy.complianceDisclaimer,
       },
       {
         question: 'What information should be reviewed before inquiry?',

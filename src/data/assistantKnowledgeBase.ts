@@ -1,4 +1,5 @@
 import { categoryNames, products, researchAreas } from './products'
+import { websiteCopy } from './websiteCopy'
 import { WHATSAPP_DISPLAY, WHATSAPP_PHONE } from '../lib/whatsapp'
 
 /**
@@ -13,9 +14,8 @@ import { WHATSAPP_DISPLAY, WHATSAPP_PHONE } from '../lib/whatsapp'
 
 export const companyInfo = {
   name: 'Encore Bio Labs',
-  tagline: 'A cleaner way to explore research compounds.',
-  positioning:
-    'Encore Bio Labs supplies research-use-only peptides and compounds for qualified researchers. We are not a medical provider and this assistant does not give medical advice, dosing guidance, protocols, or treatment recommendations.',
+  tagline: websiteCopy.brandPromise,
+  positioning: `${websiteCopy.catalogPositioning} ${websiteCopy.complianceDisclaimer}`,
   location: 'El Paso, Texas',
 }
 
@@ -29,12 +29,11 @@ export const shippingInfo = {
 }
 
 export const policies = {
-  researchUseOnly:
-    'All products are sold for research use only — not for human or animal consumption, and not a drug, supplement, or cosmetic.',
+  researchUseOnly: websiteCopy.complianceDisclaimer,
   ordering:
-    'Orders begin as an inquiry through the research intake process or WhatsApp; a specialist confirms pricing and availability before fulfillment.',
+    'Start with intake or WhatsApp; an Encore specialist confirms availability, quantity, pricing, and fulfillment requirements before procurement proceeds.',
   returns:
-    'Because products are sold for laboratory research use only and may have handling and storage requirements, returns are reviewed case by case. Contact Encore Bio Labs before returning any item.',
+    'Our team reviews returns case by case because reagent format, handling, and storage requirements vary by order.',
 }
 
 export const contactInfo = {
@@ -90,8 +89,7 @@ export type KnowledgeBaseFAQ = { question: string; answer: string }
 export const knowledgeBaseFAQs: KnowledgeBaseFAQ[] = [
   {
     question: 'Is this medical advice?',
-    answer:
-      'No. Encore Bio Labs and this assistant provide research-use information only — not medical advice, dosing guidance, or treatment recommendations.',
+    answer: websiteCopy.complianceDisclaimer,
   },
   {
     question: 'How do I place an order?',

@@ -2,9 +2,9 @@ import { FileText, LayoutGrid, UserCheck } from 'lucide-react'
 import { Reveal } from './Reveal'
 
 const items = [
-  { icon: FileText, label: 'Documentation on request' },
-  { icon: LayoutGrid, label: 'Real research categories' },
-  { icon: UserCheck, label: 'A person reviews every inquiry' },
+  { icon: FileText, label: 'Documentation-ready sourcing' },
+  { icon: LayoutGrid, label: 'Enterprise catalog structure' },
+  { icon: UserCheck, label: 'Human procurement support' },
 ]
 
 export function TrustStatement() {

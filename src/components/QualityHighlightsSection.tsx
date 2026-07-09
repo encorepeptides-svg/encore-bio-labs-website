@@ -2,32 +2,33 @@ import { Eye, FileText, PackageCheck, ShieldCheck, Snowflake } from 'lucide-reac
 import { CTA } from './CTA'
 import { Reveal } from './Reveal'
 import { SectionHeader } from './SectionHeader'
+import { websiteCopy } from '../data/websiteCopy'
 
 const qualityPillars = [
   {
     icon: FileText,
     title: 'Documentation',
-    body: 'Identity, purity, storage, and batch documentation can be requested through the intake process — nothing hidden behind a sales call.',
+    body: websiteCopy.documentationPromise,
   },
   {
     icon: ShieldCheck,
     title: 'Quality Standards',
-    body: 'The same handling and presentation standard applied across every catalog entry, not just the popular ones.',
+    body: 'We apply consistent sourcing, handling, and review standards across the catalog so enterprise teams can compare options quickly.',
   },
   {
     icon: Snowflake,
     title: 'Cold Chain Practices',
-    body: 'Temperature-aware handling from dispatch to delivery, with storage guidance included on every product page.',
+    body: 'Temperature-aware fulfillment and storage guidance help teams protect sensitive reagents from dispatch through receipt.',
   },
   {
     icon: PackageCheck,
     title: 'Professional Packaging',
-    body: 'Careful packaging and labeling as part of the catalog experience, not an afterthought.',
+    body: 'Clear packaging and labeling support procurement, receiving, and internal research workflows from the first shipment.',
   },
   {
     icon: Eye,
     title: 'Research Transparency',
-    body: "We publish what we can actually stand behind — no invented purity percentages or manufactured statistics.",
+    body: 'We keep claims tied to available documentation and research context, so your team can evaluate evidence without marketing fog.',
   },
 ]
 
@@ -37,8 +38,8 @@ export function QualityHighlightsSection() {
       <div className="mx-auto max-w-[88rem]">
         <SectionHeader
           eyebrow="Quality & Documentation"
-          title="Built like a lab you'd actually trust."
-          description="Premium presentation is table stakes. What matters is what's underneath it — documented, temperature-aware, and honest about what's available on request."
+          title="Built for teams that move from discovery to clinical readiness."
+          description={websiteCopy.brandPromise}
         />
 
         <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
