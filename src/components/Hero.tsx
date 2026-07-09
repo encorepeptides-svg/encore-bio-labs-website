@@ -1,15 +1,14 @@
-import { ClipboardCheck, FileText, PackageCheck, ShieldCheck, Sparkles, Truck } from 'lucide-react'
+import { ClipboardCheck, FileText, PackageCheck, Sparkles, Truck } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { CTA } from './CTA'
 import logo from '../assets/images/logo/encore-logo.png'
 import heroVideoPoster from '../assets/images/hero/hero-video-poster.jpg'
 import heroVideo from '../assets/videos/encore-hero.mp4'
 
 const heroStats = [
-  'Documentation on request',
-  'Reviewed by a person',
-  'U.S. shipping',
-  'Mexico shipping +$20',
+  'Enterprise sourcing',
+  'Documentation workflows',
+  'Bulk quote support',
+  'Institution-ready supply',
 ]
 
 const fadeUp = {
@@ -77,7 +76,7 @@ export function Hero() {
                 className="inline-flex items-center gap-2 rounded-full border border-slate-900/10 bg-white/55 px-3 py-2 text-sm font-medium text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-xl"
               >
                 <Sparkles size={16} aria-hidden="true" className="text-teal-700" />
-                Research-use-only peptide &amp; compound catalog
+                Enterprise biotech reagent supply
               </motion.div>
 
               <motion.h1
@@ -85,42 +84,41 @@ export function Hero() {
                 transition={{ duration: 0.7, ease: 'easeOut' }}
                 className="mt-7 max-w-4xl text-[2.55rem] font-semibold leading-[0.98] tracking-[-0.045em] text-[#071724] sm:text-6xl sm:tracking-[-0.055em] lg:text-5xl xl:text-6xl 2xl:text-7xl"
               >
-                <span className="block">Careful research starts</span>{' '}
-                <span className="block">with a careful source.</span>
+                Research-Grade &amp; GMP Reagents on Demand
               </motion.h1>
               <motion.p
                 variants={fadeUp}
                 transition={{ duration: 0.7, ease: 'easeOut' }}
                 className="mt-6 max-w-xl text-base leading-7 text-slate-700 sm:text-lg"
               >
-                You shouldn't have to guess what you're buying, or hope the
-                site behind it is real. Encore Bio Labs is a research-use-only
-                catalog built for people who take their research seriously —
-                clear categories, honest documentation, and an actual person
-                on the other end when you have a question.
+                Reliable, compliant supply chains tailored for enterprise biotech firms and academic institutions.
               </motion.p>
               <motion.p
                 variants={fadeUp}
                 transition={{ duration: 0.7, ease: 'easeOut' }}
                 className="mt-4 max-w-xl text-sm leading-6 text-slate-500"
               >
-                Every product page is written to inform, not to sell — and
-                every inquiry is read by a person, not a form that goes
-                nowhere.
+                Source research-grade and GMP-oriented reagents with documentation support, bulk fulfillment,
+                and responsive procurement guidance.
               </motion.p>
 
               <motion.div
                 variants={fadeUp}
                 transition={{ duration: 0.7, ease: 'easeOut' }}
-                className="mt-8 flex flex-col gap-3 sm:flex-row"
+                className="mt-8 grid grid-cols-2 gap-3"
               >
-                <CTA href="/catalog" className="w-full py-3.5 sm:w-auto sm:text-base">
-                  Explore the Catalog
-                </CTA>
-                <CTA href="/intake" tone="ghost" className="w-full py-3.5 sm:w-auto">
-                  <ShieldCheck size={17} />
-                  Start Your Research Profile
-                </CTA>
+                <a
+                  href="/intake"
+                  className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#071724] px-4 py-3 text-center text-sm font-semibold text-white shadow-[0_16px_34px_rgba(7,23,36,0.18)] transition hover:bg-teal-700 focus:outline-none focus:ring-4 focus:ring-teal-200 sm:px-6 sm:text-base"
+                >
+                  Request Bulk Quote
+                </a>
+                <a
+                  href="/catalog"
+                  className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#071724]/20 bg-white/35 px-4 py-3 text-center text-sm font-semibold text-[#071724] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] backdrop-blur-xl transition hover:border-teal-300 hover:bg-white/70 hover:text-teal-800 focus:outline-none focus:ring-4 focus:ring-teal-100 sm:px-6 sm:text-base"
+                >
+                  Browse Catalog
+                </a>
               </motion.div>
 
               <motion.p
