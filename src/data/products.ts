@@ -4,6 +4,9 @@ export type ProductVariant = {
   price: number
 }
 
+export type PurityGrade = '>=98%' | 'Analytical Grade' | 'Research Grade'
+export type StockStatus = 'In Stock' | 'Limited Stock' | 'On Request'
+
 type ProductSpec = {
   label: string
   value: string
@@ -95,7 +98,13 @@ type CatalogProduct = {
   variants: ProductVariant[]
 }
 
-export type Product = CatalogProduct & ProductPageContent
+type ProductCatalogMetadata = {
+  casNumber: string
+  purityGrade: PurityGrade
+  stockStatus: StockStatus
+}
+
+export type Product = CatalogProduct & ProductCatalogMetadata & ProductPageContent
 
 export type ResearchArea = {
   slug: string
@@ -1790,8 +1799,36 @@ const relatedProductsBySlug: Record<string, string[]> = {
   'thymosin-alpha-1': ['glutathione', 'nad-plus', 'epithalon'],
 }
 
+const catalogMetadataBySlug: Record<string, ProductCatalogMetadata> = {
+  retatrutide: { casNumber: '2381089-83-2', purityGrade: '>=98%', stockStatus: 'In Stock' },
+  tesamorelin: { casNumber: '218949-48-5', purityGrade: 'Research Grade', stockStatus: 'Limited Stock' },
+  'wolverine-stack': { casNumber: 'BPC-157 / TB-500', purityGrade: 'Research Grade', stockStatus: 'In Stock' },
+  'bpc-157': { casNumber: '137525-51-0', purityGrade: '>=98%', stockStatus: 'In Stock' },
+  'tb-500': { casNumber: '77591-33-4', purityGrade: '>=98%', stockStatus: 'Limited Stock' },
+  klow: { casNumber: 'Kit-support entry', purityGrade: 'Analytical Grade', stockStatus: 'On Request' },
+  'igf1-lr3': { casNumber: '946870-92-4', purityGrade: 'Research Grade', stockStatus: 'Limited Stock' },
+  'cjc1295-ipamorelin': { casNumber: '863288-34-0 / 170851-70-4', purityGrade: '>=98%', stockStatus: 'In Stock' },
+  'mots-c': { casNumber: '1627580-64-6', purityGrade: 'Research Grade', stockStatus: 'On Request' },
+  'nad-plus': { casNumber: '53-84-9', purityGrade: 'Analytical Grade', stockStatus: 'In Stock' },
+  glutathione: { casNumber: '70-18-8', purityGrade: 'Analytical Grade', stockStatus: 'In Stock' },
+  'ghk-cu': { casNumber: '89030-95-5', purityGrade: '>=98%', stockStatus: 'In Stock' },
+  'ahk-cu': { casNumber: '49557-75-7', purityGrade: '>=98%', stockStatus: 'Limited Stock' },
+  epithalon: { casNumber: '307297-39-8', purityGrade: 'Research Grade', stockStatus: 'In Stock' },
+  cerebrolysin: { casNumber: 'Peptide mixture', purityGrade: 'Analytical Grade', stockStatus: 'On Request' },
+  ss31: { casNumber: '736992-21-5', purityGrade: 'Research Grade', stockStatus: 'Limited Stock' },
+  dsip: { casNumber: '62568-57-4', purityGrade: 'Research Grade', stockStatus: 'In Stock' },
+  kisspeptin: { casNumber: '374675-21-5', purityGrade: '>=98%', stockStatus: 'Limited Stock' },
+  hcg: { casNumber: '9002-61-3', purityGrade: 'Analytical Grade', stockStatus: 'In Stock' },
+  'hgh-191aa': { casNumber: '12629-01-5', purityGrade: 'Research Grade', stockStatus: 'On Request' },
+  'thymosin-alpha-1': { casNumber: '62304-98-7', purityGrade: 'Research Grade', stockStatus: 'Limited Stock' },
+  'pt-141': { casNumber: '189691-06-3', purityGrade: '>=98%', stockStatus: 'In Stock' },
+  semax: { casNumber: '80714-61-0', purityGrade: 'Research Grade', stockStatus: 'In Stock' },
+  selank: { casNumber: '129954-34-3', purityGrade: 'Research Grade', stockStatus: 'In Stock' },
+}
+
 export const products: Product[] = catalogProducts.map((product) => ({
   ...product,
+  ...catalogMetadataBySlug[product.slug],
   description: productFacts[product.slug]?.overview ?? product.description,
   ...createPageContent(product),
   relatedProducts:

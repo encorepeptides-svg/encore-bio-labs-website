@@ -1,6 +1,6 @@
-import { Check, FileText, Search, ShieldCheck, SlidersHorizontal, Snowflake, Sparkles } from 'lucide-react'
-import { useMemo, useState } from 'react'
-import { categoryVisuals, products, type Product } from '../../data/products'
+import { Check, FileText, Search, ShieldCheck, SlidersHorizontal, Snowflake, Sparkles, X } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { categoryVisuals, products, type Product, type PurityGrade, type StockStatus } from '../../data/products'
 import { buildSrcSet, stemOf } from '../../lib/responsiveImages'
 import { CTA } from '../CTA'
 import { Reveal } from '../Reveal'
@@ -29,6 +29,9 @@ const filterTabs = [
 ] as const
 
 type CatalogFilter = (typeof filterTabs)[number]
+
+const purityGradeOptions: PurityGrade[] = ['>=98%', 'Analytical Grade', 'Research Grade']
+const stockStatusOptions: StockStatus[] = ['In Stock', 'Limited Stock', 'On Request']
 
 const filterDescriptions: Record<CatalogFilter, string> = {
   All: 'Every product in one place, no research area left out.',
@@ -79,6 +82,18 @@ function getProductImageName(product: Product) {
 
 function getProductImage(product: Product) {
   return productImages[`../../assets/images/products/${getProductImageName(product)}`]
+}
+
+function useDebouncedValue(value: string, delay = 220) {
+  const [debouncedValue, setDebouncedValue] = useState(value)
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => setDebouncedValue(value), delay)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [delay, value])
+
+  return debouncedValue
 }
 
 function getPriceLabel(product: Product) {
@@ -152,6 +167,15 @@ function ProductCard({ product }: { product: Product }) {
         </p>
 
         <div className="mt-5 flex flex-wrap gap-2">
+          <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-800">
+            CAS {product.casNumber}
+          </span>
+          <span className="rounded-full border border-slate-200 bg-[#f8fafc] px-3 py-1.5 text-xs font-medium text-slate-600">
+            {product.purityGrade}
+          </span>
+          <span className="rounded-full border border-slate-200 bg-[#f8fafc] px-3 py-1.5 text-xs font-medium text-slate-600">
+            {product.stockStatus}
+          </span>
           {product.variants.slice(0, 3).map((variant) => (
             <span
               key={`${product.slug}-${variant.label}-${variant.format}`}
@@ -363,22 +387,63 @@ function ResearchUseQualitySection() {
 export function CatalogPage() {
   const [activeFilter, setActiveFilter] = useState<CatalogFilter>('All')
   const [searchTerm, setSearchTerm] = useState('')
+  const [casNumber, setCasNumber] = useState('')
+  const [purityGrade, setPurityGrade] = useState<PurityGrade | 'All'>('All')
+  const [stockStatus, setStockStatus] = useState<StockStatus | 'All'>('All')
+
+  const debouncedSearchTerm = useDebouncedValue(searchTerm)
+  const debouncedCasNumber = useDebouncedValue(casNumber)
+
+  const searchResultSlugs = useMemo(() => {
+    const normalizedSearch = debouncedSearchTerm.trim().toLowerCase()
+
+    if (normalizedSearch.length === 0) {
+      return null
+    }
+
+    const nameMatches = products.filter((product) =>
+      [product.name, product.category, product.shortDescription, product.description]
+        .join(' ')
+        .toLowerCase()
+        .includes(normalizedSearch),
+    )
+    const casMatches = products.filter((product) => product.casNumber.toLowerCase().includes(normalizedSearch))
+
+    return new Set([...nameMatches, ...casMatches].map((product) => product.slug))
+  }, [debouncedSearchTerm])
 
   const filteredProducts = useMemo(() => {
-    const normalizedSearch = searchTerm.trim().toLowerCase()
+    const normalizedCasNumber = debouncedCasNumber.trim().toLowerCase()
 
     return products.filter((product) => {
       const matchesFilter = activeFilter === 'All' || getCatalogFilter(product) === activeFilter
-      const matchesSearch =
-        normalizedSearch.length === 0 ||
-        [product.name, product.category, product.shortDescription, product.description]
-          .join(' ')
-          .toLowerCase()
-          .includes(normalizedSearch)
+      const matchesSearch = !searchResultSlugs || searchResultSlugs.has(product.slug)
+      const matchesCas =
+        normalizedCasNumber.length === 0 || product.casNumber.toLowerCase().includes(normalizedCasNumber)
+      const matchesPurityGrade = purityGrade === 'All' || product.purityGrade === purityGrade
+      const matchesStockStatus = stockStatus === 'All' || product.stockStatus === stockStatus
 
-      return matchesFilter && matchesSearch
+      return matchesFilter && matchesSearch && matchesCas && matchesPurityGrade && matchesStockStatus
     })
-  }, [activeFilter, searchTerm])
+  }, [activeFilter, debouncedCasNumber, purityGrade, searchResultSlugs, stockStatus])
+
+  const activeFilterBadges = [
+    activeFilter !== 'All'
+      ? { label: `Category: ${activeFilter}`, onClear: () => setActiveFilter('All') }
+      : null,
+    searchTerm.trim()
+      ? { label: `Search: ${searchTerm.trim()}`, onClear: () => setSearchTerm('') }
+      : null,
+    casNumber.trim()
+      ? { label: `CAS: ${casNumber.trim()}`, onClear: () => setCasNumber('') }
+      : null,
+    purityGrade !== 'All'
+      ? { label: `Purity: ${purityGrade}`, onClear: () => setPurityGrade('All') }
+      : null,
+    stockStatus !== 'All'
+      ? { label: `Stock: ${stockStatus}`, onClear: () => setStockStatus('All') }
+      : null,
+  ].filter((badge): badge is { label: string; onClear: () => void } => Boolean(badge))
 
   const multiVariantCount = products.filter((product) => product.variants.length > 1).length
 
@@ -444,20 +509,61 @@ export function CatalogPage() {
               description="Use the filters or search to scan the catalog. Strengths and vial-size options stay inside one product card so entries are not duplicated."
             />
 
-            <div className="relative">
-              <Search
-                size={18}
-                aria-hidden="true"
-                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-              />
-              <input
-                type="search"
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Search products or research areas"
-                aria-label="Search products"
-                className="h-13 w-full rounded-full border border-slate-900/10 bg-white px-11 py-3 text-sm font-medium text-[#071724] shadow-[0_16px_44px_rgba(7,23,36,0.07)] outline-none transition placeholder:text-slate-400 focus:border-teal-300 focus:ring-4 focus:ring-teal-100"
-              />
+            <div className="grid gap-3">
+              <div className="relative">
+                <Search
+                  size={18}
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+                <input
+                  type="search"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="Search products, CAS numbers, or research areas"
+                  aria-label="Search products and CAS numbers"
+                  className="h-13 w-full rounded-full border border-slate-900/10 bg-white px-11 py-3 text-sm font-medium text-[#071724] shadow-[0_16px_44px_rgba(7,23,36,0.07)] outline-none transition placeholder:text-slate-400 focus:border-teal-300 focus:ring-4 focus:ring-teal-100"
+                />
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                <input
+                  type="search"
+                  value={casNumber}
+                  onChange={(event) => setCasNumber(event.target.value)}
+                  placeholder="CAS Number"
+                  aria-label="Filter by CAS number"
+                  className="h-12 rounded-full border border-slate-900/10 bg-white px-4 text-sm font-semibold text-[#071724] shadow-[0_12px_32px_rgba(7,23,36,0.06)] outline-none transition placeholder:text-slate-400 focus:border-teal-300 focus:ring-4 focus:ring-teal-100"
+                />
+
+                <select
+                  value={purityGrade}
+                  onChange={(event) => setPurityGrade(event.target.value as PurityGrade | 'All')}
+                  aria-label="Filter by purity grade"
+                  className="h-12 rounded-full border border-slate-900/10 bg-white px-4 text-sm font-semibold text-[#071724] shadow-[0_12px_32px_rgba(7,23,36,0.06)] outline-none transition focus:border-teal-300 focus:ring-4 focus:ring-teal-100"
+                >
+                  <option value="All">All purity grades</option>
+                  {purityGradeOptions.map((grade) => (
+                    <option key={grade} value={grade}>
+                      {grade}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={stockStatus}
+                  onChange={(event) => setStockStatus(event.target.value as StockStatus | 'All')}
+                  aria-label="Filter by stock status"
+                  className="h-12 rounded-full border border-slate-900/10 bg-white px-4 text-sm font-semibold text-[#071724] shadow-[0_12px_32px_rgba(7,23,36,0.06)] outline-none transition focus:border-teal-300 focus:ring-4 focus:ring-teal-100"
+                >
+                  <option value="All">All stock statuses</option>
+                  {stockStatusOptions.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 
@@ -487,6 +593,23 @@ export function CatalogPage() {
           </div>
 
           <p className="mt-3 text-sm leading-6 text-slate-500">{filterDescriptions[activeFilter]}</p>
+
+          {activeFilterBadges.length > 0 ? (
+            <div className="mt-5 flex flex-wrap gap-2" aria-label="Active catalog filters">
+              {activeFilterBadges.map((badge) => (
+                <button
+                  key={badge.label}
+                  type="button"
+                  onClick={badge.onClear}
+                  className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-white px-3 py-2 text-xs font-semibold text-[#071724] shadow-sm transition hover:border-teal-200 hover:bg-teal-50"
+                  aria-label={`Clear ${badge.label}`}
+                >
+                  {badge.label}
+                  <X size={14} aria-hidden="true" className="text-slate-400" />
+                </button>
+              ))}
+            </div>
+          ) : null}
 
           <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {filteredProducts.map((product) => (
