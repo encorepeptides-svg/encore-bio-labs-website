@@ -14,11 +14,11 @@ Full written content for `/about`. A working `AboutPage.tsx` already exists in t
 
 **Headline:** We built the catalog we wished we could find.
 
-**Subheadline:** Encore Bio Labs is a research-use-only catalog for peptides and compounds spanning metabolic, recovery, longevity, cognitive, and hormonal research — built because the alternative was usually either a sterile spreadsheet of a site or a hype-driven storefront, and neither one respected the person actually doing the research.
+**Subheadline:** Encore Bio Labs supports research teams sourcing peptides and compounds across metabolic, recovery, longevity, cognitive, and hormonal research. We built the catalog to replace sterile spreadsheets and hype-driven storefronts with clear science, practical documentation pathways, and human procurement support.
 
 **CTA:** "Browse Research Categories" (→ `/#products`) · "Start a Research Profile" (→ `/intake`)
 
-**Side card (compliance callout, keep from existing page):** "Compliance is part of the product experience." Products and educational content are for laboratory research use only. Encore Bio Labs does not provide medical advice, treatment recommendations, dosing protocols, or outcome promises. Links to Terms of Service and the Safety & Compliance FAQ section.
+**Side card (compliance callout, keep from existing page):** "Compliance is part of the product experience." For Research Use Only (RUO). Not for use in diagnostic or therapeutic procedures. Encore Bio Labs does not provide medical advice, treatment recommendations, dosing protocols, or outcome promises. Links to Terms of Service and the Safety & Compliance FAQ section.
 
 **Implementation note:** Keep the existing two-column hero layout and the RUO side card as-is — just swap in the headline/subheadline above. No structural change needed here.
 
@@ -28,7 +28,7 @@ Full written content for `/about`. A working `AboutPage.tsx` already exists in t
 
 **Headline:** Because "trust me" isn't documentation.
 
-**Body copy:** Most research-use catalogs ask you to take a lot on faith — that the categories mean something, that the compound is what the label says, that someone will actually answer if you have a question before you order. We didn't think that should be the default. Encore Bio Labs exists to put the actual research context on the page instead of a sales pitch, to organize the catalog around real biology instead of search-engine keywords, and to make sure a real person reads every inquiry instead of routing it into a form that goes nowhere. None of that is complicated. It's just easy to skip, and we didn't want to skip it.
+**Body copy:** Many research-use catalogs ask you to trust vague categories, thin product pages, and generic order forms. We take a different path. We put research context on the page, organize compounds around biology instead of search keywords, and review every inquiry with a person who can help clarify sourcing, documentation, and fulfillment needs.
 
 **Implementation note:** Net-new prose section — this is the gap between the existing hero (which gestures at "clarity" as an abstract value) and an actual explanation of the problem being solved. Place directly after the hero.
 
@@ -39,11 +39,11 @@ Full written content for `/about`. A working `AboutPage.tsx` already exists in t
 **Headline:** A few things we don't compromise on.
 
 **Belief statements:**
-- **Documentation should be something you can ask for — not something you're told exists somewhere.** If identity, purity, or batch documentation is available, it should be one request away, not a marketing claim.
+- **You should be able to ask for documentation directly, not chase a vague claim.** When identity, purity, or batch records are available, we help route that request clearly.
 - **Categories should reflect real biology, not search-engine keywords.** If a compound doesn't fit cleanly into one research area, we say so, rather than forcing it into a category for SEO reasons.
 - **"Research use only" is a real boundary, not a loophole.** We'd rather lose a sale than blur that line.
 - **You shouldn't need to already be an expert to find the right part of the catalog.** Plain language and clear organization aren't the same as dumbing anything down.
-- **A person should read every inquiry.** Not eventually. Before anything ships.
+- **We read every inquiry before anything ships.** Context matters in research procurement.
 
 **Implementation note:** Net-new section. A simple five-item list (icon + short statement, no long body copy needed per item) reads better here than another three-card grid, to visually distinguish it from the existing "Operating Principles" cards elsewhere on the page.
 
@@ -65,7 +65,7 @@ Full written content for `/about`. A working `AboutPage.tsx` already exists in t
 
 **Headline:** We'd rather tell you what's available than dress up the page.
 
-**Body copy:** Identity and purity documentation, storage guidance, and batch-level records can be requested through the intake process, product by product. We don't publish purity percentages or testing statistics on product pages — if a number isn't something we can actually stand behind for that specific batch, it doesn't belong on the page. That's a deliberate choice, not a gap we haven't gotten to yet: a real "documentation available on request" is worth more than an impressive-looking number nobody can verify.
+**Body copy:** We coordinate identity and purity documentation, storage guidance, and batch-level records through the intake process, product by product. We don't publish purity percentages or testing statistics on product pages if we can't stand behind them for a specific batch. A clear documentation pathway serves research teams better than an impressive-looking number nobody can verify.
 
 **Implementation note:** This can replace or sit alongside the existing "Operating Principles" 3-card section — the current copy ("Documentation on request," "Categories built around research questions," "A person reviews every inquiry") already covers similar ground well; this version adds the explicit "why we don't publish invented statistics" reasoning, which is the part currently missing.
 
@@ -75,7 +75,7 @@ Full written content for `/about`. A working `AboutPage.tsx` already exists in t
 
 **Headline:** What this page won't do.
 
-**Body copy:** This site will not give you medical advice, tell you what a compound will do for you personally, recommend a dosing protocol, or suggest that any product treats, cures, or prevents anything. That's true on every page, not just this one. If you're a qualified researcher or institution evaluating these compounds for a real research question, that's exactly who this catalog is built for. If you're looking for medical guidance, the right next step is a licensed healthcare provider — not a more careful reading of this page.
+**Body copy:** We keep every page inside a research-use boundary. We do not provide medical advice, personal outcome predictions, dosing protocols, or treatment claims. If your team is evaluating these compounds for a qualified research question, we built this catalog for you. If you need medical guidance, speak with a licensed healthcare provider.
 
 **CTA:** "Read the Full Research-Use-Only Explanation" (→ `/#research-use-only`)
 
@@ -87,7 +87,7 @@ Full written content for `/about`. A working `AboutPage.tsx` already exists in t
 
 **Headline:** A real place, not just a website.
 
-**Body copy:** Encore Bio Labs offers same-day local courier delivery in the El Paso area, alongside nationwide U.S. shipping for research catalog fulfillment. Mexico shipping is also available, at a flat $20 USD addition to standard shipping. We mention this on the About page on purpose: a catalog with a real, locatable delivery footprint is a different thing than a site that could be anywhere, run by anyone, shipping from nowhere in particular.
+**Body copy:** Encore Bio Labs supports same-day local courier delivery in the El Paso area and nationwide U.S. shipping for research catalog fulfillment. We also support Mexico shipping for a flat $20 USD addition to standard shipping. We mention this here on purpose: a catalog with a real, locatable delivery footprint gives procurement teams more confidence than a site that could be anywhere.
 
 **CTA:** "See Shipping & Delivery FAQs" (→ `/faq#shipping`)
 
@@ -99,7 +99,7 @@ Full written content for `/about`. A working `AboutPage.tsx` already exists in t
 
 **Headline:** Ready to see where your research question fits?
 
-**Body copy:** Start with the categories, browse the research library, or submit a research profile for a human-reviewed follow-up. However you get there, a real person is on the other end.
+**Body copy:** Start with the categories, browse the research library, or submit a research profile for human-reviewed follow-up. However you get there, we help connect your research question to a clear next step.
 
 **CTA:** "Start Research Intake" (→ `/intake`) · "Visit Research Library" (→ `/research`)
 

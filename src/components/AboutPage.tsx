@@ -1,11 +1,12 @@
 import { ArrowRight, Check, CheckCircle2, FileText, LayoutGrid, MapPin, ShieldCheck, Truck, UserCheck, XCircle } from 'lucide-react'
 import { researchAreas } from '../data/products'
+import { websiteCopy } from '../data/websiteCopy'
 import { CTA } from './CTA'
 import { Reveal } from './Reveal'
 import { InternalLinkGrid } from './content/EditorialModules'
 
 const whatThisMeans = [
-  'Sold for laboratory research use only',
+  'We supply these materials for laboratory research use only',
   'Not intended for human or animal consumption',
   'Not a supplement, drug, or cosmetic product',
 ]
@@ -20,26 +21,26 @@ const standards = [
   {
     icon: FileText,
     title: 'Documentation on request',
-    body: 'Identity, purity, storage, and batch documentation can be requested through the intake process where available.',
+    body: 'We coordinate identity, purity, storage, and batch documentation through intake when records are available.',
   },
   {
     icon: LayoutGrid,
     title: 'Categories built around research questions',
-    body: 'The catalog is organized by research area so researchers can compare adjacent pathways without duplicate product cards.',
+    body: 'We organize the catalog by research area so teams can compare adjacent pathways without sorting through duplicate product cards.',
   },
   {
     icon: UserCheck,
     title: 'A person reviews every inquiry',
-    body: 'Research intake submissions are reviewed before follow-up, so product discovery stays contextual and compliance-aware.',
+    body: 'We review every research intake before follow-up, so product discovery stays contextual and compliance-aware.',
   },
 ]
 
 const beliefs = [
-  'Documentation should be something you can ask for — not something you\'re told exists somewhere. If identity, purity, or batch documentation is available, it should be one request away, not a marketing claim.',
+  'You should be able to ask for documentation directly, not chase a vague claim. When identity, purity, or batch records are available, we help route that request clearly.',
   'Categories should reflect real biology, not search-engine keywords. If a compound doesn\'t fit cleanly into one research area, we say so, rather than forcing it into a category for SEO reasons.',
   '"Research use only" is a real boundary, not a loophole. We\'d rather lose a sale than blur that line.',
   'You shouldn\'t need to already be an expert to find the right part of the catalog. Plain language and clear organization aren\'t the same as dumbing anything down.',
-  'A person should read every inquiry. Not eventually. Before anything ships.',
+  'We read every inquiry before anything ships, because context matters in research procurement.',
 ]
 
 export function AboutPage() {
@@ -66,10 +67,10 @@ export function AboutPage() {
               We built the catalog we wished we could find.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-              Encore Bio Labs is a research-use-only catalog for peptides and compounds spanning
-              metabolic, recovery, longevity, cognitive, and hormonal research — built because the
-              alternative was usually either a sterile spreadsheet of a site or a hype-driven
-              storefront, and neither one respected the person actually doing the research.
+              Encore Bio Labs supports research teams sourcing peptides and compounds across
+              metabolic, recovery, longevity, cognitive, and hormonal research. We built the
+              catalog to replace sterile spreadsheets and hype-driven storefronts with clear
+              science, practical documentation pathways, and human procurement support.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <CTA href="/#products">Browse Research Categories</CTA>
@@ -85,9 +86,8 @@ export function AboutPage() {
               Compliance is part of the product experience.
             </h2>
             <p className="mt-4 text-sm leading-6 text-slate-600">
-              Products and educational content are for laboratory research use only. Encore Bio
-              Labs does not provide medical advice, treatment recommendations, dosing protocols, or
-              outcome promises.
+              {websiteCopy.complianceDisclaimer} Encore Bio Labs does not provide medical advice,
+              treatment recommendations, dosing protocols, or outcome promises.
             </p>
             <div className="mt-6 grid gap-3">
               <a href="/legal/terms" className="inline-flex items-center gap-2 text-sm font-semibold text-teal-800">
@@ -112,14 +112,11 @@ export function AboutPage() {
               Because "trust me" isn't documentation.
             </h2>
             <p className="mt-5 text-base leading-7 text-slate-600">
-              Most research-use catalogs ask you to take a lot on faith — that the categories mean
-              something, that the compound is what the label says, that someone will actually
-              answer if you have a question before you order. We didn't think that should be the
-              default. Encore Bio Labs exists to put the actual research context on the page instead
-              of a sales pitch, to organize the catalog around real biology instead of
-              search-engine keywords, and to make sure a real person reads every inquiry instead of
-              routing it into a form that goes nowhere. None of that is complicated. It's just easy
-              to skip, and we didn't want to skip it.
+              Many research-use catalogs ask you to trust vague categories, thin product pages, and
+              generic order forms. We take a different path. We put research context on the page,
+              organize compounds around biology instead of search keywords, and review every
+              inquiry with a person who can help clarify sourcing, documentation, and fulfillment
+              needs.
             </p>
           </div>
         </Reveal>
@@ -200,13 +197,11 @@ export function AboutPage() {
               We'd rather tell you what's available than dress up the page.
             </h2>
             <p className="mt-5 text-base leading-7 text-slate-600">
-              Identity and purity documentation, storage guidance, and batch-level records can be
-              requested through the intake process, product by product. We don't publish purity
-              percentages or testing statistics on product pages — if a number isn't something we
-              can actually stand behind for that specific batch, it doesn't belong on the page.
-              That's a deliberate choice, not a gap we haven't gotten to yet: a real "documentation
-              available on request" is worth more than an impressive-looking number nobody can
-              verify.
+              We coordinate identity and purity documentation, storage guidance, and batch-level
+              records through the intake process, product by product. We do not dress up product
+              pages with purity percentages or testing statistics we cannot stand behind for a
+              specific batch. A clear documentation pathway serves research teams better than an
+              impressive-looking number nobody can verify.
             </p>
           </div>
           <div className="mt-8 grid gap-4 md:grid-cols-3">
@@ -237,13 +232,10 @@ export function AboutPage() {
               What this page won't do.
             </h2>
             <p className="mt-5 text-base leading-7 text-slate-600">
-              This site will not give you medical advice, tell you what a compound will do for you
-              personally, recommend a dosing protocol, or suggest that any product treats, cures,
-              or prevents anything. That's true on every page, not just this one. If you're a
-              qualified researcher or institution evaluating these compounds for a real research
-              question, that's exactly who this catalog is built for. If you're looking for medical
-              guidance, the right next step is a licensed healthcare provider — not a more careful
-              reading of this page.
+              We keep every page inside a research-use boundary. We do not provide medical advice,
+              personal outcome predictions, dosing protocols, or treatment claims. If your team is
+              evaluating these compounds for a qualified research question, we built this catalog
+              for you. If you need medical guidance, speak with a licensed healthcare provider.
             </p>
           </div>
 
@@ -295,12 +287,11 @@ export function AboutPage() {
                 A real place, not just a website.
               </h2>
               <p className="mt-5 text-base leading-7 text-slate-600">
-                Encore Bio Labs offers same-day local courier delivery in the El Paso area, alongside
-                nationwide U.S. shipping for research catalog fulfillment. Mexico shipping is also
-                available, at a flat $20 USD addition to standard shipping. We mention this on the
-                About page on purpose: a catalog with a real, locatable delivery footprint is a
-                different thing than a site that could be anywhere, run by anyone, shipping from
-                nowhere in particular.
+                Encore Bio Labs supports same-day local courier delivery in the El Paso area and
+                nationwide U.S. shipping for research catalog fulfillment. We also support Mexico
+                shipping for a flat $20 USD addition to standard shipping. We mention this here on
+                purpose: a catalog with a real, locatable delivery footprint gives procurement
+                teams more confidence than a site that could be anywhere.
               </p>
               <a
                 href="/faq#shipping"
@@ -375,8 +366,8 @@ export function AboutPage() {
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-300">
             Start with the categories, browse the research library, or submit a research profile
-            for a human-reviewed follow-up. However you get there, a real person is on the other
-            end.
+            for human-reviewed follow-up. However you get there, we help connect your research
+            question to a clear next step.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <CTA href="/intake" tone="light">
