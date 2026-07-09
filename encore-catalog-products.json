@@ -1,0 +1,303 @@
+{
+  "note": "Grouped catalog products for Encore Bio Labs. slug and image reuse the real values already present in catalogProducts/assets in src/data/products.ts — no new slugs or filenames were invented since matching entries and image assets already exist. category matches the real `category` field already used in catalogProducts (not the 7-way catalog-page filter grouping used elsewhere). One entry per product; multi-strength products are grouped under a single entry with a variations array, per the no-duplication rule.",
+  "products": [
+    {
+      "title": "Retatrutide",
+      "suggestedSlug": "retatrutide",
+      "category": "Metabolic & Weight Management",
+      "suggestedImageFilename": "retatrutide.png",
+      "variations": [
+        { "label": "10 mg", "format": "Vial format", "price": 99 },
+        { "label": "15 mg", "format": "Vial format", "price": 124 },
+        { "label": "20 mg", "format": "Vial format", "price": 149 },
+        { "label": "25 mg", "format": "Vial format", "price": 174 },
+        { "label": "30 mg", "format": "Vial format", "price": 199 }
+      ],
+      "startingPrice": 99,
+      "priceDisplay": "Starting at $99",
+      "shortDescription": "Studied as a triple agonist that engages GLP-1, GIP, and glucagon receptors simultaneously. Research in this area focuses on incretin-pathway signaling and metabolic marker response, not individual outcomes."
+    },
+    {
+      "title": "Tesamorelin",
+      "suggestedSlug": "tesamorelin",
+      "category": "Metabolic & Weight Management",
+      "suggestedImageFilename": "tesamorelin.png",
+      "variations": [
+        { "label": "Catalog Format", "format": "Vial format", "price": 229 }
+      ],
+      "startingPrice": 229,
+      "priceDisplay": "$229",
+      "shortDescription": "A synthetic GHRH analog studied for its effect on GH-axis signaling and downstream IGF-1 response. Commonly reviewed in visceral-adiposity and metabolic-marker research models."
+    },
+    {
+      "title": "CJC-1295 + Ipamorelin",
+      "suggestedSlug": "cjc1295-ipamorelin",
+      "category": "Metabolic & Weight Management",
+      "suggestedImageFilename": "cjc1295-ipamorelin.png",
+      "variations": [
+        { "label": "Core Format", "format": "Vial format", "price": 179 },
+        { "label": "Expanded Format", "format": "Vial format", "price": 299 }
+      ],
+      "startingPrice": 179,
+      "priceDisplay": "Starting at $179",
+      "shortDescription": "A combination entry pairing a GHRH analog with a ghrelin-receptor secretagogue for dual-pathway GH-axis research. Grouped as one product since the two are almost always studied together."
+    },
+    {
+      "title": "MOTS-C",
+      "suggestedSlug": "mots-c",
+      "category": "Metabolic & Weight Management",
+      "suggestedImageFilename": "category-metabolic-weight-management.png",
+      "variations": [
+        { "label": "Catalog Format", "format": "Vial format", "price": 149 }
+      ],
+      "startingPrice": 149,
+      "priceDisplay": "$149",
+      "shortDescription": "A mitochondria-derived peptide studied for its connection to AMPK-linked energy sensing and metabolic-stress research. Distinct in mechanism from the incretin- and GHRH-based compounds in this category."
+    },
+    {
+      "title": "Wolverine Stack",
+      "suggestedSlug": "wolverine-stack",
+      "category": "Recovery & Regeneration",
+      "suggestedImageFilename": "wolverine.png",
+      "variations": [
+        { "label": "Catalog Format", "format": "Research kit format", "price": 139 }
+      ],
+      "startingPrice": 139,
+      "priceDisplay": "$139",
+      "shortDescription": "A packaged combination of BPC-157 and TB-500 research themes for studies that look at both compounds together. Organized as one kit rather than two separate research entries."
+    },
+    {
+      "title": "BPC-157",
+      "suggestedSlug": "bpc-157",
+      "category": "Recovery & Regeneration",
+      "suggestedImageFilename": "wolverine.png",
+      "variations": [
+        { "label": "Catalog Format", "format": "Vial format", "price": 119 }
+      ],
+      "startingPrice": 119,
+      "priceDisplay": "$119",
+      "shortDescription": "A gastric-derived peptide fragment studied in preclinical models of repair signaling, angiogenesis, and gut-barrier biology. One of the most frequently referenced compounds in tissue-repair research literature."
+    },
+    {
+      "title": "TB-500",
+      "suggestedSlug": "tb-500",
+      "category": "Recovery & Regeneration",
+      "suggestedImageFilename": "wolverine.png",
+      "variations": [
+        { "label": "Catalog Format", "format": "Vial format", "price": 129 }
+      ],
+      "startingPrice": 129,
+      "priceDisplay": "$129",
+      "shortDescription": "A synthetic peptide related to thymosin beta-4, studied for its role in actin regulation and cell-migration research. Often reviewed alongside BPC-157 in recovery-focused study design."
+    },
+    {
+      "title": "KLOW",
+      "suggestedSlug": "klow",
+      "category": "Recovery & Regeneration",
+      "suggestedImageFilename": "nad-plus.png",
+      "variations": [
+        { "label": "Catalog Format", "format": "Supply format", "price": 89 }
+      ],
+      "startingPrice": 89,
+      "priceDisplay": "$89",
+      "shortDescription": "A research-support kit entry focused on handling, documentation, and companion-component logistics rather than a single biological pathway. Built to keep supporting materials organized for a research order."
+    },
+    {
+      "title": "GHK-Cu",
+      "suggestedSlug": "ghk-cu",
+      "category": "Recovery & Regeneration",
+      "suggestedImageFilename": "ghk-cu.png",
+      "variations": [
+        { "label": "Catalog Format", "format": "Vial format", "price": 149 }
+      ],
+      "startingPrice": 149,
+      "priceDisplay": "$149",
+      "shortDescription": "A copper tripeptide complex studied for extracellular-matrix remodeling, collagen signaling, and wound-response research. Broader in research scope than its follicle-focused counterpart, AHK-Cu."
+    },
+    {
+      "title": "AHK-Cu",
+      "suggestedSlug": "ahk-cu",
+      "category": "Recovery & Regeneration",
+      "suggestedImageFilename": "ahk-cu.png",
+      "variations": [
+        { "label": "Catalog Format", "format": "Vial format", "price": 149 }
+      ],
+      "startingPrice": 149,
+      "priceDisplay": "$149",
+      "shortDescription": "A related copper peptide studied more specifically in follicle and dermal-signaling research contexts. Shares copper-peptide biology with GHK-Cu but with a narrower research focus."
+    },
+    {
+      "title": "IGF-1 LR3",
+      "suggestedSlug": "igf1-lr3",
+      "category": "Cognitive & Performance",
+      "suggestedImageFilename": "igf1-lr3.png",
+      "variations": [
+        { "label": "Catalog Format", "format": "Vial format", "price": 149 }
+      ],
+      "startingPrice": 149,
+      "priceDisplay": "$149",
+      "shortDescription": "A long-acting IGF-1 analog studied for receptor-binding characteristics and downstream cellular-growth signaling. Reviewed in performance-oriented and growth-pathway research contexts."
+    },
+    {
+      "title": "Cerebrolysin",
+      "suggestedSlug": "cerebrolysin",
+      "category": "Cognitive & Performance",
+      "suggestedImageFilename": "cerebrolysin.png",
+      "variations": [
+        { "label": "Catalog Format", "format": "Ampoule format", "price": 169 }
+      ],
+      "startingPrice": 169,
+      "priceDisplay": "$169",
+      "shortDescription": "A neurotrophic peptide mixture studied for neuronal-survival models and synaptic-plasticity research. Reviewed as a compound mixture rather than a single-sequence peptide."
+    },
+    {
+      "title": "Semax",
+      "suggestedSlug": "semax",
+      "category": "Cognitive & Performance",
+      "suggestedImageFilename": "semax.png",
+      "variations": [
+        { "label": "Catalog Format", "format": "Catalog format", "price": 109 }
+      ],
+      "startingPrice": 109,
+      "priceDisplay": "$109",
+      "shortDescription": "A synthetic ACTH-fragment analog studied for neuropeptide signaling and BDNF-related expression. Frequently reviewed alongside Selank in cognitive-research planning."
+    },
+    {
+      "title": "Selank",
+      "suggestedSlug": "selank",
+      "category": "Cognitive & Performance",
+      "suggestedImageFilename": "selank.png",
+      "variations": [
+        { "label": "Catalog Format", "format": "Catalog format", "price": 109 }
+      ],
+      "startingPrice": 109,
+      "priceDisplay": "$109",
+      "shortDescription": "A synthetic tuftsin analog studied for stress-response and neuroimmune signaling research. Distinguished from Semax by its serotonin-adjacent research angle."
+    },
+    {
+      "title": "NAD+",
+      "suggestedSlug": "nad-plus",
+      "category": "Longevity & Cellular Health",
+      "suggestedImageFilename": "nad-plus.png",
+      "variations": [
+        { "label": "Core Format", "format": "Vial format", "price": 129 },
+        { "label": "Expanded Format", "format": "Vial format", "price": 219 }
+      ],
+      "startingPrice": 129,
+      "priceDisplay": "Starting at $129",
+      "shortDescription": "A central cellular cofactor studied for its role in redox biology, mitochondrial energy metabolism, and sirtuin-linked aging research. One of the most foundational compounds in longevity research literature."
+    },
+    {
+      "title": "Glutathione",
+      "suggestedSlug": "glutathione",
+      "category": "Longevity & Cellular Health",
+      "suggestedImageFilename": "glutathione.png",
+      "variations": [
+        { "label": "Core Format", "format": "Vial format", "price": 89 },
+        { "label": "Expanded Format", "format": "Vial format", "price": 149 }
+      ],
+      "startingPrice": 89,
+      "priceDisplay": "Starting at $89",
+      "shortDescription": "An endogenous tripeptide antioxidant studied for redox balance and detoxification enzyme systems. Frequently referenced as the primary intracellular antioxidant buffer in cellular-defense research."
+    },
+    {
+      "title": "Epithalon",
+      "suggestedSlug": "epithalon",
+      "category": "Longevity & Cellular Health",
+      "suggestedImageFilename": "epithalon.png",
+      "variations": [
+        { "label": "Catalog Format", "format": "Vial format", "price": 139 }
+      ],
+      "startingPrice": 139,
+      "priceDisplay": "$139",
+      "shortDescription": "A synthetic tetrapeptide studied in telomere-associated, pineal-peptide, and circadian-rhythm research contexts. Positioned in aging-biology literature without any lifespan or outcome claims."
+    },
+    {
+      "title": "SS-31",
+      "suggestedSlug": "ss31",
+      "category": "Longevity & Cellular Health",
+      "suggestedImageFilename": "ss31.png",
+      "variations": [
+        { "label": "Catalog Format", "format": "Vial format", "price": 159 }
+      ],
+      "startingPrice": 159,
+      "priceDisplay": "$159",
+      "shortDescription": "A mitochondria-targeted peptide studied for its interaction with cardiolipin and inner-membrane stability. One of the most mechanism-specific entries in mitochondrial research literature."
+    },
+    {
+      "title": "Thymosin Alpha-1",
+      "suggestedSlug": "thymosin-alpha-1",
+      "category": "Longevity & Cellular Health",
+      "suggestedImageFilename": "ss31.png",
+      "variations": [
+        { "label": "Catalog Format", "format": "Vial format", "price": 149 }
+      ],
+      "startingPrice": 149,
+      "priceDisplay": "$149",
+      "shortDescription": "An immune-signaling peptide studied for T-cell function and cellular-defense research relevance. Included in longevity research for its overlap with immune-resilience biology."
+    },
+    {
+      "title": "DSIP",
+      "suggestedSlug": "dsip",
+      "category": "Hormone & Wellness",
+      "suggestedImageFilename": "dsip.png",
+      "variations": [
+        { "label": "Catalog Format", "format": "Vial format", "price": 119 }
+      ],
+      "startingPrice": 119,
+      "priceDisplay": "$119",
+      "shortDescription": "A neuropeptide studied for sleep-architecture models and neuroendocrine signaling research. Reviewed in the context of stress-response and rest-related biology, not sleep treatment."
+    },
+    {
+      "title": "Kisspeptin",
+      "suggestedSlug": "kisspeptin",
+      "category": "Hormone & Wellness",
+      "suggestedImageFilename": "kisspeptin.png",
+      "variations": [
+        { "label": "Catalog Format", "format": "Vial format", "price": 129 }
+      ],
+      "startingPrice": 129,
+      "priceDisplay": "$129",
+      "shortDescription": "A neuropeptide studied for reproductive-axis signaling and GnRH pulse regulation. Sits upstream in the hormonal-axis research picture relative to downstream gonadotropins like HCG."
+    },
+    {
+      "title": "HCG",
+      "suggestedSlug": "hcg",
+      "category": "Hormone & Wellness",
+      "suggestedImageFilename": "hcg.png",
+      "variations": [
+        { "label": "Core Format", "format": "Vial format", "price": 99 },
+        { "label": "Expanded Format", "format": "Vial format", "price": 169 }
+      ],
+      "startingPrice": 99,
+      "priceDisplay": "Starting at $99",
+      "shortDescription": "A glycoprotein hormone studied for LH/CG receptor signaling and gonadal steroidogenesis research. Acts further downstream in the reproductive axis than upstream regulators like Kisspeptin."
+    },
+    {
+      "title": "HGH 191AA",
+      "suggestedSlug": "hgh-191aa",
+      "category": "Hormone & Wellness",
+      "suggestedImageFilename": "somatropin.png",
+      "variations": [
+        { "label": "Core Format", "format": "Vial format", "price": 189 },
+        { "label": "Expanded Format", "format": "Vial format", "price": 429 }
+      ],
+      "startingPrice": 189,
+      "priceDisplay": "Starting at $189",
+      "shortDescription": "The 191-amino-acid human growth hormone sequence, studied for GH receptor signaling and IGF-1 axis response. Reviewed in research contexts around growth-hormone-axis biology."
+    },
+    {
+      "title": "PT-141",
+      "suggestedSlug": "pt-141",
+      "category": "Hormone & Wellness",
+      "suggestedImageFilename": "pt-141.png",
+      "variations": [
+        { "label": "Core Format", "format": "Vial format", "price": 119 },
+        { "label": "Expanded Format", "format": "Vial format", "price": 199 }
+      ],
+      "startingPrice": 119,
+      "priceDisplay": "Starting at $119",
+      "shortDescription": "A melanocortin receptor agonist studied for central nervous system signaling relevant to sexual-wellness research models. Commonly associated with bremelanotide in research literature."
+    }
+  ]
+}
