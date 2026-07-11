@@ -21,6 +21,7 @@ import {
   RetatrutideHeroSection,
   ReconstitutionGuide,
   RelatedProducts,
+  ResearchProfileCallout,
   ResearchUseDisclaimer,
   SuggestedResearchProtocol,
   VisualBiology,
@@ -69,6 +70,7 @@ export function ProductPage({ slug }: { slug: string }) {
       {product.slug === 'retatrutide' ? (
         <>
           <RetatrutideHeroSection product={product} />
+          <ResearchProfileCallout product={product} />
           <RetatrutideClinicalResearchSection product={product} />
           <ProductOverview product={product} />
           <ProductHighlights product={product} />
@@ -84,6 +86,7 @@ export function ProductPage({ slug }: { slug: string }) {
       ) : (
         <>
           <ProductHero product={product} />
+          <ResearchProfileCallout product={product} />
           <ProductTrustStrip />
           <WhatIsProduct product={product} />
           <ProductBenefits product={product} />

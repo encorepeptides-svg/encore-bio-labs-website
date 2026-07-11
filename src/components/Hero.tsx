@@ -92,7 +92,7 @@ export function Hero() {
                 transition={{ duration: 0.7, ease: 'easeOut' }}
                 className="mt-6 max-w-xl text-base leading-7 text-slate-700 sm:text-lg"
               >
-                Reliable, compliant supply chains tailored for enterprise biotech firms and academic institutions.
+                Answer a few questions and we'll recommend the most appropriate research products for your goals.
               </motion.p>
               <motion.p
                 variants={fadeUp}
@@ -111,7 +111,7 @@ export function Hero() {
                   href="/intake"
                   className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#071724] px-4 py-3 text-center text-sm font-semibold text-white shadow-[0_16px_34px_rgba(7,23,36,0.18)] transition hover:bg-teal-700 focus:outline-none focus:ring-4 focus:ring-teal-200 sm:px-6 sm:text-base"
                 >
-                  Request Bulk Quote
+                  Find My Match
                 </a>
                 <a
                   href="/catalog"

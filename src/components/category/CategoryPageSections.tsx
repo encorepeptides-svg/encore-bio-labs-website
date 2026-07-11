@@ -132,7 +132,7 @@ export function CategoryHero({ area, content }: { area: ResearchArea; content: C
               View {area.name} Products
             </CTA>
             <CTA href="/intake" tone="ghost">
-              Start Your Research Profile
+              Find My Match
             </CTA>
           </div>
         </motion.div>
@@ -236,12 +236,12 @@ export function CategoryFeaturedProducts({ area }: { area: ResearchArea }) {
                       {webpSrcSet ? <source type="image/webp" srcSet={webpSrcSet} sizes={CARD_IMAGE_SIZES} /> : null}
                       <img
                         src={imageSrc}
-                        alt={product.name}
+                        alt={`${product.name} research compound packaging`}
                         width="480"
                         height="360"
                         loading="lazy"
                         decoding="async"
-                        className="absolute inset-0 h-full w-full object-cover"
+                        className="absolute inset-0 h-full w-full object-contain object-center p-3"
                       />
                     </picture>
                   ) : null}
@@ -270,20 +270,24 @@ export function CategoryComparisonTable({ area, content }: { area: ResearchArea;
 
   if (!categoryProducts.length) return null
 
+  function getComparisonPrice(product: Product) {
+    const prices = product.variants.map((variant) => variant.price).filter((price) => price > 0)
+
+    return prices.length ? `From $${Math.min(...prices)}` : 'By review'
+  }
+
   return (
     <ProductComparisonTable
       eyebrow="Comparison"
       title="How these products differ"
       description="A side-by-side view of research focus and format — not a ranking, and not a recommendation of which to choose."
       rows={categoryProducts.map((product) => {
-        const startingPrice = Math.min(...product.variants.map((variant) => variant.price))
-
         return {
           product: product.name,
           href: `/products/${product.slug}`,
           focus: product.shortDescription,
           format: product.variants[0]?.format ?? 'Vial format',
-          price: `From $${startingPrice}`,
+          price: getComparisonPrice(product),
           note: content.comparisonNotes[product.slug] ?? 'See product page for research context',
         }
       })}
@@ -344,10 +348,10 @@ export function CategoryFinalCTA({ area }: { area: ResearchArea }) {
   return (
     <ProductDiscoveryCTA
       title={`Ready to look closer at the ${area.name.toLowerCase()} research?`}
-      body="Explore individual product pages for pathway detail and documentation availability, or start a research profile and we'll help route the inquiry to an appropriate catalog area."
+      body="Explore individual product pages for pathway detail and documentation availability, or start a Research Match and we'll help route the inquiry to an appropriate catalog area."
       primaryLabel={`Explore ${area.name} Products`}
       primaryHref="#featured-in-category"
-      secondaryLabel="Start Your Research Profile"
+      secondaryLabel="Find My Match"
       secondaryHref="/intake"
     />
   )

@@ -1,29 +1,23 @@
 import { lazy, Suspense } from 'react'
 import { AnnouncementBar } from './components/AnnouncementBar'
-import { AlternateHomePage } from './components/AlternateHomePage'
-import { CategoryGrid } from './components/CategoryGrid'
-import { FAQPreviewSection } from './components/FAQPreviewSection'
-import { FeaturedProducts } from './components/FeaturedProducts'
-import { FinalCTA } from './components/FinalCTA'
+import { CartDrawer } from './components/cart/CartDrawer'
 import { Footer } from './components/Footer'
-import { Hero } from './components/Hero'
-import { HowItWorks } from './components/HowItWorks'
 import { Navbar } from './components/Navbar'
-import { MobileStickyCTA } from './components/MobileStickyCTA'
-import { QualityHighlightsSection } from './components/QualityHighlightsSection'
-import { ResearchUseExplanation } from './components/ResearchUseExplanation'
 import { RouteLoadingFallback } from './components/RouteLoadingFallback'
-import { TrustStatement } from './components/TrustStatement'
+import { CartProvider } from './context/CartContext'
 
-// Non-home routes are code-split: each only loads when a user actually
-// navigates there, keeping the homepage's initial bundle lean.
+// Route pages are code-split so each experience only loads when it renders.
 const AboutPage = lazy(() => import('./components/AboutPage').then((m) => ({ default: m.AboutPage })))
 const AdminLeadsPage = lazy(() =>
   import('./components/admin/AdminLeadsPage').then((m) => ({ default: m.AdminLeadsPage })),
 )
+const AlternateHomePage = lazy(() =>
+  import('./components/AlternateHomePage').then((m) => ({ default: m.AlternateHomePage })),
+)
 const CRMAdmin = lazy(() => import('./pages/CRMAdmin').then((m) => ({ default: m.CRMAdmin })))
 const CatalogPage = lazy(() => import('./components/catalog/CatalogPage').then((m) => ({ default: m.CatalogPage })))
 const CategoryPage = lazy(() => import('./components/category/CategoryPage').then((m) => ({ default: m.CategoryPage })))
+const CheckoutPage = lazy(() => import('./components/checkout/CheckoutPage').then((m) => ({ default: m.CheckoutPage })))
 const FAQLibraryPage = lazy(() => import('./components/faq/FAQLibraryPage').then((m) => ({ default: m.FAQLibraryPage })))
 const IntakePage = lazy(() => import('./components/intake/IntakePage').then((m) => ({ default: m.IntakePage })))
 const KitsPage = lazy(() => import('./components/kits/KitsPage').then((m) => ({ default: m.KitsPage })))
@@ -73,22 +67,6 @@ function getAdminLeadIdFromPath() {
   return getRouteParam(/^\/admin\/leads\/([^/]+)\/?$/)
 }
 
-function HomePage() {
-  return (
-    <main id="main-content">
-      <Hero />
-      <TrustStatement />
-      <CategoryGrid />
-      <FeaturedProducts />
-      <QualityHighlightsSection />
-      <HowItWorks />
-      <ResearchUseExplanation />
-      <FAQPreviewSection />
-      <FinalCTA />
-    </main>
-  )
-}
-
 function App() {
   const productSlug = getProductSlugFromPath()
   const categorySlug = getCategorySlugFromPath()
@@ -105,6 +83,7 @@ function App() {
     }
 
     if (
+      pathname === '/' ||
       pathname === '/alternate-homepage' ||
       pathname === '/alternate-homepage/' ||
       pathname === '/home-v2' ||
@@ -115,6 +94,10 @@ function App() {
 
     if (pathname === '/catalog' || pathname === '/catalog/') {
       return <CatalogPage />
+    }
+
+    if (pathname === '/checkout' || pathname === '/checkout/') {
+      return <CheckoutPage />
     }
 
     if (pathname === '/kits' || pathname === '/kits/') {
@@ -161,29 +144,33 @@ function App() {
       return <ProductPage slug={productSlug} />
     }
 
-    return <HomePage />
+    return <AlternateHomePage />
   })()
   const isInternalAdminRoute = pathname.startsWith('/admin/')
+  const isCheckoutRoute = pathname === '/checkout' || pathname === '/checkout/'
+  const hideGlobalChrome = isInternalAdminRoute || isCheckoutRoute
 
   return (
-    <div className="min-h-screen overflow-hidden bg-[#f5f5f2] text-[#071724]">
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-[#071724] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
-      >
-        Skip to main content
-      </a>
-      {isInternalAdminRoute ? null : <AnnouncementBar />}
-      {isInternalAdminRoute ? null : <Navbar />}
-      <Suspense fallback={<RouteLoadingFallback />}>{page}</Suspense>
-      {isInternalAdminRoute ? null : <Footer />}
-      {isInternalAdminRoute ? null : <MobileStickyCTA />}
-      {isInternalAdminRoute ? null : (
-        <Suspense fallback={null}>
-          <AssistantWidget />
-        </Suspense>
-      )}
-    </div>
+    <CartProvider>
+      <div className="min-h-screen overflow-hidden bg-[#f5f5f2] text-[#071724]">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-[#071724] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+        >
+          Skip to main content
+        </a>
+        {hideGlobalChrome ? null : <AnnouncementBar />}
+        {hideGlobalChrome ? null : <Navbar />}
+        <Suspense fallback={<RouteLoadingFallback />}>{page}</Suspense>
+        {hideGlobalChrome ? null : <Footer />}
+        {hideGlobalChrome ? null : <CartDrawer />}
+        {hideGlobalChrome ? null : (
+          <Suspense fallback={null}>
+            <AssistantWidget />
+          </Suspense>
+        )}
+      </div>
+    </CartProvider>
   )
 }
 

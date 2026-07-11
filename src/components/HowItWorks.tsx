@@ -1,4 +1,4 @@
-import { ArrowRight, ClipboardCheck, Search, Truck } from 'lucide-react'
+import { ClipboardCheck, Search, Truck } from 'lucide-react'
 import { SectionHeader } from './SectionHeader'
 
 const steps = [
@@ -45,18 +45,6 @@ export function HowItWorks() {
               <p className="mt-3 text-sm leading-6 text-slate-600">{step.copy}</p>
             </article>
           ))}
-        </div>
-
-        <div className="mt-6 flex justify-center">
-          <a
-            href="/intake"
-            className="inline-flex items-center gap-3 rounded-full bg-[#071724] py-2 pl-6 pr-2 text-sm font-semibold text-white shadow-[0_18px_44px_rgba(7,23,36,0.16)] transition hover:bg-[#102a3d]"
-          >
-            Start Your Research Profile
-            <span className="flex size-9 items-center justify-center rounded-full bg-white text-[#071724]">
-              <ArrowRight size={16} aria-hidden="true" />
-            </span>
-          </a>
         </div>
       </div>
     </section>

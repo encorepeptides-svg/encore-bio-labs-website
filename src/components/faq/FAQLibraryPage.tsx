@@ -122,7 +122,7 @@ export function FAQLibraryPage() {
           </h2>
           <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <CTA href="/intake" tone="light">
-              Start Your Research Profile
+              Find My Match
             </CTA>
             <CTA
               href="https://wa.me/19153595448"

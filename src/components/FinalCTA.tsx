@@ -15,19 +15,12 @@ export function FinalCTA() {
             Let's find what you're looking for.
           </h2>
           <p className="mt-5 text-base leading-7 text-slate-300">
-            Start a research profile, or go straight to the catalog — either way, a real person on
-            our team is on the other end. No pressure, no countdown clock.
+            Every product page includes documentation, research context, and a direct line to
+            our team. No pressure, no countdown clock.
           </p>
 
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <CTA href="/intake" tone="light">
-              Start Your Research Profile
-            </CTA>
-            <CTA
-              href="/catalog"
-              tone="ghost"
-              className="border-white/20 bg-white/10 text-white hover:bg-white/15"
-            >
+          <div className="mt-8 flex justify-center">
+            <CTA href="/catalog" tone="light">
               Browse the Catalog
             </CTA>
           </div>

@@ -171,3 +171,41 @@ summary:focus-visible {
     opacity: 1;
   }
 }
+
+.alternate-hero-video-shell {
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.alternate-scroll-cue > span:last-child span {
+  animation: alternate-scroll-dot 1.8s ease-in-out infinite;
+}
+
+.category-showcase-image {
+  object-position: var(--category-image-position-mobile, 50% 50%);
+}
+
+@media (min-width: 700px) {
+  .category-showcase-image {
+    object-position: var(--category-image-position-tablet, 50% 50%);
+  }
+}
+
+@media (min-width: 1280px) {
+  .category-showcase-image {
+    object-position: var(--category-image-position-desktop, 50% 50%);
+  }
+}
+
+@keyframes alternate-scroll-dot {
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+    opacity: 0.45;
+  }
+
+  50% {
+    transform: translate(-50%, 1rem);
+    opacity: 1;
+  }
+}

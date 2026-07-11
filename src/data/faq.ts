@@ -140,7 +140,7 @@ export const faqLibrary: FAQGroup[] = [
       { question: "Do categories reflect scientific consensus or Encore's own organization?", answer: "They're Encore's organizational structure, informed by how the underlying compounds are actually discussed in research literature — not a formal scientific taxonomy." },
       { question: 'How often is the catalog updated?', answer: 'As new research-use compounds are added or existing ones are reorganized, category assignments are updated to stay accurate.' },
       { question: 'Can I compare products within a category?', answer: 'Yes — every category page includes a comparison table showing format, starting price, and what distinguishes each product from its category neighbors.' },
-      { question: "Where do I go if I don't see a category that fits my research?", answer: 'Start a research profile at /intake and describe your research interest — our team can help point you to the right area even if it doesn\'t map cleanly to one category.' },
+      { question: "Where do I go if I don't see a category that fits my research?", answer: 'Start a Research Match at /intake and describe your research interest — our team can help point you to the right area even if it doesn\'t map cleanly to one category.' },
     ],
   },
   {

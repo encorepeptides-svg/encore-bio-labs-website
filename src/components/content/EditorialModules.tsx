@@ -256,6 +256,12 @@ export function RelatedProductsSection({
           </a>
         ))}
       </div>
+      <p className="mt-6 text-center text-sm font-medium text-slate-500">
+        Still comparing options?{' '}
+        <a href="/intake" className="font-semibold text-teal-700 transition hover:text-teal-800">
+          Find My Match
+        </a>
+      </p>
     </EditorialShell>
   )
 }
@@ -337,11 +343,13 @@ export function FAQAccordion({
   title,
   items,
   cta,
+  secondaryCta,
 }: {
   eyebrow?: string
   title: string
   items: FAQAccordionItem[]
   cta?: { label: string; href: string }
+  secondaryCta?: { label: string; href: string }
 }) {
   return (
     <EditorialShell id="faq" eyebrow={eyebrow} title={title}>
@@ -359,15 +367,26 @@ export function FAQAccordion({
           </details>
         ))}
       </div>
-      {cta ? (
-        <div className="mt-8 flex justify-center">
-          <a
-            href={cta.href}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-[#071724]"
-          >
-            {cta.label}
-            <ArrowRight size={16} aria-hidden="true" />
-          </a>
+      {cta || secondaryCta ? (
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+          {cta ? (
+            <a
+              href={cta.href}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-[#071724]"
+            >
+              {cta.label}
+              <ArrowRight size={16} aria-hidden="true" />
+            </a>
+          ) : null}
+          {secondaryCta ? (
+            <a
+              href={secondaryCta.href}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-[#071724]"
+            >
+              {secondaryCta.label}
+              <ArrowRight size={16} aria-hidden="true" />
+            </a>
+          ) : null}
         </div>
       ) : null}
     </EditorialShell>
@@ -449,7 +468,7 @@ export function TrustAndHandlingSection({
 export function ProductDiscoveryCTA({
   title,
   body,
-  primaryLabel = 'Start Your Research Profile',
+  primaryLabel = 'Find My Match',
   primaryHref = '/intake',
   secondaryLabel = 'Browse Research Library',
   secondaryHref = '/research',

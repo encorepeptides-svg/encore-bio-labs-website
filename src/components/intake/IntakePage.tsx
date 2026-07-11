@@ -367,7 +367,7 @@ export function IntakePage() {
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.55, ease: 'easeOut' }}
-          className="overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#071724] p-6 text-white shadow-[0_32px_100px_rgba(7,23,36,0.22)] sm:p-8"
+          className="order-2 overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#071724] p-6 text-white shadow-[0_32px_100px_rgba(7,23,36,0.22)] sm:p-8 xl:order-1"
         >
           <div className="relative">
             <div className="absolute right-[-8rem] top-[-8rem] h-72 w-72 rounded-full bg-teal-300/10 blur-3xl" />
@@ -375,10 +375,10 @@ export function IntakePage() {
               <Microscope size={21} aria-hidden="true" />
             </span>
             <p className="relative mt-8 text-xs font-semibold uppercase tracking-[0.22em] text-teal-200">
-              Research profile intake
+              Research Match
             </p>
             <h1 className="relative mt-4 text-4xl font-semibold tracking-[-0.055em] sm:text-5xl">
-              Build a research profile in minutes.
+              Find your research match in minutes.
             </h1>
             <p className="relative mt-5 max-w-xl text-sm leading-7 text-slate-300">
               Tell us what you're researching — metabolic pathways, regeneration models, cellular
@@ -437,7 +437,7 @@ export function IntakePage() {
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.55, ease: 'easeOut', delay: 0.08 }}
-          className="rounded-[1.75rem] border border-slate-900/10 bg-white/74 p-4 shadow-[0_24px_80px_rgba(7,23,36,0.1),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-2xl sm:p-7"
+          className="order-1 rounded-[1.75rem] border border-slate-900/10 bg-white/74 p-4 shadow-[0_24px_80px_rgba(7,23,36,0.1),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-2xl sm:p-7 xl:order-2"
         >
           {phase === 'loading' ? <LoadingScreen /> : null}
           {phase === 'results' && lead ? <ResultsPage lead={lead} /> : null}
@@ -471,7 +471,7 @@ export function IntakePage() {
                     <TrustCard
                       icon={<LockKeyhole size={18} aria-hidden="true" />}
                       eyebrow="Your data"
-                      title="Your information helps us create a more relevant research profile."
+                      title="Your information helps us create a more relevant research match."
                       body="Your intake responses are stored securely and used only to review your research interests, product fit, and follow-up preferences. We do not sell your personal information."
                       bullets={[
                         'Secure intake submission',
@@ -666,7 +666,7 @@ function LoadingScreen() {
           <LoaderCircle size={26} aria-hidden="true" className="animate-spin text-teal-300" />
         </div>
         <h2 className="mt-7 text-3xl font-semibold tracking-[-0.045em] text-[#071724]">
-          Analyzing your research profile...
+          Finding your research match...
         </h2>
         <div className="mt-6 grid gap-3 text-sm font-semibold text-slate-600">
           <p>Matching your answers with Encore Bio Labs research categories...</p>
@@ -717,7 +717,7 @@ function TrustCard({
 function ReviewProcessCard() {
   const steps = [
     'You complete the intake',
-    'AI organizes your research profile',
+    'AI organizes your research match',
     'Encore Bio Labs reviews and follows up privately',
   ]
 
@@ -853,7 +853,7 @@ function ResultsPage({
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Pending review</p>
             <h2 className="mt-1 text-2xl font-semibold tracking-[-0.035em] text-[#071724]">
-              Your research profile has been submitted.
+              Your research match has been submitted.
             </h2>
           </div>
         </div>

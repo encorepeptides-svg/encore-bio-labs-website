@@ -1,12 +1,12 @@
-import { Check, FileText, Search, ShieldCheck, SlidersHorizontal, Snowflake, Sparkles, X } from 'lucide-react'
+import { FileText, Search, ShieldCheck, SlidersHorizontal, Snowflake, Sparkles, Truck, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { brandText } from '../../../config/brandText'
 import { categoryVisuals, products, type Product, type PurityGrade, type StockStatus } from '../../data/products'
 import { buildSrcSet, stemOf } from '../../lib/responsiveImages'
+import { AddToCartButton } from '../cart/AddToCartButton'
 import { CTA } from '../CTA'
 import { Reveal } from '../Reveal'
 import { SectionHeader } from '../SectionHeader'
-import { WhyEncore } from '../WhyEncore'
 
 const productImages = import.meta.glob('../../assets/images/products/*.{png,jpg,jpeg,webp,avif}', {
   eager: true,
@@ -98,7 +98,11 @@ function useDebouncedValue(value: string, delay = 220) {
 }
 
 function getPriceLabel(product: Product) {
-  const lowestPrice = Math.min(...product.variants.map((variant) => variant.price))
+  const prices = product.variants.map((variant) => variant.price).filter((price) => price > 0)
+
+  if (!prices.length) return 'Quote'
+
+  const lowestPrice = Math.min(...prices)
   const price = `$${lowestPrice.toLocaleString()}`
 
   return product.variants.length > 1 ? `Starting at ${price}` : price
@@ -129,12 +133,12 @@ function ProductCard({ product }: { product: Product }) {
               {webpSrcSet ? <source type="image/webp" srcSet={webpSrcSet} sizes={CATALOG_CARD_SIZES} /> : null}
               <img
                 src={imageSrc}
-                alt={product.name}
+                alt={`${product.name} research compound packaging`}
                 width="640"
                 height="480"
                 loading="lazy"
                 decoding="async"
-                className="h-full w-full object-cover opacity-95 saturate-[0.94] transition duration-500 group-hover:scale-[1.03]"
+                className="h-full w-full object-contain object-center opacity-95 saturate-[0.94] transition duration-500 group-hover:scale-[1.03]"
               />
             </picture>
           ) : null}
@@ -201,12 +205,9 @@ function ProductCard({ product }: { product: Product }) {
           </p>
 
           <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-            <a
-              href={`/products/${product.slug}`}
-              className="inline-flex flex-1 items-center justify-center rounded-full bg-[#071724] px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(7,23,36,0.18)] transition hover:bg-teal-700"
-            >
-              Order Now
-            </a>
+            <AddToCartButton product={product} className="flex-1">
+              Add to Cart
+            </AddToCartButton>
             <a
               href={`/products/${product.slug}`}
               className="inline-flex flex-1 items-center justify-center rounded-full border border-slate-900/10 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-[#071724]"
@@ -220,156 +221,106 @@ function ProductCard({ product }: { product: Product }) {
   )
 }
 
-const researchUseCards = [
-  {
-    title: 'What this means',
-    points: [...brandText.researchUsePoints],
-  },
-  {
-    title: "What this doesn't mean",
-    points: [...brandText.researchUseBoundaries],
-  },
-]
-
 const qualityCards = [
   {
     icon: FileText,
-    title: 'Identity & purity documentation',
-    body: brandText.documentationPromise,
-  },
-  {
-    icon: Snowflake,
-    title: 'Storage guidance',
-    body: 'Format-specific storage and handling expectations are noted on each product page.',
+    title: 'Identity & Purity Documentation',
+    body: 'Identity, purity, and batch-level records are available on request.',
   },
   {
     icon: ShieldCheck,
-    title: 'Batch records',
-    body: 'We organize batch-level documentation for qualified procurement and research review requests.',
+    title: 'Premium Manufacturing',
+    body: 'Sourcing and manufacturing follow consistent quality expectations.',
+  },
+  {
+    icon: Snowflake,
+    title: 'Cold Chain Handling',
+    body: 'Temperature-aware fulfillment protects sensitive materials in transit.',
+  },
+  {
+    icon: Truck,
+    title: 'Fast Fulfillment',
+    body: 'Clear logistics support local delivery, U.S. shipping, and Mexico coordination.',
   },
 ]
 
-function CheckList({ points }: { points: string[] }) {
-  return (
-    <ul className="mt-4 grid gap-3">
-      {points.map((point) => (
-        <li key={point} className="flex gap-3 text-sm leading-6 text-slate-600">
-          <span className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-teal-50 text-teal-800">
-            <Check size={13} aria-hidden="true" />
-          </span>
-          <span>{point}</span>
-        </li>
-      ))}
-    </ul>
-  )
-}
+const encoreDifferenceBullets = [
+  'Catalog entries are grouped by product, not duplicated by strength.',
+  'Research-use positioning stays clear across product pages.',
+  'Support is available for documentation and procurement questions.',
+]
 
-function ResearchUseQualitySection() {
+function CatalogTrustSection() {
   return (
     <section className="px-5 py-10 sm:px-8 lg:py-14">
       <div className="mx-auto max-w-[88rem]">
-        <div className="relative overflow-hidden rounded-[2rem] border border-slate-900/10 bg-[#f5f5f2] p-5 shadow-[0_24px_80px_rgba(7,23,36,0.08)] sm:p-7 lg:p-8">
-          <div className="pointer-events-none absolute right-[-10rem] top-[-12rem] size-[26rem] rounded-full bg-teal-200/28 blur-3xl" />
-          <div className="pointer-events-none absolute bottom-[-12rem] left-[-10rem] size-[24rem] rounded-full bg-white/90 blur-3xl" />
-
-          <div className="relative">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">
-              Research Use Only
-            </p>
-            <h2 className="mt-4 max-w-3xl text-3xl font-semibold tracking-[-0.04em] text-[#071724] sm:text-4xl">
-              Research Use, Quality & Documentation
-            </h2>
-            <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
-              A plain explanation of how Encore Bio Labs positions its catalog, documentation, and
-              product information.
-            </p>
-          </div>
-
-          <div className="relative mt-8 grid gap-5 lg:grid-cols-2">
-            <Reveal
-              as="article"
-              className="rounded-[1.5rem] border border-white/70 bg-white/82 p-5 shadow-[0_18px_50px_rgba(7,23,36,0.06)] backdrop-blur-xl sm:p-6"
-            >
-              <span className="flex size-11 items-center justify-center rounded-2xl bg-teal-50 text-teal-800">
-                <ShieldCheck size={20} aria-hidden="true" />
-              </span>
-              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
-                Research Use Only
+        <div className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-[#f5f5f2] p-5 shadow-[0_24px_80px_rgba(7,23,36,0.08)] sm:p-7 lg:p-8">
+          <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+            <Reveal>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">
+                Why Encore
               </p>
-              <h3 className="mt-3 text-2xl font-semibold tracking-[-0.035em] text-[#071724]">
-                What “research use only” actually means.
-              </h3>
-
-              <div className="mt-6 grid gap-4">
-                {researchUseCards.map((card) => (
-                  <div
-                    key={card.title}
-                    className="rounded-[1.25rem] border border-slate-900/10 bg-[#F8FAFC] p-4"
-                  >
-                    <h4 className="text-base font-semibold tracking-[-0.02em] text-[#071724]">
-                      {card.title}
-                    </h4>
-                    <CheckList points={card.points} />
-                  </div>
-                ))}
-              </div>
-
-              <p className="mt-5 text-sm leading-6 text-slate-600">
-                If you're a qualified researcher or institution evaluating these compounds for a
-                real research question, this catalog is built for you. If you're looking for
-                medical guidance, please speak with a licensed healthcare provider.
-              </p>
-            </Reveal>
-
-            <Reveal
-              as="article"
-              delay={0.08}
-              className="rounded-[1.5rem] border border-slate-900/10 bg-white p-5 shadow-[0_18px_50px_rgba(7,23,36,0.07)] sm:p-6"
-            >
-              <span className="flex size-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-800">
-                <FileText size={20} aria-hidden="true" />
-              </span>
-              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
-                Quality & Handling
-              </p>
-              <h3 className="mt-3 text-2xl font-semibold tracking-[-0.035em] text-[#071724]">
-                Documentation isn't an afterthought here.
-              </h3>
-              <p className="mt-4 text-sm leading-6 text-slate-600">
-                Identity and purity documentation, storage guidance, and batch-level records are
-                available when requested, not hidden behind vague claims.
+              <h2 className="mt-4 max-w-xl text-3xl font-semibold tracking-[-0.04em] text-[#071724] sm:text-4xl">
+                We built the catalog we wished existed.
+              </h2>
+              <p className="mt-4 max-w-xl text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
+                Search once, compare clearly, and keep every product in research-use context,
+                with documentation pathways that are easy to request.
               </p>
 
               <div className="mt-6 grid gap-3">
-                {qualityCards.map((card) => (
-                  <div
-                    key={card.title}
-                    className="rounded-[1.25rem] border border-slate-900/10 bg-[#F8FAFC] p-4"
-                  >
-                    <div className="flex gap-3">
-                      <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-teal-50 text-teal-800">
-                        <card.icon size={18} aria-hidden="true" />
-                      </span>
-                      <div>
-                        <h4 className="text-base font-semibold tracking-[-0.02em] text-[#071724]">
-                          {card.title}
-                        </h4>
-                        <p className="mt-2 text-sm leading-6 text-slate-600">{card.body}</p>
-                      </div>
-                    </div>
+                {encoreDifferenceBullets.map((point) => (
+                  <div key={point} className="flex items-start gap-3">
+                    <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-teal-50 text-teal-800">
+                      <ShieldCheck size={13} aria-hidden="true" />
+                    </span>
+                    <p className="text-sm leading-6 text-slate-600">{point}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-6 flex flex-wrap gap-2 rounded-[1.25rem] border border-slate-900/10 bg-[#071724] p-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
-                <span className="inline-flex items-center gap-2 rounded-full bg-white/8 px-3 py-2">
-                  <ShieldCheck size={14} aria-hidden="true" className="text-teal-200" />
+              <div className="mt-6 flex flex-wrap gap-2 rounded-[1.25rem] border border-slate-900/10 bg-white/70 p-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">
+                <span className="inline-flex items-center gap-2 rounded-full bg-teal-50 px-3 py-2 text-teal-800">
+                  <ShieldCheck size={14} aria-hidden="true" />
                   {brandText.researchUseLabel}
                 </span>
-                <span className="rounded-full bg-white/8 px-3 py-2">{brandText.documentationLabel}</span>
-                <span className="rounded-full bg-white/8 px-3 py-2">{brandText.notMedicalAdviceLabel}</span>
+                <span className="rounded-full bg-[#f8fafc] px-3 py-2">{brandText.documentationLabel}</span>
+                <span className="rounded-full bg-[#f8fafc] px-3 py-2">{brandText.notMedicalAdviceLabel}</span>
+              </div>
+
+              <div className="mt-6 flex flex-wrap gap-4">
+                <a
+                  href="/quality"
+                  className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-teal-800 transition hover:gap-3"
+                >
+                  See our quality standards
+                </a>
+                <a
+                  href="/about"
+                  className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-slate-600 transition hover:gap-3 hover:text-[#071724]"
+                >
+                  About Encore Bio Labs
+                </a>
               </div>
             </Reveal>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              {qualityCards.map((card) => (
+                <Reveal
+                  as="article"
+                  key={card.title}
+                  className="rounded-[1.25rem] border border-slate-900/10 bg-white p-4 shadow-[0_14px_36px_rgba(7,23,36,0.06)]"
+                >
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-teal-50 text-teal-800">
+                    <card.icon size={16} aria-hidden="true" />
+                  </span>
+                  <h3 className="mt-3 text-sm font-semibold tracking-[-0.02em] text-[#071724]">
+                    {card.title}
+                  </h3>
+                  <p className="mt-1.5 text-xs leading-5 text-slate-600">{card.body}</p>
+                </Reveal>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -466,7 +417,7 @@ export function CatalogPage() {
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                   <CTA href="#catalog-products">Browse Products</CTA>
                   <CTA href="/intake" tone="ghost">
-                    Start Your Research Profile
+                    Find My Match
                   </CTA>
                 </div>
               </div>
@@ -490,7 +441,7 @@ export function CatalogPage() {
         </div>
       </section>
 
-      <WhyEncore />
+      <CatalogTrustSection />
 
       <section id="catalog-products" className="px-5 py-12 sm:px-8 lg:py-16">
         <div className="mx-auto max-w-[88rem]">
@@ -604,6 +555,22 @@ export function CatalogPage() {
             </div>
           ) : null}
 
+          <div className="mt-8 flex flex-col items-start gap-4 rounded-[1.5rem] border border-teal-700/15 bg-[linear-gradient(120deg,#eefaf7,#f5f5f2)] p-5 shadow-[0_16px_44px_rgba(7,23,36,0.06)] sm:flex-row sm:items-center sm:justify-between sm:p-6">
+            <div>
+              <p className="text-base font-semibold tracking-[-0.02em] text-[#071724] sm:text-lg">
+                {activeFilter === 'All' ? 'Need help deciding?' : `Comparing ${activeFilter} options?`}
+              </p>
+              <p className="mt-1 text-sm leading-6 text-slate-600">
+                {activeFilter === 'All'
+                  ? 'Our Research Match recommends products based on your research goals.'
+                  : 'Our Research Match can narrow it down further based on your specific research goals.'}
+              </p>
+            </div>
+            <CTA href="/intake" className="shrink-0">
+              Find My Match
+            </CTA>
+          </div>
+
           <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {filteredProducts.map((product) => (
               <ProductCard key={product.slug} product={product} />
@@ -618,8 +585,6 @@ export function CatalogPage() {
           ) : null}
         </div>
       </section>
-
-      <ResearchUseQualitySection />
 
       <section className="px-5 py-12 sm:px-8 lg:py-16">
         <div className="relative mx-auto max-w-[88rem] overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(135deg,#071724,#0d3144)] px-6 py-14 text-center text-white shadow-[0_34px_110px_rgba(7,23,36,0.22)] sm:px-10 sm:py-16">
@@ -640,7 +605,7 @@ export function CatalogPage() {
 
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <CTA href="/intake" tone="light">
-                Start Your Research Profile
+                Find My Match
               </CTA>
               <CTA href="/research" tone="ghost" className="border-white/20 bg-white/10 text-white hover:bg-white/15">
                 Visit Research Library

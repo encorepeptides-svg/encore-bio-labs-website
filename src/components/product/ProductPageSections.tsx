@@ -29,8 +29,8 @@ import { products, type Product } from '../../data/products'
 import { contentTypeLabels, researchArticles } from '../../data/research'
 import { buildSrcSet, stemOf } from '../../lib/responsiveImages'
 import { buildOrderInquiryMessage, buildWhatsAppUrl } from '../../lib/whatsapp'
+import { VariantAddToCartPanel } from '../cart/AddToCartButton'
 import { CTA } from '../CTA'
-import { OrderNowButton } from '../assistant/OrderNowButton'
 import {
   FAQAccordion,
   InternalLinkGrid,
@@ -151,13 +151,12 @@ export function RetatrutideHeroSection({ product }: { product: Product }) {
           </div>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <OrderNowButton productName={product.name} />
-            <CTA href="/intake" className="bg-[var(--navy)] hover:bg-[var(--navy-deep)]">
-              Start Your Research Profile
-            </CTA>
             <CTA href="#product-specs" tone="ghost" className="border-[var(--border)] bg-white text-[var(--navy)] hover:bg-[var(--teal-light)]">
               View Research Details
             </CTA>
+          </div>
+          <div className="mt-6 max-w-xl">
+            <VariantAddToCartPanel product={product} />
           </div>
 
           <div className="mt-8 grid max-w-2xl grid-cols-3 overflow-hidden rounded-[1.35rem] border border-[var(--border)] bg-white shadow-[0_20px_60px_rgba(26,35,64,0.08)]">
@@ -202,10 +201,10 @@ export function RetatrutideHeroSection({ product }: { product: Product }) {
                   ) : null}
                   <img
                     src={imageSrc}
-                    alt={product.name}
+                    alt={`${product.name} research compound packaging`}
                     width="720"
                     height="720"
-                    className="absolute inset-0 h-full w-full object-cover object-center transition duration-500 group-hover:scale-[1.025]"
+                    className="absolute inset-0 h-full w-full object-contain object-center transition duration-500 group-hover:scale-[1.025]"
                   />
                 </picture>
               ) : (
@@ -293,10 +292,12 @@ export function RetatrutideClinicalResearchSection({ product }: { product: Produ
                   ) : null}
                   <img
                     src={imageSrc}
-                    alt={product.name}
+                    alt={`${product.name} research compound packaging`}
                     width="900"
                     height="720"
-                    className="absolute inset-0 h-full w-full object-cover object-center transition duration-700 group-hover:scale-[1.025]"
+                    loading="lazy"
+                    decoding="async"
+                    className="absolute inset-0 h-full w-full object-contain object-center transition duration-700 group-hover:scale-[1.025]"
                   />
                 </picture>
               ) : (
@@ -396,6 +397,12 @@ const productFeatureBullets = [
   'Mexico shipping available +$20',
 ]
 
+function getProductPriceLabel(product: Product) {
+  const prices = product.variants.map((variant) => variant.price).filter((price) => price > 0)
+
+  return prices.length ? `From $${Math.min(...prices).toLocaleString()}` : 'By review'
+}
+
 export function ProductHero({ product }: { product: Product }) {
   const imageSrc = getProductImage(product)
   const { avifSrcSet, webpSrcSet } = getProductImageSources(product.heroImage)
@@ -404,7 +411,7 @@ export function ProductHero({ product }: { product: Product }) {
     { value: `${product.variants.length}`, label: 'Catalog option' },
     { value: '24hr', label: 'Inquiry routing' },
   ]
-  const startingPrice = Math.min(...product.variants.map((variant) => variant.price))
+  const priceLabel = getProductPriceLabel(product)
 
   return (
     <section className="relative overflow-hidden bg-[var(--bg)] px-5 pb-14 pt-12 sm:px-8 lg:pb-20 lg:pt-16">
@@ -433,7 +440,7 @@ export function ProductHero({ product }: { product: Product }) {
               {product.badge}
             </p>
             <p className="inline-flex rounded-full border border-[var(--border)] bg-white px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--navy)]">
-              From ${startingPrice}
+              {priceLabel}
             </p>
           </div>
           <h1 className="mt-6 text-5xl font-semibold leading-[0.96] tracking-[-0.065em] text-[var(--navy)] sm:text-6xl lg:text-7xl">
@@ -456,12 +463,8 @@ export function ProductHero({ product }: { product: Product }) {
             ))}
           </div>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <OrderNowButton productName={product.name} />
             <CTA href="#product-specs" tone="ghost" className="border-[var(--border)] bg-white text-[var(--navy)] hover:bg-[var(--teal-light)]">
               View Research Details
-            </CTA>
-            <CTA href="/intake" className="bg-[var(--navy)] hover:bg-[var(--navy-deep)]">
-              Start Your Research Profile
             </CTA>
             <CTA
               href="https://wa.me/19153595448"
@@ -472,6 +475,9 @@ export function ProductHero({ product }: { product: Product }) {
             >
               Contact Encore
             </CTA>
+          </div>
+          <div className="mt-6 max-w-xl">
+            <VariantAddToCartPanel product={product} />
           </div>
           <div className="mt-8 grid max-w-2xl grid-cols-3 overflow-hidden rounded-[1.35rem] border border-[var(--border)] bg-white shadow-[0_20px_60px_rgba(26,35,64,0.08)]">
             {heroStats.map((stat) => (
@@ -513,10 +519,10 @@ export function ProductHero({ product }: { product: Product }) {
                   ) : null}
                   <img
                     src={imageSrc}
-                    alt={product.name}
+                    alt={`${product.name} research compound packaging`}
                     width="720"
                     height="720"
-                    className="absolute inset-0 h-full w-full object-cover object-center transition duration-500 group-hover:scale-[1.025]"
+                    className="absolute inset-0 h-full w-full object-contain object-center transition duration-500 group-hover:scale-[1.025]"
                   />
                 </picture>
               ) : (
@@ -547,6 +553,31 @@ export function ProductHero({ product }: { product: Product }) {
             </div>
           </div>
         </motion.div>
+      </div>
+    </section>
+  )
+}
+
+export function ResearchProfileCallout({ product }: { product: Product }) {
+  return (
+    <section className="px-5 pb-10 sm:px-8 lg:pb-14">
+      <div className="mx-auto max-w-[88rem]">
+        <div className="mx-auto flex max-w-3xl flex-col items-start gap-4 rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-[0_18px_50px_rgba(26,35,64,0.06)] sm:flex-row sm:items-center sm:justify-between sm:p-6">
+          <div>
+            <p className="text-base font-semibold tracking-[-0.02em] text-[var(--navy)] sm:text-lg">
+              Not sure if {product.name} fits your goals?
+            </p>
+            <p className="mt-1.5 text-sm leading-6 text-[var(--muted)]">
+              Complete our Research Match and we'll help you identify products aligned with your objectives.
+            </p>
+          </div>
+          <CTA
+            href="/intake"
+            className="shrink-0 bg-[var(--navy)] hover:bg-[var(--navy-deep)]"
+          >
+            Find My Match
+          </CTA>
+        </div>
       </div>
     </section>
   )
@@ -994,6 +1025,12 @@ export function WhoMayBenefit({ product }: { product: Product }) {
           )
         })}
       </div>
+      <p className="mt-6 text-center text-sm font-medium text-[var(--muted)]">
+        See yourself in more than one of these?{' '}
+        <a href="/intake" className="font-semibold text-teal-700 transition hover:text-teal-800">
+          Find My Match
+        </a>
+      </p>
     </SectionShell>
   )
 }
@@ -1053,7 +1090,7 @@ export function ProductGallery({ product }: { product: Product }) {
                     width="640"
                     height="640"
                     loading="lazy"
-                    className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                    className="absolute inset-0 h-full w-full object-contain object-center transition duration-500 group-hover:scale-[1.03]"
                   />
                 </picture>
               ) : null}
@@ -1181,7 +1218,11 @@ export function ReconstitutionGuide({ product }: { product: Product }) {
 
 export function FAQSection({ product }: { product: Product }) {
   return (
-    <FAQAccordion title={`Common ${product.name} research questions.`} items={product.faqs} />
+    <FAQAccordion
+      title={`Common ${product.name} research questions.`}
+      items={product.faqs}
+      cta={{ label: 'Still have questions? Find My Match', href: '/intake' }}
+    />
   )
 }
 
@@ -1225,7 +1266,7 @@ export function ProductInternalLinks({ product }: { product: Product }) {
           description: 'Review handling, storage, documentation, and research-use-only answers before intake.',
         },
         {
-          label: 'Research Profile',
+          label: 'Research Match',
           title: 'Start a research intake',
           href: '/intake',
           description: 'Share your research interest for human-reviewed category and product follow-up.',
@@ -1270,8 +1311,8 @@ export function CTASection({ product }: { product: Product }) {
     <ProductDiscoveryCTA
       title={`Start a compliant review for ${product.name}.`}
       body="Request screening, product documentation, and catalog guidance through the approved Encore Bio Labs process."
-      primaryLabel="Start Your Research Profile"
-      secondaryLabel="Order Now"
+      primaryLabel="Find My Match"
+      secondaryLabel="Contact Encore"
       secondaryHref={buildWhatsAppUrl(buildOrderInquiryMessage({ product: product.name }))}
       secondaryTarget="_blank"
       secondaryRel="noopener noreferrer"

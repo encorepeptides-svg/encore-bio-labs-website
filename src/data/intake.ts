@@ -403,7 +403,7 @@ export function getPrivateFollowUpTemplate(lead: CustomerLead) {
   ].join(', ')
   const productsList = lead.recommendedProducts.map((product) => `- ${product.name}`).join('\n')
 
-  return `Hi ${lead.firstName}, based on your intake, your research profile matched with the following Encore Bio Labs categories: ${categories}.
+  return `Hi ${lead.firstName}, based on your Research Match, we've matched your research goals with the following Encore Bio Labs categories: ${categories}.
 
 Catalog matches for research review:
 ${productsList}

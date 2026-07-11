@@ -361,13 +361,13 @@ export function AboutPage() {
             Ready to see where your research question fits?
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-300">
-            Start with the categories, browse the research library, or submit a research profile
+            Start with the categories, browse the research library, or start a Research Match
             for human-reviewed follow-up. However you get there, we help connect your research
             question to a clear next step.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <CTA href="/intake" tone="light">
-              Start Your Research Profile
+              Find My Match
             </CTA>
             <CTA href="/research" tone="ghost" className="border-white/20 bg-white/10 text-white hover:bg-white/15">
               Visit Research Library

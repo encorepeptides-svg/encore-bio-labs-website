@@ -134,17 +134,13 @@ export const categoryVisuals: Record<string, string> = {
   'Hormone & Wellness': 'category-hormone-wellness.png',
 }
 
-function getCategoryVisual(category: string, fallback: string) {
-  return categoryVisuals[category] ?? fallback
-}
-
 export const researchAreas: ResearchArea[] = [
   {
     slug: 'metabolic-weight-management',
     name: 'Metabolic & Weight Management',
     description:
       'Research into metabolic signaling, energy regulation, and body-composition pathways, including GLP-1/GIP-adjacent and growth-hormone-axis compounds.',
-    products: ['Retatrutide', 'Tesamorelin', 'CJC-1295 / Ipamorelin', 'MOTS-C'],
+    products: ['Retatrutide', 'Tesamorelin', 'CJC-1295 / Ipamorelin', 'MOTS-C', 'AOD-9604'],
     image: categoryVisuals['Metabolic & Weight Management'],
     accent: '#2DD4BF',
   },
@@ -225,6 +221,7 @@ export const categoryContent: Record<string, CategoryContent> = {
     ],
     comparisonNotes: {
       retatrutide: 'The only triple-receptor entry in this category',
+      'aod-9604': 'GH-fragment research entry focused on metabolic signaling context',
       tesamorelin: 'Single-compound GH-axis research entry',
       'cjc1295-ipamorelin': 'Combination entry, not a duplicate of Tesamorelin',
       'mots-c': 'Only mitochondria-derived peptide in this category',
@@ -456,6 +453,12 @@ const productPositioning: Record<string, { headline: string; focus: string; mech
     focus: 'mitochondrial-derived peptide research, metabolic signaling models, and cellular energy review',
     mechanism: ['Mitochondrial peptide review', 'Energy-sensing context', 'Metabolic-response model', 'Cellular-marker mapping'],
     visual: 'mitochondrial peptide map',
+  },
+  'aod-9604': {
+    headline: 'Review GH-Fragment Research. Map Metabolic Signaling. Keep Inquiry Clean.',
+    focus: 'growth-hormone-fragment research, metabolic signaling context, and body-composition research models',
+    mechanism: ['GH-fragment identity review', 'Metabolic signaling context', 'Body-composition model', 'Documentation-led inquiry'],
+    visual: 'GH-fragment metabolic pathway',
   },
   'igf1-lr3': {
     headline: 'Explore Growth Signaling. Support Performance Models. Map Cellular Response.',
@@ -1277,6 +1280,7 @@ const catalogTaglines: Record<string, string> = {
   tesamorelin: 'GH-axis signaling research, in a single clean format.',
   'cjc1295-ipamorelin': 'Two GH-axis mechanisms, paired for combination research.',
   'mots-c': 'Mitochondrial energy signaling, studied at the AMPK level.',
+  'aod-9604': 'GH-fragment metabolic research, organized for clean review.',
   'wolverine-stack': 'BPC-157 and TB-500, packaged for combined research review.',
   'bpc-157': 'The most-referenced repair peptide in preclinical literature.',
   'tb-500': 'Actin biology and cell-migration research, one peptide deep.',
@@ -1321,7 +1325,7 @@ function createPageContent(product: CatalogProduct): ProductPageContent {
     shortDescription:
       facts?.overview ?? `${product.name} is presented as a premium research-use catalog entry for ${focus}.`,
     catalogTagline: catalogTaglines[product.slug] ?? `${product.name} research entry, grouped for catalog review.`,
-    heroImage: getCategoryVisual(product.category, product.image),
+    heroImage: product.image,
     badge: `${product.category} research`,
     headline: profile?.headline ?? categoryHeadlines[product.category] ?? 'Premium Research Review. Clear Documentation. Responsible Access.',
     keyHighlights: [
@@ -1540,7 +1544,7 @@ const catalogProducts: CatalogProduct[] = [
     slug: 'wolverine-stack',
     name: 'Wolverine Stack',
     category: 'Recovery & Regeneration',
-    image: 'wolverine.png',
+    image: 'bpc-157-tb-500.png',
     description:
       'A recovery and repair research entry prepared for complete kit organization and record review.',
     featured: true,
@@ -1550,7 +1554,7 @@ const catalogProducts: CatalogProduct[] = [
     slug: 'bpc-157',
     name: 'BPC-157',
     category: 'Recovery & Regeneration',
-    image: 'wolverine.png',
+    image: 'bpc-157-tb-500.png',
     description:
       'A recovery research entry organized for documentation review, study planning, and compliant inquiry routing.',
     featured: true,
@@ -1560,7 +1564,7 @@ const catalogProducts: CatalogProduct[] = [
     slug: 'tb-500',
     name: 'TB-500',
     category: 'Recovery & Regeneration',
-    image: 'wolverine.png',
+    image: 'bpc-157-tb-500.png',
     description:
       'A regenerative peptide research entry structured for format clarity and documentation-led review.',
     featured: true,
@@ -1603,11 +1607,21 @@ const catalogProducts: CatalogProduct[] = [
     slug: 'mots-c',
     name: 'MOTS-C',
     category: 'Metabolic & Weight Management',
-    image: 'category-metabolic-weight-management.png',
+    image: 'mots-c.png',
     description:
       'A mitochondrial peptide research entry structured for metabolic signaling review, cellular energy context, and documentation requests.',
     featured: true,
     variants: [{ label: 'Catalog Format', format: 'Vial format', price: 149 }],
+  },
+  {
+    slug: 'aod-9604',
+    name: 'AOD-9604',
+    category: 'Metabolic & Weight Management',
+    image: 'aod-9604.png',
+    description:
+      'A GH-fragment research entry structured for metabolic signaling review, body-composition research context, and documentation requests.',
+    featured: true,
+    variants: [{ label: 'Catalog Format', format: 'Vial format', price: 0 }],
   },
   {
     slug: 'nad-plus',
@@ -1782,6 +1796,7 @@ const relatedProductsBySlug: Record<string, string[]> = {
   'hgh-191aa': ['cjc1295-ipamorelin', 'igf1-lr3', 'kisspeptin'],
   'cjc1295-ipamorelin': ['tesamorelin', 'hgh-191aa', 'igf1-lr3'],
   'mots-c': ['nad-plus', 'ss31', 'tesamorelin'],
+  'aod-9604': ['retatrutide', 'tesamorelin', 'mots-c'],
   'igf1-lr3': ['hgh-191aa', 'cerebrolysin', 'cjc1295-ipamorelin'],
   'bpc-157': ['tb-500', 'wolverine-stack', 'ghk-cu'],
   'tb-500': ['bpc-157', 'wolverine-stack', 'ghk-cu'],
@@ -1809,6 +1824,7 @@ const catalogMetadataBySlug: Record<string, ProductCatalogMetadata> = {
   'igf1-lr3': { casNumber: '946870-92-4', purityGrade: 'Research Grade', stockStatus: 'Limited Stock' },
   'cjc1295-ipamorelin': { casNumber: '863288-34-0 / 170851-70-4', purityGrade: '>=98%', stockStatus: 'In Stock' },
   'mots-c': { casNumber: '1627580-64-6', purityGrade: 'Research Grade', stockStatus: 'On Request' },
+  'aod-9604': { casNumber: '221231-10-3', purityGrade: 'Research Grade', stockStatus: 'On Request' },
   'nad-plus': { casNumber: '53-84-9', purityGrade: 'Analytical Grade', stockStatus: 'In Stock' },
   glutathione: { casNumber: '70-18-8', purityGrade: 'Analytical Grade', stockStatus: 'In Stock' },
   'ghk-cu': { casNumber: '89030-95-5', purityGrade: '>=98%', stockStatus: 'In Stock' },
@@ -1852,6 +1868,7 @@ export const productPageSlugs = [
   'hgh-191aa',
   'cjc1295-ipamorelin',
   'mots-c',
+  'aod-9604',
   'igf1-lr3',
   'bpc-157',
   'tb-500',

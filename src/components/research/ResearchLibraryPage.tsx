@@ -257,7 +257,7 @@ export function ResearchLibraryPage() {
               Browse Categories
             </CTA>
             <CTA href="/intake" tone="ghost" className="border-white/20 bg-white/10 text-white hover:bg-white/15">
-              Start Your Research Profile
+              Find My Match
             </CTA>
           </div>
         </div>
