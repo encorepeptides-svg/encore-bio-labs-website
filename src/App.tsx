@@ -11,8 +11,8 @@ const AboutPage = lazy(() => import('./components/AboutPage').then((m) => ({ def
 const AdminLeadsPage = lazy(() =>
   import('./components/admin/AdminLeadsPage').then((m) => ({ default: m.AdminLeadsPage })),
 )
-const AlternateHomePage = lazy(() =>
-  import('./components/AlternateHomePage').then((m) => ({ default: m.AlternateHomePage })),
+const HomePage = lazy(() =>
+  import('./components/HomePage').then((m) => ({ default: m.HomePage })),
 )
 const CRMAdmin = lazy(() => import('./pages/CRMAdmin').then((m) => ({ default: m.CRMAdmin })))
 const CatalogPage = lazy(() => import('./components/catalog/CatalogPage').then((m) => ({ default: m.CatalogPage })))
@@ -82,21 +82,20 @@ function App() {
       return <AboutPage />
     }
 
-    if (
-      pathname === '/' ||
-      pathname === '/alternate-homepage' ||
-      pathname === '/alternate-homepage/' ||
-      pathname === '/home-v2' ||
-      pathname === '/home-v2/'
-    ) {
-      return <AlternateHomePage />
+    if (pathname === '/') {
+      return <HomePage />
     }
 
     if (pathname === '/catalog' || pathname === '/catalog/') {
       return <CatalogPage />
     }
 
-    if (pathname === '/checkout' || pathname === '/checkout/') {
+    if (
+      pathname === '/cart' ||
+      pathname === '/cart/' ||
+      pathname === '/checkout' ||
+      pathname === '/checkout/'
+    ) {
       return <CheckoutPage />
     }
 
@@ -144,10 +143,14 @@ function App() {
       return <ProductPage slug={productSlug} />
     }
 
-    return <AlternateHomePage />
+    return <HomePage />
   })()
   const isInternalAdminRoute = pathname.startsWith('/admin/')
-  const isCheckoutRoute = pathname === '/checkout' || pathname === '/checkout/'
+  const isCheckoutRoute =
+    pathname === '/cart' ||
+    pathname === '/cart/' ||
+    pathname === '/checkout' ||
+    pathname === '/checkout/'
   const hideGlobalChrome = isInternalAdminRoute || isCheckoutRoute
 
   return (

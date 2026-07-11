@@ -1,4 +1,4 @@
-import { CompleteKitDifferentiator } from '../CompleteKitDifferentiator'
+import { EncoreCompleteKit } from '../EncoreCompleteKit'
 
 export function KitsPage() {
   return (
@@ -9,11 +9,15 @@ export function KitsPage() {
             Home
           </a>
           <span aria-hidden="true">/</span>
-          <span className="font-semibold text-[#071724]">Complete Research Kits</span>
+          <span className="font-semibold text-[#071724]">Encore Complete Kit</span>
         </div>
       </div>
 
-      <CompleteKitDifferentiator />
+      <div className="px-5 py-10 sm:px-8 lg:py-14">
+        <div className="mx-auto max-w-[88rem]">
+          <EncoreCompleteKit variant="full" />
+        </div>
+      </div>
     </main>
   )
 }

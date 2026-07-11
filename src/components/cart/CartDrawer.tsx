@@ -1,7 +1,8 @@
-import { Minus, Plus, ShoppingCart, Trash2, X } from 'lucide-react'
+import { Minus, Plus, ShieldCheck, ShoppingCart, Trash2, X } from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { useCart } from '../../context/useCart'
 import { formatCartCurrency } from '../../lib/cart'
+import { EncoreCompleteKit } from '../EncoreCompleteKit'
 
 const productImages = import.meta.glob('../../assets/images/products/*.{png,jpg,jpeg,webp,avif}', {
   eager: true,
@@ -124,6 +125,7 @@ export function CartDrawer() {
                             Remove
                           </button>
                         </div>
+                        <EncoreCompleteKit variant="cart" className="mt-3" />
                       </article>
                     )
                   })}
@@ -133,6 +135,13 @@ export function CartDrawer() {
                   <ShoppingCart size={28} aria-hidden="true" className="text-teal-700" />
                   <h3 className="mt-4 text-2xl font-semibold tracking-[-0.04em] text-[#071724]">Your cart is empty.</h3>
                   <p className="mt-2 text-sm leading-6 text-slate-500">Add research catalog items to prepare an inquiry.</p>
+                  <a
+                    href="/catalog"
+                    onClick={closeCart}
+                    className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-[#071724] px-5 text-sm font-semibold text-white"
+                  >
+                    Browse catalog
+                  </a>
                 </div>
               )}
             </div>
@@ -156,14 +165,21 @@ export function CartDrawer() {
                 <span className="text-base font-semibold text-[#071724]">Estimated total</span>
                 <span className="text-2xl font-semibold tracking-[-0.03em] text-[#071724]">{formatCartCurrency(totals.total)}</span>
               </div>
-              <a
-                href="/checkout"
-                onClick={closeCart}
-                className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition hover:bg-teal-700 aria-disabled:pointer-events-none aria-disabled:opacity-45"
-                aria-disabled={!items.length}
-              >
-                Review Cart
-              </a>
+              {items.length ? (
+                <a
+                  href="/checkout"
+                  onClick={closeCart}
+                  className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition hover:bg-teal-700"
+                >
+                  Continue to inquiry checkout
+                </a>
+              ) : null}
+              {items.length ? (
+                <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-xs font-medium text-slate-500">
+                  <ShieldCheck size={13} aria-hidden="true" className="shrink-0 text-teal-700" />
+                  Secure order processing · Contact information protected
+                </p>
+              ) : null}
               {items.length ? (
                 <button
                   type="button"

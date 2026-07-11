@@ -1,4 +1,5 @@
 import { brandText } from '../../config/brandText'
+import { getEncoreCompleteKitFaqItems } from './encoreCompleteKit'
 
 export type ProductVariant = {
   label: string
@@ -88,6 +89,7 @@ type ProductPageContent = {
   disclaimer: string
   faqs: ProductFAQ[]
   relatedProducts: string[]
+  bacWaterAmount?: string
 }
 
 type CatalogProduct = {
@@ -1307,6 +1309,11 @@ function getDosage(variants: ProductVariant[]) {
   return variants.map((variant) => variant.label).join(' / ')
 }
 
+// Confirmed, product-specific BAC water amounts only. Do not infer a value from
+// strength/format — an unlisted slug intentionally falls back to the generic
+// "Product-specific pre-measured BAC water" label until a real amount is confirmed.
+const bacWaterAmountBySlug: Record<string, string> = {}
+
 function createPageContent(product: CatalogProduct): ProductPageContent {
   const categoryCopy = categoryPositioning[product.category] ?? 'research may explore investigational pathway models'
   const profile = productPositioning[product.slug]
@@ -1438,6 +1445,10 @@ function createPageContent(product: CatalogProduct): ProductPageContent {
             : `${product.name} is reviewed for investigational interest in ${product.category.toLowerCase()} contexts, where researchers may evaluate pathway-level questions and documentation requirements.`,
       },
       ...(facts?.faqs ?? []),
+      ...getEncoreCompleteKitFaqItems({
+        productName: product.name,
+        bacWaterAmount: bacWaterAmountBySlug[product.slug],
+      }),
       // Delivery/logistics FAQs are specific to the standard catalog template and are
       // intentionally excluded from Retatrutide, which keeps its own dedicated page.
       ...(product.slug !== 'retatrutide'
@@ -1456,12 +1467,6 @@ function createPageContent(product: CatalogProduct): ProductPageContent {
               question: 'Can you ship to Mexico?',
               answer:
                 'Yes. Mexico shipping is available and adds $20 USD to standard shipping.',
-            },
-            {
-              question: `Is BAC water included with ${product.name}?`,
-              answer: product.variants.some((variant) => /kit|supply/i.test(variant.format))
-                ? `${product.name} is organized as a complete research kit, so measured BAC water is included where applicable alongside documentation and premium packaging.`
-                : `${product.name} does not include BAC water by default. Measured BAC water is included where applicable on complete research kit formats — ask through the inquiry process if you need it added.`,
             },
           ]
         : []),
@@ -1510,6 +1515,7 @@ function createPageContent(product: CatalogProduct): ProductPageContent {
       },
     ],
     relatedProducts: [],
+    bacWaterAmount: bacWaterAmountBySlug[product.slug],
   }
 }
 

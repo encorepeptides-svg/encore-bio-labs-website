@@ -2,7 +2,6 @@ import {
   Activity,
   ArrowRight,
   Atom,
-  Beaker,
   Boxes,
   Brain,
   ClipboardCheck,
@@ -25,12 +24,13 @@ import {
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { products, type Product } from '../../data/products'
+import { products, type Product, type ProductVariant } from '../../data/products'
 import { contentTypeLabels, researchArticles } from '../../data/research'
 import { buildSrcSet, stemOf } from '../../lib/responsiveImages'
 import { buildOrderInquiryMessage, buildWhatsAppUrl } from '../../lib/whatsapp'
-import { VariantAddToCartPanel } from '../cart/AddToCartButton'
+import { AddToCartButton, MobileStickyPurchaseBar, VariantAddToCartPanel } from '../cart/AddToCartButton'
 import { CTA } from '../CTA'
+import { EncoreCompleteKit } from '../EncoreCompleteKit'
 import {
   FAQAccordion,
   InternalLinkGrid,
@@ -92,7 +92,43 @@ function SectionShell({
   )
 }
 
+export function ProductBreadcrumb({ product }: { product: Product }) {
+  return (
+    <nav aria-label="Breadcrumb" className="px-5 pt-6 sm:px-8">
+      <ol className="mx-auto flex max-w-[88rem] flex-wrap items-center gap-2 text-sm text-slate-500">
+        <li>
+          <a href="/" className="font-medium transition hover:text-[#071724]">
+            Home
+          </a>
+        </li>
+        <li aria-hidden="true">/</li>
+        <li>
+          <a href="/catalog" className="font-medium transition hover:text-[#071724]">
+            Catalog
+          </a>
+        </li>
+        <li aria-hidden="true">/</li>
+        <li>
+          <a
+            href={`/categories/${productCategorySlug(product)}`}
+            className="font-medium transition hover:text-[#071724]"
+          >
+            {product.category}
+          </a>
+        </li>
+        <li aria-hidden="true">/</li>
+        <li>
+          <span aria-current="page" className="font-semibold text-[#071724]">
+            {product.name}
+          </span>
+        </li>
+      </ol>
+    </nav>
+  )
+}
+
 export function RetatrutideHeroSection({ product }: { product: Product }) {
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant>(product.variants[0])
   const imageSrc = getProductImage({ ...product, heroImage: product.image })
   const { avifSrcSet, webpSrcSet } = getProductImageSources(product.image)
   const bullets = [
@@ -156,7 +192,14 @@ export function RetatrutideHeroSection({ product }: { product: Product }) {
             </CTA>
           </div>
           <div className="mt-6 max-w-xl">
-            <VariantAddToCartPanel product={product} />
+            <VariantAddToCartPanel
+              product={product}
+              selectedVariant={selectedVariant}
+              onSelectVariant={setSelectedVariant}
+            />
+            <p className="mt-3 text-xs font-semibold text-[var(--muted)]">
+              Ships from El Paso, TX · Nationwide U.S. and Mexico shipping available
+            </p>
           </div>
 
           <div className="mt-8 grid max-w-2xl grid-cols-3 overflow-hidden rounded-[1.35rem] border border-[var(--border)] bg-white shadow-[0_20px_60px_rgba(26,35,64,0.08)]">
@@ -249,6 +292,7 @@ export function RetatrutideHeroSection({ product }: { product: Product }) {
           </div>
         </motion.div>
       </div>
+      <MobileStickyPurchaseBar product={product} variant={selectedVariant} />
     </section>
   )
 }
@@ -404,6 +448,7 @@ function getProductPriceLabel(product: Product) {
 }
 
 export function ProductHero({ product }: { product: Product }) {
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant>(product.variants[0])
   const imageSrc = getProductImage(product)
   const { avifSrcSet, webpSrcSet } = getProductImageSources(product.heroImage)
   const heroStats = [
@@ -477,7 +522,14 @@ export function ProductHero({ product }: { product: Product }) {
             </CTA>
           </div>
           <div className="mt-6 max-w-xl">
-            <VariantAddToCartPanel product={product} />
+            <VariantAddToCartPanel
+              product={product}
+              selectedVariant={selectedVariant}
+              onSelectVariant={setSelectedVariant}
+            />
+            <p className="mt-3 text-xs font-semibold text-[var(--muted)]">
+              Ships from El Paso, TX · Nationwide U.S. and Mexico shipping available
+            </p>
           </div>
           <div className="mt-8 grid max-w-2xl grid-cols-3 overflow-hidden rounded-[1.35rem] border border-[var(--border)] bg-white shadow-[0_20px_60px_rgba(26,35,64,0.08)]">
             {heroStats.map((stat) => (
@@ -554,6 +606,7 @@ export function ProductHero({ product }: { product: Product }) {
           </div>
         </motion.div>
       </div>
+      <MobileStickyPurchaseBar product={product} variant={selectedVariant} />
     </section>
   )
 }
@@ -713,6 +766,16 @@ export function WhatsIncluded({ product }: { product: Product }) {
   )
 }
 
+export function ProductCompleteKitCallout({ product }: { product: Product }) {
+  return (
+    <section className="px-5 pb-10 sm:px-8 lg:pb-14">
+      <div className="mx-auto max-w-[88rem]">
+        <EncoreCompleteKit variant="full" productName={product.name} bacWaterAmount={product.bacWaterAmount} />
+      </div>
+    </section>
+  )
+}
+
 export function ProductQualityFocus({ product }: { product: Product }) {
   const storageSpec = product.specs.find((spec) => spec.label === 'Research markers')
 
@@ -832,7 +895,7 @@ export function ProductBenefits({ product }: { product: Product }) {
   const icons = [Activity, Zap, HeartPulse, Brain, Microscope, PackageCheck]
 
   return (
-    <SectionShell eyebrow="Research interest" title="Key research areas for high-signal review.">
+    <SectionShell eyebrow="Research Highlights" title="Key research areas for high-signal review.">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {product.benefits.map((benefit, index) => {
           const Icon = icons[index] ?? Sparkles
@@ -1125,32 +1188,6 @@ export function ProductOverview({ product }: { product: Product }) {
   )
 }
 
-export function ProductHighlights({ product }: { product: Product }) {
-  const icons = [ClipboardCheck, ShieldCheck, FileText, Beaker]
-
-  return (
-    <SectionShell eyebrow="Highlights" title="Built for premium research review.">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {product.keyHighlights.map((highlight, index) => {
-          const Icon = icons[index] ?? ClipboardCheck
-
-          return (
-            <div
-              key={highlight}
-              className="rounded-[1.5rem] border border-slate-900/10 bg-white p-5 shadow-[0_18px_48px_rgba(7,23,36,0.06)]"
-            >
-              <span className="flex size-11 items-center justify-center rounded-2xl bg-teal-100 text-teal-800">
-                <Icon size={19} aria-hidden="true" />
-              </span>
-              <p className="mt-5 text-base font-semibold leading-6 text-[#071724]">{highlight}</p>
-            </div>
-          )
-        })}
-      </div>
-    </SectionShell>
-  )
-}
-
 export function ResearchUseDisclaimer({ product }: { product: Product }) {
   return <ResearchUseOnlyBanner title="Research-use disclaimer" body={product.disclaimer} />
 }
@@ -1303,6 +1340,40 @@ export function RelatedProducts({ product }: { product: Product }) {
         description: relatedProduct.shortDescription,
       }))}
     />
+  )
+}
+
+export function FinalPurchaseCTA({ product }: { product: Product }) {
+  const priceLabel = getProductPriceLabel(product)
+  const defaultVariant = product.variants[0]
+
+  return (
+    <section className="px-5 py-10 sm:px-8 lg:py-14">
+      <div className="mx-auto max-w-[88rem]">
+        <div className="flex flex-col items-start gap-5 rounded-[1.75rem] border border-slate-900/10 bg-white p-6 shadow-[0_22px_70px_rgba(7,23,36,0.07)] sm:flex-row sm:items-center sm:justify-between sm:p-8">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
+              Ready to order {product.name}?
+            </p>
+            <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#071724]">{priceLabel}</p>
+            <p className="mt-1 text-sm text-slate-500">Encore Complete Kit included with every order.</p>
+          </div>
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+            <AddToCartButton product={product} variant={defaultVariant} className="min-h-12 px-6">
+              {defaultVariant.price > 0 ? 'Add to Cart' : 'Request availability'}
+            </AddToCartButton>
+            <a
+              href="https://wa.me/19153595448"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-12 items-center justify-center rounded-full border border-slate-900/10 bg-white px-6 text-sm font-semibold text-[#071724] transition hover:bg-teal-50"
+            >
+              Contact Support
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
   )
 }
 

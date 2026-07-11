@@ -1,10 +1,18 @@
 import { FileText, Search, ShieldCheck, SlidersHorizontal, Snowflake, Sparkles, Truck, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { brandText } from '../../../config/brandText'
-import { categoryVisuals, products, type Product, type PurityGrade, type StockStatus } from '../../data/products'
+import {
+  categoryVisuals,
+  products,
+  type Product,
+  type ProductVariant,
+  type PurityGrade,
+  type StockStatus,
+} from '../../data/products'
 import { buildSrcSet, stemOf } from '../../lib/responsiveImages'
 import { AddToCartButton } from '../cart/AddToCartButton'
 import { CTA } from '../CTA'
+import { EncoreCompleteKit } from '../EncoreCompleteKit'
 import { Reveal } from '../Reveal'
 import { SectionHeader } from '../SectionHeader'
 
@@ -108,6 +116,10 @@ function getPriceLabel(product: Product) {
   return product.variants.length > 1 ? `Starting at ${price}` : price
 }
 
+function getVariantPriceLabel(variant: ProductVariant) {
+  return variant.price > 0 ? `$${variant.price.toLocaleString()}` : 'Quote'
+}
+
 function ProductCard({ product }: { product: Product }) {
   const imageSrc = getProductImage(product)
   const imageStem = stemOf(getProductImageName(product))
@@ -115,10 +127,12 @@ function ProductCard({ product }: { product: Product }) {
   const webpSrcSet = buildSrcSet(productImages, CATALOG_IMAGE_BASE_PATH, imageStem, 'webp', CATALOG_IMAGE_WIDTHS)
   const variantCount = product.variants.length
   const catalogFilter = getCatalogFilter(product)
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant>(product.variants[0])
 
   return (
     <Reveal
       as="article"
+      data-product-slug={product.slug}
       className="group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-slate-900/10 bg-white shadow-[0_18px_50px_rgba(7,23,36,0.07)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_82px_rgba(20,184,166,0.16)]"
     >
       <a
@@ -198,14 +212,43 @@ function ProductCard({ product }: { product: Product }) {
 
         <div className="mt-auto pt-6">
           <p className="text-lg font-semibold tracking-[-0.02em] text-[#071724]">
-            {getPriceLabel(product)}
+            {variantCount > 1 ? getVariantPriceLabel(selectedVariant) : getPriceLabel(product)}
           </p>
           <p className="mt-1 text-xs leading-5 text-slate-500">
             Catalog pricing is shown for research-use inquiry context only.
           </p>
 
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-            <AddToCartButton product={product} className="flex-1">
+          {variantCount > 1 ? (
+            <label className="mt-4 grid gap-2 text-xs font-semibold text-slate-600">
+              Strength or format
+              <select
+                value={`${selectedVariant.label}__${selectedVariant.format}`}
+                onChange={(event) => {
+                  const nextVariant = product.variants.find(
+                    (variant) => `${variant.label}__${variant.format}` === event.target.value,
+                  )
+
+                  if (nextVariant) setSelectedVariant(nextVariant)
+                }}
+                className="h-11 w-full rounded-xl border border-slate-900/10 bg-[#f8fafc] px-3 text-sm font-semibold text-[#071724] outline-none transition focus:border-teal-600/70 focus:ring-4 focus:ring-teal-100"
+                aria-label={`Select strength or format for ${product.name}`}
+              >
+                {product.variants.map((variant) => (
+                  <option
+                    key={`${product.slug}-${variant.label}-${variant.format}`}
+                    value={`${variant.label}__${variant.format}`}
+                  >
+                    {variant.label} · {getVariantPriceLabel(variant)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+
+          <EncoreCompleteKit variant="compact" className="mt-4" />
+
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+            <AddToCartButton product={product} variant={selectedVariant} className="flex-1">
               Add to Cart
             </AddToCartButton>
             <a

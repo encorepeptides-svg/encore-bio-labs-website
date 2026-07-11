@@ -17,10 +17,11 @@ import heroVideo from '../assets/videos/encore-hero.mp4'
 import { products, type Product } from '../data/products'
 import { faqLibrary } from '../data/faq'
 import { cn } from '../lib/utils'
-import { CategoryShowcase } from './alternate/CategoryShowcase'
+import { CategoryShowcase } from './home/CategoryShowcase'
 import { AddToCartButton } from './cart/AddToCartButton'
 import { CTA } from './CTA'
 import { FAQAccordion } from './content/EditorialModules'
+import { EncoreCompleteKit } from './EncoreCompleteKit'
 import { FinalCTA } from './FinalCTA'
 import { ResearchProfilePrompt } from './ResearchProfilePrompt'
 
@@ -257,7 +258,7 @@ function CompactWhyChooseEncore() {
   )
 }
 
-export function AlternateHomePage() {
+export function HomePage() {
   const prefersReducedMotion = useReducedMotion()
   const bestSellerProducts = bestSellerSlugs
     .map((slug) => products.find((product) => product.slug === slug))
@@ -314,7 +315,7 @@ export function AlternateHomePage() {
             <motion.div
               animate={prefersReducedMotion ? undefined : { y: [0, -10, 0] }}
               transition={prefersReducedMotion ? undefined : { duration: 7.5, ease: 'easeInOut', repeat: Infinity }}
-              className="alternate-hero-video-shell relative overflow-hidden rounded-[2rem] border border-white/55 bg-white/18 p-3 shadow-[0_34px_110px_rgba(7,23,36,0.16)] backdrop-blur-2xl sm:p-4"
+              className="home-hero-video-shell relative overflow-hidden rounded-[2rem] border border-white/55 bg-white/18 p-3 shadow-[0_34px_110px_rgba(7,23,36,0.16)] backdrop-blur-2xl sm:p-4"
             >
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(118,228,211,0.18),transparent_34%),linear-gradient(145deg,rgba(255,255,255,0.12),transparent_42%)]" aria-hidden="true" />
               <div className="relative overflow-hidden rounded-[1.35rem] border border-white/15 bg-[#0d2231]">
@@ -352,7 +353,7 @@ export function AlternateHomePage() {
         <a
           href="#trust-strip"
           aria-label="Scroll to learn more"
-          className="alternate-scroll-cue absolute bottom-5 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-slate-500 transition hover:text-[#071724] lg:flex"
+          className="home-scroll-cue absolute bottom-5 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-slate-500 transition hover:text-[#071724] lg:flex"
         >
           <span>Explore</span>
           <span className="relative h-10 w-6 rounded-full border border-slate-900/18 bg-white/34 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-xl">
@@ -410,6 +411,12 @@ export function AlternateHomePage() {
       </section>
 
       <CategoryShowcase />
+
+      <section className="px-5 pb-4 sm:px-8">
+        <div className="mx-auto max-w-[88rem]">
+          <EncoreCompleteKit variant="inline" />
+        </div>
+      </section>
 
       <ResearchProfilePrompt />
 

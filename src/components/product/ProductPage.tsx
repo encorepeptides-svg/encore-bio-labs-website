@@ -2,14 +2,16 @@ import { products } from '../../data/products'
 import {
   CTASection,
   FAQSection,
+  FinalPurchaseCTA,
   PremiumVisualBreak,
+  ProductBreadcrumb,
   ProductHero,
   ProductBenefits,
   ProductDifferentiator,
   ProductGallery,
   ProductHowItWorksFlow,
   ProductMechanism,
-  ProductHighlights,
+  ProductCompleteKitCallout,
   ProductOverview,
   ProductQualityFocus,
   ProductResearchLinks,
@@ -67,46 +69,55 @@ export function ProductPage({ slug }: { slug: string }) {
 
   return (
     <main id="main-content" className="bg-[#F8FAFC]">
+      <ProductBreadcrumb product={product} />
       {product.slug === 'retatrutide' ? (
         <>
           <RetatrutideHeroSection product={product} />
+          <ProductCompleteKitCallout product={product} />
+          <ProductTrustStrip />
+          <ProductBenefits product={product} />
           <ResearchProfileCallout product={product} />
           <RetatrutideClinicalResearchSection product={product} />
           <ProductOverview product={product} />
-          <ProductHighlights product={product} />
-          <ResearchUseDisclaimer product={product} />
+          <ProductHowItWorksFlow />
           <ProductSpecs product={product} />
           <SuggestedResearchProtocol product={product} />
           <ReconstitutionGuide product={product} />
+          <ProductQualityFocus product={product} />
           <FAQSection product={product} />
           <ProductInternalLinks product={product} />
           <RelatedProducts product={product} />
           <CTASection product={product} />
+          <FinalPurchaseCTA product={product} />
+          <ResearchUseDisclaimer product={product} />
         </>
       ) : (
         <>
           <ProductHero product={product} />
-          <ResearchProfileCallout product={product} />
+          <ProductCompleteKitCallout product={product} />
           <ProductTrustStrip />
-          <WhatIsProduct product={product} />
           <ProductBenefits product={product} />
+          <ResearchProfileCallout product={product} />
+          <WhatIsProduct product={product} />
           <PremiumVisualBreak product={product} />
           <ProductMechanism product={product} />
-          <WhatsIncluded product={product} />
-          <ProductQualityFocus product={product} />
           <ProductHowItWorksFlow />
           <ProductSpecs product={product} />
           <ProductScience product={product} />
           <VisualBiology product={product} />
+          <WhatsIncluded product={product} />
+          <ProductQualityFocus product={product} />
+          <ReconstitutionGuide product={product} />
           <WhoMayBenefit product={product} />
           <ProductDifferentiator product={product} />
           <ProductGallery product={product} />
-          <ResearchUseDisclaimer product={product} />
           <FAQSection product={product} />
           <ProductResearchLinks product={product} />
           <ProductInternalLinks product={product} />
           <RelatedProducts product={product} />
           <CTASection product={product} />
+          <FinalPurchaseCTA product={product} />
+          <ResearchUseDisclaimer product={product} />
         </>
       )}
     </main>

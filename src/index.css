@@ -172,13 +172,13 @@ summary:focus-visible {
   }
 }
 
-.alternate-hero-video-shell {
+.home-hero-video-shell {
   isolation: isolate;
   overflow: hidden;
 }
 
-.alternate-scroll-cue > span:last-child span {
-  animation: alternate-scroll-dot 1.8s ease-in-out infinite;
+.home-scroll-cue > span:last-child span {
+  animation: home-scroll-dot 1.8s ease-in-out infinite;
 }
 
 .category-showcase-image {
@@ -197,7 +197,7 @@ summary:focus-visible {
   }
 }
 
-@keyframes alternate-scroll-dot {
+@keyframes home-scroll-dot {
   0%,
   100% {
     transform: translate(-50%, 0);
