@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calculateSubtotal, calculateTotal, createCartItem, createCartItemId, parseStoredCart } from './cart'
+import { calculateSubtotal, calculateTotal, createCartItem, createCartItemId, parseStoredCart, reconcileCartItems } from './cart'
 import { products } from '../data/products'
 
 describe('cart hydration and variants', () => {
@@ -35,10 +35,10 @@ describe('cart hydration and variants', () => {
     const item = createCartItem(product, product.variants[0], 2, { optionId: 'multipack', packSize: 3, includeKit: true })
     expect(item.packSize).toBe(3)
     expect(item.kitIncluded).toBe(true)
-    expect(item.linePrice).toBeCloseTo(368.8)
+    expect(item.linePrice).toBe(256)
     expect(item.linePrice - item.unitPrice * item.packSize).toBe(10)
-    expect(calculateSubtotal([item])).toBeCloseTo(737.6)
-    expect(calculateTotal([item]).total).toBeCloseTo(737.6)
+    expect(calculateSubtotal([item])).toBe(512)
+    expect(calculateTotal([item]).total).toBe(512)
   })
 
   it('hydrates all purchase fields and rejects corrupt money fields', () => {
@@ -49,5 +49,19 @@ describe('cart hydration and variants', () => {
     })
     const corrupt = { ...item, linePrice: Number.NaN, savings: -1, packSize: -5 }
     expect(parseStoredCart(JSON.stringify([corrupt]))[0]).toMatchObject({ linePrice: item.unitPrice, savings: 0, packSize: 1 })
+  })
+
+  it('drops discontinued BAC Water sizes and reprices stored Retatrutide lines', () => {
+    const bacWater = products.find((entry) => entry.slug === 'bac-water')!
+    const currentBac = createCartItem(bacWater, bacWater.variants[0], 1, { optionId: 'vial-only', packSize: 1, includeKit: false })
+    const discontinuedBac = { ...currentBac, id: 'bac-water-5ml', variantLabel: '5 mL', sku: 'BACWATER-5ML' }
+
+    const retatrutide = products.find((entry) => entry.slug === 'retatrutide')!
+    const currentRetatrutide = createCartItem(retatrutide, retatrutide.variants[0], 1, { optionId: 'complete-kit', packSize: 1, includeKit: true })
+    const obsoleteRetatrutide = { ...currentRetatrutide, unitPrice: 130, linePrice: 140 }
+
+    const reconciled = reconcileCartItems([discontinuedBac, obsoleteRetatrutide], products)
+    expect(reconciled).toHaveLength(1)
+    expect(reconciled[0]).toMatchObject({ productSlug: 'retatrutide', variantLabel: '10 mg', unitPrice: 89, linePrice: 99 })
   })
 })

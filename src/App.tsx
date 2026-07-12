@@ -5,6 +5,8 @@ import { Footer } from './components/Footer'
 import { Navbar } from './components/Navbar'
 import { RouteLoadingFallback } from './components/RouteLoadingFallback'
 import { CartProvider } from './context/CartContext'
+import { PortalAuthProvider } from './context/PortalAuthContext'
+import { ProtectedPortal } from './components/portal/ProtectedPortal'
 
 // Route pages are code-split so each experience only loads when it renders.
 const AboutPage = lazy(() => import('./components/AboutPage').then((m) => ({ default: m.AboutPage })))
@@ -30,6 +32,10 @@ const ResearchLibraryPage = lazy(() =>
   import('./components/research/ResearchLibraryPage').then((m) => ({ default: m.ResearchLibraryPage })),
 )
 const NotFoundPage = lazy(() => import('./components/NotFoundPage').then((m) => ({ default: m.NotFoundPage })))
+const PortalAuthPage = lazy(() => import('./components/portal/PortalAuthPages').then((m) => ({ default: m.PortalAuthPage })))
+const OnboardingPage = lazy(() => import('./components/portal/OnboardingPage').then((m) => ({ default: m.OnboardingPage })))
+const ClientPortalPage = lazy(() => import('./components/portal/ClientPortalPage').then((m) => ({ default: m.ClientPortalPage })))
+const AdminPortalPage = lazy(() => import('./components/portal/AdminPortalPage').then((m) => ({ default: m.AdminPortalPage })))
 
 const AssistantWidget = lazy(() =>
   import('./components/assistant/AssistantWidget').then((module) => ({ default: module.AssistantWidget })),
@@ -89,6 +95,7 @@ function App() {
       '/quality': { title: 'Quality and Documentation | Encore Bio Labs', description: 'Review Encore Bio Labs quality, documentation, handling, and research-use standards.' },
       '/kits': { title: 'Encore Complete Kit', description: 'Review the shared components included with eligible Encore Bio Labs research products.' },
       '/research': { title: 'Research Library | Encore Bio Labs', description: 'Explore research-use educational material and product-category context from Encore Bio Labs.' },
+      '/research/retatrutide': { title: 'Retatrutide Research | Encore Bio Labs', description: 'Review educational Retatrutide research context, evidence status, and research-use limitations.' },
       '/legal/terms': { title: 'Terms of Service | Encore Bio Labs', description: 'Read the Encore Bio Labs terms governing site access and research catalog inquiries.' },
       '/legal/privacy': { title: 'Privacy Policy | Encore Bio Labs', description: 'Read how Encore Bio Labs handles information submitted through the website.' },
       '/legal/shipping-returns': { title: 'Shipping and Returns | Encore Bio Labs', description: 'Review Encore Bio Labs shipping, delivery, return, and support policies.' },
@@ -114,6 +121,19 @@ function App() {
   }, [categorySlug, pathname, productSlug])
 
   const page = (() => {
+    const authMode = pathname === '/client-login' ? 'login' : pathname === '/client-register' ? 'register' : pathname === '/client-forgot-password' ? 'forgot' : pathname === '/client-reset-password' ? 'reset' : undefined
+    if (authMode) return <PortalAuthPage mode={authMode} />
+    if (pathname === '/portal/onboarding') return <ProtectedPortal allowOnboarding><OnboardingPage /></ProtectedPortal>
+    if (pathname === '/portal' || pathname.startsWith('/portal/')) {
+      const section = pathname === '/portal' ? 'overview' : pathname.slice('/portal/'.length)
+      const allowPending = section === 'security'
+      return <ProtectedPortal allowOnboarding={allowPending}><ClientPortalPage section={section} /></ProtectedPortal>
+    }
+    if (pathname === '/admin' || pathname.startsWith('/admin/')) {
+      if (pathname === '/admin/crm' || pathname.startsWith('/admin/crm/')) return <CRMAdmin />
+      const section = pathname === '/admin' ? 'overview' : pathname.slice('/admin/'.length)
+      return <ProtectedPortal admin><AdminPortalPage section={section} /></ProtectedPortal>
+    }
     if (pathname === '/intake' || pathname === '/intake/') {
       return <IntakePage />
     }
@@ -150,10 +170,6 @@ function App() {
       return <CategoryPage slug={categorySlug} />
     }
 
-    if (pathname.startsWith('/admin/')) {
-      return <CRMAdmin />
-    }
-
     if (pathname === '/legal/terms' || pathname === '/legal/terms/') {
       return <TermsPage />
     }
@@ -170,7 +186,7 @@ function App() {
       return <FAQLibraryPage />
     }
 
-    if (pathname === '/research' || pathname === '/research/') {
+    if (pathname === '/research' || pathname === '/research/' || pathname === '/research/retatrutide' || pathname === '/research/retatrutide/') {
       return <ResearchLibraryPage />
     }
 
@@ -180,15 +196,18 @@ function App() {
 
     return <NotFoundPage />
   })()
-  const isInternalAdminRoute = pathname.startsWith('/admin/')
+  const isPortalRoute = pathname === '/portal' || pathname.startsWith('/portal/') || pathname === '/admin' || pathname.startsWith('/admin/')
+  const isPortalAuthRoute = ['/client-login','/client-register','/client-forgot-password','/client-reset-password'].includes(pathname)
+  const isInternalAdminRoute = pathname === '/admin/crm' || pathname.startsWith('/admin/crm/')
   const isCheckoutRoute =
     pathname === '/checkout' ||
     pathname === '/checkout/'
-  const hideGlobalChrome = isInternalAdminRoute || isCheckoutRoute
+  const hideGlobalChrome = isInternalAdminRoute || isCheckoutRoute || isPortalRoute || isPortalAuthRoute
 
   return (
-    <CartProvider>
-      <div className="min-h-screen overflow-x-clip bg-[#f5f5f2] text-[#071724]">
+    <PortalAuthProvider>
+      <CartProvider>
+        <div className="min-h-screen overflow-x-clip bg-[#f5f5f2] text-[#071724]">
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-[#071724] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
@@ -205,8 +224,9 @@ function App() {
             <AssistantWidget />
           </Suspense>
         )}
-      </div>
-    </CartProvider>
+        </div>
+      </CartProvider>
+    </PortalAuthProvider>
   )
 }
 

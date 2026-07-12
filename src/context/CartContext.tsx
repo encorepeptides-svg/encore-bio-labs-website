@@ -7,11 +7,11 @@ import {
   createCartItem,
   normalizeQuantity,
   parseStoredCart,
+  reconcileCartItems,
   type CartItem,
   type CartItemId,
 } from '../lib/cart'
-import type { PurchaseSelection } from '../lib/purchaseOptions'
-import { isProductPurchasable } from '../lib/purchaseOptions'
+import { isProductPurchasable, type PurchaseSelection } from '../lib/purchaseOptions'
 import { CartContext, type CartContextValue } from './cartStore'
 
 const CART_STORAGE_KEY = 'encore-bio-labs-cart-v1'
@@ -36,18 +36,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     void import('../data/products').then(({ products }) => {
       if (!active) return
-      setItems((current) => current.flatMap((storedItem) => {
-        const product = products.find((entry) => entry.slug === storedItem.productSlug)
-        const variant = product?.variants.find(
-          (entry) => entry.label === storedItem.variantLabel && entry.format === storedItem.variantFormat,
-        )
-        const selection: PurchaseSelection = {
-          optionId: storedItem.optionId ?? (storedItem.purchaseType === 'Encore Complete Kit' ? 'complete-kit' : storedItem.purchaseType === 'Multi-Vial Research Pack' ? 'multipack' : 'vial-only'),
-          packSize: storedItem.packSize || 1,
-          includeKit: storedItem.kitIncluded,
-        }
-        return product && variant && isProductPurchasable(product) ? [createCartItem(product, variant, storedItem.quantity, selection)] : []
-      }))
+      setItems((current) => reconcileCartItems(current, products))
     })
 
     return () => {

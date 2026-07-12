@@ -1,0 +1,19 @@
+import { Bell, Calculator, ClipboardCheck, FileText, Gauge, Headphones, LogOut, Package, ShieldCheck, TrendingUp, UserRound } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { usePortalAuth } from '../../context/usePortalAuth'
+
+const clientNav = [
+  ['/portal', 'Overview', Gauge], ['/portal/progress', 'My Progress', TrendingUp], ['/portal/check-ins', 'Weekly Check-In', ClipboardCheck],
+  ['/portal/calculators', 'Calculators', Calculator], ['/portal/orders', 'Orders', Package], ['/portal/documents', 'Documents', FileText],
+  ['/portal/support', 'Support', Headphones], ['/portal/notifications', 'Notifications', Bell], ['/portal/profile', 'Profile', UserRound], ['/portal/security', 'Security', ShieldCheck],
+] as const
+
+export function PortalShell({ children, admin = false }: { children: ReactNode; admin?: boolean }) {
+  const { identity, logout } = usePortalAuth()
+  const path = window.location.pathname
+  const nav = admin ? [['/admin','Overview'],['/admin/applications','Applications'],['/admin/clients','Clients'],['/admin/orders','Orders'],['/admin/documents','Documents'],['/admin/support','Support'],['/admin/audit-log','Audit Log'],['/admin/settings','Settings']] as const : clientNav
+  return <main id="main-content" className="min-h-screen bg-[#f5f6f3] px-4 py-5 sm:px-6 lg:p-8"><div className="mx-auto grid max-w-[92rem] gap-5 lg:grid-cols-[17rem_1fr]">
+    <aside className="rounded-[1.75rem] bg-[#071724] p-5 text-white shadow-[0_25px_80px_rgba(7,23,36,.16)] lg:sticky lg:top-5 lg:h-[calc(100vh-2.5rem)]"><a href="/" className="text-xl font-semibold">encore <span className="text-teal-300">bio labs</span></a><p className="mt-7 text-[.65rem] font-bold uppercase tracking-[.18em] text-teal-200">{admin?'Administration':'Client portal'}</p><nav className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-1">{nav.map((entry)=>{const href=entry[0];const label=entry[1];const Icon=entry.length>2?entry[2]:null;const active=path===href;return <a key={href} href={href} className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold transition ${active?'bg-white text-[#071724]':'text-slate-300 hover:bg-white/8 hover:text-white'}`}>{Icon?<Icon size={16}/>:null}{label}</a>})}</nav><button onClick={()=>void logout().then(()=>window.location.assign('/client-login'))} className="mt-5 flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold text-slate-300 hover:bg-white/8"><LogOut size={16}/>Secure logout</button></aside>
+    <section className="min-w-0 rounded-[1.75rem] bg-white p-5 shadow-[0_20px_70px_rgba(7,23,36,.07)] sm:p-8 lg:p-10"><header className="mb-9 flex flex-wrap items-center justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-teal-700">{admin?'Operations workspace':'Private account'}</p><p className="mt-1 text-sm text-slate-500">Signed in as {identity?.profile.email}</p></div><span className="rounded-full bg-teal-50 px-4 py-2 text-xs font-semibold text-teal-900">{identity?.status.replaceAll('_',' ')}</span></header>{children}</section>
+  </div></main>
+}

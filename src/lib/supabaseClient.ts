@@ -6,5 +6,13 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undef
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
 
 export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl as string, supabaseAnonKey as string)
+  ? createClient(supabaseUrl as string, supabaseAnonKey as string, {
+      auth: {
+        // Portal authentication must not depend on application localStorage.
+        // Production persistent sessions require a server/Edge cookie exchange.
+        persistSession: false,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    })
   : null

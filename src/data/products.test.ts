@@ -33,8 +33,8 @@ describe('product catalog integrity', () => {
   })
 
   it('contains the complete active catalog with unique variant SKUs', () => {
-    expect(products).toHaveLength(23)
-    expect(products.reduce((count, product) => count + product.variants.length, 0)).toBe(27)
+    expect(products).toHaveLength(24)
+    expect(products.reduce((count, product) => count + product.variants.length, 0)).toBe(28)
     const skus = products.flatMap((product) => product.variants.map((variant) => variant.sku))
     expect(skus.every(Boolean)).toBe(true)
     expect(new Set(skus).size).toBe(skus.length)
@@ -43,7 +43,12 @@ describe('product catalog integrity', () => {
   it('keeps accessories and ready-to-use formats out of irrelevant kit flows', () => {
     const klow = products.find((product) => product.slug === 'klow')!
     const cerebrolysin = products.find((product) => product.slug === 'cerebrolysin')!
+    const bacWater = products.find((product) => product.slug === 'bac-water')!
     expect(klow.purchaseRules).toMatchObject({ productType: 'accessory', kitEligible: false, multipackEligible: false })
     expect(cerebrolysin.purchaseRules).toMatchObject({ productType: 'ready-to-use', kitEligible: false, multipackEligible: true })
+    expect(bacWater.purchaseRules).toMatchObject({ productType: 'accessory', kitEligible: false, multipackEligible: false })
+    expect(bacWater.variants).toEqual([
+      expect.objectContaining({ sku: 'BACWATER-10ML', label: '10 mL', price: 11.99, strength: 10, unitType: 'mL' }),
+    ])
   })
 })

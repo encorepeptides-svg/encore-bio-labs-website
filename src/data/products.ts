@@ -452,6 +452,12 @@ const categoryBenefits: Record<string, ProductCardContent[]> = {
 }
 
 const productPositioning: Record<string, { headline: string; focus: string; mechanism: string[]; visual: string }> = {
+  'bac-water': {
+    headline: 'One Verified Size. Clear Accessory Pricing. Separate Kit Logic.',
+    focus: 'standalone research-handling accessory review, packaging context, and documentation clarity',
+    mechanism: ['Confirm 10 mL format', 'Review accessory documentation', 'Confirm storage context', 'Keep kit BAC logic separate'],
+    visual: 'research-handling workflow',
+  },
   retatrutide: {
     headline: 'Map Triple-Receptor Signaling. Study Metabolic Response. Review With Precision.',
     focus: 'triple-receptor GLP-1, GIP, and glucagon agonist research, energy-regulation models, and body-composition pathway review',
@@ -593,6 +599,36 @@ const productPositioning: Record<string, { headline: string; focus: string; mech
 }
 
 const productFacts: Record<string, ProductFact> = {
+  'bac-water': {
+    overview:
+      'BAC Water is a standalone 10 mL research-handling accessory. It is listed separately from the matched BAC water included with eligible Encore Complete Kits.',
+    identity: '10 mL bacteriostatic water research-handling accessory',
+    target: 'Qualified laboratory preparation and handling workflows',
+    pathway: 'Accessory entry; no peptide, receptor, or biological pathway classification',
+    markers: 'Bottle size, packaging, lot documentation, and storage context',
+    benefits: [
+      { title: 'Standalone accessory', description: 'Available separately when a research workflow calls for an additional 10 mL bottle.' },
+      { title: 'Single verified size', description: 'The active standalone catalog contains one 10 mL option and no smaller BAC Water sizes.' },
+      { title: 'Separate from kits', description: 'This item does not change the matched BAC water already included with eligible Complete Kits.' },
+      { title: 'No kit surcharge', description: 'BAC Water is sold as Product Only and cannot receive a Complete Kit premium.' },
+      { title: 'No multipack pricing', description: 'Quantity-break pricing is not defined for this accessory.' },
+      { title: 'Documentation review', description: 'Packaging, lot, storage, and handling context can be confirmed during order review.' },
+    ],
+    researchHighlights: [
+      { title: 'Accessory classification', journal: 'Encore catalog standard', takeaway: 'BAC Water is treated as a handling accessory, not as a peptide or biological research compound.', metric: 'ACC' },
+      { title: 'Verified standalone format', journal: 'Canonical catalog data', takeaway: 'Only the 10 mL standalone size is active in the catalog.', metric: '10 mL' },
+      { title: 'Kit separation', journal: 'Purchase configuration rule', takeaway: 'Standalone BAC Water is priced independently and does not create an additional kit charge.', metric: '$0 KIT' },
+    ],
+    biologyPoints: [
+      { title: 'Accessory workflow', description: 'The page describes packaging and handling context rather than peptide signaling.' },
+      { title: 'Single-size catalog entry', description: 'One explicit 10 mL SKU prevents ambiguous size or price selection.' },
+      { title: 'Independent kit logic', description: 'Matched kit BAC water remains governed by the Complete Kit configuration.' },
+    ],
+    faqs: [
+      { question: 'Is BAC Water a peptide?', answer: 'No. It is a standalone research-handling accessory and is not classified or priced as a peptide.' },
+      { question: 'Does this add BAC Water to a Complete Kit?', answer: 'No. This standalone product is separate from the matched BAC water included with eligible Complete Kits.' },
+    ],
+  },
   retatrutide: {
     overview:
       'Retatrutide is a synthetic peptide studied as a triple agonist at the GLP-1, GIP, and glucagon receptors, reviewed in research settings for energy-regulation signaling, body-composition models, and metabolic marker response.',
@@ -1283,6 +1319,7 @@ const catalogTaglines: Record<string, string> = {
   hcg: 'Downstream gonadotropin research, one receptor pathway at a time.',
   'hgh-191aa': 'The full-length GH sequence, studied for axis-level signaling.',
   'pt-141': 'Central melanocortin-receptor research, not a wellness promise.',
+  'bac-water': 'One standalone 10 mL research-handling accessory.',
 }
 
 function getDosage(variants: ProductVariant[]) {
@@ -1425,10 +1462,12 @@ function createPageContent(product: CatalogProduct): ProductPageContent {
             : `${product.name} is reviewed for investigational interest in ${product.category.toLowerCase()} contexts, where researchers may evaluate pathway-level questions and documentation requirements.`,
       },
       ...(facts?.faqs ?? []),
-      ...getEncoreCompleteKitFaqItems({
-        productName: product.name,
-        bacWaterAmount: bacWaterAmountBySlug[product.slug],
-      }),
+      ...(inferPurchaseRules(product).kitEligible
+        ? getEncoreCompleteKitFaqItems({
+            productName: product.name,
+            bacWaterAmount: bacWaterAmountBySlug[product.slug],
+          })
+        : []),
       // Delivery/logistics FAQs are specific to the standard catalog template and are
       // intentionally excluded from Retatrutide, which keeps its own dedicated page.
       ...(product.slug !== 'retatrutide'
@@ -1501,12 +1540,13 @@ const catalogProducts: CatalogProduct[] = [
       'A research catalog entry organized for variant comparison, COA request routing, and documentation-first review.',
     featured: true,
     variants: [
-      { label: '10 mg', format: 'Vial format', price: 130 },
-      { label: '15 mg', format: 'Vial format', price: 155 },
-      { label: '20 mg', format: 'Vial format', price: 180 },
-      { label: '25 mg', format: 'Vial format', price: 205 },
-      { label: '30 mg', format: 'Vial format', price: 230 },
+      { label: '10 mg', format: 'Vial format', price: 89 },
+      { label: '15 mg', format: 'Vial format', price: 109 },
+      { label: '20 mg', format: 'Vial format', price: 129 },
+      { label: '25 mg', format: 'Vial format', price: 149 },
+      { label: '30 mg', format: 'Vial format', price: 169 },
     ],
+    purchaseRules: { multipackQuantities: [2, 3, 5] },
   },
   {
     slug: 'tesamorelin',
@@ -1733,6 +1773,22 @@ const catalogProducts: CatalogProduct[] = [
     featured: true,
     variants: [{ label: '10 mg', format: 'Vial format', price: 70 }],
   },
+  {
+    slug: 'bac-water',
+    name: 'BAC Water',
+    category: 'Longevity & Cellular Health',
+    image: 'category-longevity-cellular-health.png',
+    description:
+      'A standalone 10 mL bacteriostatic water accessory for qualified research handling workflows.',
+    featured: false,
+    variants: [{ sku: 'BACWATER-10ML', label: '10 mL', format: 'Bottle format', price: 11.99, strength: 10, unitType: 'mL' }],
+    purchaseRules: {
+      productType: 'accessory',
+      kitEligible: false,
+      multipackEligible: false,
+      multipackQuantities: [],
+    },
+  },
 ]
 
 const relatedProductsBySlug: Record<string, string[]> = {
@@ -1755,6 +1811,7 @@ const relatedProductsBySlug: Record<string, string[]> = {
   ss31: ['nad-plus', 'glutathione', 'epithalon'],
   dsip: ['kisspeptin', 'hgh-191aa', 'selank'],
   'thymosin-alpha-1': ['glutathione', 'nad-plus', 'epithalon'],
+  'bac-water': [],
 }
 
 // Every product's purityGrade/stockStatus is deliberately overwritten with the
@@ -1785,6 +1842,7 @@ const catalogMetadataBySlug: Record<string, Pick<ProductCatalogMetadata, 'casNum
   'pt-141': { casNumber: '189691-06-3' },
   semax: { casNumber: '80714-61-0' },
   selank: { casNumber: '129954-34-3' },
+  'bac-water': { casNumber: '7732-18-5' },
 }
 
 function inferPurchaseRules(product: CatalogProduct): ProductPurchaseRules {

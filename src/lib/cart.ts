@@ -133,6 +133,23 @@ export function parseStoredCart(raw: string | null): CartItem[] {
   }
 }
 
+export function reconcileCartItems(storedItems: CartItem[], catalog: Product[]) {
+  return storedItems.flatMap((storedItem) => {
+    const product = catalog.find((entry) => entry.slug === storedItem.productSlug)
+    const variant = product?.variants.find(
+      (entry) => entry.label === storedItem.variantLabel && entry.format === storedItem.variantFormat,
+    )
+    if (!product || !variant || product.stockStatus === 'Unavailable' || variant.price <= 0) return []
+
+    const selection: PurchaseSelection = {
+      optionId: storedItem.optionId ?? (storedItem.purchaseType === 'Encore Complete Kit' ? 'complete-kit' : storedItem.purchaseType === 'Multi-Vial Research Pack' ? 'multipack' : 'vial-only'),
+      packSize: storedItem.packSize || 1,
+      includeKit: storedItem.kitIncluded,
+    }
+    return [createCartItem(product, variant, storedItem.quantity, selection)]
+  })
+}
+
 export function calculateSubtotal(items: CartItem[]) {
   return items.reduce((subtotal, item) => subtotal + item.linePrice * item.quantity, 0)
 }

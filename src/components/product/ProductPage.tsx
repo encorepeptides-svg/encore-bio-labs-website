@@ -13,6 +13,7 @@ import {
   RelatedProducts,
   ResearchUseDisclaimer,
 } from './ProductPageSections'
+import { RetatrutideProductPage } from './RetatrutideProductPage'
 
 function findProductBySlug(slug: string) {
   try {
@@ -75,6 +76,10 @@ export function ProductPage({ slug }: { slug: string }) {
         </div>
       </main>
     )
+  }
+
+  if (product.slug === 'retatrutide') {
+    return <RetatrutideProductPage product={product} />
   }
 
   return (

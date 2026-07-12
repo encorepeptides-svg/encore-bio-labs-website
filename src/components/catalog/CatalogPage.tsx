@@ -55,7 +55,7 @@ function getCatalogFilter(product: Product): CatalogFilter {
     return 'Skin & Regenerative Research'
   }
 
-  if (product.slug === 'klow') {
+  if (product.slug === 'klow' || product.slug === 'bac-water') {
     return 'Essentials'
   }
 
@@ -113,6 +113,18 @@ function getPriceLabel(product: Product) {
   return product.variants.length > 1 ? `Starting at ${price}` : price
 }
 
+function getStrengthRange(product: Product) {
+  const measured = product.variants.filter(
+    (variant) => variant.strength && variant.unitType && variant.unitType !== 'other',
+  )
+  const units = new Set(measured.map((variant) => variant.unitType))
+
+  if (measured.length < 2 || units.size !== 1) return null
+
+  const strengths = measured.map((variant) => variant.strength as number)
+  return `${Math.min(...strengths)}–${Math.max(...strengths)} ${measured[0].unitType}`
+}
+
 function ProductCard({ product }: { product: Product }) {
   const imageSrc = getProductImage(product)
   const imageStem = stemOf(getProductImageName(product))
@@ -120,6 +132,7 @@ function ProductCard({ product }: { product: Product }) {
   const webpSrcSet = buildSrcSet(productImages, CATALOG_IMAGE_BASE_PATH, imageStem, 'webp', CATALOG_IMAGE_WIDTHS)
   const variantCount = product.variants.length
   const catalogFilter = getCatalogFilter(product)
+  const strengthRange = getStrengthRange(product)
 
   return (
     <Reveal
@@ -178,6 +191,11 @@ function ProductCard({ product }: { product: Product }) {
         </p>
 
         <div className="mt-5 flex flex-wrap gap-2">
+          {strengthRange ? (
+            <span className="rounded-full border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-800">
+              {strengthRange}
+            </span>
+          ) : null}
           <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-800">
             CAS {product.casNumber}
           </span>
