@@ -9,23 +9,13 @@ next to the original, at widths capped to the image's native resolution (no
 upscaling). Originals are left untouched on disk.
 """
 import os
+from pathlib import Path
 from PIL import Image
 import pillow_avif  # noqa: F401  (registers AVIF plugin with Pillow)
 
 TARGET_WIDTHS = [720, 1000, 1400]
 WEBP_QUALITY = 80
 AVIF_QUALITY = 55
-
-SOURCES = [
-    "src/assets/images/products/category-cognitive-performance.png",
-    "src/assets/images/products/category-longevity-cellular-health.png",
-    "src/assets/images/products/category-hormone-wellness.png",
-    "src/assets/images/products/category-metabolic-weight-management.png",
-    "src/assets/images/products/category-recovery-regeneration.png",
-    "src/assets/images/products/retatrutide.png",
-    "src/assets/images/hero/encore-kit-hero.png",
-]
-
 
 def widths_for(native_width: int) -> list[int]:
     widths = [w for w in TARGET_WIDTHS if w <= native_width]
@@ -36,9 +26,14 @@ def widths_for(native_width: int) -> list[int]:
 
 def main() -> None:
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    product_sources = sorted(
+        str(path.relative_to(root))
+        for path in (Path(root) / "src/assets/images/products").glob("*.png")
+    )
+    sources = [*product_sources, "src/assets/images/hero/encore-kit-hero.png"]
     report = []
 
-    for rel_path in SOURCES:
+    for rel_path in sources:
         src_path = os.path.join(root, rel_path)
         im = Image.open(src_path)
         if im.mode not in ("RGB", "RGBA"):

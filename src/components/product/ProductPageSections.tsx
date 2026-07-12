@@ -133,13 +133,13 @@ export function RetatrutideHeroSection({ product }: { product: Product }) {
   const { avifSrcSet, webpSrcSet } = getProductImageSources(product.image)
   const bullets = [
     'GLP-1 + GIP + Glucagon receptor triple agonist',
-    'COA available for identity and purity review by request',
-    'Same-day dispatch · Cold-chain handling',
+    'Documentation details confirmed during review',
+    'Shipping and handling confirmed during review',
   ]
   const trustStats = [
     { value: 'RUO', label: 'Research use' },
     { value: '3', label: 'Receptor targets' },
-    { value: '24hr', label: 'Inquiry routing' },
+    { value: 'Direct', label: 'Inquiry routing' },
   ]
   const receptorTargets = ['GLP-1', 'GIP', 'GCG']
 
@@ -171,8 +171,8 @@ export function RetatrutideHeroSection({ product }: { product: Product }) {
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--muted)]">
             Encore Bio Labs supplies research-use-only Retatrutide, studied as a triple agonist
-            targeting GLP-1, GIP, and glucagon receptors simultaneously. Identity and purity
-            documentation is available for qualified research review.
+            targeting GLP-1, GIP, and glucagon receptors simultaneously. Product-specific
+            documentation details are confirmed during qualified research review.
           </p>
 
           <div className="mt-7 grid gap-3">
@@ -198,7 +198,7 @@ export function RetatrutideHeroSection({ product }: { product: Product }) {
               onSelectVariant={setSelectedVariant}
             />
             <p className="mt-3 text-xs font-semibold text-[var(--muted)]">
-              Ships from El Paso, TX · Nationwide U.S. and Mexico shipping available
+              Availability, handling, and shipping options are confirmed during order review
             </p>
           </div>
 
@@ -227,7 +227,7 @@ export function RetatrutideHeroSection({ product }: { product: Product }) {
             <div className="absolute inset-5 rounded-[1.7rem] border border-[var(--border)] bg-white/42" />
 
             <div className="absolute left-6 top-6 z-10 rounded-full border border-[var(--teal-border)] bg-white/90 px-4 py-2 text-xs font-semibold text-[var(--navy)] shadow-[0_12px_36px_rgba(26,35,64,0.1)] backdrop-blur-xl">
-              Documentation ready
+              Documentation by review
             </div>
             <div className="absolute right-6 top-6 z-10 rounded-full border border-[var(--teal-border)] bg-[var(--teal)] px-4 py-2 text-xs font-semibold text-white shadow-[0_12px_36px_rgba(46,196,165,0.24)]">
               RUO
@@ -435,10 +435,10 @@ export function RetatrutideClinicalResearchSection({ product }: { product: Produ
 
 const productFeatureBullets = [
   'Research-use only',
-  'Documentation-first quality focus',
-  'Same-day El Paso delivery available',
-  'Nationwide shipping available',
-  'Mexico shipping available +$20',
+  'Documentation details confirmed during review',
+  'Availability confirmed during review',
+  'Shipping options confirmed during review',
+  'Handling requirements confirmed during review',
 ]
 
 function getProductPriceLabel(product: Product) {
@@ -454,7 +454,7 @@ export function ProductHero({ product }: { product: Product }) {
   const heroStats = [
     { value: 'RUO', label: 'Research use' },
     { value: `${product.variants.length}`, label: 'Catalog option' },
-    { value: '24hr', label: 'Inquiry routing' },
+    { value: 'Direct', label: 'Inquiry routing' },
   ]
   const priceLabel = getProductPriceLabel(product)
 
@@ -528,7 +528,7 @@ export function ProductHero({ product }: { product: Product }) {
               onSelectVariant={setSelectedVariant}
             />
             <p className="mt-3 text-xs font-semibold text-[var(--muted)]">
-              Ships from El Paso, TX · Nationwide U.S. and Mexico shipping available
+              Availability, handling, and shipping options are confirmed during order review
             </p>
           </div>
           <div className="mt-8 grid max-w-2xl grid-cols-3 overflow-hidden rounded-[1.35rem] border border-[var(--border)] bg-white shadow-[0_20px_60px_rgba(26,35,64,0.08)]">
@@ -555,7 +555,7 @@ export function ProductHero({ product }: { product: Product }) {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(46,196,165,0.2),transparent_35%),linear-gradient(145deg,#ffffff,#eef7f6_48%,#f8f9fb)]" />
             <div className="absolute inset-5 rounded-[1.7rem] border border-[var(--border)] bg-white/42" />
             <div className="absolute left-6 top-6 z-10 rounded-full border border-[var(--teal-border)] bg-white/90 px-4 py-2 text-xs font-semibold text-[var(--navy)] shadow-[0_12px_36px_rgba(26,35,64,0.1)] backdrop-blur-xl">
-              Documentation ready
+              Documentation by review
             </div>
             <div className="absolute right-6 top-6 z-10 rounded-full border border-[var(--teal-border)] bg-[var(--teal)] px-4 py-2 text-xs font-semibold text-white shadow-[0_12px_36px_rgba(46,196,165,0.24)]">
               RUO
@@ -637,8 +637,8 @@ export function ResearchProfileCallout({ product }: { product: Product }) {
 }
 
 const trustStripItems = [
-  { icon: MapPin, label: 'Same-day local El Paso delivery' },
-  { icon: Truck, label: 'Nationwide shipping' },
+  { icon: MapPin, label: 'Delivery options by review' },
+  { icon: Truck, label: 'Shipping details by review' },
   { icon: FlaskConical, label: 'Research-use-only products' },
   { icon: ShieldCheck, label: 'Premium biotech quality standards' },
   { icon: Lock, label: 'Private inquiry · careful packaging' },
@@ -806,15 +806,15 @@ export function ProductQualityFocus({ product }: { product: Product }) {
 }
 
 const productHowItWorksSteps = [
-  { icon: FileSearch, title: 'Explore the product', copy: 'Review format, category, and research context on this page.' },
-  { icon: ClipboardCheck, title: 'Complete intake / contact Encore', copy: 'Start the intake form or reach Encore directly with questions.' },
-  { icon: Truck, title: 'Receive local delivery or nationwide shipping', copy: 'Approved orders route to same-day El Paso delivery or nationwide shipping.' },
-  { icon: ShieldCheck, title: 'Review research-use-only handling information', copy: 'Confirm storage, labeling, and research-use-only handling before use.' },
+  { icon: FileSearch, title: 'Select product and strength', copy: 'Choose the catalog option that matches the requirements of your research review.' },
+  { icon: PackageCheck, title: 'Receive the Encore Complete Kit', copy: 'The product and confirmed supporting kit components arrive together.' },
+  { icon: ClipboardCheck, title: 'Review included documentation', copy: 'Review the product label, accompanying documentation, and included materials.' },
+  { icon: ShieldCheck, title: 'Conduct appropriate research', copy: 'Use appropriate laboratory procedures and qualified research oversight.' },
 ]
 
 export function ProductHowItWorksFlow() {
   return (
-    <SectionShell eyebrow="How it works" title="From product page to organized fulfillment.">
+    <SectionShell eyebrow="How it works" title="A consistent four-step research workflow.">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {productHowItWorksSteps.map((step, index) => (
           <motion.div

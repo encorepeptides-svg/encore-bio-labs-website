@@ -4,11 +4,12 @@ import { brandText } from '../../config/brandText'
 
 const exploreLinks = [
   { label: 'Catalog', href: '/catalog' },
+  { label: 'How It Works', href: '/#how-it-works' },
   { label: 'Categories', href: '/#products' },
   { label: 'Research Library', href: '/research' },
   { label: 'About Encore Bio Labs', href: '/about' },
   { label: 'Kits', href: '/kits' },
-  { label: 'Quality', href: '/quality' },
+  { label: 'Documentation', href: '/quality' },
   { label: 'FAQ', href: '/faq' },
 ]
 
@@ -21,13 +22,13 @@ const contactLinks = [
 
 const legalLinks = [
   { label: 'Terms', href: '/legal/terms' },
-  { label: 'Privacy', href: '/legal/privacy' },
+  { label: 'Privacy Policy', href: '/legal/privacy' },
   { label: 'Shipping & Returns', href: '/legal/shipping-returns' },
 ]
 
 export function Footer() {
   return (
-    <footer className="border-t border-slate-900/10 px-5 pb-28 pt-10 sm:px-8 md:pb-10 lg:py-12">
+    <footer id="contact" className="scroll-mt-28 border-t border-slate-900/10 px-5 pb-28 pt-10 sm:px-8 md:pb-10 lg:py-12">
       <div className="mx-auto max-w-[88rem]">
         <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
           <div>

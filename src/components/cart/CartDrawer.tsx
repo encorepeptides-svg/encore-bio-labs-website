@@ -1,5 +1,6 @@
 import { Minus, Plus, ShieldCheck, ShoppingCart, Trash2, X } from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { useEffect, useRef } from 'react'
 import { useCart } from '../../context/useCart'
 import { formatCartCurrency } from '../../lib/cart'
 import { EncoreCompleteKit } from '../EncoreCompleteKit'
@@ -28,6 +29,44 @@ export function CartDrawer() {
     clearCart,
   } = useCart()
   const prefersReducedMotion = useReducedMotion()
+  const drawerRef = useRef<HTMLElement>(null)
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    closeButtonRef.current?.focus()
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') closeCart()
+      if (event.key !== 'Tab' || !drawerRef.current) return
+
+      const focusable = Array.from(
+        drawerRef.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'),
+      ).filter((element) => !element.hasAttribute('hidden'))
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (!first || !last) return
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', handleKeyDown)
+      previouslyFocused?.focus()
+    }
+  }, [closeCart, isOpen])
 
   return (
     <AnimatePresence>
@@ -44,6 +83,7 @@ export function CartDrawer() {
             className="fixed inset-0 z-[80] bg-[#071724]/34 backdrop-blur-sm"
           />
           <motion.aside
+            ref={drawerRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="cart-drawer-title"
@@ -61,6 +101,7 @@ export function CartDrawer() {
                 </h2>
               </div>
               <button
+                ref={closeButtonRef}
                 type="button"
                 onClick={closeCart}
                 aria-label="Close cart"
@@ -91,7 +132,7 @@ export function CartDrawer() {
                             ) : null}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <h3 className="truncate text-sm font-semibold text-[#071724]">{item.productName}</h3>
+                            <a href={`/products/${item.productSlug}`} onClick={closeCart} className="block truncate text-sm font-semibold text-[#071724] hover:text-teal-700">{item.productName}</a>
                             <p className="mt-1 text-xs text-slate-500">{item.variantLabel} · {item.variantFormat}</p>
                             <p className="mt-2 text-sm font-semibold text-[#071724]">{formatCartCurrency(item.unitPrice)}</p>
                           </div>
@@ -100,7 +141,7 @@ export function CartDrawer() {
                           <div className="inline-flex items-center rounded-full border border-slate-900/10 bg-[#f8fafc]">
                             <button
                               type="button"
-                              aria-label={`Decrease ${item.productName} quantity`}
+                              aria-label={`Decrease ${item.productName} ${item.variantLabel} quantity`}
                               onClick={() => updateQuantity(item.id, item.quantity - 1)}
                               className="flex size-9 items-center justify-center text-slate-600"
                             >
@@ -109,7 +150,7 @@ export function CartDrawer() {
                             <span className="min-w-8 text-center text-sm font-semibold text-[#071724]">{item.quantity}</span>
                             <button
                               type="button"
-                              aria-label={`Increase ${item.productName} quantity`}
+                              aria-label={`Increase ${item.productName} ${item.variantLabel} quantity`}
                               onClick={() => updateQuantity(item.id, item.quantity + 1)}
                               className="flex size-9 items-center justify-center text-slate-600"
                             >
@@ -119,11 +160,16 @@ export function CartDrawer() {
                           <button
                             type="button"
                             onClick={() => removeFromCart(item.id)}
+                            aria-label={`Remove ${item.productName} ${item.variantLabel} from cart`}
                             className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-semibold text-slate-500 transition hover:bg-rose-50 hover:text-rose-700"
                           >
                             <Trash2 size={13} aria-hidden="true" />
                             Remove
                           </button>
+                        </div>
+                        <div className="mt-3 flex items-center justify-between border-t border-slate-900/10 pt-3 text-xs">
+                          <span className="text-slate-500">Line subtotal</span>
+                          <span className="font-semibold text-[#071724]">{formatCartCurrency(item.unitPrice * item.quantity)}</span>
                         </div>
                         <EncoreCompleteKit variant="cart" className="mt-3" />
                       </article>
@@ -152,32 +198,18 @@ export function CartDrawer() {
                   <span>Subtotal</span>
                   <span className="font-semibold text-[#071724]">{formatCartCurrency(totals.subtotal)}</span>
                 </div>
-                <div className="flex items-center justify-between text-slate-600">
-                  <span>Shipping</span>
-                  <span className="font-semibold text-[#071724]">{totals.shipping ? formatCartCurrency(totals.shipping) : 'Calculated later'}</span>
-                </div>
-                <div className="flex items-center justify-between text-slate-600">
-                  <span>Estimated tax</span>
-                  <span className="font-semibold text-[#071724]">{totals.tax ? formatCartCurrency(totals.tax) : 'Calculated later'}</span>
-                </div>
-              </div>
-              <div className="mt-4 flex items-center justify-between border-t border-slate-900/10 pt-4">
-                <span className="text-base font-semibold text-[#071724]">Estimated total</span>
-                <span className="text-2xl font-semibold tracking-[-0.03em] text-[#071724]">{formatCartCurrency(totals.total)}</span>
+                <p className="text-xs leading-5 text-slate-500">Shipping is confirmed during order review. Payment is not collected here.</p>
               </div>
               {items.length ? (
-                <a
-                  href="/checkout"
-                  onClick={closeCart}
-                  className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition hover:bg-teal-700"
-                >
-                  Continue to inquiry checkout
-                </a>
+                <div className="mt-5 grid gap-2">
+                  <a href="/cart" onClick={closeCart} className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition hover:bg-teal-700">View Cart</a>
+                  <a href="/checkout" onClick={closeCart} className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-slate-900/10 bg-white px-5 text-sm font-semibold text-[#071724] transition hover:bg-teal-50">Continue to Order Information</a>
+                </div>
               ) : null}
               {items.length ? (
                 <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-xs font-medium text-slate-500">
                   <ShieldCheck size={13} aria-hidden="true" className="shrink-0 text-teal-700" />
-                  Secure order processing · Contact information protected
+                  Order details are reviewed before submission
                 </p>
               ) : null}
               {items.length ? (
@@ -210,7 +242,7 @@ export function CartNavButton() {
       <ShoppingCart size={18} aria-hidden="true" />
       {itemCount ? (
         <span className="absolute -right-1 -top-1 flex min-w-5 items-center justify-center rounded-full bg-teal-700 px-1.5 py-0.5 text-[0.65rem] font-bold text-white">
-          {itemCount}
+          {itemCount > 99 ? '99+' : itemCount}
         </span>
       ) : null}
     </button>

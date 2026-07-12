@@ -11,7 +11,7 @@ export function AnnouncementBar() {
     >
       <div className="mx-auto flex max-w-[88rem] items-center justify-center gap-2 text-xs font-medium tracking-wide text-slate-600 sm:text-sm">
         <FlaskConical size={14} aria-hidden="true" className="shrink-0 text-teal-700" />
-        <span>Research-use-only catalog with COA availability, complete kits, and U.S. / Mexico shipping support.</span>
+        <span>Research-use-only catalog with complete kits and product-specific documentation and shipping review.</span>
       </div>
     </motion.div>
   )

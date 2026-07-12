@@ -6,6 +6,7 @@ import {
   calculateTotal,
   createCartItem,
   normalizeQuantity,
+  parseStoredCart,
   type CartItem,
   type CartItemId,
 } from '../lib/cart'
@@ -16,23 +17,36 @@ const CART_STORAGE_KEY = 'encore-bio-labs-cart-v1'
 function readStoredCart(): CartItem[] {
   if (typeof window === 'undefined') return []
 
-  try {
-    const stored = window.localStorage.getItem(CART_STORAGE_KEY)
-    if (!stored) return []
-    const parsed = JSON.parse(stored) as CartItem[]
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
+  return parseStoredCart(window.localStorage.getItem(CART_STORAGE_KEY))
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(() => readStoredCart())
   const [isOpen, setIsOpen] = useState(false)
+  const [announcement, setAnnouncement] = useState('')
 
   useEffect(() => {
     window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items))
   }, [items])
+
+  useEffect(() => {
+    let active = true
+
+    void import('../data/products').then(({ products }) => {
+      if (!active) return
+      setItems((current) => current.flatMap((storedItem) => {
+        const product = products.find((entry) => entry.slug === storedItem.productSlug)
+        const variant = product?.variants.find(
+          (entry) => entry.label === storedItem.variantLabel && entry.format === storedItem.variantFormat,
+        )
+        return product && variant ? [createCartItem(product, variant, storedItem.quantity)] : []
+      }))
+    })
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   const addToCart = useCallback((product: Product, variant: ProductVariant, quantity = 1) => {
     const nextItem = createCartItem(product, variant, quantity)
@@ -48,19 +62,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
       )
     })
     setIsOpen(true)
+    setAnnouncement(`${product.name} ${variant.label} added to cart.`)
   }, [])
 
   const removeFromCart = useCallback((itemId: CartItemId) => {
+    const removed = items.find((item) => item.id === itemId)
+    if (removed) setAnnouncement(`${removed.productName} ${removed.variantLabel} removed from cart.`)
     setItems((current) => current.filter((item) => item.id !== itemId))
-  }, [])
+  }, [items])
 
   const updateQuantity = useCallback((itemId: CartItemId, quantity: number) => {
-    setItems((current) =>
-      current.map((item) => (item.id === itemId ? { ...item, quantity: normalizeQuantity(quantity) } : item)),
-    )
-  }, [])
+    const item = items.find((entry) => entry.id === itemId)
+    const nextQuantity = normalizeQuantity(quantity)
+    if (item) setAnnouncement(`${item.productName} ${item.variantLabel} quantity updated to ${nextQuantity}.`)
+    setItems((current) => current.map((entry) => entry.id === itemId ? { ...entry, quantity: nextQuantity } : entry))
+  }, [items])
 
-  const clearCart = useCallback(() => setItems([]), [])
+  const clearCart = useCallback(() => {
+    setItems([])
+    setAnnouncement('Cart cleared.')
+  }, [])
   const subtotal = useMemo(() => calculateSubtotal(items), [items])
   const itemCount = useMemo(() => calculateItemCount(items), [items])
   const totals = useMemo(() => calculateTotal(items), [items])
@@ -84,5 +105,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [addToCart, clearCart, itemCount, isOpen, items, removeFromCart, subtotal, totals, updateQuantity],
   )
 
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>
+  return (
+    <CartContext.Provider value={value}>
+      {children}
+      <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
+    </CartContext.Provider>
+  )
 }

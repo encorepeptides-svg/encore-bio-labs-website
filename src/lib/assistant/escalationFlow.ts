@@ -17,6 +17,6 @@ export const escalationSteps: Array<{ field: EscalationField; prompt: string }> 
   { field: 'city', prompt: "What city are you located in? (Helps us flag local El Paso delivery.)" },
   {
     field: 'deliveryPreference',
-    prompt: 'Do you prefer local El Paso delivery, nationwide U.S. shipping, or Mexico shipping?',
+    prompt: 'What is the destination for the shipping or delivery review?',
   },
 ]

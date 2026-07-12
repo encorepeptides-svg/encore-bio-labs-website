@@ -4,7 +4,7 @@ export const brandText = {
   complianceDisclaimer:
     'For Research Use Only (RUO). Not for use in diagnostic or therapeutic procedures.',
   documentationPromise:
-    'Our team coordinates identity, purity, storage, and batch documentation so procurement teams can move with confidence.',
+    'Our team confirms which identity, purity, storage, and batch documentation applies during product review.',
   humanSupport:
     'Collaborate with a responsive specialist who understands research procurement, not a generic form queue.',
   catalogPositioning:

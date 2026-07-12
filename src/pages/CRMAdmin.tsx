@@ -1,30 +1,50 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
+import type { Session } from '@supabase/supabase-js'
 import { Download, LoaderCircle, LockKeyhole, RefreshCw, ShieldCheck } from 'lucide-react'
 import { CRMDashboard } from '../components/crm/CRMDashboard'
 import { LeadDetailDrawer } from '../components/crm/LeadDetailDrawer'
 import { LeadTable } from '../components/crm/LeadTable'
 import { downloadLeadsCsv } from '../lib/exportCrmCsv'
 import { getLeads, isCrmUsingSupabase } from '../lib/crmStorage'
+import { supabase } from '../lib/supabaseClient'
 import type { Lead } from '../types/crm'
 
-const sessionKey = 'encore_crm_admin_unlocked'
+function isCrmAdmin(session: Session | null) {
+  return session?.user.app_metadata.role === 'crm_admin'
+}
 
 export function CRMAdmin() {
-  const [unlocked, setUnlocked] = useState(() => window.sessionStorage.getItem(sessionKey) === 'true')
+  const [session, setSession] = useState<Session | null>(null)
+  const [authLoading, setAuthLoading] = useState(true)
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [crmError, setCrmError] = useState('')
   const [loading, setLoading] = useState(false)
   const [leads, setLeads] = useState<Lead[]>([])
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
-  const configuredPassword = import.meta.env.VITE_CRM_ADMIN_PASSWORD as string | undefined
 
   useEffect(() => {
-    if (unlocked) {
-      void loadLeads()
+    if (!supabase) {
+      setAuthLoading(false)
+      return
     }
-  }, [unlocked])
+
+    void supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session)
+      setAuthLoading(false)
+    })
+    const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession)
+      setAuthLoading(false)
+    })
+    return () => data.subscription.unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    if (isCrmAdmin(session)) void loadLeads()
+  }, [session])
 
   async function loadLeads() {
     setLoading(true)
@@ -39,22 +59,24 @@ export function CRMAdmin() {
     }
   }
 
-  function submitPassword(event: FormEvent<HTMLFormElement>) {
+  async function submitPassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-
-    if (!configuredPassword) {
-      setError('Set VITE_CRM_ADMIN_PASSWORD in your environment to unlock the CRM.')
+    setError('')
+    if (!supabase) {
+      setError('Supabase is not configured for this deployment.')
       return
     }
-
-    if (password === configuredPassword) {
-      window.sessionStorage.setItem(sessionKey, 'true')
-      setUnlocked(true)
-      setError('')
+    setAuthLoading(true)
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+    setAuthLoading(false)
+    if (signInError) {
+      setError('Sign-in failed. Check your credentials and try again.')
       return
     }
-
-    setError('Password did not match.')
+    if (!isCrmAdmin(data.session)) {
+      await supabase.auth.signOut()
+      setError('This account is not authorized for CRM access.')
+    }
   }
 
   async function refreshLead(lead: Lead) {
@@ -62,7 +84,11 @@ export function CRMAdmin() {
     setSelectedLead(lead)
   }
 
-  if (!unlocked) {
+  if (authLoading && !session) {
+    return <main id="main-content" className="grid min-h-screen place-items-center bg-[#071724] text-white"><LoaderCircle className="animate-spin" aria-label="Checking admin session" /></main>
+  }
+
+  if (!isCrmAdmin(session)) {
     return (
       <main id="main-content" className="relative min-h-screen overflow-hidden bg-[#071724] px-5 py-12 text-white sm:px-8">
         <div className="molecule-field" aria-hidden="true" />
@@ -74,25 +100,37 @@ export function CRMAdmin() {
             <p className="mt-8 text-xs font-semibold uppercase tracking-[0.22em] text-teal-200">Internal CRM</p>
             <h1 className="mt-4 text-4xl font-semibold tracking-[-0.055em] sm:text-5xl">Encore lead desk</h1>
             <p className="mt-4 text-sm leading-7 text-slate-300">
-              Password-gated MVP for intake submissions, lead scoring, and research-use-only follow-up workflows.
+              Sign in with an authorized Encore administrator account to access private inquiry data.
             </p>
             <label className="mt-7 grid gap-2 text-sm font-semibold">
+              Admin email
+              <input
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                type="email"
+                autoComplete="username"
+                required
+                className="h-12 rounded-full border border-white/10 bg-white px-4 text-sm text-[#071724] outline-none focus:border-teal-300 focus:ring-4 focus:ring-teal-300/20"
+              />
+            </label>
+            <label className="mt-4 grid gap-2 text-sm font-semibold">
               Admin password
               <input
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 type="password"
                 autoComplete="current-password"
+                required
                 className="h-12 rounded-full border border-white/10 bg-white px-4 text-sm text-[#071724] outline-none focus:border-teal-300 focus:ring-4 focus:ring-teal-300/20"
               />
             </label>
             {error ? <p className="mt-3 rounded-2xl border border-red-300/30 bg-red-500/10 p-3 text-sm font-semibold text-red-100">{error}</p> : null}
             <button type="submit" className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-teal-300 px-6 text-sm font-semibold text-[#071724]">
-              Unlock CRM
+              {authLoading ? 'Signing in…' : 'Sign in securely'}
             </button>
             <p className="mt-5 flex items-start gap-2 text-xs leading-5 text-slate-400">
               <ShieldCheck size={15} aria-hidden="true" className="mt-0.5 shrink-0 text-teal-300" />
-              MVP gate only. Use a real auth provider before production access.
+              Access is enforced by Supabase Auth and database row-level security.
             </p>
           </form>
         </div>
@@ -112,17 +150,22 @@ export function CRMAdmin() {
               Lightweight internal view for website inquiries, intake submissions, lead scoring, and compliant follow-up templates.
             </p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/8 p-4">
-            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-200">Storage</div>
-            <div className="mt-1 text-sm font-semibold">{isCrmUsingSupabase() ? 'Supabase PostgreSQL' : 'local demo mode'}</div>
+          <div className="grid gap-3">
+            <div className="rounded-2xl border border-white/10 bg-white/8 p-4">
+              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-200">Signed in</div>
+              <div className="mt-1 text-sm font-semibold">{session?.user.email}</div>
+            </div>
+            <button
+              type="button"
+              onClick={() => void supabase?.auth.signOut()}
+              className="h-11 rounded-full border border-white/15 px-4 text-sm font-semibold text-white transition hover:bg-white/10"
+            >
+              Sign out
+            </button>
           </div>
         </header>
 
-        {!isCrmUsingSupabase() ? (
-          <div className="rounded-2xl border border-amber-500/20 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
-            CRM is running in local demo mode. Connect Supabase for production.
-          </div>
-        ) : null}
+        {!isCrmUsingSupabase() ? <div role="alert">Supabase is required for CRM access.</div> : null}
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="text-sm font-semibold text-slate-500">

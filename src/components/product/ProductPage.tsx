@@ -1,35 +1,17 @@
+import { useEffect } from 'react'
 import { products } from '../../data/products'
 import {
-  CTASection,
   FAQSection,
   FinalPurchaseCTA,
-  PremiumVisualBreak,
   ProductBreadcrumb,
   ProductHero,
   ProductBenefits,
-  ProductDifferentiator,
-  ProductGallery,
   ProductHowItWorksFlow,
-  ProductMechanism,
   ProductCompleteKitCallout,
-  ProductOverview,
   ProductQualityFocus,
-  ProductResearchLinks,
-  ProductInternalLinks,
-  ProductScience,
   ProductSpecs,
-  ProductTrustStrip,
-  RetatrutideClinicalResearchSection,
-  RetatrutideHeroSection,
-  ReconstitutionGuide,
   RelatedProducts,
-  ResearchProfileCallout,
   ResearchUseDisclaimer,
-  SuggestedResearchProtocol,
-  VisualBiology,
-  WhatIsProduct,
-  WhatsIncluded,
-  WhoMayBenefit,
 } from './ProductPageSections'
 
 function findProductBySlug(slug: string) {
@@ -42,6 +24,34 @@ function findProductBySlug(slug: string) {
 
 export function ProductPage({ slug }: { slug: string }) {
   const product = findProductBySlug(slug)
+
+  useEffect(() => {
+    const title = product ? `${product.name} Research Product | Encore Bio Labs` : 'Product Not Found | Encore Bio Labs'
+    const description = product
+      ? product.shortDescription || product.description
+      : 'The requested Encore Bio Labs research product is not available.'
+    const previousTitle = document.title
+    const descriptionMeta = document.querySelector<HTMLMetaElement>('meta[name="description"]')
+    const previousDescription = descriptionMeta?.content
+    let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]')
+    const createdCanonical = !canonical
+
+    document.title = title
+    if (descriptionMeta) descriptionMeta.content = description
+
+    if (!canonical) {
+      canonical = document.createElement('link')
+      canonical.rel = 'canonical'
+      document.head.appendChild(canonical)
+    }
+    canonical.href = `https://encorebiolabs.com/products/${product?.slug ?? slug}`
+
+    return () => {
+      document.title = previousTitle
+      if (descriptionMeta && previousDescription !== undefined) descriptionMeta.content = previousDescription
+      if (createdCanonical) canonical?.remove()
+    }
+  }, [product, slug])
 
   if (!product) {
     return (
@@ -70,56 +80,16 @@ export function ProductPage({ slug }: { slug: string }) {
   return (
     <main id="main-content" className="bg-[#F8FAFC]">
       <ProductBreadcrumb product={product} />
-      {product.slug === 'retatrutide' ? (
-        <>
-          <RetatrutideHeroSection product={product} />
-          <ProductCompleteKitCallout product={product} />
-          <ProductTrustStrip />
-          <ProductBenefits product={product} />
-          <ResearchProfileCallout product={product} />
-          <RetatrutideClinicalResearchSection product={product} />
-          <ProductOverview product={product} />
-          <ProductHowItWorksFlow />
-          <ProductSpecs product={product} />
-          <SuggestedResearchProtocol product={product} />
-          <ReconstitutionGuide product={product} />
-          <ProductQualityFocus product={product} />
-          <FAQSection product={product} />
-          <ProductInternalLinks product={product} />
-          <RelatedProducts product={product} />
-          <CTASection product={product} />
-          <FinalPurchaseCTA product={product} />
-          <ResearchUseDisclaimer product={product} />
-        </>
-      ) : (
-        <>
-          <ProductHero product={product} />
-          <ProductCompleteKitCallout product={product} />
-          <ProductTrustStrip />
-          <ProductBenefits product={product} />
-          <ResearchProfileCallout product={product} />
-          <WhatIsProduct product={product} />
-          <PremiumVisualBreak product={product} />
-          <ProductMechanism product={product} />
-          <ProductHowItWorksFlow />
-          <ProductSpecs product={product} />
-          <ProductScience product={product} />
-          <VisualBiology product={product} />
-          <WhatsIncluded product={product} />
-          <ProductQualityFocus product={product} />
-          <ReconstitutionGuide product={product} />
-          <WhoMayBenefit product={product} />
-          <ProductDifferentiator product={product} />
-          <ProductGallery product={product} />
-          <FAQSection product={product} />
-          <ProductResearchLinks product={product} />
-          <ProductInternalLinks product={product} />
-          <RelatedProducts product={product} />
-          <CTASection product={product} />
-          <FinalPurchaseCTA product={product} />
-          <ResearchUseDisclaimer product={product} />
-        </>
-      )}
+      <ProductHero product={product} />
+      <ProductCompleteKitCallout product={product} />
+      <ProductBenefits product={product} />
+      <ProductHowItWorksFlow />
+      <ProductSpecs product={product} />
+      <ProductQualityFocus product={product} />
+      <FAQSection product={product} />
+      <RelatedProducts product={product} />
+      <FinalPurchaseCTA product={product} />
+      <ResearchUseDisclaimer product={product} />
     </main>
   )
 }

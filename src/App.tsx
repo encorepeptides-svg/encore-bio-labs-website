@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { AnnouncementBar } from './components/AnnouncementBar'
 import { CartDrawer } from './components/cart/CartDrawer'
 import { Footer } from './components/Footer'
@@ -8,15 +8,13 @@ import { CartProvider } from './context/CartContext'
 
 // Route pages are code-split so each experience only loads when it renders.
 const AboutPage = lazy(() => import('./components/AboutPage').then((m) => ({ default: m.AboutPage })))
-const AdminLeadsPage = lazy(() =>
-  import('./components/admin/AdminLeadsPage').then((m) => ({ default: m.AdminLeadsPage })),
-)
 const HomePage = lazy(() =>
   import('./components/HomePage').then((m) => ({ default: m.HomePage })),
 )
 const CRMAdmin = lazy(() => import('./pages/CRMAdmin').then((m) => ({ default: m.CRMAdmin })))
 const CatalogPage = lazy(() => import('./components/catalog/CatalogPage').then((m) => ({ default: m.CatalogPage })))
 const CategoryPage = lazy(() => import('./components/category/CategoryPage').then((m) => ({ default: m.CategoryPage })))
+const CartPage = lazy(() => import('./components/cart/CartPage').then((m) => ({ default: m.CartPage })))
 const CheckoutPage = lazy(() => import('./components/checkout/CheckoutPage').then((m) => ({ default: m.CheckoutPage })))
 const FAQLibraryPage = lazy(() => import('./components/faq/FAQLibraryPage').then((m) => ({ default: m.FAQLibraryPage })))
 const IntakePage = lazy(() => import('./components/intake/IntakePage').then((m) => ({ default: m.IntakePage })))
@@ -31,10 +29,19 @@ const QualityPage = lazy(() => import('./components/quality/QualityPage').then((
 const ResearchLibraryPage = lazy(() =>
   import('./components/research/ResearchLibraryPage').then((m) => ({ default: m.ResearchLibraryPage })),
 )
+const NotFoundPage = lazy(() => import('./components/NotFoundPage').then((m) => ({ default: m.NotFoundPage })))
 
 const AssistantWidget = lazy(() =>
   import('./components/assistant/AssistantWidget').then((module) => ({ default: module.AssistantWidget })),
 )
+
+const knownCategorySlugs = new Set([
+  'metabolic-weight-management',
+  'recovery-regeneration',
+  'longevity-cellular-health',
+  'cognitive-performance',
+  'hormone-wellness',
+])
 
 function getPathname() {
   return typeof window === 'undefined' ? '/' : window.location.pathname
@@ -63,15 +70,48 @@ function getCategorySlugFromPath() {
   return getRouteParam(/^\/categories\/([^/]+)\/?$/)
 }
 
-function getAdminLeadIdFromPath() {
-  return getRouteParam(/^\/admin\/leads\/([^/]+)\/?$/)
-}
-
 function App() {
   const productSlug = getProductSlugFromPath()
   const categorySlug = getCategorySlugFromPath()
-  const adminLeadId = getAdminLeadIdFromPath()
   const pathname = getPathname()
+
+  useEffect(() => {
+    if (productSlug) return
+
+    const pageMetadata: Record<string, { title: string; description: string }> = {
+      '/': { title: 'Encore Bio Labs | Research-grade compounds', description: 'Explore Encore Bio Labs research-use-only products, documentation, complete kits, and inquiry support.' },
+      '/catalog': { title: 'Research Product Catalog | Encore Bio Labs', description: 'Browse Encore Bio Labs research products, available formats, catalog pricing, and documentation pathways.' },
+      '/cart': { title: 'Research Cart | Encore Bio Labs', description: 'Review selected research products, strengths, quantities, and catalog subtotal.' },
+      '/checkout': { title: 'Order Information | Encore Bio Labs', description: 'Review an Encore Bio Labs research order inquiry and provide contact and shipping information.' },
+      '/faq': { title: 'Research Product FAQ | Encore Bio Labs', description: 'Read answers about research-use classification, products, documentation, ordering, shipping, and support.' },
+      '/about': { title: 'About Encore Bio Labs', description: 'Learn about Encore Bio Labs, its research catalog, documentation-first approach, and responsible product positioning.' },
+      '/intake': { title: 'Research Intake | Encore Bio Labs', description: 'Share your research interests for a qualified Encore Bio Labs catalog review.' },
+      '/quality': { title: 'Quality and Documentation | Encore Bio Labs', description: 'Review Encore Bio Labs quality, documentation, handling, and research-use standards.' },
+      '/kits': { title: 'Encore Complete Kit', description: 'Review the shared components included with eligible Encore Bio Labs research products.' },
+      '/research': { title: 'Research Library | Encore Bio Labs', description: 'Explore research-use educational material and product-category context from Encore Bio Labs.' },
+      '/legal/terms': { title: 'Terms of Service | Encore Bio Labs', description: 'Read the Encore Bio Labs terms governing site access and research catalog inquiries.' },
+      '/legal/privacy': { title: 'Privacy Policy | Encore Bio Labs', description: 'Read how Encore Bio Labs handles information submitted through the website.' },
+      '/legal/shipping-returns': { title: 'Shipping and Returns | Encore Bio Labs', description: 'Review Encore Bio Labs shipping, delivery, return, and support policies.' },
+    }
+    const normalizedPath = pathname.length > 1 ? pathname.replace(/\/$/, '') : pathname
+    const categoryName = categorySlug && knownCategorySlugs.has(categorySlug)
+      ? categorySlug.split('-').map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`).join(' ')
+      : undefined
+    const metadata = pageMetadata[normalizedPath] ?? (categoryName
+      ? { title: `${categoryName} Research | Encore Bio Labs`, description: `Explore Encore Bio Labs ${categoryName.toLowerCase()} research products and educational context.` }
+      : { title: 'Page Not Found | Encore Bio Labs', description: 'The requested Encore Bio Labs page is not available.' })
+    const descriptionMeta = document.querySelector<HTMLMetaElement>('meta[name="description"]')
+    let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]')
+
+    document.title = metadata.title
+    if (descriptionMeta) descriptionMeta.content = metadata.description
+    if (!canonical) {
+      canonical = document.createElement('link')
+      canonical.rel = 'canonical'
+      document.head.appendChild(canonical)
+    }
+    canonical.href = `https://encorebiolabs.com${normalizedPath}`
+  }, [categorySlug, pathname, productSlug])
 
   const page = (() => {
     if (pathname === '/intake' || pathname === '/intake/') {
@@ -90,12 +130,11 @@ function App() {
       return <CatalogPage />
     }
 
-    if (
-      pathname === '/cart' ||
-      pathname === '/cart/' ||
-      pathname === '/checkout' ||
-      pathname === '/checkout/'
-    ) {
+    if (pathname === '/cart' || pathname === '/cart/') {
+      return <CartPage />
+    }
+
+    if (pathname === '/checkout' || pathname === '/checkout/') {
       return <CheckoutPage />
     }
 
@@ -111,11 +150,7 @@ function App() {
       return <CategoryPage slug={categorySlug} />
     }
 
-    if (pathname === '/admin/leads' || pathname === '/admin/leads/' || adminLeadId) {
-      return <AdminLeadsPage leadId={adminLeadId} />
-    }
-
-    if (pathname === '/admin/crm' || pathname === '/admin/crm/') {
+    if (pathname.startsWith('/admin/')) {
       return <CRMAdmin />
     }
 
@@ -143,19 +178,17 @@ function App() {
       return <ProductPage slug={productSlug} />
     }
 
-    return <HomePage />
+    return <NotFoundPage />
   })()
   const isInternalAdminRoute = pathname.startsWith('/admin/')
   const isCheckoutRoute =
-    pathname === '/cart' ||
-    pathname === '/cart/' ||
     pathname === '/checkout' ||
     pathname === '/checkout/'
   const hideGlobalChrome = isInternalAdminRoute || isCheckoutRoute
 
   return (
     <CartProvider>
-      <div className="min-h-screen overflow-hidden bg-[#f5f5f2] text-[#071724]">
+      <div className="min-h-screen overflow-x-clip bg-[#f5f5f2] text-[#071724]">
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-[#071724] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"

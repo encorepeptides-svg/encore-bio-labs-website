@@ -27,7 +27,7 @@ export function QualityPage() {
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
             This page exists so you can see, in one place, exactly what Encore Bio Labs makes
-            available on request and how we handle storage, batch records, and identity or purity
+            confirmed during review and how storage, batch records, and identity or purity
             documentation — before you ever start a research intake.
           </p>
         </Reveal>
@@ -45,7 +45,7 @@ export function QualityPage() {
               This page is documentation context, not medical advice.
             </h2>
             <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600">
-              Everything above describes what documentation is available and how it's handled —
+              Everything above describes how documentation details are confirmed and handled —
               not what a compound will do for you personally. All Encore Bio Labs products are
               sold for laboratory research use only. They are not intended for human or animal
               consumption, and nothing on this page is medical advice, dosing guidance, a use
@@ -82,7 +82,7 @@ export function QualityPage() {
             label: 'Policy',
             title: 'Shipping & Returns',
             href: '/legal/shipping-returns',
-            description: 'Local El Paso delivery, nationwide shipping, and Mexico shipping details.',
+            description: 'Current delivery destinations, methods, timing, and shipping costs.',
           },
         ]}
       />

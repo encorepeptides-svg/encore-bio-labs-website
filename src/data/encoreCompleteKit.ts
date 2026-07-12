@@ -134,7 +134,7 @@ export function getEncoreCompleteKitFaqItems({ productName, ...configInput }: En
     {
       question: 'When should I expect shipping confirmation?',
       answer:
-        'Shipping confirmation is sent once your order inquiry is reviewed and approved through the Encore Bio Labs process. Local El Paso, nationwide U.S., and Mexico shipping options are available depending on your location.',
+        'Shipping methods, destinations, timing, and costs are confirmed once your order inquiry is reviewed.',
     },
   ]
 }

@@ -59,5 +59,26 @@ export function buildEscalationMessage({
   ].join('\n')
 }
 
+export function buildCartOrderMessage({
+  items,
+  subtotal,
+}: {
+  items: Array<{ productName: string; variantLabel: string; quantity: number }>
+  subtotal: string
+}) {
+  return [
+    'Hello Encore Bio Labs,',
+    '',
+    "I'd like to continue an order request for:",
+    '',
+    ...items.map((item) => `• ${item.productName} — ${item.variantLabel} × ${item.quantity}`),
+    '',
+    `Cart subtotal: ${subtotal}`,
+    'Shipping and final order details to be confirmed during review.',
+    '',
+    'Could you help me continue?',
+  ].join('\n')
+}
+
 export const GENERAL_INQUIRY_MESSAGE =
   'Hello Encore Bio Labs, I have a question about your research catalog.'

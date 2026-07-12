@@ -283,11 +283,9 @@ export function AboutPage() {
                 A real place, not just a website.
               </h2>
               <p className="mt-5 text-base leading-7 text-slate-600">
-                Encore Bio Labs supports same-day local courier delivery in the El Paso area and
-                nationwide U.S. shipping for research catalog fulfillment. We also support Mexico
-                shipping for a flat $20 USD addition to standard shipping. We mention this here on
-                purpose: a catalog with a real, locatable delivery footprint gives procurement
-                teams more confidence than a site that could be anywhere.
+                Delivery areas, timing, handling requirements, and shipping costs are confirmed by
+                Encore during order review. The website does not promise a delivery window or add
+                an unreviewed shipping charge.
               </p>
               <a
                 href="/faq#shipping"
@@ -304,10 +302,10 @@ export function AboutPage() {
                   <MapPin size={19} aria-hidden="true" />
                 </span>
                 <h3 className="mt-4 text-lg font-semibold tracking-[-0.03em] text-[#071724]">
-                  Same-day El Paso delivery
+                  Local delivery review
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Local courier delivery for approved research orders in the El Paso area.
+                  Local delivery eligibility and timing are confirmed for each reviewed order.
                 </p>
               </div>
               <div className="rounded-[1.5rem] border border-slate-900/10 bg-white p-5 shadow-[0_18px_48px_rgba(7,23,36,0.06)]">
@@ -315,10 +313,10 @@ export function AboutPage() {
                   <Truck size={19} aria-hidden="true" />
                 </span>
                 <h3 className="mt-4 text-lg font-semibold tracking-[-0.03em] text-[#071724]">
-                  Nationwide U.S. + Mexico shipping
+                  Destination review
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Nationwide U.S. shipping, plus Mexico shipping for a flat $20 USD addition.
+                  Available destinations, methods, and costs are confirmed before an order proceeds.
                 </p>
               </div>
             </Reveal>

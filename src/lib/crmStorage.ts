@@ -1,5 +1,5 @@
 import { calculateLeadScore } from './leadScoring'
-import { isPublicCrmDevMode, isSupabaseConfigured, supabase } from './supabaseClient'
+import { isSupabaseConfigured, supabase } from './supabaseClient'
 import type {
   CampaignSource,
   CRMNote,
@@ -32,6 +32,7 @@ type LeadRow = {
   interested_products: string[]
   primary_goal: string
   budget_range: string
+  notes: string
   status: LeadStatus
   lead_score: number
   lead_score_explanation: string[]
@@ -82,7 +83,7 @@ type NoteRow = {
 }
 
 export function isCrmUsingSupabase() {
-  return isSupabaseConfigured && isPublicCrmDevMode
+  return isSupabaseConfigured
 }
 
 function now(offsetDays = 0) {
@@ -534,7 +535,7 @@ function rowToLead(row: LeadRow, intakeSubmission?: IntakeSubmission, timelineEv
       score: row.lead_score,
       explanation: row.lead_score_explanation || [],
     },
-    notes: '',
+    notes: row.notes || '',
     lastContactedAt: row.last_contacted_at || undefined,
     intakeSubmission,
     timeline: timelineEvents,
@@ -560,6 +561,7 @@ function leadToRow(lead: Lead): LeadRow {
     interested_products: scored.interestedProducts.map((item) => item.productName),
     primary_goal: scored.primaryGoal,
     budget_range: scored.budgetRange,
+    notes: scored.notes,
     status: scored.status,
     lead_score: scored.leadScore.score,
     lead_score_explanation: scored.leadScore.explanation,
@@ -659,7 +661,7 @@ export async function getLeadById(id: string) {
 export async function saveIntakeSubmission(leadId: string, submission: IntakeSubmission) {
   if (isCrmUsingSupabase()) {
     const client = assertSupabase()
-    const { error } = await client.from('crm_intake_submissions').upsert(intakeToRow(leadId, submission))
+    const { error } = await client.from('crm_intake_submissions').insert(intakeToRow(leadId, submission))
     if (error) {
       throw error
     }
@@ -748,7 +750,7 @@ export async function saveLead(lead: Lead) {
 
   if (isCrmUsingSupabase()) {
     const client = assertSupabase()
-    const { error } = await client.from('crm_leads').upsert(leadToRow(nextLead))
+    const { error } = await client.from('crm_leads').insert(leadToRow(nextLead))
     if (error) {
       throw error
     }
@@ -758,14 +760,13 @@ export async function saveLead(lead: Lead) {
     }
 
     for (const event of nextLead.timeline) {
-      const { error: eventError } = await client.from('crm_timeline_events').upsert(eventToRow(nextLead.id, event))
+      const { error: eventError } = await client.from('crm_timeline_events').insert(eventToRow(nextLead.id, event))
       if (eventError) {
         throw eventError
       }
     }
 
     if (nextLead.interestedProducts.length > 0) {
-      await client.from('crm_products_interests').delete().eq('lead_id', nextLead.id)
       const { error: productsError } = await client.from('crm_products_interests').insert(
         nextLead.interestedProducts.map((item) => ({
           lead_id: nextLead.id,

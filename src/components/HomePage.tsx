@@ -16,6 +16,7 @@ import heroVideoPoster from '../assets/images/hero/hero-video-poster.jpg'
 import heroVideo from '../assets/videos/encore-hero.mp4'
 import { products, type Product } from '../data/products'
 import { faqLibrary } from '../data/faq'
+import { buildSrcSet, stemOf } from '../lib/responsiveImages'
 import { cn } from '../lib/utils'
 import { CategoryShowcase } from './home/CategoryShowcase'
 import { AddToCartButton } from './cart/AddToCartButton'
@@ -30,13 +31,15 @@ const productImages = import.meta.glob('../assets/images/products/*.{png,jpg,jpe
   import: 'default',
   query: '?url',
 }) as Record<string, string>
+const HOME_PRODUCT_IMAGE_BASE = '../assets/images/products/'
+const HOME_PRODUCT_WIDTHS = [720, 1000, 1254]
 
 const trustItems = [
   { icon: FlaskConical, label: 'Research Use Only' },
-  { icon: Snowflake, label: 'Cold Chain Shipping' },
+  { icon: Snowflake, label: 'Handling Confirmed During Review' },
   { icon: PackageCheck, label: 'Premium Packaging' },
-  { icon: Timer, label: 'Fast Fulfillment' },
-  { icon: FileText, label: 'Documentation Available' },
+  { icon: Timer, label: 'Fulfillment Confirmed During Review' },
+  { icon: FileText, label: 'Documentation Confirmed During Review' },
 ]
 
 const bestSellerSlugs = ['retatrutide', 'ghk-cu', 'nad-plus', 'tesamorelin']
@@ -72,8 +75,8 @@ const whyChooseCards = [
   },
   {
     icon: FileText,
-    title: 'Documentation Available',
-    body: 'Identity and purity documentation is available for eligible research products.',
+    title: 'Documentation Review',
+    body: 'Ask Encore to confirm the identity, purity, and batch records available for a reviewed product.',
   },
   {
     icon: PackageCheck,
@@ -93,6 +96,14 @@ function getProductImage(product: Product) {
   return productImages[`../assets/images/products/${product.image}`]
 }
 
+function getProductImageSources(product: Product) {
+  const stem = stemOf(product.image)
+  return {
+    avif: buildSrcSet(productImages, HOME_PRODUCT_IMAGE_BASE, stem, 'avif', HOME_PRODUCT_WIDTHS),
+    webp: buildSrcSet(productImages, HOME_PRODUCT_IMAGE_BASE, stem, 'webp', HOME_PRODUCT_WIDTHS),
+  }
+}
+
 function getResearchOptionPrice(product: Product) {
   const prices = product.variants.map((variant) => variant.price).filter((price) => price > 0)
   const startingPrice = prices.length ? Math.min(...prices) : undefined
@@ -105,6 +116,7 @@ function getProductLine(product: Product) {
 
 function FeaturedBestSellerCard({ product }: { product: Product }) {
   const imageSrc = getProductImage(product)
+  const imageSources = getProductImageSources(product)
 
   return (
     <article className="group overflow-hidden rounded-[1.75rem] border border-slate-900/10 bg-white shadow-[0_24px_80px_rgba(7,23,36,0.08)] transition duration-300 motion-safe:hover:-translate-y-1 hover:shadow-[0_34px_110px_rgba(20,184,166,0.16)]">
@@ -161,13 +173,11 @@ function FeaturedBestSellerCard({ product }: { product: Product }) {
         >
           <div className="relative flex aspect-[4/3] w-full items-center justify-center p-6 sm:aspect-[16/10] sm:p-10 lg:aspect-auto lg:h-full lg:min-h-[clamp(16rem,10rem+18vw,24rem)] lg:p-10">
             {imageSrc ? (
-              <img
-                src={imageSrc}
-                alt={`${product.name} research compound packaging`}
-                loading="eager"
-                decoding="async"
-                className="h-full w-full object-contain drop-shadow-[0_28px_48px_rgba(7,23,36,0.18)] transition duration-500 motion-safe:group-hover:scale-[1.03]"
-              />
+              <picture className="contents">
+                {imageSources.avif ? <source type="image/avif" srcSet={imageSources.avif} sizes="(min-width: 1024px) 45vw, 100vw" /> : null}
+                {imageSources.webp ? <source type="image/webp" srcSet={imageSources.webp} sizes="(min-width: 1024px) 45vw, 100vw" /> : null}
+                <img src={imageSrc} alt={`${product.name} research compound packaging`} loading="eager" decoding="async" className="h-full w-full object-contain drop-shadow-[0_28px_48px_rgba(7,23,36,0.18)] transition duration-500 motion-safe:group-hover:scale-[1.03]" />
+              </picture>
             ) : null}
           </div>
         </a>
@@ -178,6 +188,7 @@ function FeaturedBestSellerCard({ product }: { product: Product }) {
 
 function SecondaryBestSellerCard({ product, className }: { product: Product; className?: string }) {
   const imageSrc = getProductImage(product)
+  const imageSources = getProductImageSources(product)
 
   return (
     <article
@@ -192,13 +203,11 @@ function SecondaryBestSellerCard({ product, className }: { product: Product; cla
         className="relative block aspect-[4/3] overflow-hidden bg-[#dfe8e7]"
       >
         {imageSrc ? (
-          <img
-            src={imageSrc}
-            alt={`${product.name} research compound packaging`}
-            loading="lazy"
-            decoding="async"
-            className="absolute inset-0 h-full w-full object-contain object-center opacity-95 transition duration-500 motion-safe:group-hover:scale-[1.035]"
-          />
+          <picture className="contents">
+            {imageSources.avif ? <source type="image/avif" srcSet={imageSources.avif} sizes="(min-width: 1024px) 30vw, 100vw" /> : null}
+            {imageSources.webp ? <source type="image/webp" srcSet={imageSources.webp} sizes="(min-width: 1024px) 30vw, 100vw" /> : null}
+            <img src={imageSrc} alt={`${product.name} research compound packaging`} loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-contain object-center opacity-95 transition duration-500 motion-safe:group-hover:scale-[1.035]" />
+          </picture>
         ) : null}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(255,255,255,0)_0_42%,rgba(255,255,255,0.32)_76%,rgba(255,255,255,0.92)_100%)]" />
         <div className="absolute left-4 top-4 rounded-full border border-white/60 bg-white/78 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#071724] backdrop-blur-xl">
@@ -422,7 +431,7 @@ export function HomePage() {
 
       <CompactWhyChooseEncore />
 
-      <section id="how-it-works" className="bg-[#071724] px-5 py-16 text-white sm:px-8 lg:py-20">
+      <section id="how-it-works" className="scroll-mt-28 bg-[#071724] px-5 py-16 text-white sm:px-8 lg:py-20">
         <div className="mx-auto max-w-[88rem]">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-teal-200">Research Process</p>

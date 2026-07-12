@@ -8,5 +8,3 @@ export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
 export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl as string, supabaseAnonKey as string)
   : null
-
-export const isPublicCrmDevMode = import.meta.env.VITE_PUBLIC_CRM_DEV_MODE === 'true'

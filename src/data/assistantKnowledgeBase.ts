@@ -20,10 +20,9 @@ export const companyInfo = {
 }
 
 export const shippingInfo = {
-  local:
-    'Same-day local delivery is available in the El Paso area for approved research inquiries, subject to order timing and courier availability.',
-  nationwide: 'Nationwide U.S. shipping is available for research catalog fulfillment.',
-  mexico: 'Mexico shipping is available and adds a flat $20 USD to standard shipping.',
+  local: 'Local delivery eligibility and timing are confirmed during order review.',
+  nationwide: 'Available shipping destinations and methods are confirmed during order review.',
+  mexico: 'International destination eligibility and shipping cost are confirmed during order review.',
   processing:
     'Orders are processed after an inquiry is approved and product availability is confirmed.',
 }
@@ -98,11 +97,11 @@ export const knowledgeBaseFAQs: KnowledgeBaseFAQ[] = [
   },
   {
     question: 'Do you ship to Mexico?',
-    answer: 'Yes — Mexico shipping is available and adds $20 USD to standard shipping.',
+    answer: 'Destination eligibility, shipping method, and cost are confirmed during order review.',
   },
   {
     question: 'Do you offer local delivery?',
-    answer: 'Same-day local delivery is available in the El Paso area, subject to timing and availability.',
+    answer: 'Local delivery eligibility and timing are confirmed during order review.',
   },
 ]
 

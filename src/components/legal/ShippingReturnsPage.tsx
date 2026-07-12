@@ -5,9 +5,9 @@ const sections: LegalSection[] = [
     heading: '1. Shipping areas',
     body: (
       <ul className="ml-5 list-disc">
-        <li>Same-day local delivery is available in the El Paso area for approved research inquiries, subject to order timing and availability.</li>
-        <li>Nationwide U.S. shipping is available for research catalog fulfillment.</li>
-        <li>Mexico shipping is available and adds $20 USD to standard shipping.</li>
+        <li>Available delivery areas and methods are confirmed during order review.</li>
+        <li>Shipping timing is provided only after product availability and destination are reviewed.</li>
+        <li>Any shipping charge is confirmed before the order proceeds.</li>
       </ul>
     ),
   },
@@ -16,7 +16,7 @@ const sections: LegalSection[] = [
     body: (
       <p>
         Orders are processed after an inquiry is approved and product availability is confirmed.
-        Same-day El Paso delivery is subject to order cutoff time and courier availability.
+        Processing and delivery timing are confirmed during order review.
       </p>
     ),
   },
@@ -24,8 +24,8 @@ const sections: LegalSection[] = [
     heading: '3. Shipping costs',
     body: (
       <p>
-        Standard U.S. shipping costs are calculated at checkout or provided during the approved
-        inquiry process. Mexico shipping adds a flat $20 USD to the standard shipping cost.
+        Shipping costs are provided during the approved inquiry process. The website checkout does
+        not calculate or promise a shipping charge.
       </p>
     ),
   },

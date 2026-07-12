@@ -7,8 +7,8 @@ export type ProductVariant = {
   price: number
 }
 
-export type PurityGrade = '>=98%' | 'Analytical Grade' | 'Research Grade'
-export type StockStatus = 'In Stock' | 'Limited Stock' | 'On Request'
+export type PurityGrade = '>=98%' | 'Analytical Grade' | 'Research Grade' | 'Documentation by request'
+export type StockStatus = 'In Stock' | 'Limited Stock' | 'On Request' | 'Availability by request'
 
 type ProductSpec = {
   label: string
@@ -1454,19 +1454,16 @@ function createPageContent(product: CatalogProduct): ProductPageContent {
       ...(product.slug !== 'retatrutide'
         ? [
             {
-              question: 'Is same-day local El Paso delivery available?',
-              answer:
-                'Yes. Same-day local delivery is available in the El Paso area for approved research inquiries, subject to order timing and availability.',
+              question: 'Is local delivery available?',
+              answer: 'Local delivery eligibility and timing are confirmed during order review.',
             },
             {
               question: 'Do you ship nationwide?',
-              answer:
-                'Yes. Nationwide U.S. shipping is available for research catalog fulfillment through the approved inquiry process.',
+              answer: 'Available destinations and shipping methods are confirmed during order review.',
             },
             {
               question: 'Can you ship to Mexico?',
-              answer:
-                'Yes. Mexico shipping is available and adds $20 USD to standard shipping.',
+              answer: 'International destination eligibility and shipping cost are confirmed during order review.',
             },
           ]
         : []),
@@ -1851,6 +1848,8 @@ const catalogMetadataBySlug: Record<string, ProductCatalogMetadata> = {
 export const products: Product[] = catalogProducts.map((product) => ({
   ...product,
   ...catalogMetadataBySlug[product.slug],
+  purityGrade: 'Documentation by request',
+  stockStatus: 'Availability by request',
   description: productFacts[product.slug]?.overview ?? product.description,
   ...createPageContent(product),
   relatedProducts:
@@ -1861,6 +1860,29 @@ export const products: Product[] = catalogProducts.map((product) => ({
       .map((relatedProduct) => relatedProduct.slug),
 }))
 
+function validateProductCatalog(entries: Product[]) {
+  const slugs = new Set<string>()
+
+  for (const product of entries) {
+    if (!product.slug || slugs.has(product.slug)) throw new Error(`Invalid or duplicate product slug: ${product.slug || '(empty)'}`)
+    slugs.add(product.slug)
+    if (!categoryNames.includes(product.category)) throw new Error(`Invalid category for product: ${product.slug}`)
+    if (!product.image || !product.casNumber || !product.purityGrade || !product.stockStatus) throw new Error(`Missing catalog metadata for product: ${product.slug}`)
+    if (!product.variants.length) throw new Error(`Product has no variants: ${product.slug}`)
+    for (const variant of product.variants) {
+      if (!variant.label || !variant.format || !Number.isFinite(variant.price) || variant.price < 0) throw new Error(`Invalid variant for product: ${product.slug}`)
+    }
+  }
+
+  for (const product of entries) {
+    for (const relatedSlug of product.relatedProducts) {
+      if (relatedSlug === product.slug || !slugs.has(relatedSlug)) throw new Error(`Invalid related product ${relatedSlug} for ${product.slug}`)
+    }
+  }
+}
+
+validateProductCatalog(products)
+
 export const bestSellers = [
   { slug: 'retatrutide', featured: true },
   { slug: 'ghk-cu' },
@@ -1868,28 +1890,6 @@ export const bestSellers = [
   { slug: 'nad-plus' },
 ]
 
-export const productPageSlugs = [
-  'retatrutide',
-  'tesamorelin',
-  'hgh-191aa',
-  'cjc1295-ipamorelin',
-  'mots-c',
-  'aod-9604',
-  'igf1-lr3',
-  'bpc-157',
-  'tb-500',
-  'wolverine-stack',
-  'klow',
-  'nad-plus',
-  'glutathione',
-  'ghk-cu',
-  'ahk-cu',
-  'epithalon',
-  'kisspeptin',
-  'cerebrolysin',
-  'ss31',
-  'dsip',
-  'thymosin-alpha-1',
-]
+export const productPageSlugs = products.map((product) => product.slug)
 
 export const categories = categoryNames

@@ -14,6 +14,8 @@ export type CartItem = CartSku & {
   image: string
   unitPrice: number
   quantity: number
+  category?: string
+  bacWaterAmount?: string
   inventoryStatus?: 'in-stock' | 'limited' | 'on-request' | 'unavailable'
 }
 
@@ -68,13 +70,41 @@ export function createCartItem(product: Product, variant: ProductVariant, quanti
     image: product.image,
     unitPrice: variant.price,
     quantity: normalizeQuantity(quantity),
-    inventoryStatus: product.stockStatus === 'Limited Stock' ? 'limited' : product.stockStatus === 'On Request' ? 'on-request' : 'in-stock',
+    category: product.category,
+    bacWaterAmount: product.bacWaterAmount,
+    inventoryStatus: product.stockStatus === 'Limited Stock' ? 'limited' : product.stockStatus === 'In Stock' ? 'in-stock' : 'on-request',
   }
 }
 
 export function normalizeQuantity(quantity: number) {
   if (!Number.isFinite(quantity)) return 1
   return Math.max(1, Math.min(99, Math.floor(quantity)))
+}
+
+export function parseStoredCart(raw: string | null): CartItem[] {
+  if (!raw) return []
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+    return parsed.flatMap((candidate) => {
+      if (!candidate || typeof candidate !== 'object') return []
+      const item = candidate as Partial<CartItem>
+      if (
+        typeof item.id !== 'string' ||
+        typeof item.productSlug !== 'string' ||
+        typeof item.productName !== 'string' ||
+        typeof item.variantLabel !== 'string' ||
+        typeof item.variantFormat !== 'string' ||
+        typeof item.image !== 'string' ||
+        typeof item.unitPrice !== 'number' ||
+        !Number.isFinite(item.unitPrice) ||
+        item.unitPrice < 0
+      ) return []
+      return [{ ...item, quantity: normalizeQuantity(Number(item.quantity)) } as CartItem]
+    })
+  } catch {
+    return []
+  }
 }
 
 export function calculateSubtotal(items: CartItem[]) {

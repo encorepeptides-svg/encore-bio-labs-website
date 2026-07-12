@@ -39,8 +39,8 @@ const filterTabs = [
 
 type CatalogFilter = (typeof filterTabs)[number]
 
-const purityGradeOptions: PurityGrade[] = ['>=98%', 'Analytical Grade', 'Research Grade']
-const stockStatusOptions: StockStatus[] = ['In Stock', 'Limited Stock', 'On Request']
+const purityGradeOptions: PurityGrade[] = ['Documentation by request']
+const stockStatusOptions: StockStatus[] = ['Availability by request']
 
 const filterDescriptions: Record<CatalogFilter, string> = {
   All: 'Every product in one place, no research area left out.',
@@ -267,23 +267,23 @@ function ProductCard({ product }: { product: Product }) {
 const qualityCards = [
   {
     icon: FileText,
-    title: 'Identity & Purity Documentation',
-    body: 'Identity, purity, and batch-level records are available on request.',
+    title: 'Documentation Review',
+    body: 'Ask Encore to confirm which identity, purity, and batch records apply to the reviewed item.',
   },
   {
     icon: ShieldCheck,
-    title: 'Premium Manufacturing',
-    body: 'Sourcing and manufacturing follow consistent quality expectations.',
+    title: 'Product Detail Review',
+    body: 'Product-specific sourcing and manufacturing details are confirmed through the inquiry process.',
   },
   {
     icon: Snowflake,
-    title: 'Cold Chain Handling',
-    body: 'Temperature-aware fulfillment protects sensitive materials in transit.',
+    title: 'Handling Review',
+    body: 'Product-specific handling requirements are confirmed before fulfillment.',
   },
   {
     icon: Truck,
-    title: 'Fast Fulfillment',
-    body: 'Clear logistics support local delivery, U.S. shipping, and Mexico coordination.',
+    title: 'Fulfillment Review',
+    body: 'Available destinations, methods, timing, and costs are confirmed before an order proceeds.',
   },
 ]
 

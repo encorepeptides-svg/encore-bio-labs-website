@@ -34,13 +34,13 @@ pnpm preview
 
 ## CRM Supabase Setup
 
-The internal CRM at `/admin/crm` uses Supabase when these environment variables are present and development mode is enabled. If they are missing, the CRM falls back to local demo mode with localStorage.
+The internal CRM at `/admin/crm` uses Supabase Auth and database row-level security. Public inquiry forms can insert new records but cannot read, update, or delete CRM data.
 
 ### Create the Supabase project
 
 1. Create a new project in Supabase.
 2. Open the SQL editor.
-3. Paste and run the SQL from `supabase/schema.sql`.
+3. For a new project, paste and run `supabase/schema.sql`. For a project that previously used the development policies, run `supabase/migrations/202607110001_production_crm_security.sql`.
 4. Confirm these tables exist: `crm_leads`, `crm_intake_submissions`, `crm_timeline_events`, `crm_notes`, `crm_products_interests`, and `crm_campaign_sources`.
 
 ### Local environment variables
@@ -48,13 +48,24 @@ The internal CRM at `/admin/crm` uses Supabase when these environment variables 
 Create `.env.local`:
 
 ```bash
-VITE_CRM_ADMIN_PASSWORD=your-local-admin-password
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_PUBLIC_CRM_DEV_MODE=true
 ```
 
-`VITE_PUBLIC_CRM_DEV_MODE=true` is only for local or staging MVP testing. Without it, the frontend will stay in local demo mode even if Supabase URL/key are present.
+Never add a Supabase service-role key or admin password to a `VITE_` variable; Vite values are public browser configuration.
+
+### Create an authorized administrator
+
+1. In Supabase Authentication, disable public user signups and create the administrator account.
+2. In the SQL editor, assign the server-controlled CRM role to that user:
+
+```sql
+update auth.users
+set raw_app_meta_data = coalesce(raw_app_meta_data, '{}'::jsonb) || '{"role":"crm_admin"}'::jsonb
+where email = 'admin@example.com';
+```
+
+Replace the example email. Sign out and back in after changing app metadata so the JWT contains the new role.
 
 ### Run locally
 
@@ -63,15 +74,15 @@ pnpm install
 pnpm dev
 ```
 
-Open `/intake`, submit a test intake, then open `/admin/crm` and unlock it with `VITE_CRM_ADMIN_PASSWORD`.
+Open `/intake`, submit a test intake, then sign in at `/admin/crm` with the authorized Supabase account.
 
 ### Deploy to Vercel
 
-1. Add the same Vite environment variables in Vercel Project Settings.
+1. Add only `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in Vercel Project Settings.
 2. Deploy the site.
 3. Test `/intake` and `/admin/crm` on the deployment URL.
 4. Confirm new rows appear in Supabase table editor.
 
-### Security warning
+### Security model
 
-The SQL file includes temporary anon read/write policies for MVP development. Before production, remove those dev policies and replace them with authenticated admin-only Row Level Security policies. Do not expose CRM lead data publicly.
+Anonymous visitors have insert-only access to new inquiry records. CRM reads and mutations require an authenticated JWT whose server-assigned `app_metadata.role` is `crm_admin`. Verify that anonymous selects fail before production deployment.
