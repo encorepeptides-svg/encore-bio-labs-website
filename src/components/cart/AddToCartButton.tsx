@@ -3,6 +3,7 @@ import { useState, type ReactNode } from 'react'
 import type { Product, ProductVariant } from '../../data/products'
 import { useCart } from '../../context/useCart'
 import { cn } from '../../lib/utils'
+import { isProductPurchasable } from '../../lib/purchaseOptions'
 
 type AddToCartButtonProps = {
   product: Product
@@ -23,7 +24,7 @@ export function AddToCartButton({
 }: AddToCartButtonProps) {
   const { addToCart } = useCart()
 
-  if (!variant || variant.price <= 0) {
+  if (!variant || variant.price <= 0 || !isProductPurchasable(product)) {
     return (
       <a
         href={`/intake?product=${encodeURIComponent(product.slug)}`}
@@ -40,7 +41,7 @@ export function AddToCartButton({
   return (
     <button
       type="button"
-      onClick={() => addToCart(product, variant, quantity)}
+      onClick={() => addToCart(product, variant, quantity, { optionId: 'vial-only', packSize: 1, includeKit: false })}
       className={cn(
         'inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition',
         tone === 'dark'

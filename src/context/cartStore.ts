@@ -1,6 +1,7 @@
 import { createContext } from 'react'
 import type { Product, ProductVariant } from '../data/products'
 import type { CartItem, CartItemId, CartTotals } from '../lib/cart'
+import type { PurchaseSelection } from '../lib/purchaseOptions'
 
 export type CartContextValue = {
   items: CartItem[]
@@ -10,7 +11,7 @@ export type CartContextValue = {
   totals: CartTotals
   openCart: () => void
   closeCart: () => void
-  addToCart: (product: Product, variant: ProductVariant, quantity?: number) => void
+  addToCart: (product: Product, variant: ProductVariant, quantity?: number, selection?: PurchaseSelection) => void
   removeFromCart: (itemId: CartItemId) => void
   updateQuantity: (itemId: CartItemId, quantity: number) => void
   clearCart: () => void

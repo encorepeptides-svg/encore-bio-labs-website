@@ -1,4 +1,5 @@
 import type { Product, ProductVariant } from '../data/products'
+import { getDefaultPurchaseSelection, quotePurchase, type PurchaseOptionId, type PurchaseSelection } from './purchaseOptions'
 
 export type CartItemId = string
 
@@ -13,6 +14,13 @@ export type CartItem = CartSku & {
   id: CartItemId
   image: string
   unitPrice: number
+  sku: string
+  optionId: PurchaseOptionId
+  purchaseType: string
+  kitIncluded: boolean
+  packSize: number
+  savings: number
+  linePrice: number
   quantity: number
   category?: string
   bacWaterAmount?: string
@@ -52,27 +60,35 @@ export type SubscriptionCalculationInput = {
   enabled?: boolean
 }
 
-export function createCartItemId(productSlug: string, variant: Pick<ProductVariant, 'label' | 'format'>): CartItemId {
-  return [productSlug, variant.label, variant.format]
+export function createCartItemId(productSlug: string, variant: Pick<ProductVariant, 'label' | 'format'>, selection?: PurchaseSelection): CartItemId {
+  return [productSlug, variant.label, variant.format, selection?.optionId, selection?.packSize, selection?.includeKit]
     .join('__')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '')
 }
 
-export function createCartItem(product: Product, variant: ProductVariant, quantity = 1): CartItem {
+export function createCartItem(product: Product, variant: ProductVariant, quantity = 1, selection = getDefaultPurchaseSelection(product)): CartItem {
+  const quote = quotePurchase(product, variant, selection)
   return {
-    id: createCartItemId(product.slug, variant),
+    id: createCartItemId(product.slug, variant, quote),
     productSlug: product.slug,
     productName: product.name,
     variantLabel: variant.label,
     variantFormat: variant.format,
     image: product.image,
-    unitPrice: variant.price,
+    unitPrice: quote.unitPrice,
+    sku: quote.sku,
+    optionId: quote.optionId,
+    purchaseType: quote.purchaseType,
+    kitIncluded: quote.kitIncluded,
+    packSize: quote.packSize,
+    savings: quote.savings,
+    linePrice: quote.linePrice,
     quantity: normalizeQuantity(quantity),
     category: product.category,
     bacWaterAmount: product.bacWaterAmount,
-    inventoryStatus: product.stockStatus === 'Limited Stock' ? 'limited' : product.stockStatus === 'In Stock' ? 'in-stock' : 'on-request',
+    inventoryStatus: product.stockStatus === 'Unavailable' ? 'unavailable' : product.stockStatus === 'Limited Stock' ? 'limited' : product.stockStatus === 'In Stock' ? 'in-stock' : 'on-request',
   }
 }
 
@@ -100,7 +116,17 @@ export function parseStoredCart(raw: string | null): CartItem[] {
         !Number.isFinite(item.unitPrice) ||
         item.unitPrice < 0
       ) return []
-      return [{ ...item, quantity: normalizeQuantity(Number(item.quantity)) } as CartItem]
+      return [{
+        ...item,
+        sku: typeof item.sku === 'string' ? item.sku : item.id,
+        optionId: item.optionId === 'complete-kit' || item.optionId === 'multipack' ? item.optionId : 'vial-only',
+        purchaseType: typeof item.purchaseType === 'string' ? item.purchaseType : 'Vial Only',
+        kitIncluded: Boolean(item.kitIncluded),
+        packSize: typeof item.packSize === 'number' && Number.isFinite(item.packSize) && item.packSize > 0 ? Math.floor(item.packSize) : 1,
+        savings: typeof item.savings === 'number' && Number.isFinite(item.savings) && item.savings >= 0 ? item.savings : 0,
+        linePrice: typeof item.linePrice === 'number' && Number.isFinite(item.linePrice) && item.linePrice >= 0 ? item.linePrice : item.unitPrice,
+        quantity: normalizeQuantity(Number(item.quantity)),
+      } as CartItem]
     })
   } catch {
     return []
@@ -108,11 +134,11 @@ export function parseStoredCart(raw: string | null): CartItem[] {
 }
 
 export function calculateSubtotal(items: CartItem[]) {
-  return items.reduce((subtotal, item) => subtotal + item.unitPrice * item.quantity, 0)
+  return items.reduce((subtotal, item) => subtotal + item.linePrice * item.quantity, 0)
 }
 
 export function calculateItemCount(items: CartItem[]) {
-  return items.reduce((count, item) => count + item.quantity, 0)
+  return items.reduce((count, item) => count + item.packSize * item.quantity, 0)
 }
 
 export function calculateShipping(input: ShippingCalculationInput) {
@@ -146,5 +172,9 @@ export function calculateTotal(items: CartItem[], input: Omit<ShippingCalculatio
 }
 
 export function formatCartCurrency(value: number) {
-  return `$${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+  const rounded = Math.round((value + Number.EPSILON) * 100) / 100
+  return `$${rounded.toLocaleString(undefined, {
+    minimumFractionDigits: Number.isInteger(rounded) ? 0 : 2,
+    maximumFractionDigits: 2,
+  })}`
 }

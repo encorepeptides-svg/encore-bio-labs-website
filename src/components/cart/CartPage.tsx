@@ -53,11 +53,13 @@ export function CartPage() {
                             <div>
                               {item.category ? <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-700">{item.category}</p> : null}
                               <a href={`/products/${item.productSlug}`} className="mt-1 block text-xl font-semibold tracking-[-0.03em] text-[#071724] hover:text-teal-700">{item.productName}</a>
-                              <p className="mt-1 text-sm text-slate-500">{item.variantLabel} · {item.variantFormat}</p>
+                              <p className="mt-1 text-sm text-slate-500">{item.variantLabel} · {item.purchaseType}</p>
+                              <p className="mt-1 text-xs text-slate-500">Pack quantity: {item.packSize} · Kit included: {item.kitIncluded ? 'Yes' : 'No'} · SKU {item.sku}</p>
                             </div>
                             <div className="sm:text-right">
-                              <p className="text-xs text-slate-500">{formatCartCurrency(item.unitPrice)} each</p>
-                              <p className="mt-1 text-xl font-semibold text-[#071724]">{formatCartCurrency(item.unitPrice * item.quantity)}</p>
+                              <p className="text-xs text-slate-500">{formatCartCurrency(item.unitPrice)} per vial</p>
+                              <p className="mt-1 text-xl font-semibold text-[#071724]">{formatCartCurrency(item.linePrice * item.quantity)}</p>
+                              {item.savings > 0 ? <p className="mt-1 text-xs font-semibold text-emerald-700">Save {formatCartCurrency(item.savings * item.quantity)}</p> : null}
                             </div>
                           </div>
 
@@ -69,7 +71,8 @@ export function CartPage() {
                             </div>
                             <button type="button" onClick={() => removeFromCart(item.id)} aria-label={`Remove ${item.productName} ${item.variantLabel} from cart`} className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-semibold text-slate-500 transition hover:bg-rose-50 hover:text-rose-700"><Trash2 size={15} aria-hidden="true" />Remove</button>
                           </div>
-                          <EncoreCompleteKit variant="cart" productName={item.productName} bacWaterAmount={item.bacWaterAmount} className="mt-4" />
+                          {item.kitIncluded ? <EncoreCompleteKit variant="cart" productName={item.productName} bacWaterAmount={item.bacWaterAmount} className="mt-4" /> : null}
+                          <a href={`/products/${item.productSlug}`} className="mt-3 inline-flex min-h-10 items-center text-sm font-semibold text-teal-800">Edit purchase option</a>
                         </div>
                       </div>
                     </article>
@@ -88,7 +91,7 @@ export function CartPage() {
               <a href="/checkout" className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition hover:bg-teal-700">Continue to Order Information</a>
               <a href="/catalog" className="mt-3 inline-flex min-h-11 w-full items-center justify-center text-sm font-semibold text-slate-600 transition hover:text-[#071724]">Continue browsing</a>
               <div className="mt-6 rounded-2xl bg-[#f8fafc] p-4">
-                <p className="flex items-center gap-2 text-sm font-semibold text-[#071724]"><PackageCheck size={16} aria-hidden="true" className="text-teal-700" />Your Encore Complete Kit is included</p>
+                <p className="flex items-center gap-2 text-sm font-semibold text-[#071724]"><PackageCheck size={16} aria-hidden="true" className="text-teal-700" />Kit selections are shown per item</p>
                 <p className="mt-2 text-xs leading-5 text-slate-500">Order details are reviewed before submission, and support is available before you continue.</p>
                 <a href="https://wa.me/19153595448" className="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-teal-800"><MessageCircle size={14} aria-hidden="true" />Contact support on WhatsApp</a>
               </div>

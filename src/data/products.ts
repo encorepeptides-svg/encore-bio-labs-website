@@ -2,13 +2,27 @@ import { brandText } from '../../config/brandText'
 import { getEncoreCompleteKitFaqItems } from './encoreCompleteKit'
 
 export type ProductVariant = {
+  sku?: string
   label: string
   format: string
   price: number
+  strength?: number
+  unitType?: 'mg' | 'IU' | 'mL' | 'other'
+}
+
+export type ProductPurchaseRules = {
+  productType: 'research-vial' | 'accessory' | 'ready-to-use'
+  kitEligible: boolean
+  multipackEligible: boolean
+  kitPremium?: number
+  multipackQuantities: number[]
+  subscriptionEligible: boolean
+  researchUseOnly: boolean
+  documentationUrl?: string
 }
 
 export type PurityGrade = '>=98%' | 'Analytical Grade' | 'Research Grade' | 'Documentation by request'
-export type StockStatus = 'In Stock' | 'Limited Stock' | 'On Request' | 'Availability by request'
+export type StockStatus = 'In Stock' | 'Limited Stock' | 'On Request' | 'Availability by request' | 'Unavailable'
 
 type ProductSpec = {
   label: string
@@ -100,6 +114,7 @@ type CatalogProduct = {
   description: string
   featured: boolean
   variants: ProductVariant[]
+  purchaseRules?: Partial<ProductPurchaseRules>
 }
 
 type ProductCatalogMetadata = {
@@ -109,6 +124,7 @@ type ProductCatalogMetadata = {
 }
 
 export type Product = CatalogProduct & ProductCatalogMetadata & ProductPageContent
+  & { purchaseRules: ProductPurchaseRules }
 
 export type ResearchArea = {
   slug: string
@@ -1485,11 +1501,11 @@ const catalogProducts: CatalogProduct[] = [
       'A research catalog entry organized for variant comparison, COA request routing, and documentation-first review.',
     featured: true,
     variants: [
-      { label: '10 mg', format: 'Vial format', price: 99 },
-      { label: '15 mg', format: 'Vial format', price: 124 },
-      { label: '20 mg', format: 'Vial format', price: 149 },
-      { label: '25 mg', format: 'Vial format', price: 174 },
-      { label: '30 mg', format: 'Vial format', price: 199 },
+      { label: '10 mg', format: 'Vial format', price: 130 },
+      { label: '15 mg', format: 'Vial format', price: 155 },
+      { label: '20 mg', format: 'Vial format', price: 180 },
+      { label: '25 mg', format: 'Vial format', price: 205 },
+      { label: '30 mg', format: 'Vial format', price: 230 },
     ],
   },
   {
@@ -1500,7 +1516,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A metabolic research entry presented once with supporting documentation and format context.',
     featured: true,
-    variants: [{ label: 'Catalog Format', format: 'Vial format', price: 229 }],
+    variants: [{ label: '10 mg', format: 'Vial format', price: 65 }],
   },
   {
     slug: 'wolverine-stack',
@@ -1510,7 +1526,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A recovery and repair research entry prepared for complete kit organization and record review.',
     featured: true,
-    variants: [{ label: 'Catalog Format', format: 'Research kit format', price: 139 }],
+    variants: [{ label: 'BPC-157 + TB-500', format: 'Vial format', price: 129 }],
   },
   {
     slug: 'klow',
@@ -1520,7 +1536,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A research supplies entry for catalog planning, kit context, and documentation-led follow-up.',
     featured: true,
-    variants: [{ label: 'Catalog Format', format: 'Supply format', price: 89 }],
+    variants: [{ label: '80 mg', format: 'Supply format', price: 135 }],
   },
   {
     slug: 'igf1-lr3',
@@ -1530,7 +1546,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A performance research entry structured for concise review, format clarity, and record requests.',
     featured: true,
-    variants: [{ label: 'Catalog Format', format: 'Vial format', price: 149 }],
+    variants: [{ label: '1 mg', format: 'Vial format', price: 75 }],
   },
   {
     slug: 'cjc1295-ipamorelin',
@@ -1540,10 +1556,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A combination research entry presented once, with variants grouped for cleaner catalog comparison.',
     featured: true,
-    variants: [
-      { label: 'Core Format', format: 'Vial format', price: 179 },
-      { label: 'Expanded Format', format: 'Vial format', price: 299 },
-    ],
+    variants: [{ sku: 'CJCIPA-5MG-5MG', label: '5 mg + 5 mg', format: 'Vial format', price: 65, strength: 10, unitType: 'mg' }],
   },
   {
     slug: 'mots-c',
@@ -1553,7 +1566,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A mitochondrial peptide research entry structured for metabolic signaling review, cellular energy context, and documentation requests.',
     featured: true,
-    variants: [{ label: 'Catalog Format', format: 'Vial format', price: 149 }],
+    variants: [{ label: '10 mg', format: 'Vial format', price: 139 }],
   },
   {
     slug: 'aod-9604',
@@ -1563,7 +1576,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A GH-fragment research entry structured for metabolic signaling review, body-composition research context, and documentation requests.',
     featured: true,
-    variants: [{ label: 'Catalog Format', format: 'Vial format', price: 0 }],
+    variants: [{ label: '5 mg', format: 'Vial format', price: 69 }],
   },
   {
     slug: 'nad-plus',
@@ -1574,8 +1587,7 @@ const catalogProducts: CatalogProduct[] = [
       'A longevity research entry built for premium presentation, complete kit context, and documentation review.',
     featured: true,
     variants: [
-      { label: 'Core Format', format: 'Vial format', price: 129 },
-      { label: 'Expanded Format', format: 'Vial format', price: 219 },
+      { label: 'Published Format', format: 'Vial format', price: 75 },
     ],
   },
   {
@@ -1587,8 +1599,7 @@ const catalogProducts: CatalogProduct[] = [
       'A research catalog entry with variant visibility and room for supporting documentation requests.',
     featured: true,
     variants: [
-      { label: 'Core Format', format: 'Vial format', price: 89 },
-      { label: 'Expanded Format', format: 'Vial format', price: 149 },
+      { label: '1500 mg', format: 'Vial format', price: 70 },
     ],
   },
   {
@@ -1599,7 +1610,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'An aesthetic research entry with available options kept together for easier catalog review.',
     featured: true,
-    variants: [{ label: 'Catalog Format', format: 'Vial format', price: 149 }],
+    variants: [{ label: '50 mg', format: 'Vial format', price: 50 }],
   },
   {
     slug: 'ahk-cu',
@@ -1609,7 +1620,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'An aesthetic research entry structured for clean display, kit review, and premium positioning.',
     featured: true,
-    variants: [{ label: 'Catalog Format', format: 'Vial format', price: 149 }],
+    variants: [{ label: '50 mg', format: 'Vial format', price: 139 }],
   },
   {
     slug: 'epithalon',
@@ -1619,7 +1630,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A longevity research entry prepared for premium education, filtering, and record requests.',
     featured: true,
-    variants: [{ label: 'Catalog Format', format: 'Vial format', price: 139 }],
+    variants: [{ label: '10 mg', format: 'Vial format', price: 129 }],
   },
   {
     slug: 'cerebrolysin',
@@ -1629,7 +1640,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A cognitive research entry prepared for premium presentation and documentation-led follow-up.',
     featured: true,
-    variants: [{ label: 'Catalog Format', format: 'Ampoule format', price: 169 }],
+    variants: [{ label: 'Published Ampoule Format', format: 'Ampoule format', price: 169 }],
   },
   {
     slug: 'ss31',
@@ -1639,7 +1650,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A longevity research entry organized for program conversations and future record detail.',
     featured: true,
-    variants: [{ label: 'Catalog Format', format: 'Vial format', price: 159 }],
+    variants: [{ label: '10 mg', format: 'Vial format', price: 149 }],
   },
   {
     slug: 'dsip',
@@ -1649,7 +1660,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A research entry designed for concise review and documentation-ready follow-up.',
     featured: true,
-    variants: [{ label: 'Catalog Format', format: 'Vial format', price: 119 }],
+    variants: [{ label: '5 mg', format: 'Vial format', price: 109 }],
   },
   {
     slug: 'kisspeptin',
@@ -1659,7 +1670,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A sexual wellness research entry designed to keep product review concise, organized, and inquiry-ready.',
     featured: true,
-    variants: [{ label: 'Catalog Format', format: 'Vial format', price: 129 }],
+    variants: [{ label: '10 mg', format: 'Vial format', price: 119 }],
   },
   {
     slug: 'hcg',
@@ -1669,10 +1680,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A sexual wellness research entry structured for clear review, variant visibility, and documentation discussion.',
     featured: true,
-    variants: [
-      { label: 'Core Format', format: 'Vial format', price: 99 },
-      { label: 'Expanded Format', format: 'Vial format', price: 169 },
-    ],
+    variants: [{ label: '10,000 IU', format: 'Vial format', price: 130 }],
   },
   {
     slug: 'hgh-191aa',
@@ -1682,10 +1690,8 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A performance research entry organized for format review, availability discussion, and documentation routing.',
     featured: true,
-    variants: [
-      { label: 'Core Format', format: 'Vial format', price: 189 },
-      { label: 'Expanded Format', format: 'Vial format', price: 429 },
-    ],
+    variants: [{ sku: 'HGH191AA-4X15IU', label: '4 × 15 IU vials', format: 'Multi-vial format', price: 135, strength: 60, unitType: 'IU' }],
+    purchaseRules: { productType: 'ready-to-use', kitEligible: true, multipackEligible: false },
   },
   {
     slug: 'thymosin-alpha-1',
@@ -1695,7 +1701,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A cellular health research entry organized for education-led review and responsible documentation requests.',
     featured: true,
-    variants: [{ label: 'Catalog Format', format: 'Vial format', price: 149 }],
+    variants: [{ label: '10 mg', format: 'Vial format', price: 139 }],
   },
   {
     slug: 'pt-141',
@@ -1705,10 +1711,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A sexual wellness research entry with available formats grouped for fast scanning and responsible catalog access.',
     featured: true,
-    variants: [
-      { label: 'Core Format', format: 'Vial format', price: 119 },
-      { label: 'Expanded Format', format: 'Vial format', price: 199 },
-    ],
+    variants: [{ label: 'Published Format', format: 'Vial format', price: 50 }],
   },
   {
     slug: 'semax',
@@ -1718,7 +1721,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A cognitive research entry prepared for premium presentation and responsible documentation review.',
     featured: true,
-    variants: [{ label: 'Catalog Format', format: 'Catalog format', price: 109 }],
+    variants: [{ label: '10 mg', format: 'Vial format', price: 70 }],
   },
   {
     slug: 'selank',
@@ -1728,7 +1731,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A cognitive research entry with product options grouped inside one clear, reusable card.',
     featured: true,
-    variants: [{ label: 'Catalog Format', format: 'Catalog format', price: 109 }],
+    variants: [{ label: '10 mg', format: 'Vial format', price: 70 }],
   },
 ]
 
@@ -1754,34 +1757,71 @@ const relatedProductsBySlug: Record<string, string[]> = {
   'thymosin-alpha-1': ['glutathione', 'nad-plus', 'epithalon'],
 }
 
-const catalogMetadataBySlug: Record<string, ProductCatalogMetadata> = {
-  retatrutide: { casNumber: '2381089-83-2', purityGrade: '>=98%', stockStatus: 'In Stock' },
-  tesamorelin: { casNumber: '218949-48-5', purityGrade: 'Research Grade', stockStatus: 'Limited Stock' },
-  'wolverine-stack': { casNumber: 'BPC-157 / TB-500', purityGrade: 'Research Grade', stockStatus: 'In Stock' },
-  klow: { casNumber: 'Kit-support entry', purityGrade: 'Analytical Grade', stockStatus: 'On Request' },
-  'igf1-lr3': { casNumber: '946870-92-4', purityGrade: 'Research Grade', stockStatus: 'Limited Stock' },
-  'cjc1295-ipamorelin': { casNumber: '863288-34-0 / 170851-70-4', purityGrade: '>=98%', stockStatus: 'In Stock' },
-  'mots-c': { casNumber: '1627580-64-6', purityGrade: 'Research Grade', stockStatus: 'On Request' },
-  'aod-9604': { casNumber: '221231-10-3', purityGrade: 'Research Grade', stockStatus: 'On Request' },
-  'nad-plus': { casNumber: '53-84-9', purityGrade: 'Analytical Grade', stockStatus: 'In Stock' },
-  glutathione: { casNumber: '70-18-8', purityGrade: 'Analytical Grade', stockStatus: 'In Stock' },
-  'ghk-cu': { casNumber: '89030-95-5', purityGrade: '>=98%', stockStatus: 'In Stock' },
-  'ahk-cu': { casNumber: '49557-75-7', purityGrade: '>=98%', stockStatus: 'Limited Stock' },
-  epithalon: { casNumber: '307297-39-8', purityGrade: 'Research Grade', stockStatus: 'In Stock' },
-  cerebrolysin: { casNumber: 'Peptide mixture', purityGrade: 'Analytical Grade', stockStatus: 'On Request' },
-  ss31: { casNumber: '736992-21-5', purityGrade: 'Research Grade', stockStatus: 'Limited Stock' },
-  dsip: { casNumber: '62568-57-4', purityGrade: 'Research Grade', stockStatus: 'In Stock' },
-  kisspeptin: { casNumber: '374675-21-5', purityGrade: '>=98%', stockStatus: 'Limited Stock' },
-  hcg: { casNumber: '9002-61-3', purityGrade: 'Analytical Grade', stockStatus: 'In Stock' },
-  'hgh-191aa': { casNumber: '12629-01-5', purityGrade: 'Research Grade', stockStatus: 'On Request' },
-  'thymosin-alpha-1': { casNumber: '62304-98-7', purityGrade: 'Research Grade', stockStatus: 'Limited Stock' },
-  'pt-141': { casNumber: '189691-06-3', purityGrade: '>=98%', stockStatus: 'In Stock' },
-  semax: { casNumber: '80714-61-0', purityGrade: 'Research Grade', stockStatus: 'In Stock' },
-  selank: { casNumber: '129954-34-3', purityGrade: 'Research Grade', stockStatus: 'In Stock' },
+// Every product's purityGrade/stockStatus is deliberately overwritten with the
+// generic "confirmed on request" copy below when `products` is built, so only
+// casNumber is tracked here. Do not add purity/stock values to this map — they
+// would be dead data that never reaches the page.
+const catalogMetadataBySlug: Record<string, Pick<ProductCatalogMetadata, 'casNumber'>> = {
+  retatrutide: { casNumber: '2381089-83-2' },
+  tesamorelin: { casNumber: '218949-48-5' },
+  'wolverine-stack': { casNumber: 'BPC-157 / TB-500' },
+  klow: { casNumber: 'Kit-support entry' },
+  'igf1-lr3': { casNumber: '946870-92-4' },
+  'cjc1295-ipamorelin': { casNumber: '863288-34-0 / 170851-70-4' },
+  'mots-c': { casNumber: '1627580-64-6' },
+  'aod-9604': { casNumber: '221231-10-3' },
+  'nad-plus': { casNumber: '53-84-9' },
+  glutathione: { casNumber: '70-18-8' },
+  'ghk-cu': { casNumber: '89030-95-5' },
+  'ahk-cu': { casNumber: '49557-75-7' },
+  epithalon: { casNumber: '307297-39-8' },
+  cerebrolysin: { casNumber: 'Peptide mixture' },
+  ss31: { casNumber: '736992-21-5' },
+  dsip: { casNumber: '62568-57-4' },
+  kisspeptin: { casNumber: '374675-21-5' },
+  hcg: { casNumber: '9002-61-3' },
+  'hgh-191aa': { casNumber: '12629-01-5' },
+  'thymosin-alpha-1': { casNumber: '62304-98-7' },
+  'pt-141': { casNumber: '189691-06-3' },
+  semax: { casNumber: '80714-61-0' },
+  selank: { casNumber: '129954-34-3' },
+}
+
+function inferPurchaseRules(product: CatalogProduct): ProductPurchaseRules {
+  const accessory = product.slug === 'klow'
+  const readyToUse = product.variants.every((variant) => /ampoule|catalog format/i.test(variant.format))
+  return {
+    productType: accessory ? 'accessory' : readyToUse ? 'ready-to-use' : 'research-vial',
+    kitEligible: !accessory && !readyToUse,
+    multipackEligible: !accessory,
+    // No default here — getKitPremium() in purchaseOptions.ts owns the sitewide
+    // default so the premium has exactly one source of truth. Set kitPremium on
+    // a specific product's purchaseRules only when it needs a real override.
+    multipackQuantities: [3, 5],
+    subscriptionEligible: false,
+    researchUseOnly: true,
+    ...product.purchaseRules,
+  }
+}
+
+function enrichVariants(product: CatalogProduct): ProductVariant[] {
+  return product.variants.map((variant, index) => {
+    // Match thousands-separated values like "10,000 IU" as well as plain "10 mg".
+    const measurement = variant.label.match(/([\d,]+(?:\.\d+)?)\s*(mg|IU|mL)\b/i)
+    const strengthValue = measurement ? Number(measurement[1].replace(/,/g, '')) : undefined
+    return {
+      ...variant,
+      sku: variant.sku ?? `${product.slug}-${measurement ? `${measurement[1].replace(/,/g, '')}${measurement[2]}` : index + 1}`.toUpperCase(),
+      strength: variant.strength ?? strengthValue,
+      unitType: variant.unitType ?? (measurement ? measurement[2].toLowerCase() === 'iu' ? 'IU' : measurement[2] as 'mg' | 'mL' : undefined),
+    }
+  })
 }
 
 export const products: Product[] = catalogProducts.map((product) => ({
   ...product,
+  variants: enrichVariants(product),
+  purchaseRules: inferPurchaseRules(product),
   ...catalogMetadataBySlug[product.slug],
   purityGrade: 'Documentation by request',
   stockStatus: 'Availability by request',

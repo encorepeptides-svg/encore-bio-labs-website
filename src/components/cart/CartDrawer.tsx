@@ -73,6 +73,7 @@ export function CartDrawer() {
       {isOpen ? (
         <>
           <motion.button
+            key="cart-drawer-backdrop"
             type="button"
             aria-label="Close cart"
             onClick={closeCart}
@@ -83,6 +84,7 @@ export function CartDrawer() {
             className="fixed inset-0 z-[80] bg-[#071724]/34 backdrop-blur-sm"
           />
           <motion.aside
+            key="cart-drawer-panel"
             ref={drawerRef}
             role="dialog"
             aria-modal="true"
@@ -133,8 +135,9 @@ export function CartDrawer() {
                           </div>
                           <div className="min-w-0 flex-1">
                             <a href={`/products/${item.productSlug}`} onClick={closeCart} className="block truncate text-sm font-semibold text-[#071724] hover:text-teal-700">{item.productName}</a>
-                            <p className="mt-1 text-xs text-slate-500">{item.variantLabel} · {item.variantFormat}</p>
-                            <p className="mt-2 text-sm font-semibold text-[#071724]">{formatCartCurrency(item.unitPrice)}</p>
+                            <p className="mt-1 text-xs text-slate-500">{item.variantLabel} · {item.purchaseType}</p>
+                            <p className="mt-1 text-xs text-slate-500">Pack: {item.packSize} · Kit: {item.kitIncluded ? 'Yes' : 'No'}</p>
+                            <p className="mt-2 text-sm font-semibold text-[#071724]">{formatCartCurrency(item.linePrice)}</p>
                           </div>
                         </div>
                         <div className="mt-4 flex items-center justify-between gap-3">
@@ -169,9 +172,11 @@ export function CartDrawer() {
                         </div>
                         <div className="mt-3 flex items-center justify-between border-t border-slate-900/10 pt-3 text-xs">
                           <span className="text-slate-500">Line subtotal</span>
-                          <span className="font-semibold text-[#071724]">{formatCartCurrency(item.unitPrice * item.quantity)}</span>
+                          <span className="font-semibold text-[#071724]">{formatCartCurrency(item.linePrice * item.quantity)}</span>
                         </div>
-                        <EncoreCompleteKit variant="cart" className="mt-3" />
+                        {item.savings > 0 ? <p className="mt-2 text-xs font-semibold text-emerald-700">Savings: {formatCartCurrency(item.savings * item.quantity)}</p> : null}
+                        {item.kitIncluded ? <EncoreCompleteKit variant="cart" className="mt-3" /> : null}
+                        <a href={`/products/${item.productSlug}`} onClick={closeCart} className="mt-3 inline-flex text-xs font-semibold text-teal-800">Edit purchase option</a>
                       </article>
                     )
                   })}

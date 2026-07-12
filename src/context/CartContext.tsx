@@ -10,6 +10,8 @@ import {
   type CartItem,
   type CartItemId,
 } from '../lib/cart'
+import type { PurchaseSelection } from '../lib/purchaseOptions'
+import { isProductPurchasable } from '../lib/purchaseOptions'
 import { CartContext, type CartContextValue } from './cartStore'
 
 const CART_STORAGE_KEY = 'encore-bio-labs-cart-v1'
@@ -39,7 +41,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
         const variant = product?.variants.find(
           (entry) => entry.label === storedItem.variantLabel && entry.format === storedItem.variantFormat,
         )
-        return product && variant ? [createCartItem(product, variant, storedItem.quantity)] : []
+        const selection: PurchaseSelection = {
+          optionId: storedItem.optionId ?? (storedItem.purchaseType === 'Encore Complete Kit' ? 'complete-kit' : storedItem.purchaseType === 'Multi-Vial Research Pack' ? 'multipack' : 'vial-only'),
+          packSize: storedItem.packSize || 1,
+          includeKit: storedItem.kitIncluded,
+        }
+        return product && variant && isProductPurchasable(product) ? [createCartItem(product, variant, storedItem.quantity, selection)] : []
       }))
     })
 
@@ -48,8 +55,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const addToCart = useCallback((product: Product, variant: ProductVariant, quantity = 1) => {
-    const nextItem = createCartItem(product, variant, quantity)
+  const addToCart = useCallback((product: Product, variant: ProductVariant, quantity = 1, selection?: PurchaseSelection) => {
+    if (!isProductPurchasable(product) || variant.price <= 0) {
+      setAnnouncement(`${product.name} is not currently available to add to cart.`)
+      return
+    }
+    const nextItem = createCartItem(product, variant, quantity, selection)
 
     setItems((current) => {
       const existing = current.find((item) => item.id === nextItem.id)
@@ -62,7 +73,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       )
     })
     setIsOpen(true)
-    setAnnouncement(`${product.name} ${variant.label} added to cart.`)
+    setAnnouncement(`${product.name} ${variant.label}, ${nextItem.purchaseType}, added to cart.`)
   }, [])
 
   const removeFromCart = useCallback((itemId: CartItemId) => {

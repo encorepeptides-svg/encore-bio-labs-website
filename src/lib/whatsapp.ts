@@ -63,7 +63,7 @@ export function buildCartOrderMessage({
   items,
   subtotal,
 }: {
-  items: Array<{ productName: string; variantLabel: string; quantity: number }>
+  items: Array<{ productName: string; variantLabel: string; quantity: number; purchaseType?: string; packSize?: number; kitIncluded?: boolean }>
   subtotal: string
 }) {
   return [
@@ -71,7 +71,7 @@ export function buildCartOrderMessage({
     '',
     "I'd like to continue an order request for:",
     '',
-    ...items.map((item) => `• ${item.productName} — ${item.variantLabel} × ${item.quantity}`),
+    ...items.map((item) => `• ${item.productName} — ${item.variantLabel}${item.purchaseType ? ` — ${item.purchaseType}, pack ${item.packSize}, kit ${item.kitIncluded ? 'yes' : 'no'}` : ''} × ${item.quantity}`),
     '',
     `Cart subtotal: ${subtotal}`,
     'Shipping and final order details to be confirmed during review.',

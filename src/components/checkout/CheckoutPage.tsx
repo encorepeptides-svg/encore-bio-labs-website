@@ -204,7 +204,7 @@ export function CheckoutPage() {
           source: 'Cart checkout inquiry',
           campaignSource: 'Catalog',
           interestedProducts: items.map((item, index) => ({
-            productName: `${item.productName} — ${item.variantLabel} × ${item.quantity}`,
+            productName: `${item.productName} — ${item.variantLabel} — ${item.purchaseType} (pack ${item.packSize}, kit ${item.kitIncluded ? 'yes' : 'no'}) × ${item.quantity}`,
             priority: index === 0 ? 'primary' : 'secondary',
           })),
           primaryGoal: 'Catalog order review',
@@ -280,8 +280,8 @@ export function CheckoutPage() {
             <div className="mt-4 grid gap-3">
               {summaryItems.map((item) => (
                 <div key={item.id} className="flex items-start justify-between gap-4 text-sm">
-                  <span className="text-slate-600">{item.productName} · {item.variantLabel} × {item.quantity}</span>
-                  <span className="shrink-0 font-semibold text-[#071724]">{formatCartCurrency(item.unitPrice * item.quantity)}</span>
+                  <span className="text-slate-600">{item.productName} · {item.variantLabel} · {item.purchaseType} · pack {item.packSize} · kit {item.kitIncluded ? 'yes' : 'no'} × {item.quantity}</span>
+                  <span className="shrink-0 font-semibold text-[#071724]">{formatCartCurrency(item.linePrice * item.quantity)}</span>
                 </div>
               ))}
               <div className="flex items-center justify-between border-t border-slate-900/10 pt-3 text-sm font-semibold text-[#071724]">
@@ -434,9 +434,9 @@ export function CheckoutPage() {
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <h3 className="text-sm font-semibold text-[#071724]">{item.productName}</h3>
-                        <p className="mt-1 text-xs text-slate-500">{item.variantLabel} · {item.variantFormat}</p>
+                        <p className="mt-1 text-xs text-slate-500">{item.variantLabel} · {item.purchaseType} · pack {item.packSize} · kit {item.kitIncluded ? 'yes' : 'no'}</p>
                         <p className="mt-2 text-xs text-slate-500">{formatCartCurrency(item.unitPrice)} each</p>
-                        <p className="mt-1 text-sm font-semibold text-[#071724]">{formatCartCurrency(item.unitPrice * item.quantity)}</p>
+                        <p className="mt-1 text-sm font-semibold text-[#071724]">{formatCartCurrency(item.linePrice * item.quantity)}</p>
                       </div>
                       <button
                         type="button"

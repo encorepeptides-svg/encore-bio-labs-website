@@ -83,7 +83,7 @@ export function ProductPage({ slug }: { slug: string }) {
       <ProductHero product={product} />
       <ProductCompleteKitCallout product={product} />
       <ProductBenefits product={product} />
-      <ProductHowItWorksFlow />
+      <ProductHowItWorksFlow product={product} />
       <ProductSpecs product={product} />
       <ProductQualityFocus product={product} />
       <FAQSection product={product} />

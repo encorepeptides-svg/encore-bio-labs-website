@@ -19,6 +19,7 @@ import {
   PackageCheck,
   ShieldCheck,
   Snowflake,
+  ShoppingCart,
   Sparkles,
   TestTube2,
   Truck,
@@ -26,12 +27,12 @@ import {
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { products, type Product, type ProductVariant } from '../../data/products'
+import { products, type Product } from '../../data/products'
 import { coaBySlug } from '../../data/coa'
 import { contentTypeLabels, researchArticles } from '../../data/research'
 import { buildSrcSet, stemOf } from '../../lib/responsiveImages'
 import { buildOrderInquiryMessage, buildWhatsAppUrl } from '../../lib/whatsapp'
-import { AddToCartButton, MobileStickyPurchaseBar, VariantAddToCartPanel } from '../cart/AddToCartButton'
+import { PurchaseSelector } from './PurchaseSelector'
 import { CTA } from '../CTA'
 import { EncoreCompleteKit } from '../EncoreCompleteKit'
 import {
@@ -131,7 +132,6 @@ export function ProductBreadcrumb({ product }: { product: Product }) {
 }
 
 export function RetatrutideHeroSection({ product }: { product: Product }) {
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant>(product.variants[0])
   const imageSrc = getProductImage({ ...product, heroImage: product.image })
   const { avifSrcSet, webpSrcSet } = getProductImageSources(product.image)
   const bullets = [
@@ -194,12 +194,8 @@ export function RetatrutideHeroSection({ product }: { product: Product }) {
               View Research Details
             </CTA>
           </div>
-          <div className="mt-6 max-w-xl">
-            <VariantAddToCartPanel
-              product={product}
-              selectedVariant={selectedVariant}
-              onSelectVariant={setSelectedVariant}
-            />
+          <div className="mt-6 max-w-2xl">
+            <PurchaseSelector product={product} />
             <p className="mt-3 text-xs font-semibold text-[var(--muted)]">
               Availability, handling, and shipping options are confirmed during order review
             </p>
@@ -295,7 +291,6 @@ export function RetatrutideHeroSection({ product }: { product: Product }) {
           </div>
         </motion.div>
       </div>
-      <MobileStickyPurchaseBar product={product} variant={selectedVariant} />
     </section>
   )
 }
@@ -451,7 +446,6 @@ function getProductPriceLabel(product: Product) {
 }
 
 export function ProductHero({ product }: { product: Product }) {
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant>(product.variants[0])
   const imageSrc = getProductImage(product)
   const { avifSrcSet, webpSrcSet } = getProductImageSources(product.heroImage)
   const heroStats = [
@@ -519,16 +513,7 @@ export function ProductHero({ product }: { product: Product }) {
               Contact Encore
             </CTA>
           </div>
-          <div className="mt-6 max-w-xl">
-            <VariantAddToCartPanel
-              product={product}
-              selectedVariant={selectedVariant}
-              onSelectVariant={setSelectedVariant}
-            />
-            <p className="mt-3 text-xs font-semibold text-[var(--muted)]">
-              Availability, handling, and shipping options are confirmed during order review
-            </p>
-          </div>
+          <div className="mt-6 max-w-2xl"><PurchaseSelector product={product} /></div>
           <div className="mt-8 grid max-w-2xl grid-cols-3 overflow-hidden rounded-[1.35rem] border border-[var(--border)] bg-white shadow-[0_20px_60px_rgba(26,35,64,0.08)]">
             {heroStats.map((stat) => (
               <div key={stat.label} className="border-r border-[var(--border)] p-4 last:border-r-0 sm:p-5">
@@ -603,7 +588,6 @@ export function ProductHero({ product }: { product: Product }) {
           </div>
         </motion.div>
       </div>
-      <MobileStickyPurchaseBar product={product} variant={selectedVariant} />
     </section>
   )
 }
@@ -764,6 +748,12 @@ export function WhatsIncluded({ product }: { product: Product }) {
 }
 
 export function ProductCompleteKitCallout({ product }: { product: Product }) {
+  // Products that don't actually offer the kit in the purchase selector (e.g.
+  // accessories like KLOW, or ready-to-use ampoule formats) must not carry a
+  // "Complete Kit Included" marketing section — it would promise syringes and
+  // BAC water the customer can never actually select or receive.
+  if (!product.purchaseRules.kitEligible) return null
+
   return (
     <section className="px-5 pb-10 sm:px-8 lg:pb-14">
       <div className="mx-auto max-w-[88rem]">
@@ -865,14 +855,20 @@ function ProductCertificateOfAnalysis({ product, coa }: { product: Product; coa:
   )
 }
 
-const productHowItWorksSteps = [
-  { icon: FileSearch, title: 'Select product and strength', copy: 'Choose the catalog option that matches the requirements of your research review.' },
-  { icon: PackageCheck, title: 'Receive the Encore Complete Kit', copy: 'The product and confirmed supporting kit components arrive together.' },
-  { icon: ClipboardCheck, title: 'Review included documentation', copy: 'Review the product label, accompanying documentation, and included materials.' },
-  { icon: ShieldCheck, title: 'Conduct appropriate research', copy: 'Use appropriate laboratory procedures and qualified research oversight.' },
-]
+function getProductHowItWorksSteps(kitEligible: boolean) {
+  return [
+    { icon: FileSearch, title: 'Select product and strength', copy: 'Choose the catalog option that matches the requirements of your research review.' },
+    kitEligible
+      ? { icon: PackageCheck, title: 'Receive the Encore Complete Kit', copy: 'The product and confirmed supporting kit components arrive together, if selected.' }
+      : { icon: PackageCheck, title: 'Receive your order', copy: 'The product arrives in standard Encore packaging.' },
+    { icon: ClipboardCheck, title: 'Review included documentation', copy: 'Review the product label, accompanying documentation, and included materials.' },
+    { icon: ShieldCheck, title: 'Conduct appropriate research', copy: 'Use appropriate laboratory procedures and qualified research oversight.' },
+  ]
+}
 
-export function ProductHowItWorksFlow() {
+export function ProductHowItWorksFlow({ product }: { product: Product }) {
+  const productHowItWorksSteps = getProductHowItWorksSteps(product.purchaseRules.kitEligible)
+
   return (
     <SectionShell eyebrow="How it works" title="A consistent four-step research workflow.">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -1405,7 +1401,6 @@ export function RelatedProducts({ product }: { product: Product }) {
 
 export function FinalPurchaseCTA({ product }: { product: Product }) {
   const priceLabel = getProductPriceLabel(product)
-  const defaultVariant = product.variants[0]
 
   return (
     <section className="px-5 py-10 sm:px-8 lg:py-14">
@@ -1416,12 +1411,20 @@ export function FinalPurchaseCTA({ product }: { product: Product }) {
               Ready to order {product.name}?
             </p>
             <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#071724]">{priceLabel}</p>
-            <p className="mt-1 text-sm text-slate-500">Encore Complete Kit included with every order.</p>
+            <p className="mt-1 text-sm text-slate-500">
+              {product.purchaseRules.kitEligible
+                ? 'Vial Only, the Encore Complete Kit, or a Multi-Vial Research Pack — configure your order above.'
+                : 'Configure your order above, then add it to your cart.'}
+            </p>
           </div>
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
-            <AddToCartButton product={product} variant={defaultVariant} className="min-h-12 px-6">
-              {defaultVariant.price > 0 ? 'Add to Cart' : 'Request availability'}
-            </AddToCartButton>
+            <a
+              href={`#purchase-options-${product.slug}`}
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#071724] px-6 text-sm font-semibold text-white transition hover:bg-teal-700"
+            >
+              <ShoppingCart size={16} aria-hidden="true" />
+              Configure your order
+            </a>
             <a
               href="https://wa.me/19153595448"
               target="_blank"
