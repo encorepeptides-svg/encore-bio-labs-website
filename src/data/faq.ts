@@ -165,7 +165,7 @@ export const faqLibrary: FAQGroup[] = [
     title: 'Recovery and Regeneration Research',
     intro: 'Recovery & Regeneration category questions.',
     items: [
-      { question: 'What compounds are studied for recovery and regeneration?', answer: 'BPC-157, TB-500, Wolverine Stack, KLOW, GHK-Cu, and AHK-Cu.' },
+      { question: 'What compounds are studied for recovery and regeneration?', answer: 'BPC-157 and TB-500 (combined only, as the Wolverine Stack), KLOW, GHK-Cu, and AHK-Cu.' },
       { question: 'What is BPC-157 commonly studied for?', answer: 'A gastric-derived peptide fragment studied in preclinical repair, angiogenesis, and gut-barrier research models.' },
       { question: 'How is TB-500 different from BPC-157?', answer: 'TB-500 is studied for actin regulation and cell-migration biology (related to thymosin beta-4), while BPC-157 is studied for repair signaling and angiogenesis — different mechanisms often reviewed together.' },
       { question: 'What is the Wolverine Stack?', answer: 'A packaged combination of BPC-157 and TB-500 research themes for researchers studying both together, not a third distinct peptide.' },

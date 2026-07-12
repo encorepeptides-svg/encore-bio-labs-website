@@ -107,11 +107,7 @@ export function CategoryHero({ area, content }: { area: ResearchArea; content: C
       <div className="pointer-events-none absolute right-0 top-14 size-80 rounded-full bg-[var(--teal)]/12 blur-3xl" />
 
       <div className="relative mx-auto grid max-w-[88rem] gap-10 lg:grid-cols-[0.98fr_1.02fr] lg:items-center">
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-        >
+        <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
           <p
             className="inline-flex rounded-full border px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em]"
             style={{
@@ -138,9 +134,8 @@ export function CategoryHero({ area, content }: { area: ResearchArea; content: C
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 22, scale: 0.98 }}
+          initial={false}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1], delay: 0.08 }}
           className="relative mx-auto w-full max-w-xl overflow-hidden rounded-[2rem] border border-white bg-white shadow-[0_32px_110px_rgba(26,35,64,0.14)]"
         >
           {imageSrc ? (

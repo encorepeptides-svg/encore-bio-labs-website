@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import { products } from '../../data/products'
 import { AssistantProvider } from './AssistantProvider'
 import { useAssistant } from './assistantContext'
-import { FloatingWhatsAppButton } from './FloatingWhatsAppButton'
 import { EncoreAssistantButton } from './EncoreAssistantButton'
 import { EncoreAssistantPanel } from './EncoreAssistantPanel'
 
@@ -18,9 +17,8 @@ function AssistantWidgetInner() {
 
   return (
     <>
-      {!isOpen && <FloatingWhatsAppButton productName={productName} />}
       {!isOpen && <EncoreAssistantButton onClick={open} />}
-      {isOpen && <EncoreAssistantPanel onClose={close} />}
+      {isOpen && <EncoreAssistantPanel onClose={close} productName={productName} />}
     </>
   )
 }

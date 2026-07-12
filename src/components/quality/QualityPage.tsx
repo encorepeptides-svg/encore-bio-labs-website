@@ -1,4 +1,6 @@
-import { ArrowRight, ShieldCheck } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, BadgeCheck, ShieldCheck } from 'lucide-react'
+import { coaBySlug } from '../../data/coa'
+import { products } from '../../data/products'
 import { QualitySection } from '../QualitySection'
 import { Reveal } from '../Reveal'
 import { InternalLinkGrid } from '../content/EditorialModules'
@@ -30,6 +32,49 @@ export function QualityPage() {
             confirmed during review and how storage, batch records, and identity or purity
             documentation — before you ever start a research intake.
           </p>
+        </Reveal>
+      </section>
+
+      {/* Real, on-file Certificates of Analysis — not a promise that documentation exists, proof that it does. */}
+      <section className="px-5 pb-10 sm:px-8 lg:pb-14">
+        <Reveal className="mx-auto max-w-[88rem]">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">Certificates on file</p>
+          <h2 className="mt-3 max-w-3xl text-2xl font-semibold tracking-[-0.035em] text-[#071724] sm:text-3xl">
+            We do not dress up product pages with numbers we cannot show you. Here are the ones we can.
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+            Signed, independent lab results are published below as they are received and reviewed. This list is
+            shorter than our full catalog on purpose — we would rather show fewer, real certificates than imply
+            every product has one before it does.
+          </p>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {Object.entries(coaBySlug).map(([slug, coa]) => {
+              const product = products.find((entry) => entry.slug === slug)
+              if (!product) return null
+
+              return (
+                <a
+                  key={slug}
+                  href={coa.fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex flex-col rounded-[1.5rem] border border-slate-900/10 bg-white p-5 shadow-[0_18px_48px_rgba(7,23,36,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_60px_rgba(7,23,36,0.1)]"
+                >
+                  <span className="flex size-10 items-center justify-center rounded-2xl bg-teal-50 text-teal-800">
+                    <BadgeCheck size={18} aria-hidden="true" />
+                  </span>
+                  <p className="mt-4 text-base font-semibold tracking-[-0.02em] text-[#071724]">{product.name}</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">
+                    {coa.labName} · {coa.method} · {coa.reportDate}
+                  </p>
+                  <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-teal-800">
+                    View certificate
+                    <ArrowUpRight size={13} aria-hidden="true" className="transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </span>
+                </a>
+              )
+            })}
+          </div>
         </Reveal>
       </section>
 

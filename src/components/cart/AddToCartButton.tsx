@@ -124,7 +124,7 @@ export function VariantAddToCartPanel({
       </AddToCartButton>
       <p className="mt-3 text-xs leading-5 text-slate-500">
         {hasMultipleVariants
-          ? 'Each strength or format is tracked as its own cart SKU.'
+          ? 'Each strength ships as its own listing, so your cart always reflects exactly what you selected.'
           : 'This product is available in one catalog format.'}
       </p>
     </div>

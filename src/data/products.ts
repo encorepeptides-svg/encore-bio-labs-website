@@ -151,7 +151,7 @@ export const researchAreas: ResearchArea[] = [
     name: 'Recovery & Regeneration',
     description:
       'Research into tissue repair, connective-tissue signaling, and regenerative peptide science, often reviewed together as recovery-focused research stacks.',
-    products: ['BPC-157', 'TB-500', 'Wolverine Stack', 'KLOW', 'GHK-Cu', 'AHK-Cu'],
+    products: ['Wolverine Stack', 'KLOW', 'GHK-Cu', 'AHK-Cu'],
     image: categoryVisuals['Recovery & Regeneration'],
     accent: '#10B981',
   },
@@ -244,7 +244,7 @@ export const categoryContent: Record<string, CategoryContent> = {
     subheadline:
       'From gastric-derived repair peptides to copper-peptide matrix biology, this category covers the compounds most commonly reviewed in recovery-focused research.',
     overview:
-      "Recovery & Regeneration is Encore Bio Labs' research category for peptides studied in connective-tissue, repair-signaling, and matrix-remodeling contexts. It includes two peptides frequently reviewed together as a research pair (BPC-157 and TB-500), a packaged combination of the two (Wolverine Stack), a logistics-focused kit entry (KLOW), and two copper-peptide compounds studied for matrix and skin-adjacent biology (GHK-Cu and AHK-Cu). This category is aimed at researchers evaluating tissue-repair signaling models, not at people looking for injury-treatment guidance.",
+      "Recovery & Regeneration is Encore Bio Labs' research category for peptides studied in connective-tissue, repair-signaling, and matrix-remodeling contexts. It includes a combined research kit pairing BPC-157 and TB-500 research themes (Wolverine Stack — not sold as separate individual peptides), a logistics-focused kit entry (KLOW), and two copper-peptide compounds studied for matrix and skin-adjacent biology (GHK-Cu and AHK-Cu). This category is aimed at researchers evaluating tissue-repair signaling models, not at people looking for injury-treatment guidance.",
     whyStudied:
       "Recovery-focused peptide research sits at the intersection of a few active research lines: angiogenesis and repair-signal biology (commonly discussed through BPC-157), cytoskeletal remodeling and cell migration (TB-500's actin-related research context), and copper-peptide-driven extracellular matrix and collagen research (GHK-Cu and AHK-Cu). Researchers are often trying to understand how these signaling pathways interact — which is why several products in this category are commonly reviewed as pairs or kits rather than in isolation.",
     themes: [
@@ -254,15 +254,13 @@ export const categoryContent: Record<string, CategoryContent> = {
       { title: 'Combination and kit-based research planning', description: 'How researchers organize companion compounds (like BPC-157 + TB-500) and supporting kit components for cleaner study design.' },
     ],
     comparisonNotes: {
-      'bpc-157': 'Most-cited standalone repair peptide in this category',
-      'tb-500': 'Commonly paired with BPC-157, not a substitute for it',
-      'wolverine-stack': 'Packaged pairing, not a third distinct peptide',
+      'wolverine-stack': 'Combines BPC-157 and TB-500 research themes in one kit — not sold as separate individual peptides',
       klow: 'Not a single-pathway peptide entry — a support/kit product',
       'ghk-cu': 'Broader matrix/skin research scope',
       'ahk-cu': 'Narrower, follicle-focused counterpart to GHK-Cu',
     },
     faqs: [
-      { question: 'Should I look at BPC-157 or TB-500 first?', answer: "They're studied through different mechanisms (repair/angiogenesis vs. actin/cell migration) and are commonly reviewed together rather than as either/or alternatives — the Wolverine Stack exists specifically for that combined research context." },
+      { question: 'Do you sell BPC-157 or TB-500 individually?', answer: "No. Encore only offers them combined, as the Wolverine Stack, which pairs BPC-157 repair-signaling research with TB-500 cell-migration research in one kit." },
       { question: "What's actually in the Wolverine Stack?", answer: 'It is organized around BPC-157 and TB-500 research themes packaged together; it does not include dosing or treatment instructions.' },
       { question: 'Is KLOW a peptide like the others?', answer: "No — it's a kit/support entry focused on logistics and documentation, not a standalone research compound with its own pathway." },
       { question: "What's the difference between GHK-Cu and AHK-Cu?", answer: 'GHK-Cu is typically framed around broader skin and matrix-remodeling research; AHK-Cu is more narrowly framed around follicle and dermal-signaling research, though both share copper-peptide biology.' },
@@ -438,6 +436,12 @@ const categoryBenefits: Record<string, ProductCardContent[]> = {
 }
 
 const productPositioning: Record<string, { headline: string; focus: string; mechanism: string[]; visual: string }> = {
+  retatrutide: {
+    headline: 'Map Triple-Receptor Signaling. Study Metabolic Response. Review With Precision.',
+    focus: 'triple-receptor GLP-1, GIP, and glucagon agonist research, energy-regulation models, and body-composition pathway review',
+    mechanism: ['Triple-receptor agonist review', 'GLP-1/GIP/glucagon signaling model', 'Energy-expenditure pathway observation', 'Body-composition marker record'],
+    visual: 'triple-receptor pathway map',
+  },
   tesamorelin: {
     headline: 'Refine Metabolic Research. Support GH-Axis Inquiry. Review With Precision.',
     focus: 'growth-hormone-releasing hormone analog research, visceral-adiposity models, and metabolic signaling review',
@@ -467,18 +471,6 @@ const productPositioning: Record<string, { headline: string; focus: string; mech
     focus: 'IGF pathway signaling, cellular uptake models, and performance-oriented research review',
     mechanism: ['IGF pathway context', 'Receptor interaction model', 'Cellular signaling cascade', 'Performance-marker review'],
     visual: 'growth-factor receptor map',
-  },
-  'bpc-157': {
-    headline: 'Study Repair Signaling. Support Resilience Models. Review Recovery Pathways.',
-    focus: 'repair-associated peptide signaling, tissue-resilience models, and recovery research planning',
-    mechanism: ['Peptide review', 'Repair pathway signaling', 'Matrix-response observation', 'Recovery-record mapping'],
-    visual: 'repair pathway field',
-  },
-  'tb-500': {
-    headline: 'Map Mobility Research. Support Regeneration Models. Clarify Recovery Signals.',
-    focus: 'thymosin beta-4 fragment research, actin-related signaling models, and tissue-recovery review',
-    mechanism: ['Thymosin-fragment review', 'Cell migration model', 'Repair-signal cascade', 'Mobility-marker review'],
-    visual: 'cell migration map',
   },
   'wolverine-stack': {
     headline: 'Combine Recovery Signals. Support Repair Research. Organize Regeneration Review.',
@@ -585,6 +577,40 @@ const productPositioning: Record<string, { headline: string; focus: string; mech
 }
 
 const productFacts: Record<string, ProductFact> = {
+  retatrutide: {
+    overview:
+      'Retatrutide is a synthetic peptide studied as a triple agonist at the GLP-1, GIP, and glucagon receptors, reviewed in research settings for energy-regulation signaling, body-composition models, and metabolic marker response.',
+    identity: 'Triple-receptor (GLP-1 / GIP / glucagon) synthetic peptide agonist',
+    target: 'GLP-1, GIP, and glucagon receptor signaling',
+    pathway: 'Combined incretin and glucagon-receptor signaling, with downstream energy-expenditure and appetite-regulation models',
+    markers: 'Body-weight trend, fasting glucose, HbA1c, and lipid-panel markers in qualified research designs',
+    benefits: [
+      { title: 'Triple-receptor research', description: 'Useful for studying combined GLP-1, GIP, and glucagon receptor engagement in one research entry.' },
+      { title: 'Energy-expenditure models', description: 'The glucagon-receptor component is often reviewed alongside energy-expenditure research questions distinct from GLP-1-only entries.' },
+      { title: 'Body-composition context', description: 'Appears in literature around body-weight and composition research, framed without guaranteed outcomes.' },
+      { title: 'Glycemic marker review', description: 'Supports research conversations around fasting glucose and HbA1c alongside metabolic panels.' },
+      { title: 'Comparative incretin research', description: 'Useful when comparing single- and multi-receptor incretin research models within the same category.' },
+      { title: 'Documentation-first review', description: 'Pairs product review with qualified oversight, lab context, and careful record keeping.' },
+    ],
+    researchHighlights: [
+      { title: 'Triple-receptor agonism', journal: 'Incretin pathway literature', takeaway: 'Retatrutide is studied as a single molecule engaging GLP-1, GIP, and glucagon receptors, distinguishing it from single- or dual-receptor entries in this category.', metric: 'GLP·GIP·GCG' },
+      { title: 'Glucagon-receptor energy signaling', journal: 'Metabolic research summaries', takeaway: 'The glucagon-receptor component is frequently discussed as a mechanism for energy-expenditure research distinct from appetite signaling alone.', metric: 'EE' },
+      { title: 'Body-composition research', journal: 'Clinical literature context', takeaway: 'Published work has evaluated retatrutide in body-weight and composition models; applicability depends on study design and qualified oversight.', metric: 'BC' },
+    ],
+    biologyPoints: [
+      { title: 'GLP-1 receptor signaling', description: 'Shares incretin-pathway signaling reviewed across this research category, tied to appetite and glycemic research models.' },
+      { title: 'GIP receptor engagement', description: 'Adds a second incretin pathway alongside GLP-1, a research distinction from single-receptor entries.' },
+      { title: 'Glucagon receptor activity', description: 'The third receptor target, most associated in the literature with energy-expenditure research questions.' },
+    ],
+    faqs: [
+      { question: 'What is Retatrutide?', answer: 'Retatrutide is a synthetic peptide studied as a triple agonist at the GLP-1, GIP, and glucagon receptors.' },
+      {
+        question: 'How is it different from other incretin-research entries in this catalog?',
+        answer:
+          'Retatrutide engages three receptor pathways in one molecule, compared with the single- or dual-receptor mechanisms studied for entries like Tesamorelin or CJC-1295 + Ipamorelin.',
+      },
+    ],
+  },
   tesamorelin: {
     overview:
       'Tesamorelin is a synthetic growth-hormone-releasing hormone analog studied for GH-axis signaling, IGF-1 response, visceral-adiposity research models, and metabolic marker review.',
@@ -703,66 +729,6 @@ const productFacts: Record<string, ProductFact> = {
     faqs: [
       { question: 'What does LR3 mean?', answer: 'LR3 refers to long arginine 3, an IGF-1 analog design discussed in research for altered binding characteristics.' },
       { question: 'What is the primary research pathway?', answer: 'The primary pathway is IGF-1 receptor signaling with downstream AKT and MAPK pathway context.' },
-    ],
-  },
-  'bpc-157': {
-    overview:
-      'BPC-157 is a gastric peptide fragment studied in preclinical repair models, angiogenesis signaling, tendon and ligament research, gut barrier models, and inflammatory stress response.',
-    identity: 'Body protection compound peptide fragment',
-    target: 'Repair-associated signaling, angiogenesis context, and tissue-stress models',
-    pathway: 'Nitric-oxide pathway context, angiogenic signaling, fibroblast and collagen research models',
-    markers: 'Tissue repair observations, collagen markers, inflammatory markers, gut barrier and motility research endpoints',
-    benefits: [
-      { title: 'Repair signaling', description: 'Frequently reviewed in preclinical models of soft-tissue and connective-tissue response.' },
-      { title: 'Angiogenesis context', description: 'Supports research around blood-vessel signaling and local repair biology.' },
-      { title: 'Gut barrier models', description: 'Appears in literature around gastric and intestinal protection research models.' },
-      { title: 'Collagen research', description: 'Relevant to fibroblast, tendon, ligament, and extracellular-matrix study design.' },
-      { title: 'Inflammatory stress', description: 'Can be framed around stress-response markers without therapeutic claims.' },
-      { title: 'Recovery stack fit', description: 'Often reviewed alongside TB-500 or GHK-Cu in recovery-focused catalog planning.' },
-    ],
-    researchHighlights: [
-      { title: 'Preclinical repair literature', journal: 'Tissue repair research', takeaway: 'BPC-157 is most often discussed in animal and cell models of tissue repair and injury response.', metric: 'PRE' },
-      { title: 'Angiogenesis signaling', journal: 'Vascular biology context', takeaway: 'Research often examines blood-vessel formation and nitric-oxide pathway context.', metric: 'NO' },
-      { title: 'Gastrointestinal origin', journal: 'Peptide biology summaries', takeaway: 'BPC-157 is described as a peptide sequence related to body protection compound research from gastric juice.', metric: 'GI' },
-    ],
-    biologyPoints: [
-      { title: 'Repair pathway field', description: 'The biology model centers on tissue stress, vascular signaling, and extracellular-matrix response.' },
-      { title: 'Fibroblast and collagen context', description: 'Research may track fibroblast activity and collagen organization in controlled models.' },
-      { title: 'Gut-tissue connection', description: 'The peptide is commonly discussed across gastrointestinal and soft-tissue research themes.' },
-    ],
-    faqs: [
-      { question: 'Is BPC-157 human-approved?', answer: 'No. This catalog page presents BPC-157 for research-use-only context and does not describe approved treatment use.' },
-      { question: 'What research models are most common?', answer: 'Common research contexts include soft-tissue repair, tendon and ligament models, angiogenesis, and gastrointestinal barrier research.' },
-    ],
-  },
-  'tb-500': {
-    overview:
-      'TB-500 is a synthetic peptide based on a region of thymosin beta-4 studied for actin regulation, cell migration, angiogenesis, and tissue-repair research models.',
-    identity: 'Thymosin beta-4 fragment research peptide',
-    target: 'Actin-binding and cell-migration biology',
-    pathway: 'Cytoskeletal remodeling, cell migration, angiogenesis context, and repair-signal models',
-    markers: 'Cell migration, wound-closure models, angiogenesis markers, inflammatory and tissue-remodeling observations',
-    benefits: [
-      { title: 'Cell migration', description: 'Frames research around migration and remodeling behavior in tissue-repair models.' },
-      { title: 'Actin regulation', description: 'Connects product review to cytoskeletal dynamics and actin-related biology.' },
-      { title: 'Angiogenesis context', description: 'Relevant to vascular response and repair-signal research questions.' },
-      { title: 'Mobility models', description: 'Useful for tendon, ligament, and soft-tissue recovery research framing.' },
-      { title: 'Companion stack review', description: 'Often reviewed alongside BPC-157 in recovery and regeneration programs.' },
-      { title: 'Preclinical clarity', description: 'Content stays grounded in research models rather than treatment claims.' },
-    ],
-    researchHighlights: [
-      { title: 'Thymosin beta-4 lineage', journal: 'Cell migration literature', takeaway: 'TB-500 is related to thymosin beta-4 research around cytoskeletal remodeling and cell migration.', metric: 'Tβ4' },
-      { title: 'Actin pathway context', journal: 'Repair biology summaries', takeaway: 'The actin system is central to migration, remodeling, and tissue-response research models.', metric: 'ACT' },
-      { title: 'Angiogenesis model', journal: 'Preclinical research context', takeaway: 'Research commonly reviews angiogenesis and wound-response markers in controlled models.', metric: 'ANG' },
-    ],
-    biologyPoints: [
-      { title: 'Cell migration map', description: 'The visual model centers on actin, cytoskeletal remodeling, and movement of repair-associated cells.' },
-      { title: 'Vascular response context', description: 'Angiogenesis research can be part of tissue-repair study planning.' },
-      { title: 'Extracellular matrix remodeling', description: 'Researchers may review matrix organization and repair-stage observations.' },
-    ],
-    faqs: [
-      { question: 'How is TB-500 different from BPC-157?', answer: 'TB-500 is usually framed around thymosin beta-4, actin regulation, and cell migration, while BPC-157 is often framed around repair signaling and gut-tissue models.' },
-      { question: 'What is the main research theme?', answer: 'The main research theme is tissue remodeling through cell migration, cytoskeletal dynamics, and angiogenesis context.' },
     ],
   },
   'wolverine-stack': {
@@ -1284,8 +1250,6 @@ const catalogTaglines: Record<string, string> = {
   'mots-c': 'Mitochondrial energy signaling, studied at the AMPK level.',
   'aod-9604': 'GH-fragment metabolic research, organized for clean review.',
   'wolverine-stack': 'BPC-157 and TB-500, packaged for combined research review.',
-  'bpc-157': 'The most-referenced repair peptide in preclinical literature.',
-  'tb-500': 'Actin biology and cell-migration research, one peptide deep.',
   klow: 'Kit logistics and documentation, organized before it ships.',
   'ghk-cu': 'Copper-peptide matrix research, from collagen to wound response.',
   'ahk-cu': 'A follicle-focused copper peptide, distinct from GHK-Cu.',
@@ -1403,7 +1367,7 @@ function createPageContent(product: CatalogProduct): ProductPageContent {
       { label: 'Product identity', value: facts?.identity ?? 'Research catalog entry' },
       { label: 'Primary target', value: facts?.target ?? categoryCopy },
       { label: 'Research markers', value: facts?.markers ?? 'Study-specific markers vary by qualified research design' },
-      { label: 'Available format', value: product.variants.map((variant) => variant.format).join(', ') },
+      { label: 'Available format', value: [...new Set(product.variants.map((variant) => variant.format))].join(', ') },
       { label: 'Catalog options', value: getDosage(product.variants) },
       { label: 'Access pathway', value: 'Screening and documentation request' },
       { label: 'Use classification', value: 'Research use only' },
@@ -1487,11 +1451,6 @@ function createPageContent(product: CatalogProduct): ProductPageContent {
           'Variants live inside one product object so researchers can review available catalog options without duplicate product cards.',
       },
       {
-        question: 'Are the statistics guaranteed outcomes?',
-        answer:
-          'No. Statistics are illustrative research-planning summaries, internal catalog signals, or study-specific context. They are not guaranteed biological, clinical, or individual outcomes.',
-      },
-      {
         question: 'Is this a consumer health product?',
         answer: brandText.complianceDisclaimer,
       },
@@ -1552,26 +1511,6 @@ const catalogProducts: CatalogProduct[] = [
       'A recovery and repair research entry prepared for complete kit organization and record review.',
     featured: true,
     variants: [{ label: 'Catalog Format', format: 'Research kit format', price: 139 }],
-  },
-  {
-    slug: 'bpc-157',
-    name: 'BPC-157',
-    category: 'Recovery & Regeneration',
-    image: 'bpc-157-tb-500.png',
-    description:
-      'A recovery research entry organized for documentation review, study planning, and compliant inquiry routing.',
-    featured: true,
-    variants: [{ label: 'Catalog Format', format: 'Vial format', price: 119 }],
-  },
-  {
-    slug: 'tb-500',
-    name: 'TB-500',
-    category: 'Recovery & Regeneration',
-    image: 'bpc-157-tb-500.png',
-    description:
-      'A regenerative peptide research entry structured for format clarity and documentation-led review.',
-    featured: true,
-    variants: [{ label: 'Catalog Format', format: 'Vial format', price: 129 }],
   },
   {
     slug: 'klow',
@@ -1801,14 +1740,12 @@ const relatedProductsBySlug: Record<string, string[]> = {
   'mots-c': ['nad-plus', 'ss31', 'tesamorelin'],
   'aod-9604': ['retatrutide', 'tesamorelin', 'mots-c'],
   'igf1-lr3': ['hgh-191aa', 'cerebrolysin', 'cjc1295-ipamorelin'],
-  'bpc-157': ['tb-500', 'wolverine-stack', 'ghk-cu'],
-  'tb-500': ['bpc-157', 'wolverine-stack', 'ghk-cu'],
-  'wolverine-stack': ['bpc-157', 'tb-500', 'ghk-cu'],
-  klow: ['bpc-157', 'ghk-cu', 'glutathione'],
+  'wolverine-stack': ['ghk-cu', 'ahk-cu', 'klow'],
+  klow: ['wolverine-stack', 'ghk-cu', 'glutathione'],
   'nad-plus': ['glutathione', 'ss31', 'epithalon'],
   glutathione: ['nad-plus', 'ss31', 'thymosin-alpha-1'],
-  'ghk-cu': ['ahk-cu', 'bpc-157', 'wolverine-stack'],
-  'ahk-cu': ['ghk-cu', 'bpc-157', 'tb-500'],
+  'ghk-cu': ['ahk-cu', 'wolverine-stack', 'klow'],
+  'ahk-cu': ['ghk-cu', 'wolverine-stack', 'klow'],
   epithalon: ['nad-plus', 'ss31', 'thymosin-alpha-1'],
   kisspeptin: ['hcg', 'hgh-191aa', 'dsip'],
   cerebrolysin: ['semax', 'selank', 'igf1-lr3'],
@@ -1821,8 +1758,6 @@ const catalogMetadataBySlug: Record<string, ProductCatalogMetadata> = {
   retatrutide: { casNumber: '2381089-83-2', purityGrade: '>=98%', stockStatus: 'In Stock' },
   tesamorelin: { casNumber: '218949-48-5', purityGrade: 'Research Grade', stockStatus: 'Limited Stock' },
   'wolverine-stack': { casNumber: 'BPC-157 / TB-500', purityGrade: 'Research Grade', stockStatus: 'In Stock' },
-  'bpc-157': { casNumber: '137525-51-0', purityGrade: '>=98%', stockStatus: 'In Stock' },
-  'tb-500': { casNumber: '77591-33-4', purityGrade: '>=98%', stockStatus: 'Limited Stock' },
   klow: { casNumber: 'Kit-support entry', purityGrade: 'Analytical Grade', stockStatus: 'On Request' },
   'igf1-lr3': { casNumber: '946870-92-4', purityGrade: 'Research Grade', stockStatus: 'Limited Stock' },
   'cjc1295-ipamorelin': { casNumber: '863288-34-0 / 170851-70-4', purityGrade: '>=98%', stockStatus: 'In Stock' },

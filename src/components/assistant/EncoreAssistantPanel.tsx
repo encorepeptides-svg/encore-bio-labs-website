@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
-import { ArrowUp, Sparkles, X } from 'lucide-react'
+import { ArrowUp, MessageCircle, Sparkles, X } from 'lucide-react'
 import { useAssistant } from './assistantContext'
 import { AssistantMessage } from './AssistantMessage'
 import { UserMessage } from './UserMessage'
 import { TypingIndicator } from './TypingIndicator'
 import { QuickActions } from './QuickActions'
+import { buildOrderInquiryMessage, buildWhatsAppUrl, GENERAL_INQUIRY_MESSAGE } from '../../lib/whatsapp'
 
-export function EncoreAssistantPanel({ onClose }: { onClose: () => void }) {
+export function EncoreAssistantPanel({ onClose, productName }: { onClose: () => void; productName?: string }) {
+  const whatsAppHref = buildWhatsAppUrl(
+    productName ? buildOrderInquiryMessage({ product: productName }) : GENERAL_INQUIRY_MESSAGE,
+  )
   const { messages, isTyping, escalation, sendUserMessage, handleAction, handleQuickReply } = useAssistant()
   const [draft, setDraft] = useState('')
   const listRef = useRef<HTMLDivElement>(null)
@@ -88,15 +92,27 @@ export function EncoreAssistantPanel({ onClose }: { onClose: () => void }) {
               <p className="text-xs text-[var(--muted)]">Usually replies in a few seconds</p>
             </div>
           </div>
-          <button
-            ref={closeButtonRef}
-            type="button"
-            onClick={onClose}
-            aria-label="Close assistant"
-            className="flex size-9 items-center justify-center rounded-full border border-slate-900/8 bg-white text-[var(--navy)] transition hover:bg-slate-100"
-          >
-            <X size={16} aria-hidden="true" />
-          </button>
+          <div className="flex items-center gap-2">
+            <a
+              href={whatsAppHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Chat with Encore Bio Labs on WhatsApp instead"
+              title="Prefer WhatsApp?"
+              className="flex size-9 items-center justify-center rounded-full border border-slate-900/8 bg-white text-[#25D366] transition hover:bg-slate-100"
+            >
+              <MessageCircle size={16} aria-hidden="true" />
+            </a>
+            <button
+              ref={closeButtonRef}
+              type="button"
+              onClick={onClose}
+              aria-label="Close assistant"
+              className="flex size-9 items-center justify-center rounded-full border border-slate-900/8 bg-white text-[var(--navy)] transition hover:bg-slate-100"
+            >
+              <X size={16} aria-hidden="true" />
+            </button>
+          </div>
         </div>
 
         <div ref={listRef} className="flex-1 space-y-4 overflow-y-auto px-4 py-5" aria-live="polite">

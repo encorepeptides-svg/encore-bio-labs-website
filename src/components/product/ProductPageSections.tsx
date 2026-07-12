@@ -1,7 +1,9 @@
 import {
   Activity,
   ArrowRight,
+  ArrowUpRight,
   Atom,
+  BadgeCheck,
   Boxes,
   Brain,
   ClipboardCheck,
@@ -25,6 +27,7 @@ import {
 import { motion } from 'framer-motion'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { products, type Product, type ProductVariant } from '../../data/products'
+import { coaBySlug } from '../../data/coa'
 import { contentTypeLabels, researchArticles } from '../../data/research'
 import { buildSrcSet, stemOf } from '../../lib/responsiveImages'
 import { buildOrderInquiryMessage, buildWhatsAppUrl } from '../../lib/whatsapp'
@@ -468,12 +471,7 @@ export function ProductHero({ product }: { product: Product }) {
       <span className="hero-particle hero-particle-slow bottom-[18%] left-[52%]" />
 
       <div className="relative mx-auto grid max-w-[88rem] gap-10 lg:grid-cols-[0.94fr_1.06fr] lg:items-center">
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-          className="max-w-3xl"
-        >
+        <motion.div initial={false} animate={{ opacity: 1, y: 0 }} className="max-w-3xl">
           <a
             href="/catalog"
             className="mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white/80 px-4 py-2 text-sm font-semibold text-[var(--muted)] shadow-sm backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-white hover:text-[var(--navy)]"
@@ -546,9 +544,8 @@ export function ProductHero({ product }: { product: Product }) {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 22, scale: 0.98 }}
+          initial={false}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1], delay: 0.08 }}
           className="group relative mx-auto w-full max-w-2xl transition duration-500 hover:-translate-y-1"
         >
           <div className="relative min-h-[34rem] overflow-hidden rounded-[2.25rem] border border-white bg-white p-4 shadow-[0_32px_110px_rgba(26,35,64,0.14)] sm:min-h-[40rem] sm:p-5">
@@ -778,30 +775,93 @@ export function ProductCompleteKitCallout({ product }: { product: Product }) {
 
 export function ProductQualityFocus({ product }: { product: Product }) {
   const storageSpec = product.specs.find((spec) => spec.label === 'Research markers')
+  const coa = coaBySlug[product.slug]
 
   return (
-    <TrustAndHandlingSection
-      title="Documentation-first standards, applied per product."
-      items={[
-        {
-          title: 'Identity focus',
-          description: `Product identity for ${product.name} is supported through documentation available on request.`,
-        },
-        {
-          title: 'Purity focus',
-          description: 'Purity documentation and batch-level context are available through the approved inquiry process.',
-        },
-        {
-          title: 'Batch documentation',
-          description: 'Lot and batch documentation are organized and ready for qualified review requests.',
-        },
-        {
-          title: 'Storage guidance',
-          description: product.reconstitution.overview,
-        },
-      ]}
-      footnote={storageSpec ? 'Storage guidance is educational only and does not replace qualified laboratory oversight.' : undefined}
-    />
+    <>
+      <TrustAndHandlingSection
+        title="Documentation-first standards, applied per product."
+        items={[
+          {
+            title: 'Identity focus',
+            description: coa
+              ? `Confirmed by ${coa.labName} (${coa.labLocation}) via ${coa.method}.`
+              : `Product identity for ${product.name} is supported through documentation available on request.`,
+          },
+          {
+            title: 'Purity focus',
+            description: coa
+              ? coa.results.map((result) => `${result.component}: ${result.value}`).join(' · ')
+              : 'Purity documentation and batch-level context are available through the approved inquiry process.',
+          },
+          {
+            title: 'Batch documentation',
+            description: coa
+              ? `${coa.batchReference}, reported ${coa.reportDate}. Full signed certificate below.`
+              : 'Lot and batch documentation are organized and ready for qualified review requests.',
+          },
+          {
+            title: 'Storage guidance',
+            description: product.reconstitution.overview,
+          },
+        ]}
+        footnote={storageSpec ? 'Storage guidance is educational only and does not replace qualified laboratory oversight.' : undefined}
+      />
+      {coa ? <ProductCertificateOfAnalysis product={product} coa={coa} /> : null}
+    </>
+  )
+}
+
+function ProductCertificateOfAnalysis({ product, coa }: { product: Product; coa: (typeof coaBySlug)[string] }) {
+  return (
+    <section className="px-5 pb-14 sm:px-8 lg:pb-20">
+      <div className="mx-auto max-w-[88rem] rounded-[2rem] border border-[var(--border)] bg-white p-6 shadow-[0_18px_48px_rgba(7,23,36,0.06)] sm:p-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-2xl">
+            <p className="inline-flex items-center gap-2 rounded-full border border-[var(--teal-border)] bg-[var(--teal-light)] px-3 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--teal)]">
+              <BadgeCheck size={14} aria-hidden="true" />
+              On-file Certificate of Analysis
+            </p>
+            <h3 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-[var(--navy)]">
+              {coa.labName} tested this {coa.scope === 'finished-product' ? 'packaged product' : 'production batch'}.
+            </h3>
+            <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
+              {coa.scope === 'finished-product'
+                ? `Independent lab results for the ${product.name} kit (${coa.batchReference}), reported ${coa.reportDate}.`
+                : `Independent lab results for the ${product.name} raw material used in this product (${coa.batchReference}), reported ${coa.reportDate}. This reflects manufacturing-stage testing, not a test of the finished, packaged kit.`}
+            </p>
+            <dl className="mt-5 grid gap-3 sm:grid-cols-2">
+              {coa.results.map((result) => (
+                <div key={result.component} className="rounded-[1.1rem] border border-[var(--border)] bg-[var(--bg)] px-4 py-3">
+                  <dt className="text-xs font-semibold uppercase tracking-[0.1em] text-[var(--muted)]">{result.component}</dt>
+                  <dd className="mt-1 text-lg font-semibold text-[var(--navy)]">{result.value}</dd>
+                </div>
+              ))}
+            </dl>
+            {coa.verify ? (
+              <a
+                href={coa.verify.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--teal)] hover:underline"
+              >
+                {coa.verify.label}
+                <ArrowUpRight size={14} aria-hidden="true" />
+              </a>
+            ) : null}
+          </div>
+          <a
+            href={coa.fileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[var(--navy)] px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(7,23,36,0.18)] transition hover:bg-teal-700"
+          >
+            View full Certificate of Analysis
+            <ArrowUpRight size={16} aria-hidden="true" />
+          </a>
+        </div>
+      </div>
+    </section>
   )
 }
 

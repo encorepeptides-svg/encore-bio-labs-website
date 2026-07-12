@@ -185,7 +185,7 @@ const recommendationMap: Record<
   'Repair & Regeneration Models': {
     primaryCategory: 'Recovery & Regeneration',
     secondaryCategory: 'Longevity & Cellular Health',
-    productSlugs: ['bpc-157', 'tb-500', 'klow', 'ghk-cu', 'ahk-cu'],
+    productSlugs: ['wolverine-stack', 'klow', 'ghk-cu', 'ahk-cu'],
     explanation:
       'Your profile emphasizes repair signaling, regenerative models, collagen-associated pathways, and preclinical peptide science.',
   },
