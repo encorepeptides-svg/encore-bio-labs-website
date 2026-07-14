@@ -25,7 +25,6 @@ export function Navbar() {
     { key: 'Home', label: t('home'), href: '/' },
     { key: 'Catalog', label: t('catalog'), href: '/catalog' },
     { key: 'About', label: t('about'), href: '/about' },
-    { key: 'FAQ', label: t('faq'), href: '/faq' },
     { key: 'Contact', label: t('contact'), href: '/contact' },
   ]
 
