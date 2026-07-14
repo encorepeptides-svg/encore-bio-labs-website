@@ -15,19 +15,18 @@ export function localizeProductResearchContent(product: Product, content: Produc
     scientificIdentity: 'La identidad, la pureza y la documentación deben verificarse para cada material y lote; la literatura publicada no valida por sí sola un producto de catálogo.',
     howStudied: 'La investigación puede incluir modelos celulares, animales, observacionales o clínicos, según el registro. Cada modelo tiene límites y no debe extrapolarse a resultados individuales.',
     mechanismSummary: `Los estudios de ${product.name} examinan las vías descritas para esta entrada mediante parámetros medibles. La relación entre un mecanismo propuesto y un resultado depende del diseño experimental.`,
-    mechanismSteps: content.mechanismSteps.map((_, index) => ({
+    mechanismSteps: content.mechanismSteps.map((step, index) => ({
+      ...step,
       label: ['Material de investigación', 'Objetivo molecular', 'Señal biológica', 'Parámetro intermedio', 'Resultado medido'][index] ?? 'Etapa de investigación',
-      description: 'La literatura disponible describe esta etapa dentro de modelos y condiciones experimentales específicos.',
+      description: `La etapa «${step.label}» se evalúa dentro de modelos y condiciones experimentales específicos.`,
     })),
     researchAreas: content.researchAreas.map((area) => ({
       ...area,
-      title: `Investigación de ${area.title.toLowerCase()}`,
-      summary: 'Área descrita en la literatura disponible; revisar el modelo, la población y las limitaciones de cada estudio.',
+      summary: `Estudia ${area.title.toLowerCase()} dentro del modelo y el nivel de evidencia descritos.`,
     })),
     studies: content.studies.map((study) => ({
       ...study,
-      title: `Registro de investigación: ${study.title}`,
-      summary: 'Este registro resume el modelo y los parámetros descritos por la publicación original.',
+      summary: `Registro ${study.year}: el estudio examina ${product.name} dentro del modelo y los parámetros descritos en la publicación original.`,
       keyFinding: 'El estudio informa hallazgos dentro del modelo descrito; no establece resultados individuales ni valida materiales de catálogo.',
       limitation: 'La población, el modelo y el diseño limitan cualquier generalización fuera de las condiciones publicadas.',
     })),
@@ -37,9 +36,9 @@ export function localizeProductResearchContent(product: Product, content: Produc
       'Los parámetros experimentales no equivalen a resultados clínicos o individuales.',
       'La interpretación debe mantenerse dentro del contexto de uso exclusivo para investigación.',
     ],
-    faq: content.faq.map(() => ({
-      question: `¿Qué indica la investigación sobre ${product.name}?`,
-      answer: 'La evidencia debe leerse según el modelo, los parámetros y las limitaciones de la publicación. Esta página no ofrece recomendaciones médicas ni instrucciones de uso.',
+    faq: content.faq.map((item) => ({
+      ...item,
+      answer: `${item.answer} La evidencia debe leerse según el modelo, los parámetros y las limitaciones de la publicación.`,
     })),
   }
 }

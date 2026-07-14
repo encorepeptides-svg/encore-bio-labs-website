@@ -1,9 +1,7 @@
 import {
   Activity,
   ArrowRight,
-  ArrowUpRight,
   Atom,
-  BadgeCheck,
   Boxes,
   Brain,
   ClipboardCheck,
@@ -28,8 +26,8 @@ import {
 import { motion } from 'framer-motion'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { products, type Product } from '../../data/products'
+import type { ProductResearchContent } from '../../data/productResearchContent'
 import { getProductMedia } from '../../data/productMedia'
-import { coaBySlug } from '../../data/coa'
 import { contentTypeLabels, researchArticles } from '../../data/research'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { buildOrderInquiryMessage, buildWhatsAppUrl } from '../../lib/whatsapp'
@@ -38,7 +36,6 @@ import { PurchaseSelector } from './PurchaseSelector'
 import { CTA } from '../CTA'
 import { EncoreCompleteKit } from '../EncoreCompleteKit'
 import {
-  FAQAccordion,
   InternalLinkGrid,
   MechanismOfActionSection,
   ProductDiscoveryCTA,
@@ -46,7 +43,6 @@ import {
   RelatedProductsSection,
   ResearchOverviewSection,
   ResearchUseOnlyBanner,
-  TrustAndHandlingSection,
 } from '../content/EditorialModules'
 
 function SectionShell({
@@ -132,21 +128,31 @@ function getProductPriceLabel(product: Product, t: (key: string, vars?: Record<s
   return prices.length ? t('fromPrice', { price: `$${Math.min(...prices).toLocaleString()}` }) : t('byReview')
 }
 
-export function ProductHero({ product }: { product: Product }) {
-  const { path } = useLocale()
+function plainResearchArea(title: string, locale: 'en' | 'es') {
+  const value = title.toLowerCase()
+  if (value.includes('fat') || value.includes('adipos')) return locale === 'es' ? 'composición corporal' : 'body composition'
+  if (value.includes('metabol') || value.includes('energy') || value.includes('energía')) return locale === 'es' ? 'energía y metabolismo' : 'energy and metabolism'
+  if (value.includes('muscle') || value.includes('múscul')) return locale === 'es' ? 'biología muscular' : 'muscle biology'
+  if (value.includes('skin') || value.includes('piel')) return locale === 'es' ? 'biología de la piel' : 'skin biology'
+  if (value.includes('sleep') || value.includes('sueño')) return locale === 'es' ? 'investigación del sueño' : 'sleep research'
+  if (value.includes('cogn') || value.includes('focus')) return locale === 'es' ? 'enfoque y rendimiento mental' : 'focus and mental performance'
+  return locale === 'es' ? 'modelos de laboratorio relacionados' : 'related laboratory models'
+}
+
+function getPlainProductDescription(product: Product, researchContent: ProductResearchContent | undefined, locale: 'en' | 'es') {
+  if (!researchContent) return product.shortDescription
+  const areas = [...new Set(researchContent.researchAreas.slice(0, 3).map((area) => plainResearchArea(area.title, locale)))].join(locale === 'es' ? ', ' : ', ')
+  return locale === 'es'
+    ? `${product.name} es un producto de investigación estudiado en ${areas}. La evidencia disponible depende del modelo y de cada estudio.`
+    : `${product.name} is a research product studied in ${areas}. Available evidence depends on the model and the study design.`
+}
+
+export function ProductHero({ product, researchContent }: { product: Product; researchContent?: ProductResearchContent }) {
+  const { path, locale } = useLocale()
   const { t } = useTranslation('product')
-  const productFeatureBullets = [
-    t('featureBullet1'),
-    t('featureBullet2'),
-    t('featureBullet3'),
-    t('featureBullet4'),
-    t('featureBullet5'),
-  ]
-  const heroStats = [
-    { value: t('statResearchUseValue'), label: t('statResearchUse') },
-    { value: `${product.variants.length}`, label: t('statCatalogOption') },
-    { value: t('statInquiryValue'), label: t('statInquiryRouting') },
-  ]
+  const productFeatureBullets = product.keyHighlights?.slice(0, 3).length
+    ? product.keyHighlights.slice(0, 3)
+    : [t('featureBullet1'), t('featureBullet2'), t('featureBullet3')]
   const priceLabel = getProductPriceLabel(product, t)
 
   return (
@@ -181,7 +187,7 @@ export function ProductHero({ product }: { product: Product }) {
             {product.headline}
           </p>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-[var(--muted)]">
-            {product.shortDescription}
+            {getPlainProductDescription(product, researchContent, locale)}
           </p>
           <div className="mt-7 grid gap-3">
             {productFeatureBullets.map((bullet) => (
@@ -216,18 +222,7 @@ export function ProductHero({ product }: { product: Product }) {
               className="mt-4 max-w-2xl"
             />
           ) : null}
-          <div className="mt-8 grid max-w-2xl grid-cols-3 overflow-hidden rounded-[1.35rem] border border-[var(--border)] bg-white shadow-[0_20px_60px_rgba(26,35,64,0.08)]">
-            {heroStats.map((stat) => (
-              <div key={stat.label} className="border-r border-[var(--border)] p-4 last:border-r-0 sm:p-5">
-                <p className="text-2xl font-semibold tracking-[-0.045em] text-[var(--navy)] sm:text-3xl">
-                  {stat.value}
-                </p>
-                <p className="mt-1 text-xs font-semibold uppercase leading-5 tracking-[0.12em] text-[var(--muted)]">
-                  {stat.label}
-                </p>
-              </div>
-            ))}
-          </div>
+          <p className="mt-5 text-sm leading-6 text-slate-600">{t('researchUseOnlyLine')} · <a href={path('/contact')} className="font-semibold text-teal-800 underline-offset-4 hover:underline">{t('contactQuestion')}</a></p>
         </motion.div>
 
         <motion.div
@@ -453,99 +448,16 @@ export function ProductCompleteKitCallout({ product }: { product: Product }) {
   )
 }
 
-export function ProductQualityFocus({ product }: { product: Product }) {
+export function ProductDocumentationRow() {
+  const { path } = useLocale()
   const { t } = useTranslation('product')
-  const storageSpec = product.specs.find((spec) => spec.label === 'Research markers')
-  const coa = coaBySlug[product.slug]
-
-  return (
-    <>
-      <TrustAndHandlingSection
-        title={t('qualityTitle')}
-        items={[
-          {
-            title: t('identityFocusTitle'),
-            description: coa
-              ? t('identityFocusConfirmed', { lab: coa.labName, location: coa.labLocation, method: coa.method })
-              : t('identityFocusFallback', { product: product.name }),
-          },
-          {
-            title: t('purityFocusTitle'),
-            description: coa
-              ? coa.results.map((result) => `${result.component}: ${result.value}`).join(' · ')
-              : t('purityFocusFallback'),
-          },
-          {
-            title: t('batchDocumentationTitle'),
-            description: coa
-              ? t('batchDocumentationConfirmed', { batch: coa.batchReference, date: coa.reportDate })
-              : t('batchDocumentationFallback'),
-          },
-          {
-            title: t('storageGuidanceTitle'),
-            description: product.reconstitution.overview,
-          },
-        ]}
-        footnote={storageSpec ? t('storageFootnote') : undefined}
-      />
-      {coa ? <ProductCertificateOfAnalysis product={product} coa={coa} /> : null}
-    </>
-  )
+  return <div className="mx-auto flex max-w-[88rem] flex-col gap-3 px-5 pb-8 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-8"><p className="text-slate-600">{t('documentationTrustLine')}</p><div className="flex flex-wrap gap-4"><a href={path('/quality')} className="font-semibold text-teal-800 underline-offset-4 hover:underline">{t('viewDocumentation')}</a><a href={path('/contact')} className="font-semibold text-teal-800 underline-offset-4 hover:underline">{t('requestBatchInformation')}</a></div></div>
 }
 
-function ProductCertificateOfAnalysis({ product, coa }: { product: Product; coa: (typeof coaBySlug)[string] }) {
+export function ProductFaqInvitation({ product }: { product: Product }) {
+  const { path } = useLocale()
   const { t } = useTranslation('product')
-
-  return (
-    <section className="px-5 pb-14 sm:px-8 lg:pb-20">
-      <div className="mx-auto max-w-[88rem] rounded-[2rem] border border-[var(--border)] bg-white p-6 shadow-[0_18px_48px_rgba(7,23,36,0.06)] sm:p-8">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="max-w-2xl">
-            <p className="inline-flex items-center gap-2 rounded-full border border-[var(--teal-border)] bg-[var(--teal-light)] px-3 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--teal)]">
-              <BadgeCheck size={14} aria-hidden="true" />
-              {t('onFileCoa')}
-            </p>
-            <h3 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-[var(--navy)]">
-              {coa.scope === 'finished-product' ? t('coaTestedPackaged', { lab: coa.labName }) : t('coaTestedBatch', { lab: coa.labName })}
-            </h3>
-            <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
-              {coa.scope === 'finished-product'
-                ? t('coaFinishedProduct', { product: product.name, batch: coa.batchReference, date: coa.reportDate })
-                : t('coaRawMaterial', { product: product.name, batch: coa.batchReference, date: coa.reportDate })}
-            </p>
-            <dl className="mt-5 grid gap-3 sm:grid-cols-2">
-              {coa.results.map((result) => (
-                <div key={result.component} className="rounded-[1.1rem] border border-[var(--border)] bg-[var(--bg)] px-4 py-3">
-                  <dt className="text-xs font-semibold uppercase tracking-[0.1em] text-[var(--muted)]">{result.component}</dt>
-                  <dd className="mt-1 text-lg font-semibold text-[var(--navy)]">{result.value}</dd>
-                </div>
-              ))}
-            </dl>
-            {coa.verify ? (
-              <a
-                href={coa.verify.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--teal)] hover:underline"
-              >
-                {coa.verify.label}
-                <ArrowUpRight size={14} aria-hidden="true" />
-              </a>
-            ) : null}
-          </div>
-          <a
-            href={coa.fileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[var(--navy)] px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(7,23,36,0.18)] transition hover:bg-teal-700"
-          >
-            {t('viewFullCoa')}
-            <ArrowUpRight size={16} aria-hidden="true" />
-          </a>
-        </div>
-      </div>
-    </section>
-  )
+  return <section className="px-5 py-10 sm:px-8"><div className="mx-auto flex max-w-[88rem] flex-col gap-5 rounded-[1.5rem] border border-slate-900/8 bg-white p-6 shadow-[0_15px_45px_rgba(7,23,36,.05)] sm:flex-row sm:items-center sm:justify-between"><div><h2 className="text-xl font-semibold tracking-[-.03em] text-[#071724]">{t('faqInvitationTitle', { product: product.name })}</h2><p className="mt-2 text-sm leading-6 text-slate-600">{t('faqInvitationBody')}</p></div><a href={path('/faq#product-handling')} className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-[#071724] px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-800">{t('faqInvitationCta')}</a></div></section>
 }
 
 function getProductHowItWorksSteps(kitEligible: boolean, t: (key: string) => string) {
@@ -998,17 +910,6 @@ export function ReconstitutionGuide({ product }: { product: Product }) {
         </div>
       </div>
     </SectionShell>
-  )
-}
-
-export function FAQSection({ product }: { product: Product }) {
-  const { t } = useTranslation('product')
-  return (
-    <FAQAccordion
-      title={t('faqTitle', { product: product.name })}
-      items={product.faqs}
-      cta={{ label: t('faqCtaLabel'), href: '/intake' }}
-    />
   )
 }
 

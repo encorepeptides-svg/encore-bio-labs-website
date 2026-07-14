@@ -4,14 +4,14 @@ import { getLocalizedProduct } from '../../data/productTranslations'
 import { useLocale } from '../../i18n/LocaleContext'
 import { applyDocumentMetadata } from '../../i18n/applyMetadata'
 import {
-  FAQSection,
   FinalPurchaseCTA,
   ProductBreadcrumb,
   ProductHero,
   ProductBenefits,
   ProductHowItWorksFlow,
   ProductCompleteKitCallout,
-  ProductQualityFocus,
+  ProductDocumentationRow,
+  ProductFaqInvitation,
   ProductSpecs,
   RelatedProducts,
   ResearchUseDisclaimer,
@@ -79,13 +79,13 @@ export function ProductPage({ slug }: { slug: string }) {
   return (
     <main id="main-content" className="bg-[#F8FAFC]">
       <ProductBreadcrumb product={product} />
-      <ProductHero product={product} />
-      <ProductCompleteKitCallout product={product} />
+      <ProductHero product={product} researchContent={researchContent} />
       {researchContent ? <ProductResearchExperience product={product} content={researchContent} /> : <><ProductBenefits product={product} /><ProductHowItWorksFlow product={product} /></>}
+      <ProductCompleteKitCallout product={product} />
+      <ProductDocumentationRow />
       <ProductSpecs product={product} />
-      <ProductQualityFocus product={product} />
-      {researchContent ? null : <FAQSection product={product} />}
       <RelatedProducts product={product} />
+      <ProductFaqInvitation product={product} />
       <FinalPurchaseCTA product={product} />
       <ResearchUseDisclaimer product={product} />
     </main>

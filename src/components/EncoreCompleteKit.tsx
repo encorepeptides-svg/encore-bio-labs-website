@@ -25,7 +25,6 @@ export type EncoreCompleteKitProps = {
   syringeCount?: number
   prepPadCount?: number
   variant?: EncoreCompleteKitVariant
-  showDescription?: boolean
   showClosingMessage?: boolean
   className?: string
 }
@@ -36,7 +35,6 @@ export function EncoreCompleteKit({
   syringeCount,
   prepPadCount,
   variant = 'full',
-  showDescription = true,
   showClosingMessage = true,
   className,
 }: EncoreCompleteKitProps) {
@@ -48,7 +46,7 @@ export function EncoreCompleteKit({
   if (variant === 'cart') return <CartReminder items={items} className={className} />
   if (variant === 'checkout') return <CheckoutReminder items={items} className={className} />
   return (
-    <FullCard items={items} showDescription={showDescription} showClosingMessage={showClosingMessage} className={className} />
+    <FullCard items={items} showClosingMessage={showClosingMessage} className={className} />
   )
 }
 
@@ -59,58 +57,34 @@ function KitIcon({ item, className }: { item: EncoreCompleteKitItem; className?:
 
 function FullCard({
   items,
-  showDescription,
   showClosingMessage,
   className,
 }: {
   items: EncoreCompleteKitItem[]
-  showDescription: boolean
   showClosingMessage: boolean
   className?: string
 }) {
   const { t } = useTranslation('kit')
 
-  return (
-    <div
-      className={cn(
-        'rounded-[1.75rem] border border-slate-900/10 bg-white p-6 shadow-[0_24px_80px_rgba(7,23,36,0.08)] sm:p-8',
-        className,
-      )}
-    >
-      <div className="inline-flex items-center gap-2 rounded-full border border-teal-700/15 bg-teal-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-teal-800">
-        <PackageCheck size={15} aria-hidden="true" />
-        {t('fullEyebrow')}
+  const bacWater = items.find((item) => item.key === 'bac-water')
+  const preparation = items.find((item) => item.key === 'syringes')
+  const packaging = items.find((item) => item.key === 'packaging')
+  return <div className={cn('overflow-hidden rounded-[1.5rem] border border-slate-900/10 bg-white shadow-[0_18px_55px_rgba(7,23,36,.07)]', className)}>
+    <div className="grid items-center gap-5 p-5 sm:p-6 lg:grid-cols-[10rem_1fr]">
+      <img src={kitHeroImage} alt={t('kitThumbnailAlt')} width="240" height="160" loading="lazy" decoding="async" className="h-28 w-full rounded-xl border border-teal-900/10 object-cover object-[62%_center]" />
+      <div>
+        <p className="text-xs font-bold uppercase tracking-[.16em] text-teal-700">{t('fullEyebrow')}</p>
+        <h2 className="mt-2 text-xl font-semibold tracking-[-.03em] text-[#071724] sm:text-2xl">{t('fullHeading')}</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{t('fullDescription')}</p>
+        <ul className="mt-4 grid gap-2 sm:grid-cols-3">{[
+          { item: bacWater, label: t('includedBacWater') },
+          { item: preparation, label: t('includedPreparation') },
+          { item: packaging, label: t('includedPackaging') },
+        ].map(({ item, label }) => <li key={label} className="flex items-center gap-2 text-sm font-semibold text-[#071724]"><span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-teal-100 text-teal-800">{item ? <KitIcon item={item} /> : <PackageCheck size={16} aria-hidden="true" />}</span>{label}</li>)}</ul>
+        {showClosingMessage ? <p className="mt-4 text-xs leading-5 text-slate-500">{t('kitMatchedLine')}</p> : null}
       </div>
-
-      <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-[#071724] sm:text-3xl">
-        {t('fullHeading')}
-      </h2>
-      <p className="mt-3 max-w-2xl text-base leading-7 text-slate-600">{t('fullDescription')}</p>
-
-      <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-        {items.map((item) => (
-          <li
-            key={item.key}
-            className="flex items-start gap-3 rounded-2xl border border-slate-900/10 bg-[#f8fafc] p-4 transition motion-safe:hover:-translate-y-0.5 motion-safe:hover:border-teal-200/60"
-          >
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-800">
-              <KitIcon item={item} />
-            </span>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-[#071724]">{item.title}</p>
-              {showDescription ? <p className="mt-1 text-xs leading-5 text-slate-500">{item.description}</p> : null}
-            </div>
-          </li>
-        ))}
-      </ul>
-
-      {showClosingMessage ? (
-        <p className="mt-6 rounded-xl bg-teal-50 px-4 py-3 text-sm font-medium text-teal-800">
-          {t('closingMessage')}
-        </p>
-      ) : null}
     </div>
-  )
+  </div>
 }
 
 /**
