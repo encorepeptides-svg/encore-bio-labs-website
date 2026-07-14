@@ -73,94 +73,255 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   tesamorelin: {
     catalogTagline: 'Un análogo sintético de GHRH estudiado a través del eje GH–IGF-1. La investigación examina señalización endocrina y composición corporal.',
     description: 'Una entrada de investigación metabólica presentada de forma clara, con documentación de respaldo y contexto de formato.',
+    headline: 'Refina la investigación metabólica. Apoya el estudio del eje GH. Revisa con precisión.',
+    keyHighlights: [
+      'Análogo sintético de GHRH',
+      'Receptor de GHRH y señalización del eje GH',
+      'IGF-1, lípidos en ayunas, marcadores de glucosa y parámetros de cintura o composición en estudios calificados',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
   'wolverine-stack': {
     catalogTagline: 'Un formato combinado de BPC-157 y TB-500. La literatura de sus componentes examina señalización tisular, biología de actina y migración celular en modelos preclínicos.',
     description: 'Una entrada de investigación de recuperación y reparación, preparada con un kit completo y lista para la revisión de registros.',
+    headline: 'Combina señales de recuperación. Apoya la investigación de reparación. Organiza la revisión de regeneración.',
+    keyHighlights: [
+      'Combinación de investigación de recuperación BPC-157 más TB-500',
+      'Vías complementarias de señalización de reparación y migración celular',
+      'Observaciones de reparación, organización del colágeno, contexto de angiogénesis, marcadores inflamatorios y registros de recuperación',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
   klow: {
     catalogTagline: 'GHK-Cu, BPC-157, TB-500 y KPV en una mezcla integrada. Posicionada para investigación en piel, señalización tisular y ciencia regenerativa.',
     description: 'Una entrada de insumos de investigación pensada para planear tu catálogo, dar contexto del kit y facilitar el seguimiento con documentación.',
+    headline: 'Estudia una mezcla de cuatro compuestos. Mapea la señalización de regeneración. Revisa la investigación de piel y tejidos.',
+    keyHighlights: [
+      'Mezcla regenerativa de cuatro compuestos (GHK-Cu, BPC-157, TB-500, KPV)',
+      'Vías de péptido de cobre, señalización de reparación, migración celular y señalización inflamatoria',
+      'Contexto de colágeno y elastina, observaciones de respuesta a heridas, marcadores de migración celular, contexto de angiogénesis y parámetros de señalización inflamatoria',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
   'igf1-lr3': {
     catalogTagline: 'Un análogo de IGF-1 de acción prolongada investigado en modelos de señalización receptora. El estudio se centra en duración, respuesta celular y medición controlada.',
     description: 'Una entrada de investigación de rendimiento, estructurada para una revisión clara, formato bien definido y solicitud de registros.',
+    headline: 'Explora la señalización de crecimiento. Apoya los modelos de rendimiento. Mapea la respuesta celular.',
+    keyHighlights: [
+      'Análogo de IGF-1 Long Arginine 3 (LR3)',
+      'Vía del receptor de IGF-1',
+      'Contexto del eje IGF, marcadores de glucosa, observaciones de crecimiento celular y marcadores de la vía de síntesis proteica',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
   'cjc1295-ipamorelin': {
     catalogTagline: 'CJC-1295 e Ipamorelin combinan dos mecanismos de investigación del eje GH. La formulación permite comparar señalización de GHRH y del receptor de grelina.',
     description: 'Una entrada de investigación combinada, con las variantes agrupadas para comparar más fácilmente en el catálogo.',
+    headline: 'Combina la señalización pulsátil. Estudia la recuperación. Apoya la investigación de composición corporal.',
+    keyHighlights: [
+      'Análogo de GHRH más secretagogo del receptor de grelina',
+      'Receptor de GHRH y receptor secretagogo de hormona de crecimiento',
+      'IGF-1, contexto del pulso de GH, registros de recuperación, marcadores de composición y observaciones de sueño o rendimiento',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
   'mots-c': {
     catalogTagline: 'Un péptido derivado de la mitocondria estudiado en señalización de energía celular. La investigación preclínica examina adaptación metabólica, vías asociadas con AMPK y comunicación mitocondrial.',
     description: 'Una entrada de investigación de péptidos mitocondriales, estructurada para revisar la señalización metabólica, el contexto energético celular y solicitar documentación.',
+    headline: 'Explora la señalización mitocondrial. Apoya la investigación metabólica. Revisa las vías de energía.',
+    keyHighlights: [
+      'Péptido derivado de la mitocondria',
+      'Señalización de estrés mitocondrial y vías metabólicas asociadas con AMPK',
+      'Contexto de AMPK, marcadores de glucosa e insulina, respuesta al estrés mitocondrial y observaciones de capacidad de ejercicio',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
   'aod-9604': {
     catalogTagline: 'Un fragmento modificado de hormona de crecimiento estudiado por separado de la hGH intacta. La investigación aborda señalización metabólica y balance energético, con evidencia humana limitada.',
     description: 'Una entrada de investigación de fragmentos de GH, estructurada para revisar la señalización metabólica, el contexto de composición corporal y solicitar documentación.',
+    headline: 'Revisa la investigación del fragmento de GH. Mapea la señalización metabólica. Mantén un estudio riguroso.',
+    keyHighlights: [
+      'Revisión de catálogo centrada en la documentación',
+      'Variantes agrupadas en una sola página de producto',
+      'Posicionamiento de uso exclusivo para investigación con lenguaje conforme',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
   'nad-plus': {
     catalogTagline: 'Un cofactor redox endógeno central para el metabolismo energético celular. La investigación abarca el ciclo NAD+/NADH, la función mitocondrial y la biología enzimática.',
     description: 'Una entrada de investigación de longevidad, con presentación premium, contexto de kit completo y documentación disponible para revisión.',
+    headline: 'Restaura el contexto celular. Apoya la investigación de energía. Revisa las señales de longevidad.',
+    keyHighlights: [
+      'Dinucleótido de nicotinamida y adenina (NAD+)',
+      'Metabolismo redox, función mitocondrial y vías asociadas con PARP y sirtuinas',
+      'Contexto NAD+/NADH, marcadores mitocondriales, marcadores de estrés oxidativo y paneles de reparación de ADN e inflamación',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
   glutathione: {
     catalogTagline: 'Un tripéptido endógeno central para el equilibrio redox intracelular. La investigación mide el ciclo GSH/GSSG, marcadores de estrés oxidativo y sistemas antioxidantes enzimáticos.',
     description: 'Una entrada del catálogo de investigación con variantes visibles y espacio para solicitar documentación de respaldo.',
+    headline: 'Apoya la investigación redox. Mapea las vías de detoxificación. Revisa la defensa celular.',
+    keyHighlights: [
+      'Tripéptido antioxidante endógeno',
+      'Equilibrio redox, glutatión peroxidasa y vías de detoxificación y estrés oxidativo',
+      'Relación GSH/GSSG, marcadores de estrés oxidativo, contexto de enzimas hepáticas y paneles inflamatorios y redox',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
   'ghk-cu': {
     catalogTagline: 'Un tripéptido unido al cobre estudiado en modelos de matriz extracelular y respuesta tisular. La investigación examina señalización del colágeno, migración celular y biología de la piel.',
     description: 'Una entrada de investigación estética, con todas sus opciones disponibles agrupadas para facilitar la revisión del catálogo.',
+    headline: 'Estudia la señalización del péptido de cobre. Apoya la investigación estética. Mapea la renovación de la matriz.',
+    keyHighlights: [
+      'Complejo tripéptido de cobre',
+      'Señalización de péptido de cobre, matriz extracelular y vías de colágeno y respuesta a heridas',
+      'Marcadores de colágeno, contexto de elastina, equilibrio MMP/TIMP, observaciones de respuesta a heridas y parámetros en modelos de piel',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
   'ahk-cu': {
     catalogTagline: 'Un péptido de cobre investigado en modelos foliculares y de piel. Su perfil de investigación se mantiene distinto de la literatura más amplia sobre GHK-Cu.',
     description: 'Una entrada de investigación estética, estructurada para una presentación clara, revisión de kit y un posicionamiento premium.',
+    headline: 'Explora la investigación folicular. Apoya la señalización del cobre. Revisa las vías estéticas.',
+    keyHighlights: [
+      'Complejo de péptido de cobre',
+      'Modelos de soporte folicular, señalización dérmica y biología del péptido de cobre y la matriz',
+      'Observaciones del ciclo folicular, marcadores de papila dérmica, contexto de colágeno y marcadores inflamatorios y de remodelación de la matriz',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
   epithalon: {
     catalogTagline: 'Un tetrapéptido sintético estudiado en modelos de envejecimiento y ritmo circadiano. La evidencia abarca mecanismos asociados con telómeros, sistemas celulares y observaciones humanas limitadas.',
     description: 'Una entrada de investigación de longevidad, preparada con contenido educativo premium, filtros y solicitud de registros.',
+    headline: 'Estudia el tiempo celular. Apoya los modelos de longevidad. Mapea las señales de renovación.',
+    keyHighlights: [
+      'Tetrapéptido sintético',
+      'Biología del envejecimiento, investigación asociada a los telómeros y contexto de vías pineales y circadianas',
+      'Marcadores asociados a los telómeros, marcadores de senescencia, paneles de estrés oxidativo y observaciones circadianas',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
   cerebrolysin: {
     catalogTagline: 'Una mezcla de péptidos estudiada en modelos neurobiológicos y de respuesta neuronal. La investigación publicada examina señalización neurotrófica, cognición y contexto neurológico.',
     description: 'Una entrada de investigación cognitiva, preparada con una presentación premium y seguimiento basado en documentación.',
+    headline: 'Explora la investigación neurotrófica. Apoya los modelos cognitivos. Revisa la resiliencia neuronal.',
+    keyHighlights: [
+      'Mezcla de péptidos neurotróficos',
+      'Señalización neurotrófica, supervivencia neuronal y vías de plasticidad sináptica y reparación',
+      'Modelos de tareas cognitivas, marcadores neuroinflamatorios, marcadores de plasticidad sináptica y observaciones de supervivencia neuronal',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
   ss31: {
     catalogTagline: 'Un tetrapéptido dirigido a la mitocondria, estudiado mediante cardiolipina y función de membrana. La investigación examina bioenergética, estrés oxidativo y respuesta mitocondrial.',
     description: 'Una entrada de investigación de longevidad, organizada para conversaciones sobre programas de investigación y futuros detalles de registro.',
+    headline: 'Enfoca la investigación mitocondrial. Apoya la energía celular. Revisa las señales de resiliencia.',
+    keyHighlights: [
+      'Tetrapéptido dirigido a la mitocondria',
+      'Membrana mitocondrial interna y biología asociada a la cardiolipina',
+      'Potencial de membrana mitocondrial, marcadores de ROS, contexto de ATP y observaciones de cardiolipina y estrés oxidativo',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
   dsip: {
     catalogTagline: 'Un péptido relacionado con el sueño examinado en investigación neuroendocrina. Los estudios analizan arquitectura del sueño y señalización fisiológica, con evidencia humana limitada y mixta.',
     description: 'Una entrada de investigación diseñada para una revisión concisa y seguimiento listo con documentación.',
+    headline: 'Estudia la señalización del sueño. Apoya los modelos de recuperación. Revisa el contexto neuroendocrino.',
+    keyHighlights: [
+      'Péptido inductor del sueño delta',
+      'Arquitectura del sueño, señalización neuroendocrina y modelos de respuesta al estrés',
+      'Observaciones de las etapas del sueño, contexto de cortisol, marcadores autonómicos, registros de recuperación y paneles neuroendocrinos',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
   kisspeptin: {
     catalogTagline: 'Un péptido del eje reproductivo estudiado antes de la liberación de GnRH. La investigación examina señalización hipotalámico-hipofisaria y respuestas endocrinas controladas.',
     description: 'Una entrada de investigación de bienestar sexual, diseñada para mantener la revisión del producto concisa, organizada y lista para tu solicitud.',
+    headline: 'Mapea la investigación del eje reproductivo. Apoya la señalización hormonal. Revisa con claridad.',
+    keyHighlights: [
+      'Neuropéptido del eje reproductivo',
+      'Receptor de kisspeptina y señalización del eje GnRH',
+      'LH, FSH, contexto de testosterona o estradiol, modelos de pulso de GnRH y marcadores de investigación de fertilidad',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
   hcg: {
     catalogTagline: 'Una hormona glucoproteica estudiada mediante señalización del receptor de hormona luteinizante. La investigación incluye biología del eje reproductivo y medición de respuestas endocrinas.',
     description: 'Una entrada de investigación de bienestar sexual, estructurada para una revisión clara, variantes visibles y conversación sobre documentación.',
+    headline: 'Apoya la investigación hormonal. Mapea el contexto del receptor de LH. Revisa las señales endocrinas.',
+    keyHighlights: [
+      'Gonadotropina coriónica humana',
+      'Señalización del receptor LH/CG',
+      'Contexto del receptor LH/CG, marcadores de testosterona o estradiol, contexto de progesterona y marcadores de investigación de fertilidad',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
   'hgh-191aa': {
     catalogTagline: 'Hormona de crecimiento completa de 191 aminoácidos para investigación del receptor GH. Los modelos examinan señalización del eje, respuesta de IGF-1 y marcadores metabólicos.',
     description: 'Una entrada de investigación de rendimiento, organizada para revisar el formato, conversar sobre disponibilidad y canalizar la documentación.',
+    headline: 'Estudia la investigación de la hormona de crecimiento. Apoya los modelos de recuperación. Revisa el contexto de rendimiento.',
+    keyHighlights: [
+      'Secuencia de hormona de crecimiento humana de 191 aminoácidos',
+      'Receptor de hormona de crecimiento y eje IGF-1',
+      'IGF-1, marcadores de glucosa, marcadores de lípidos, contexto de composición corporal y observaciones de recuperación y metabolismo proteico',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
   'thymosin-alpha-1': {
     catalogTagline: 'Un péptido tímico estudiado en modelos de señalización inmunitaria innata y adaptativa. La investigación examina defensa celular y coordinación de la respuesta inmunitaria.',
     description: 'Una entrada de investigación de salud celular, organizada para una revisión educativa y solicitudes responsables de documentación.',
+    headline: 'Explora la señalización inmune. Apoya la defensa celular. Revisa los modelos de resiliencia.',
+    keyHighlights: [
+      'Péptido tímico de señalización inmune',
+      'Señalización de células T, contexto de células dendríticas y modelos de respuesta inmune innata y adaptativa',
+      'Marcadores de células T, paneles de citoquinas, marcadores inflamatorios y observaciones de respuesta inmune innata y equilibrio inmune',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
   'pt-141': {
     catalogTagline: 'Un agonista del receptor de melanocortina estudiado en modelos de señalización central. La investigación se centra en farmacología receptora y respuesta neurobiológica, sin implicar uso aprobado.',
     description: 'Una entrada de investigación de bienestar sexual, con los formatos disponibles agrupados para explorar rápido y acceder al catálogo de forma responsable.',
+    headline: 'Mapea la investigación de melanocortina. Apoya los modelos de bienestar. Revisa la señalización neuronal.',
+    keyHighlights: [
+      'Agonista del receptor de melanocortina',
+      'Receptores de melanocortina, en especial el contexto de investigación de MC3R y MC4R',
+      'Contexto del receptor de melanocortina, observaciones autonómicas, parámetros de modelos conductuales y marcadores de seguridad cardiovascular en estudios calificados',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
   semax: {
     catalogTagline: 'Un análogo sintético de fragmento de ACTH investigado en modelos cognitivos y neurobiológicos. La investigación examina señalización asociada con BDNF, respuesta neuronal y conducta.',
     description: 'Una entrada de investigación cognitiva, preparada con una presentación premium y revisión responsable de documentación.',
+    headline: 'Explora la investigación cognitiva. Apoya los modelos de concentración. Revisa la neuroseñalización.',
+    keyHighlights: [
+      'Análogo neuropéptido sintético de fragmento de ACTH',
+      'Señalización de neuropéptidos, expresión asociada a BDNF y modelos cognitivos y de respuesta al estrés',
+      'Contexto de BDNF, modelos de tareas cognitivas, marcadores de estrés y observaciones neuroinflamatorias y relacionadas con la atención',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
   selank: {
     catalogTagline: 'Un análogo sintético de tuftsina estudiado en modelos de estrés y neuroinmunidad. La investigación examina vías de señalización asociadas con cognición y adaptación conductual.',
     description: 'Una entrada de investigación cognitiva, con sus opciones agrupadas en una sola tarjeta clara y fácil de consultar.',
+    headline: 'Estudia la investigación de respuesta al estrés. Apoya los modelos cognitivos. Revisa la señalización de calma.',
+    keyHighlights: [
+      'Neuropéptido análogo sintético de tuftsina',
+      'Modelos de respuesta al estrés, señalización inmune-neuropéptido y contexto del sistema de serotonina',
+      'Marcadores de estrés, observaciones de modelos conductuales, contexto de serotonina y marcadores inmunes e inflamatorios',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
   'bac-water': {
     catalogTagline: 'Un accesorio independiente de 10 mL de agua bacteriostática para manejo de laboratorio calificado. Se presenta por separado y no se trata como péptido.',
     description: 'Un accesorio independiente de 10 mL de agua bacteriostática, para flujos de manejo de investigación calificados.',
+    headline: 'Un tamaño verificado. Precio de accesorio claro. Lógica de kit independiente.',
+    keyHighlights: [
+      'Accesorio de manejo para investigación: agua bacteriostática de 10 mL',
+      'Flujos de trabajo calificados de preparación y manejo de laboratorio',
+      'Tamaño del frasco, empaque, documentación de lote y contexto de almacenamiento',
+      'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
+    ],
   },
 }
 
@@ -197,14 +358,141 @@ export const catalogHighlightsEs: Record<string, [string, string, string]> = {
   'bac-water': ['Reconstitución de péptidos', 'Formato estéril de 10 mL', 'Esencial para manejo de laboratorio'],
 }
 
+/**
+ * Spanish eyebrow (badge) per category. The English badge is built as
+ * `${category} research` in products.ts; here we mirror the category-page
+ * eyebrow style (`${name} · investigación`) so the product hero eyebrow reads
+ * naturally in Spanish. Keyed by the English category display string.
+ */
+const categoryNameEs: Record<string, string> = {
+  'Metabolic & Weight Management': 'Metabolismo y composición corporal',
+  'Recovery & Regeneration': 'Recuperación y regeneración',
+  'Longevity & Cellular Health': 'Energía celular y longevidad',
+  'Cognitive & Performance': 'Investigación cognitiva',
+  'Hormone & Wellness': 'Señalización hormonal',
+}
+
+const badgeByCategoryEs: Record<string, string> = {
+  'Metabolic & Weight Management': 'Metabolismo y composición corporal · investigación',
+  'Recovery & Regeneration': 'Recuperación y regeneración · investigación',
+  'Longevity & Cellular Health': 'Energía celular y longevidad · investigación',
+  'Cognitive & Performance': 'Investigación cognitiva',
+  'Hormone & Wellness': 'Señalización hormonal · investigación',
+}
+
+/** Localized category display name (used for card eyebrows, etc.). */
+export function localizedCategoryLabel(category: string, locale: Locale): string {
+  if (locale === 'en') return category
+  return categoryNameEs[category] ?? category
+}
+
+/** Spanish labels for the fixed product-spec rows. */
+const specLabelEs: Record<string, string> = {
+  'Research area': 'Área de investigación',
+  'Product identity': 'Identidad del producto',
+  'Primary target': 'Objetivo principal',
+  'Research markers': 'Marcadores de investigación',
+  'Available format': 'Formato disponible',
+  'Catalog options': 'Opciones de catálogo',
+  'Access pathway': 'Vía de acceso',
+  'Use classification': 'Clasificación de uso',
+}
+
+/**
+ * Spanish names for the hero "Primary review lens" label (product.biologyPoints[0].title),
+ * keyed by the English source phrase so both facts-backed products and the
+ * positioning fallback (aod-9604) are covered. Unmapped phrases fall back to English.
+ */
+const reviewLensEs: Record<string, string> = {
+  'Accessory workflow': 'Flujo de trabajo del accesorio',
+  'GLP-1 receptor signaling': 'Señalización del receptor GLP-1',
+  'GHRH receptor signaling': 'Señalización del receptor de GHRH',
+  'Dual receptor map': 'Mapa de doble receptor',
+  'Mitochondrial peptide map': 'Mapa del péptido mitocondrial',
+  'Growth-factor receptor map': 'Mapa del receptor del factor de crecimiento',
+  'Stacked recovery matrix': 'Matriz de recuperación combinada',
+  'Four-compound regenerative blend': 'Mezcla regenerativa de cuatro compuestos',
+  'Mitochondrial energy field': 'Campo de energía mitocondrial',
+  'Redox shield diagram': 'Diagrama de escudo redox',
+  'Copper peptide lattice': 'Retícula del péptido de cobre',
+  'Follicle signaling field': 'Campo de señalización folicular',
+  'Telomere research arc': 'Arco de investigación de telómeros',
+  'Neural network map': 'Mapa de la red neuronal',
+  'Mitochondrial membrane map': 'Mapa de la membrana mitocondrial',
+  'Sleep signaling wave': 'Onda de señalización del sueño',
+  'Reproductive-axis map': 'Mapa del eje reproductivo',
+  'Hormone receptor field': 'Campo del receptor hormonal',
+  'GH receptor cascade': 'Cascada del receptor de GH',
+  'Immune signaling array': 'Matriz de señalización inmune',
+  'Melanocortin receptor map': 'Mapa del receptor de melanocortina',
+  'Focus pathway lattice': 'Retícula de la vía de concentración',
+  'Neural balance field': 'Campo de equilibrio neuronal',
+  'GH-fragment metabolic pathway': 'Vía metabólica del fragmento de GH',
+}
+
+function formatWordEs(value: string): string {
+  const normalized = value.toLowerCase()
+  if (normalized.includes('multi-vial')) return 'Formato multi-vial'
+  if (normalized.includes('vial')) return 'Formato vial'
+  if (normalized.includes('supply')) return 'Formato de insumo de investigación'
+  if (normalized.includes('ampoule')) return 'Formato ampolleta'
+  if (normalized.includes('bottle')) return 'Formato botella'
+  if (normalized.includes('kit')) return 'Formato de kit'
+  if (normalized.includes('pack')) return 'Formato de paquete'
+  return value
+}
+
+/** Localizes the fixed-shape product spec rows to Spanish, reusing the already
+ *  translated key highlights for the identity/target/markers values. */
+function localizeSpecsEs(product: Product, keyHighlights?: string[]): Product['specs'] {
+  return product.specs.map((spec) => {
+    const label = specLabelEs[spec.label] ?? spec.label
+    let value = spec.value
+    switch (spec.label) {
+      case 'Research area':
+        value = categoryNameEs[product.category] ?? spec.value
+        break
+      case 'Product identity':
+        value = keyHighlights?.[0] ?? spec.value
+        break
+      case 'Primary target':
+        value = keyHighlights?.[1] ?? spec.value
+        break
+      case 'Research markers':
+        value = keyHighlights?.[2] ?? spec.value
+        break
+      case 'Available format':
+        value = spec.value.split(', ').map(formatWordEs).join(', ')
+        break
+      case 'Access pathway':
+        value = 'Solicitud de evaluación y documentación'
+        break
+      case 'Use classification':
+        value = 'Uso exclusivo para investigación'
+        break
+      default:
+        break
+    }
+    return { label, value }
+  })
+}
+
 export function getLocalizedProduct(product: Product, locale: Locale): Product {
   if (locale === 'en') return product
   const overrides = productTranslationsEs[product.slug]
   const highlightsEs = catalogHighlightsEs[product.slug]
-  if (!overrides && !highlightsEs) return product
+  const badgeEs = badgeByCategoryEs[product.category]
+  if (!overrides && !highlightsEs && !badgeEs) return product
+  const keyHighlights = overrides?.keyHighlights
+  const lensTitleEs = product.biologyPoints[0] ? reviewLensEs[product.biologyPoints[0].title] : undefined
   return {
     ...product,
+    ...(badgeEs ? { badge: badgeEs } : {}),
     ...overrides,
     ...(highlightsEs ? { catalogHighlights: highlightsEs } : {}),
+    specs: localizeSpecsEs(product, keyHighlights),
+    ...(lensTitleEs
+      ? { biologyPoints: [{ ...product.biologyPoints[0], title: lensTitleEs }, ...product.biologyPoints.slice(1)] }
+      : {}),
   }
 }

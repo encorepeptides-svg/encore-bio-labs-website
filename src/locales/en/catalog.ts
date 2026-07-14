@@ -1,13 +1,13 @@
 export const catalog = {
   // Compact image-led hero
   heroEyebrow: 'THE ENCORE CATALOG',
-  heroTitle: 'Everything Your Research Needs.',
-  heroSupporting: 'Shop compounds, complete kits, and essential lab supplies organized by research focus, so you can compare quickly, choose confidently, and move your work forward.',
-  heroPrimaryCta: 'Browse the Catalog',
+  heroTitle: 'Premium Compounds. Complete Kits. Zero Guesswork.',
+  heroSupporting: 'Every compound ships as a complete, research-ready kit — peptide, pre-measured bacteriostatic water, sterile syringes, and prep pads in one box. Compare, choose, and order in minutes.',
+  heroPrimaryCta: 'Shop the Collection',
   heroVisualAlt: 'Encore Bio Labs Complete Research Kit with peptide vial, bacteriostatic water, syringes, and alcohol prep pads.',
 
   // Compact category selector
-  selectorLabel: 'Browse research categories',
+  selectorLabel: 'Shop by research category',
   areaProductCountOne: '{count} compound',
   areaProductCountOther: '{count} compounds',
   researchHighlightsLabel: 'Research Highlights',
@@ -15,14 +15,14 @@ export const catalog = {
   // KLOW signature feature
   klowEyebrow: 'Signature Research Blend',
   klowTitle: 'KLOW',
-  klowTagline: 'Four compounds. One integrated research platform.',
+  klowTagline: 'Four premium compounds. One signature regenerative blend.',
   klowCompositionLabel: 'Composition',
-  klowCta: 'Explore KLOW',
+  klowCta: 'Shop KLOW',
   klowCompliance: 'For research use only. Not for human or veterinary use.',
   klowVisualAlt: 'KLOW signature research blend — copper-peptide (GHK-Cu) research vial',
 
   // Retatrutide feature
-  retaEyebrow: 'Featured Metabolic Research',
+  retaEyebrow: 'Featured Metabolic Compound',
   retaTitle: 'Retatrutide',
   retaPullQuote: 'One molecule. Three receptor pathways. A defining frontier in metabolic research.',
   retaBody:
@@ -32,7 +32,7 @@ export const catalog = {
   retaReceptorGlp1: 'GLP-1',
   retaReceptorGlucagon: 'Glucagon',
   retaStrengthsLabel: 'Available strengths',
-  retaPrimaryCta: 'Review Retatrutide',
+  retaPrimaryCta: 'Shop Retatrutide',
   retaSecondaryCta: 'Compare Strengths',
   retaCompliance: 'Investigational compound. For research use only. Not for human or veterinary use.',
   retaVisualAlt: 'Retatrutide investigational research compound vial',
@@ -44,11 +44,11 @@ export const catalog = {
 
   // Legacy best-sellers keys (retained for the standalone bestsellers module)
   bestSellersEyebrow: 'Best Sellers',
-  bestSellersTitle: 'Frequently requested research compounds.',
+  bestSellersTitle: 'The compounds researchers order most.',
   featuredBestseller: 'Featured Bestseller',
   viewOptions: 'View Options',
   view: 'View',
-  browseProducts: 'Browse Products',
+  browseProducts: 'Shop Products',
 
   searchPlaceholder: 'Search products or categories',
   searchAriaLabel: 'Search products or categories',
@@ -62,16 +62,16 @@ export const catalog = {
   categoryEssentials: 'Essentials',
 
   categoryDescWeightManagement:
-    'Investigate compounds studied across receptor signaling, nutrient response, energy balance, and body-composition pathways.',
+    'The compounds behind today’s metabolic and body-composition research — receptor signaling, nutrient response, and energy balance, all in one place.',
   categoryDescRecoveryRegeneration:
-    'Examine compounds and blends studied in tissue-response signaling, cellular migration, connective-tissue and skin biology, and recovery-focused laboratory models.',
+    'Tissue-repair, cell-migration, and skin-biology research — plus signature recovery blends built for serious study.',
   categoryDescCellularEnergyLongevity:
-    'Explore compounds studied in cellular-energy metabolism, mitochondrial function, redox balance, and longevity-related pathways.',
+    'The cellular-energy and longevity frontier: mitochondrial function, redox balance, and healthy-aging pathways.',
   categoryDescCognitivePerformance:
-    'Review compounds investigated across neurobiological signaling, cognition, focus, and related performance models.',
+    'Focus, cognition, and neuro-signaling research compounds — organized so you can choose fast.',
   categoryDescHormoneWellness:
-    'Review compounds studied across endocrine signaling, reproductive-axis biology, receptor activity, and hormone-responsive laboratory models.',
-  categoryDescEssentials: 'Review non-peptide laboratory accessories listed separately for qualified handling, preparation, and controlled research workflows.',
+    'Endocrine, reproductive-axis, and hormone-response research compounds, ready to ship.',
+  categoryDescEssentials: 'The lab supplies every research workflow needs — handling and preparation accessories, listed separately.',
 
   onFileCoa: 'On-file COA',
   docsOnRequest: 'Docs on request',
@@ -86,13 +86,13 @@ export const catalog = {
   trustJanoshikCoas: 'Available COA Records',
   trustShipsFromUsa: 'Ships from USA',
   trustResearchUseOnly: 'Research Use Only',
-  helpTitle: 'Need a clearer comparison?',
-  helpBody: 'Tell us which pathways, formats, or documentation requirements matter to your project. Our team will help narrow the catalog without making treatment or use recommendations.',
-  startResearchIntake: 'Request Catalog Guidance',
+  helpTitle: 'Not sure which kit to order?',
+  helpBody: 'Tell us the pathways, formats, or documentation your project needs, and our team will point you straight to the right compounds and kits — without making treatment or use recommendations.',
+  startResearchIntake: 'Get My Recommendation',
   kitCalloutEyebrow: 'Complete Research Kit',
-  kitCalloutTitle: 'The key preparation components arrive together.',
-  kitCalloutBody: 'Eligible kits pair the selected research peptide with product-specific pre-measured bacteriostatic water, four sterile syringes, six alcohol prep pads, and protective packaging.',
-  kitCalloutCta: 'Explore Complete Kits',
+  kitCalloutTitle: 'Everything your research requires — in one complete kit.',
+  kitCalloutBody: 'Every eligible kit pairs your selected peptide with product-specific pre-measured bacteriostatic water, four sterile syringes, six alcohol prep pads, and premium protective packaging. No sourcing extras. No guesswork.',
+  kitCalloutCta: 'Shop Complete Kits',
   kitCalloutImageAlt: 'Encore Bio Labs complete research kit with peptide vial, pre-measured bacteriostatic water, four sterile syringes, and six alcohol prep pads.',
   quote: 'Quote',
   from: 'From',

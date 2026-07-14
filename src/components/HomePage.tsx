@@ -207,8 +207,9 @@ function CompactWhyChooseEncore() {
 
 export function HomePage() {
   const prefersReducedMotion = useReducedMotion()
-  const { path } = useLocale()
+  const { path, locale } = useLocale()
   const { t } = useTranslation('homepage')
+  const heroTitleLines = t('heroTitle').split('\n')
   const trustItems = [
     { icon: trustIcons[0], label: t('trustResearchUseOnly') },
     { icon: trustIcons[1], label: t('trustHandling') },
@@ -239,19 +240,29 @@ export function HomePage() {
         <span className="hero-particle hero-particle-delay right-[48%] top-[18%]" aria-hidden="true" />
         <span className="hero-particle hero-particle-slow right-[10%] bottom-[24%]" aria-hidden="true" />
 
-        <div className="relative mx-auto grid max-w-[88rem] gap-12 lg:min-h-[calc(100vh-9rem)] lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+        <div className="relative mx-auto grid max-w-[88rem] gap-12 lg:min-h-[calc(100vh-9rem)] lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-center">
           <motion.div
             initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
             animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
             transition={{ duration: prefersReducedMotion ? 0.2 : 0.65, ease: 'easeOut' }}
-            className="relative z-10 max-w-2xl"
+            className="relative z-10 min-w-0 max-w-[48rem]"
           >
             <div className="inline-flex items-center gap-2 rounded-full border border-teal-700/15 bg-white/68 px-4 py-2 text-sm font-semibold text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.82),0_12px_34px_rgba(7,23,36,0.05)] backdrop-blur-2xl">
               <Sparkles size={16} aria-hidden="true" className="text-teal-700" />
               {t('heroEyebrow')}
             </div>
-            <h1 className="mt-8 max-w-[46rem] text-[clamp(2.75rem,10vw,4.4rem)] font-semibold leading-[0.96] tracking-[-0.05em] text-[#071724] lg:text-[clamp(4rem,5vw,5.4rem)]">
-              {t('heroTitle')}
+            <h1
+              className={`mt-8 max-w-full font-semibold leading-[1.02] tracking-[-0.045em] text-[#071724] ${
+                locale === 'es'
+                  ? 'text-[clamp(2.25rem,9.2vw,2.625rem)] sm:text-[clamp(2.75rem,6vw,3.125rem)] lg:text-[clamp(3.25rem,4.1vw,4.125rem)]'
+                  : 'text-[clamp(2.375rem,10vw,2.875rem)] sm:text-[clamp(2.875rem,6.5vw,3.375rem)] lg:text-[clamp(3.5rem,4.5vw,4.5rem)]'
+              }`}
+            >
+              {heroTitleLines.map((line) => (
+                <span key={line} className="block whitespace-nowrap">
+                  {line}
+                </span>
+              ))}
             </h1>
             <p className="mt-7 max-w-[35rem] text-lg leading-8 text-slate-600 sm:text-xl sm:leading-9">
               {t('heroSubtitle')}

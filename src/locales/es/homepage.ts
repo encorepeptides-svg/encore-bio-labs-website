@@ -2,7 +2,7 @@ import type { homepage as homepageEn } from '../en/homepage'
 
 export const homepage = {
   heroEyebrow: 'Bienestar y soporte premium para investigación',
-  heroTitle: 'Péptidos de Investigación Premium. Calidad Confiable.',
+  heroTitle: 'Péptidos Premium.\nKits Completos.\nCalidad Sin Atajos.',
   heroSubtitle: 'Responde unas cuantas preguntas y te ayudaremos a encontrar los productos de investigación premium que mejor se adapten a tus objetivos, de forma rápida, clara y sin complicaciones.',
   startYourResearch: 'Inicia tu proceso',
   browseCatalog: 'Explorar el catálogo',

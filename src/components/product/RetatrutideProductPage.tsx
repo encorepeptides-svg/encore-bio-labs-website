@@ -179,7 +179,7 @@ export function RetatrutideProductPage({ product }: { product: Product }) {
             <PurchaseConfigurator product={product} />
             {product.purchaseRules.kitEligible ? (
               <EncoreCompleteKit
-                variant="cart"
+                variant="reassurance"
                 productName={product.name}
                 bacWaterAmount={product.bacWaterAmount}
                 className="mt-4"

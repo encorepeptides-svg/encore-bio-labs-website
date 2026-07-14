@@ -1,6 +1,6 @@
 export const homepage = {
   heroEyebrow: 'Premium research wellness support',
-  heroTitle: 'Premium Research Peptides. Trusted Quality.',
+  heroTitle: 'Premium Peptides.\nComplete Kits.\nZero Compromise.',
   heroSubtitle: 'Answer a few quick questions, and we’ll match you with the premium research products best aligned with your goals—fast, clear, and hassle-free.',
   startYourResearch: 'Start Your Research',
   browseCatalog: 'Browse Catalog',

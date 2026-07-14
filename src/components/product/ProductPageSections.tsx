@@ -26,6 +26,7 @@ import {
 import { motion } from 'framer-motion'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { products, type Product } from '../../data/products'
+import { getLocalizedProduct, localizedCategoryLabel } from '../../data/productTranslations'
 import type { ProductResearchContent } from '../../data/productResearchContent'
 import { getProductMedia } from '../../data/productMedia'
 import { contentTypeLabels, researchArticles } from '../../data/research'
@@ -216,7 +217,7 @@ export function ProductHero({ product, researchContent }: { product: Product; re
           <div className="mt-6 max-w-2xl"><PurchaseSelector product={product} /></div>
           {product.purchaseRules.kitEligible ? (
             <EncoreCompleteKit
-              variant="cart"
+              variant="reassurance"
               productName={product.name}
               bacWaterAmount={product.bacWaterAmount}
               className="mt-4 max-w-2xl"
@@ -278,23 +279,24 @@ export function ProductHero({ product, researchContent }: { product: Product; re
 }
 
 export function ResearchProfileCallout({ product }: { product: Product }) {
+  const { t } = useTranslation('product')
   return (
     <section className="px-5 pb-10 sm:px-8 lg:pb-14">
       <div className="mx-auto max-w-[88rem]">
         <div className="mx-auto flex max-w-3xl flex-col items-start gap-4 rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-[0_18px_50px_rgba(26,35,64,0.06)] sm:flex-row sm:items-center sm:justify-between sm:p-6">
           <div>
             <p className="text-base font-semibold tracking-[-0.02em] text-[var(--navy)] sm:text-lg">
-              Not sure if {product.name} fits your goals?
+              {t('matchQuestion', { product: product.name })}
             </p>
             <p className="mt-1.5 text-sm leading-6 text-[var(--muted)]">
-              Complete our Research Match and we'll help you identify products aligned with your objectives.
+              {t('matchBody')}
             </p>
           </div>
           <CTA
             href="/intake"
             className="shrink-0 bg-[var(--navy)] hover:bg-[var(--navy-deep)]"
           >
-            Find My Match
+            {t('findMyMatch')}
           </CTA>
         </div>
       </div>
@@ -302,15 +304,15 @@ export function ResearchProfileCallout({ product }: { product: Product }) {
   )
 }
 
-const trustStripItems = [
-  { icon: MapPin, label: 'Delivery options by review' },
-  { icon: Truck, label: 'Shipping details by review' },
-  { icon: FlaskConical, label: 'Research-use-only products' },
-  { icon: ShieldCheck, label: 'Premium biotech quality standards' },
-  { icon: Lock, label: 'Private inquiry · careful packaging' },
-]
-
 export function ProductTrustStrip() {
+  const { t } = useTranslation('product')
+  const trustStripItems = [
+    { icon: MapPin, label: t('trustDelivery') },
+    { icon: Truck, label: t('trustShipping') },
+    { icon: FlaskConical, label: t('trustResearchUse') },
+    { icon: ShieldCheck, label: t('trustQuality') },
+    { icon: Lock, label: t('trustPrivacy') },
+  ]
   return (
     <section className="px-5 sm:px-8">
       <div className="mx-auto max-w-[88rem] overflow-hidden rounded-[1.5rem] border border-slate-900/10 bg-white shadow-[0_18px_48px_rgba(7,23,36,0.06)]">
@@ -330,18 +332,19 @@ export function ProductTrustStrip() {
 }
 
 export function WhatIsProduct({ product }: { product: Product }) {
+  const { t } = useTranslation('product')
   return (
     <ResearchOverviewSection
-      eyebrow="Overview"
-      title={`What is ${product.name}?`}
+      eyebrow={t('overviewEyebrow')}
+      title={t('whatIsProduct', { product: product.name })}
       body={product.shortDescription}
-      secondaryBody="Presented for research-use context only. This page does not describe treatment use, therapeutic outcomes, diagnosis, dosing guidance, or individual-specific recommendations."
+      secondaryBody={t('overviewCompliance')}
       facts={[
-        { label: 'Category', value: product.category },
-        { label: 'Format options', value: product.variants.map((variant) => variant.label).join(', ') },
-        { label: 'Use classification', value: 'Research use only', note: 'Not intended for human or animal consumption.' },
+        { label: t('categoryLabel'), value: product.category },
+        { label: t('formatOptions'), value: product.variants.map((variant) => variant.label).join(', ') },
+        { label: t('useClassification'), value: t('researchUseOnly'), note: t('notForConsumption') },
       ]}
-      factTitle={`${product.name} quick facts`}
+      factTitle={t('quickFacts', { product: product.name })}
     />
   )
 }
@@ -429,22 +432,6 @@ export function WhatsIncluded({ product }: { product: Product }) {
         })}
       </div>
     </SectionShell>
-  )
-}
-
-export function ProductCompleteKitCallout({ product }: { product: Product }) {
-  // Products that don't actually offer the kit in the purchase selector (e.g.
-  // accessories like KLOW, or ready-to-use ampoule formats) must not carry a
-  // "Complete Kit Included" marketing section — it would promise syringes and
-  // BAC water the customer can never actually select or receive.
-  if (!product.purchaseRules.kitEligible) return null
-
-  return (
-    <section className="px-5 pb-10 sm:px-8 lg:pb-14">
-      <div className="mx-auto max-w-[88rem]">
-        <EncoreCompleteKit variant="full" productName={product.name} bacWaterAmount={product.bacWaterAmount} />
-      </div>
-    </section>
   )
 }
 
@@ -790,7 +777,7 @@ export function ProductGallery({ product }: { product: Product }) {
     : [product.galleryCaptions[0] ?? media?.hero.alt ?? `${product.name} research packaging`]
 
   return (
-    <SectionShell eyebrow="Product gallery" title="Premium vial presentation with molecular context.">
+    <SectionShell eyebrow={t('productGalleryEyebrow')} title={t('productGalleryTitle')}>
       <div className="grid gap-5 lg:grid-cols-3">
         {captions.map((caption, index) => (
           <motion.div
@@ -822,20 +809,21 @@ export function ProductGallery({ product }: { product: Product }) {
 }
 
 export function ProductOverview({ product }: { product: Product }) {
+  const { t } = useTranslation('product')
   return (
     <ResearchOverviewSection
-      eyebrow="Product overview"
-      title="Research positioning with clean documentation context."
-      body={`${product.name} sits within Encore Bio Labs' ${product.category.toLowerCase()} catalog. Researchers may review it for investigational interest, format comparison, documentation planning, and education-led research-product guidance.`}
-      secondaryBody="The information on this page is intentionally scoped to research-use context. It does not describe treatment use, therapeutic outcomes, diagnosis, dosing guidance, or individual-specific recommendations."
+      eyebrow={t('productOverviewEyebrow')}
+      title={t('productOverviewTitle')}
+      body={t('productOverviewBody', { product: product.name, category: product.category.toLowerCase() })}
+      secondaryBody={t('productOverviewCompliance')}
       facts={[
         {
-          label: 'Catalog format',
+          label: t('catalogFormat'),
           value: product.dosage,
-          note: 'Variants are grouped under one product page for cleaner review and fewer duplicate catalog entries.',
+          note: t('catalogFormatNote'),
         },
-        { label: 'Category', value: product.category },
-        { label: 'Documentation', value: 'Available by request' },
+        { label: t('categoryLabel'), value: product.category },
+        { label: t('documentation'), value: t('availableByRequest') },
       ]}
     />
   )
@@ -935,28 +923,29 @@ export function ProductResearchLinks({ product }: { product: Product }) {
 }
 
 export function ProductInternalLinks({ product }: { product: Product }) {
+  const { t } = useTranslation('product')
   return (
     <InternalLinkGrid
-      eyebrow="Helpful Next Steps"
-      title={`Keep researching ${product.name} in context`}
+      eyebrow={t('nextStepsEyebrow')}
+      title={t('nextStepsTitle', { product: product.name })}
       links={[
         {
-          label: 'Research Category',
+          label: t('researchCategory'),
           title: product.category,
           href: `/categories/${productCategorySlug(product)}`,
-          description: 'Compare this product with adjacent catalog entries in the same research area.',
+          description: t('categoryLinkBody'),
         },
         {
           label: 'FAQ',
-          title: 'Product handling and storage questions',
+          title: t('handlingQuestions'),
           href: '/faq#product-handling',
-          description: 'Review handling, storage, documentation, and research-use-only answers before intake.',
+          description: t('faqLinkBody'),
         },
         {
-          label: 'Research Match',
-          title: 'Start a research intake',
+          label: t('researchMatch'),
+          title: t('startIntake'),
           href: '/intake',
-          description: 'Share your research interest for human-reviewed category and product follow-up.',
+          description: t('intakeLinkBody'),
         },
       ]}
     />
@@ -975,6 +964,7 @@ function productCategorySlug(product: Product) {
 }
 
 export function RelatedProducts({ product }: { product: Product }) {
+  const { locale } = useLocale()
   const relatedProducts = product.relatedProducts
     .map((slug) => products.find((relatedProduct) => relatedProduct.slug === slug))
     .filter((relatedProduct): relatedProduct is Product => Boolean(relatedProduct))
@@ -983,12 +973,15 @@ export function RelatedProducts({ product }: { product: Product }) {
 
   return (
     <RelatedProductsSection
-      products={relatedProducts.map((relatedProduct) => ({
-        category: relatedProduct.category,
-        name: relatedProduct.name,
-        href: `/products/${relatedProduct.slug}`,
-        description: relatedProduct.shortDescription,
-      }))}
+      products={relatedProducts.map((relatedProduct) => {
+        const localized = getLocalizedProduct(relatedProduct, locale)
+        return {
+          category: localizedCategoryLabel(relatedProduct.category, locale),
+          name: localized.name,
+          href: `/products/${relatedProduct.slug}`,
+          description: locale === 'es' ? localized.catalogTagline : localized.shortDescription,
+        }
+      })}
     />
   )
 }
@@ -1034,12 +1027,13 @@ export function FinalPurchaseCTA({ product }: { product: Product }) {
 }
 
 export function CTASection({ product }: { product: Product }) {
+  const { t } = useTranslation('product')
   return (
     <ProductDiscoveryCTA
-      title={`Start a compliant review for ${product.name}.`}
-      body="Request screening, product documentation, and catalog guidance through the approved Encore Bio Labs process."
-      primaryLabel="Find My Match"
-      secondaryLabel="Contact Encore"
+      title={t('discoveryTitle', { product: product.name })}
+      body={t('discoveryBody')}
+      primaryLabel={t('findMyMatch')}
+      secondaryLabel={t('contactEncore')}
       secondaryHref={buildWhatsAppUrl(buildOrderInquiryMessage({ product: product.name }))}
       secondaryTarget="_blank"
       secondaryRel="noopener noreferrer"

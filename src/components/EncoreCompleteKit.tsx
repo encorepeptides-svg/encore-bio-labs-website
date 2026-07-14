@@ -17,7 +17,7 @@ const itemIcons: Record<EncoreCompleteKitItem['key'], ComponentType<{ size?: num
   packaging: PackageCheck,
 }
 
-export type EncoreCompleteKitVariant = 'full' | 'compact' | 'inline' | 'cart' | 'checkout'
+export type EncoreCompleteKitVariant = 'full' | 'compact' | 'reassurance' | 'inline' | 'cart' | 'checkout'
 
 export type EncoreCompleteKitProps = {
   productName?: string
@@ -42,11 +42,48 @@ export function EncoreCompleteKit({
   const items = getEncoreCompleteKitItems({ productName, bacWaterAmount, syringeCount, prepPadCount }, t)
 
   if (variant === 'compact') return <CompactCard syringeCount={syringeCount} className={className} />
+  if (variant === 'reassurance') return <PurchaseReassurance className={className} />
   if (variant === 'inline') return <InlineCard className={className} />
   if (variant === 'cart') return <CartReminder items={items} className={className} />
   if (variant === 'checkout') return <CheckoutReminder items={items} className={className} />
   return (
     <FullCard items={items} showClosingMessage={showClosingMessage} className={className} />
+  )
+}
+
+function PurchaseReassurance({ className }: { className?: string }) {
+  const { t } = useTranslation('kit')
+  const benefits = [
+    { icon: Droplet, label: t('reassuranceBacWater') },
+    { icon: Syringe, label: t('reassurancePreparation') },
+    { icon: PackageCheck, label: t('reassurancePackaging') },
+  ]
+
+  return (
+    <aside
+      className={cn(
+        'rounded-2xl border border-teal-700/20 bg-[#f8fcfb] px-4 py-3.5 sm:px-5 sm:py-4',
+        className,
+      )}
+      aria-label={t('reassuranceHeading')}
+    >
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-5">
+        <div className="min-w-0 lg:w-52 lg:shrink-0">
+          <p className="text-sm font-semibold tracking-[-0.015em] text-[#071724]">{t('reassuranceHeading')}</p>
+          <p className="mt-1 text-[0.7rem] leading-4 text-slate-500">{t('reassuranceMicrocopy')}</p>
+        </div>
+        <ul className="grid flex-1 gap-2 sm:grid-cols-3 sm:gap-3">
+          {benefits.map(({ icon: Icon, label }) => (
+            <li key={label} className="flex items-center gap-2 text-xs font-semibold leading-5 text-slate-700">
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-teal-100/80 text-teal-800">
+                <Icon size={14} aria-hidden="true" />
+              </span>
+              <span>{label}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </aside>
   )
 }
 

@@ -9,7 +9,6 @@ import {
   ProductHero,
   ProductBenefits,
   ProductHowItWorksFlow,
-  ProductCompleteKitCallout,
   ProductDocumentationRow,
   ProductFaqInvitation,
   ProductSpecs,
@@ -81,7 +80,6 @@ export function ProductPage({ slug }: { slug: string }) {
       <ProductBreadcrumb product={product} />
       <ProductHero product={product} researchContent={researchContent} />
       {researchContent ? <ProductResearchExperience product={product} content={researchContent} /> : <><ProductBenefits product={product} /><ProductHowItWorksFlow product={product} /></>}
-      <ProductCompleteKitCallout product={product} />
       <ProductDocumentationRow />
       <ProductSpecs product={product} />
       <RelatedProducts product={product} />

@@ -3,13 +3,13 @@ import type { catalog as catalogEn } from '../en/catalog'
 export const catalog = {
   // Compact image-led hero
   heroEyebrow: 'EL CATÁLOGO ENCORE',
-  heroTitle: 'Todo lo que tu Investigación Necesita.',
-  heroSupporting: 'Explora compuestos, kits completos y suministros esenciales de laboratorio organizados por área de investigación, para que puedas comparar rápidamente, elegir con confianza y avanzar en tus proyectos.',
-  heroPrimaryCta: 'Explorar el catálogo',
+  heroTitle: 'Compuestos Premium. Kits Completos. Cero Complicaciones.',
+  heroSupporting: 'Cada compuesto llega como un kit completo y listo para investigar: péptido, agua bacteriostática premedida, jeringas estériles y toallitas, todo en una caja. Compara, elige y ordena en minutos.',
+  heroPrimaryCta: 'Explora la colección',
   heroVisualAlt: 'Kit completo de investigación de Encore Bio Labs con vial de péptido, agua bacteriostática, jeringas y toallitas con alcohol.',
 
   // Compact category selector
-  selectorLabel: 'Explorar categorías de investigación',
+  selectorLabel: 'Compra por categoría de investigación',
   areaProductCountOne: '{count} compuesto',
   areaProductCountOther: '{count} compuestos',
   researchHighlightsLabel: 'Puntos clave de investigación',
@@ -17,14 +17,14 @@ export const catalog = {
   // KLOW signature feature
   klowEyebrow: 'Mezcla de investigación insignia',
   klowTitle: 'KLOW',
-  klowTagline: 'Cuatro compuestos. Una plataforma de investigación integrada.',
+  klowTagline: 'Cuatro compuestos premium. Una mezcla regenerativa insignia.',
   klowCompositionLabel: 'Composición',
-  klowCta: 'Explorar KLOW',
+  klowCta: 'Ver KLOW',
   klowCompliance: 'Uso exclusivo para investigación. No destinado a uso humano ni veterinario.',
   klowVisualAlt: 'Mezcla de investigación insignia KLOW: vial de investigación del péptido de cobre (GHK-Cu)',
 
   // Retatrutide feature
-  retaEyebrow: 'Investigación metabólica destacada',
+  retaEyebrow: 'Compuesto metabólico destacado',
   retaTitle: 'Retatrutide',
   retaPullQuote: 'Una molécula. Tres vías receptoras. Una frontera decisiva en la investigación metabólica.',
   retaBody:
@@ -34,7 +34,7 @@ export const catalog = {
   retaReceptorGlp1: 'GLP-1',
   retaReceptorGlucagon: 'Glucagón',
   retaStrengthsLabel: 'Concentraciones disponibles',
-  retaPrimaryCta: 'Revisar Retatrutide',
+  retaPrimaryCta: 'Ver Retatrutide',
   retaSecondaryCta: 'Comparar concentraciones',
   retaCompliance: 'Compuesto en investigación. Uso exclusivo para investigación; no destinado a uso humano ni veterinario.',
   retaVisualAlt: 'Vial del compuesto de investigación en fase experimental Retatrutide',
@@ -46,11 +46,11 @@ export const catalog = {
 
   // Legacy best-sellers keys (retained for the standalone bestsellers module)
   bestSellersEyebrow: 'Más vendidos',
-  bestSellersTitle: 'Los compuestos de investigación más solicitados.',
+  bestSellersTitle: 'Los compuestos que más ordenan los investigadores.',
   featuredBestseller: 'Más vendido destacado',
   viewOptions: 'Ver opciones',
   view: 'Ver',
-  browseProducts: 'Explorar productos',
+  browseProducts: 'Ver productos',
 
   searchPlaceholder: 'Buscar productos o categorías',
   searchAriaLabel: 'Buscar productos o categorías',
@@ -64,16 +64,16 @@ export const catalog = {
   categoryEssentials: 'Esenciales',
 
   categoryDescWeightManagement:
-    'Investiga compuestos estudiados en señalización de receptores, respuesta a nutrientes, balance energético y vías de composición corporal.',
+    'Los compuestos detrás de la investigación metabólica y de composición corporal de hoy: señalización de receptores, respuesta a nutrientes y balance energético, todo en un solo lugar.',
   categoryDescRecoveryRegeneration:
-    'Examina compuestos y mezclas estudiados en señalización de respuesta tisular, migración celular, biología del tejido conectivo y de la piel, y modelos de laboratorio enfocados en recuperación.',
+    'Investigación de reparación tisular, migración celular y biología de la piel, además de mezclas de recuperación insignia para estudios serios.',
   categoryDescCellularEnergyLongevity:
-    'Explora compuestos estudiados en el metabolismo de la energía celular, la función mitocondrial, el equilibrio redox y las vías relacionadas con la longevidad.',
+    'La frontera de la energía celular y la longevidad: función mitocondrial, equilibrio redox y vías del envejecimiento saludable.',
   categoryDescCognitivePerformance:
-    'Revisa compuestos investigados en señalización neurobiológica, cognición, concentración y modelos relacionados con el rendimiento.',
+    'Compuestos de investigación para concentración, cognición y neuroseñalización, organizados para que elijas rápido.',
   categoryDescHormoneWellness:
-    'Revisa compuestos estudiados en señalización endocrina, biología del eje reproductivo, actividad receptora y modelos de laboratorio con respuesta hormonal.',
-  categoryDescEssentials: 'Revisa accesorios de laboratorio no peptídicos, presentados por separado para manejo, preparación y flujos de investigación controlados.',
+    'Compuestos de investigación endocrina, del eje reproductivo y de respuesta hormonal, listos para enviar.',
+  categoryDescEssentials: 'Los suministros que todo flujo de investigación necesita: accesorios de manejo y preparación, presentados por separado.',
 
   onFileCoa: 'COA disponible',
   docsOnRequest: 'Documentación a solicitud',
@@ -88,13 +88,13 @@ export const catalog = {
   trustJanoshikCoas: 'Registros COA disponibles',
   trustShipsFromUsa: 'Envíos desde Estados Unidos',
   trustResearchUseOnly: 'Uso exclusivo para investigación',
-  helpTitle: '¿Necesitas una comparación más clara?',
-  helpBody: 'Cuéntanos qué vías, formatos o requisitos de documentación son importantes para tu proyecto. Nuestro equipo te ayudará a acotar el catálogo sin hacer recomendaciones de tratamiento o uso.',
-  startResearchIntake: 'Solicitar orientación',
+  helpTitle: '¿No sabes qué kit ordenar?',
+  helpBody: 'Cuéntanos las vías, formatos o documentación que necesita tu proyecto y nuestro equipo te indicará directamente los compuestos y kits correctos, sin hacer recomendaciones de tratamiento o uso.',
+  startResearchIntake: 'Recibir mi recomendación',
   kitCalloutEyebrow: 'Kit completo de investigación',
-  kitCalloutTitle: 'Los componentes esenciales de preparación llegan juntos.',
-  kitCalloutBody: 'Los kits elegibles combinan el péptido de investigación seleccionado con agua bacteriostática premedida específicamente para el producto, cuatro jeringas estériles, seis toallitas con alcohol y empaque protector.',
-  kitCalloutCta: 'Explorar kits completos',
+  kitCalloutTitle: 'Todo lo que tu investigación necesita, en un solo kit completo.',
+  kitCalloutBody: 'Cada kit elegible combina tu péptido seleccionado con agua bacteriostática premedida específica para el producto, cuatro jeringas estériles, seis toallitas con alcohol y empaque protector premium. Sin buscar extras. Sin complicaciones.',
+  kitCalloutCta: 'Ver kits completos',
   kitCalloutImageAlt: 'Kit completo de investigación de Encore Bio Labs con vial de péptido, agua bacteriostática premedida, cuatro jeringas estériles y seis toallitas con alcohol.',
   quote: 'Cotización',
   from: 'Desde',
