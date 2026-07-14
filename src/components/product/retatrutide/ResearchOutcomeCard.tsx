@@ -1,6 +1,7 @@
 import { Activity, HeartPulse, MoonStar, Network, Ruler, TrendingDown, type LucideIcon } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { evidenceLabels, type RetatrutideResearchBenefit } from './retatrutideResearchData'
+import { useTranslation } from '../../../i18n/LocaleContext'
+import { type RetatrutideResearchBenefit } from './retatrutideResearchData'
 
 const icons: Record<RetatrutideResearchBenefit['icon'], LucideIcon> = {
   body: Ruler,
@@ -11,11 +12,21 @@ const icons: Record<RetatrutideResearchBenefit['icon'], LucideIcon> = {
   pathway: Network,
 }
 
-const pathwayRows = [
-  { label: 'GLP-1', detail: 'Appetite & satiety', className: 'bg-teal-50 text-teal-900' },
-  { label: 'GIP', detail: 'Nutrient-response signaling', className: 'bg-cyan-50 text-cyan-900' },
-  { label: 'Glucagon', detail: 'Energy and metabolic signaling', className: 'bg-emerald-50 text-emerald-900' },
-]
+const evidenceLabelKeys: Record<RetatrutideResearchBenefit['evidenceLevel'], string> = {
+  'phase-3': 'evidenceLabelPhase3',
+  'phase-2': 'evidenceLabelPhase2',
+  ongoing: 'evidenceLabelOngoing',
+  'not-established': 'evidenceLabelNotEstablished',
+}
+
+const benefitTextKeys: Record<string, { title: string; metricLabel?: string; description: string; stats?: string[]; trial?: string; metricValue?: string }> = {
+  'body-composition': { title: 'bodyCompositionTitle', metricLabel: 'bodyCompositionMetricLabel', description: 'bodyCompositionDescription', trial: 'trialBodyComposition' },
+  'glucose-a1c': { title: 'glucoseA1cTitle', metricLabel: 'glucoseA1cMetricLabel', description: 'glucoseA1cDescription', stats: ['glucoseA1cStat1'], trial: 'trialGlucoseA1c', metricValue: 'glucoseA1cMetricValue' },
+  cardiometabolic: { title: 'cardiometabolicTitle', metricLabel: 'cardiometabolicMetricLabel', description: 'cardiometabolicDescription', stats: ['cardiometabolicStat1', 'cardiometabolicStat2'], trial: 'trialCardiometabolic' },
+  'knee-mobility': { title: 'kneeMobilityTitle', metricLabel: 'kneeMobilityMetricLabel', description: 'kneeMobilityDescription', trial: 'trialKneeMobility' },
+  'sleep-apnea': { title: 'sleepApneaTitle', metricLabel: 'sleepApneaMetricLabel', description: 'sleepApneaDescription', trial: 'trialSleepApnea' },
+  'appetite-signaling': { title: 'appetiteSignalingTitle', description: 'appetiteSignalingDescription' },
+}
 
 type ResearchOutcomeCardProps = {
   benefit: RetatrutideResearchBenefit
@@ -25,10 +36,23 @@ type ResearchOutcomeCardProps = {
 }
 
 export function ResearchOutcomeCard({ benefit, size = 'secondary', index = 0, className = '' }: ResearchOutcomeCardProps) {
+  const { t } = useTranslation('retatrutideResearch')
   const Icon = icons[benefit.icon]
   const isPathway = benefit.icon === 'pathway'
   const metricSize = size === 'primary' ? 'text-5xl sm:text-6xl' : 'text-4xl sm:text-5xl'
   const padding = size === 'primary' ? 'p-7 sm:p-8' : 'p-6 sm:p-8'
+  const textKeys = benefitTextKeys[benefit.id]
+  const title = textKeys ? t(textKeys.title) : benefit.title
+  const metricLabel = textKeys?.metricLabel ? t(textKeys.metricLabel) : benefit.metricLabel
+  const description = textKeys ? t(textKeys.description) : benefit.description
+  const supportingStats = textKeys?.stats ? textKeys.stats.map((key) => t(key)) : benefit.supportingStats
+  const trial = textKeys?.trial ? t(textKeys.trial) : benefit.trial
+  const metricValue = textKeys?.metricValue ? t(textKeys.metricValue) : benefit.metric?.replace(/^Up to /, '')
+  const pathwayRows = [
+    { label: 'GLP-1', detail: t('glp1Label'), className: 'bg-teal-50 text-teal-900' },
+    { label: 'GIP', detail: t('gipLabel'), className: 'bg-cyan-50 text-cyan-900' },
+    { label: 'Glucagon', detail: t('glucagonLabel'), className: 'bg-emerald-50 text-emerald-900' },
+  ]
 
   return (
     <motion.article
@@ -45,22 +69,22 @@ export function ResearchOutcomeCard({ benefit, size = 'secondary', index = 0, cl
           <Icon size={21} aria-hidden="true" />
         </span>
         <span className={`rounded-full px-3 py-1.5 text-[0.65rem] font-bold uppercase tracking-[0.12em] ${benefit.evidenceLevel === 'ongoing' ? 'bg-amber-50 text-amber-800' : 'bg-emerald-50 text-emerald-800'}`}>
-          {evidenceLabels[benefit.evidenceLevel]}
+          {t(evidenceLabelKeys[benefit.evidenceLevel])}
         </span>
       </div>
 
-      <h3 className="mt-6 text-xl font-semibold tracking-[-0.03em] text-slate-900 sm:text-2xl">{benefit.title}</h3>
+      <h3 className="mt-6 text-xl font-semibold tracking-[-0.03em] text-slate-900 sm:text-2xl">{title}</h3>
 
-      {benefit.metric ? (
-        <p className={`mt-4 font-semibold leading-none tracking-[-0.05em] text-emerald-900 ${metricSize}`}>{benefit.metric}</p>
+      {metricValue ? (
+        <p className={`mt-4 font-semibold leading-none tracking-[-0.05em] text-emerald-900 ${metricSize}`}>{t('upToPrefix')} {metricValue}</p>
       ) : isPathway ? (
         <p className="mt-4 inline-flex w-fit items-center rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-amber-800">
-          Mechanism Research
+          {t('mechanismResearchBadge')}
         </p>
       ) : null}
-      {benefit.metricLabel ? <p className="mt-2 text-sm font-semibold text-slate-700">{benefit.metricLabel}</p> : null}
+      {metricLabel ? <p className="mt-2 text-sm font-semibold text-slate-700">{metricLabel}</p> : null}
 
-      <p className="mt-4 text-sm leading-6 text-slate-600">{benefit.description}</p>
+      <p className="mt-4 text-sm leading-6 text-slate-600">{description}</p>
 
       {isPathway ? (
         <div className="mt-5 flex flex-col gap-2">
@@ -73,15 +97,15 @@ export function ResearchOutcomeCard({ benefit, size = 'secondary', index = 0, cl
         </div>
       ) : null}
 
-      {benefit.supportingStats ? (
+      {supportingStats ? (
         <div className="mt-4 flex flex-wrap gap-2">
-          {benefit.supportingStats.map((stat) => (
+          {supportingStats.map((stat) => (
             <span key={stat} className="rounded-full bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700">{stat}</span>
           ))}
         </div>
       ) : null}
 
-      {benefit.trial ? <p className="mt-auto pt-6 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-slate-500">{benefit.trial}</p> : null}
+      {trial ? <p className="mt-auto pt-6 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-slate-500">{trial}</p> : null}
     </motion.article>
   )
 }

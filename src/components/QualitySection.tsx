@@ -1,26 +1,29 @@
 import { FileText, ShieldCheck, Snowflake, TestTube2 } from 'lucide-react'
-import { brandText } from '../../config/brandText'
+import { useTranslation } from '../i18n/LocaleContext'
 import { SectionHeader } from './SectionHeader'
 
-const workflow = [
-  {
-    icon: TestTube2,
-    title: 'Identity & purity documentation',
-    copy: brandText.documentationPromise,
-  },
-  {
-    icon: Snowflake,
-    title: 'Storage guidance',
-    copy: 'Format-specific storage and handling expectations are noted on each product page.',
-  },
-  {
-    icon: FileText,
-    title: 'Batch records',
-    copy: 'Batch-level documentation is organized and available when you ask for it.',
-  },
-]
-
 export function QualitySection() {
+  const { t } = useTranslation('quality')
+  const { t: tBrand } = useTranslation('brand')
+
+  const workflow = [
+    {
+      icon: TestTube2,
+      title: t('workflowIdentityTitle'),
+      copy: tBrand('documentationPromise'),
+    },
+    {
+      icon: Snowflake,
+      title: t('workflowStorageTitle'),
+      copy: t('workflowStorageCopy'),
+    },
+    {
+      icon: FileText,
+      title: t('workflowBatchTitle'),
+      copy: t('workflowBatchCopy'),
+    },
+  ]
+
   return (
     <section id="quality" className="px-5 py-14 sm:px-8 lg:py-20">
       <div className="mx-auto max-w-[88rem]">
@@ -28,14 +31,12 @@ export function QualitySection() {
           <div>
             <SectionHeader
               align="left"
-              eyebrow="Quality & Handling"
-              title="Documentation isn't an afterthought here."
-              description="Identity and purity documentation, storage guidance, and batch-level records — available when you ask for them, not hidden behind a sales call."
+              eyebrow={t('workflowEyebrow')}
+              title={t('workflowTitle')}
+              description={t('workflowDescription')}
             />
             <p className="mt-5 max-w-xl text-sm leading-6 text-slate-500">
-              We'd rather tell you plainly what's available on request than dress up a page with
-              numbers that don't mean anything — so you won't find invented purity percentages or
-              manufactured statistics here, only what we can actually stand behind.
+              {t('workflowNote')}
             </p>
           </div>
 
@@ -46,17 +47,17 @@ export function QualitySection() {
                 <div className="mb-8 flex items-center justify-between gap-4">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-200">
-                      Available on request
+                      {t('availableOnRequest')}
                     </p>
                     <h3 className="mt-2 text-3xl font-semibold tracking-[-0.04em]">
-                      Documentation
+                      {t('documentationHeading')}
                     </h3>
                   </div>
                   <FileText className="text-teal-200" size={30} />
                 </div>
 
                 <div className="grid gap-3">
-                  {['Identity documentation', 'Purity documentation', 'Storage guidance', 'Batch records'].map((item) => (
+                  {[t('checklistIdentity'), t('checklistPurity'), t('checklistStorage'), t('checklistBatch')].map((item) => (
                     <div
                       key={item}
                       className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/7 px-4 py-3 text-sm text-slate-200"
@@ -87,10 +88,10 @@ export function QualitySection() {
             <div className="relative mt-4 flex flex-wrap gap-2 rounded-2xl border border-white/10 bg-white/7 p-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
               <span className="inline-flex items-center gap-2 rounded-full bg-white/8 px-3 py-2">
                 <ShieldCheck size={14} className="text-teal-200" />
-                {brandText.researchUseLabel}
+                {tBrand('researchUseLabel')}
               </span>
-              <span className="rounded-full bg-white/8 px-3 py-2">{brandText.documentationLabel}</span>
-              <span className="rounded-full bg-white/8 px-3 py-2">{brandText.notMedicalAdviceLabel}</span>
+              <span className="rounded-full bg-white/8 px-3 py-2">{tBrand('documentationLabel')}</span>
+              <span className="rounded-full bg-white/8 px-3 py-2">{tBrand('notMedicalAdviceLabel')}</span>
             </div>
           </div>
         </div>

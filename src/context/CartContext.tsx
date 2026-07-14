@@ -12,6 +12,8 @@ import {
   type CartItemId,
 } from '../lib/cart'
 import { isProductPurchasable, type PurchaseSelection } from '../lib/purchaseOptions'
+import { useTranslation } from '../i18n/LocaleContext'
+import { purchaseTypeLabel } from '../i18n/displayLabels'
 import { CartContext, type CartContextValue } from './cartStore'
 
 const CART_STORAGE_KEY = 'encore-bio-labs-cart-v1'
@@ -23,6 +25,8 @@ function readStoredCart(): CartItem[] {
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const { t } = useTranslation('cart')
+  const { t: tCommon } = useTranslation('common')
   const [items, setItems] = useState<CartItem[]>(() => readStoredCart())
   const [isOpen, setIsOpen] = useState(false)
   const [announcement, setAnnouncement] = useState('')
@@ -46,7 +50,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addToCart = useCallback((product: Product, variant: ProductVariant, quantity = 1, selection?: PurchaseSelection) => {
     if (!isProductPurchasable(product) || variant.price <= 0) {
-      setAnnouncement(`${product.name} is not currently available to add to cart.`)
+      setAnnouncement(t('unavailableAnnouncement', { product: product.name }))
       return
     }
     const nextItem = createCartItem(product, variant, quantity, selection)
@@ -62,26 +66,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
       )
     })
     setIsOpen(true)
-    setAnnouncement(`${product.name} ${variant.label}, ${nextItem.purchaseType}, added to cart.`)
-  }, [])
+    setAnnouncement(t('addedAnnouncement', { product: product.name, variant: variant.label, purchaseType: purchaseTypeLabel(tCommon, nextItem.purchaseType) }))
+  }, [t, tCommon])
 
   const removeFromCart = useCallback((itemId: CartItemId) => {
     const removed = items.find((item) => item.id === itemId)
-    if (removed) setAnnouncement(`${removed.productName} ${removed.variantLabel} removed from cart.`)
+    if (removed) setAnnouncement(t('removedAnnouncement', { product: removed.productName, variant: removed.variantLabel }))
     setItems((current) => current.filter((item) => item.id !== itemId))
-  }, [items])
+  }, [items, t])
 
   const updateQuantity = useCallback((itemId: CartItemId, quantity: number) => {
     const item = items.find((entry) => entry.id === itemId)
     const nextQuantity = normalizeQuantity(quantity)
-    if (item) setAnnouncement(`${item.productName} ${item.variantLabel} quantity updated to ${nextQuantity}.`)
+    if (item) setAnnouncement(t('quantityUpdatedAnnouncement', { product: item.productName, variant: item.variantLabel, quantity: nextQuantity }))
     setItems((current) => current.map((entry) => entry.id === itemId ? { ...entry, quantity: nextQuantity } : entry))
-  }, [items])
+  }, [items, t])
 
   const clearCart = useCallback(() => {
     setItems([])
-    setAnnouncement('Cart cleared.')
-  }, [])
+    setAnnouncement(t('clearedAnnouncement'))
+  }, [t])
   const subtotal = useMemo(() => calculateSubtotal(items), [items])
   const itemCount = useMemo(() => calculateItemCount(items), [items])
   const totals = useMemo(() => calculateTotal(items), [items])

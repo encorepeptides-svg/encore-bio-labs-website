@@ -1,5 +1,6 @@
 import { brandText } from '../../config/brandText'
 import { getEncoreCompleteKitFaqItems } from './encoreCompleteKit'
+import { getProductHeroImage } from './productMedia'
 
 export type ProductVariant = {
   sku?: string
@@ -40,12 +41,12 @@ type ProductReconstitution = {
   steps: string[]
 }
 
-type ProductFAQ = {
+export type ProductFAQ = {
   question: string
   answer: string
 }
 
-type ProductCardContent = {
+export type ProductCardContent = {
   title: string
   description: string
 }
@@ -56,7 +57,7 @@ type ProductMetric = {
   note: string
 }
 
-type ProductResearchHighlight = {
+export type ProductResearchHighlight = {
   title: string
   journal: string
   takeaway: string
@@ -117,6 +118,40 @@ type CatalogProduct = {
   purchaseRules?: Partial<ProductPurchaseRules>
 }
 
+/**
+ * Exactly three short, research-oriented highlights shown on each catalog card
+ * (rendered under the "Research Highlights" label). Kept out of the shared
+ * ProductCard component so copy lives in data, not markup. Spanish overrides
+ * layer on at render time via productTranslations. `validateProductCatalog`
+ * enforces the "exactly three" rule for every displayed product.
+ */
+export const catalogHighlightsBySlug: Record<string, [string, string, string]> = {
+  retatrutide: ['Fat-loss & weight research', 'Appetite-control studies', 'Triple-receptor metabolic action'],
+  tesamorelin: ['Belly-fat reduction research', 'Growth-hormone support studies', 'Lean body-composition focus'],
+  'wolverine-stack': ['Injury & tissue-repair research', 'Faster-recovery studies', 'Joint & tendon support'],
+  klow: ['Skin, hair & recovery blend', 'Healing & rejuvenation research', 'All-in-one regeneration focus'],
+  'igf1-lr3': ['Muscle-growth research', 'Lean-mass & hypertrophy studies', 'Nutrient-partitioning focus'],
+  'cjc1295-ipamorelin': ['Growth-hormone boost research', 'Recovery & lean-muscle studies', 'Sleep & anti-aging focus'],
+  'mots-c': ['Metabolism & fat-loss research', 'Endurance & performance studies', 'Cellular-energy focus'],
+  'aod-9604': ['Fat-burning research', 'Weight-management studies', 'Non-GH metabolic focus'],
+  'nad-plus': ['Anti-aging & longevity research', 'Cellular-energy studies', 'Mental-clarity focus'],
+  glutathione: ['Detox & antioxidant research', 'Skin-brightening studies', 'Immune-support focus'],
+  'ghk-cu': ['Skin & collagen research', 'Anti-aging & firmness studies', 'Hair & wound-repair focus'],
+  'ahk-cu': ['Hair-growth research', 'Follicle-stimulation studies', 'Scalp & dermal focus'],
+  epithalon: ['Longevity & telomere research', 'Anti-aging studies', 'Sleep & circadian focus'],
+  cerebrolysin: ['Memory & cognition research', 'Neuro-recovery studies', 'Brain-health focus'],
+  ss31: ['Mitochondrial-energy research', 'Anti-aging & endurance studies', 'Cellular-repair focus'],
+  dsip: ['Deep-sleep research', 'Stress & recovery studies', 'Circadian-rhythm focus'],
+  kisspeptin: ['Fertility & hormone research', 'Testosterone-support studies', 'Libido & reproductive focus'],
+  hcg: ['Testosterone-support research', 'Fertility & TRT studies', 'Hormone-restoration focus'],
+  'hgh-191aa': ['Muscle & fat-loss research', 'Recovery & anti-aging studies', 'Growth-hormone focus'],
+  'thymosin-alpha-1': ['Immune-support research', 'Recovery & resilience studies', 'Chronic-inflammation focus'],
+  'pt-141': ['Libido & arousal research', 'Sexual-function studies', 'Desire-support focus'],
+  semax: ['Focus & memory research', 'Nootropic studies', 'Neuroprotection focus'],
+  selank: ['Anxiety & stress-relief research', 'Calm-focus studies', 'Mood-support focus'],
+  'bac-water': ['Peptide reconstitution', 'Sterile 10 mL format', 'Lab-handling essential'],
+}
+
 type ProductCatalogMetadata = {
   casNumber: string
   purityGrade: PurityGrade
@@ -124,7 +159,7 @@ type ProductCatalogMetadata = {
 }
 
 export type Product = CatalogProduct & ProductCatalogMetadata & ProductPageContent
-  & { purchaseRules: ProductPurchaseRules }
+  & { purchaseRules: ProductPurchaseRules; catalogHighlights: string[] }
 
 export type ResearchArea = {
   slug: string
@@ -185,7 +220,7 @@ export const researchAreas: ResearchArea[] = [
     name: 'Cognitive & Performance',
     description:
       'Research into neurobiology, synaptic signaling, and the compounds studied in relation to focus, cognition, and human performance.',
-    products: ['IGF-1 LR3', 'Cerebrolysin', 'Semax', 'Selank'],
+    products: ['Cerebrolysin', 'Semax', 'Selank'],
     image: categoryVisuals['Cognitive & Performance'],
     accent: '#22D3EE',
   },
@@ -194,7 +229,7 @@ export const researchAreas: ResearchArea[] = [
     name: 'Hormone & Wellness',
     description:
       'Research into hormonal signaling and the endocrine-adjacent compounds studied across wellness-focused research programs.',
-    products: ['DSIP', 'Kisspeptin', 'HCG', 'HGH 191AA', 'PT-141'],
+    products: ['IGF1-LR3', 'DSIP', 'Kisspeptin', 'HCG', 'HGH 191AA', 'PT-141'],
     image: categoryVisuals['Hormone & Wellness'],
     accent: '#34D399',
   },
@@ -324,23 +359,20 @@ export const categoryContent: Record<string, CategoryContent> = {
     subheadline:
       'From growth-factor receptor signaling to neurotrophic peptide research, this category covers the compounds most commonly studied in cognitive and performance-focused research.',
     overview:
-      "Cognitive & Performance is Encore Bio Labs' research category for compounds studied in relation to neurobiology, synaptic signaling, and human-performance research questions. It spans growth-factor receptor research (IGF-1 LR3), a neurotrophic peptide mixture studied for neuronal-survival and cognitive research (Cerebrolysin), and two structurally distinct neuropeptides studied for neuropeptide signaling and stress-response research (Semax and Selank). This category is written for researchers evaluating cognitive-pathway biology, not as a study-aid or performance-enhancement recommendation.",
+      "Cognitive & Performance is Encore Bio Labs' research category for compounds studied in relation to neurobiology, synaptic signaling, and human-performance research questions. It spans a neurotrophic peptide mixture studied for neuronal-survival and cognitive research (Cerebrolysin) and two structurally distinct neuropeptides studied for neuropeptide signaling and stress-response research (Semax and Selank). This category is written for researchers evaluating cognitive-pathway biology, not as a study-aid or performance-enhancement recommendation.",
     whyStudied:
-      'Cognitive-performance research draws on several distinct but related biological systems: growth-factor receptor signaling and its downstream cellular-growth effects (IGF-1 LR3), neurotrophic and neuronal-survival research relevant to synaptic plasticity (Cerebrolysin), and neuropeptide research connected to BDNF-related expression and stress-response biology (Semax and Selank). Researchers in this space are typically trying to map receptor-level or marker-level research questions rather than looking for a cognitive enhancement product.',
+      'Cognitive-performance research draws on several distinct but related biological systems: neurotrophic and neuronal-survival research relevant to synaptic plasticity (Cerebrolysin), and neuropeptide research connected to BDNF-related expression and stress-response biology (Semax and Selank). Researchers in this space are typically trying to map receptor-level or marker-level research questions rather than looking for a cognitive enhancement product.',
     themes: [
-      { title: 'Growth-factor receptor signaling', description: 'IGF-1 receptor activation and downstream PI3K-AKT/MAPK pathway research relevant to cellular growth and performance-adjacent questions.' },
       { title: 'Neurotrophic and neuronal-survival research', description: "Cerebrolysin's studied relevance to synaptic plasticity and neuro-repair pathway context." },
       { title: 'ACTH-fragment and BDNF-linked signaling', description: "Semax's research context around neurotrophic marker expression and cognitive-performance models." },
       { title: 'Neuroimmune and stress-response signaling', description: "Selank's tuftsin-analog research context connecting immune-neuropeptide signaling to stress and mood-related research themes." },
     ],
     comparisonNotes: {
-      'igf1-lr3': 'The only growth-factor-receptor entry in this category',
       cerebrolysin: 'Peptide mixture rather than a single-sequence peptide',
       semax: 'Often paired with Selank in cognitive research planning',
       selank: 'Distinguished by its neuroimmune/serotonin-adjacent research angle',
     },
     faqs: [
-      { question: 'What does "LR3" mean in IGF-1 LR3?', answer: 'It refers to "long arginine 3," an IGF-1 analog design discussed in research for altered binding characteristics compared to native IGF-1.' },
       { question: 'Are Semax and Selank interchangeable?', answer: 'No — they are structurally distinct (an ACTH-fragment analog vs. a tuftsin analog) and are commonly reviewed together for complementary cognitive-wellness research rather than as substitutes for each other.' },
       { question: 'Does Cerebrolysin make cognitive-treatment claims?', answer: 'No. It is presented for research context around neurotrophic signaling and neuronal-survival models only, with no treatment, diagnosis, or guaranteed cognitive outcome implied.' },
       { question: 'Is this category about performance enhancement?', answer: 'No — "performance" here refers to the research questions being studied (cognitive and physical performance biology), not a claim that any product enhances performance.' },
@@ -355,7 +387,7 @@ export const categoryContent: Record<string, CategoryContent> = {
     subheadline:
       'From reproductive-axis signaling to sleep-related neuropeptide research, this category covers the compounds most commonly studied in hormonal and wellness-adjacent research.',
     overview:
-      "Hormone & Wellness is Encore Bio Labs' research category for compounds studied in relation to hormonal signaling and endocrine-adjacent research questions. It spans reproductive-axis biology (Kisspeptin, HCG), growth-hormone-axis research (HGH 191AA), sleep and neuroendocrine signaling (DSIP), and central melanocortin-receptor research relevant to sexual-wellness research models (PT-141). This category is written for researchers mapping endocrine pathway questions, not as guidance for hormone therapy or sexual-wellness treatment.",
+      "Hormone & Wellness is Encore Bio Labs' research category for compounds studied in relation to hormonal signaling and endocrine-adjacent research questions. It spans reproductive-axis biology (Kisspeptin, HCG), growth-hormone-axis and growth-factor signaling (HGH 191AA, IGF1-LR3), sleep and neuroendocrine signaling (DSIP), and central melanocortin-receptor research relevant to sexual-wellness research models (PT-141). This category is written for researchers mapping endocrine pathway questions, not as guidance for hormone therapy or sexual-wellness treatment.",
     whyStudied:
       "Endocrine research spans several axes that researchers often study independently: the reproductive (GnRH/kisspeptin/LH-CG) axis, the growth-hormone axis and its IGF-1-linked downstream effects, sleep-related neuroendocrine signaling, and central melanocortin-receptor pathways relevant to autonomic and sexual-wellness research. What connects these compounds in one category isn't a shared mechanism, but a shared research domain — hormonal signaling and the wellness-adjacent questions researchers ask about it.",
     themes: [
@@ -368,7 +400,8 @@ export const categoryContent: Record<string, CategoryContent> = {
     comparisonNotes: {
       kisspeptin: 'Upstream reproductive-axis regulator',
       hcg: 'Downstream gonadotropin research entry',
-      'hgh-191aa': 'Only GH-axis entry in this category',
+      'hgh-191aa': 'GH-axis secretagogue entry in this category',
+      'igf1-lr3': 'Growth-factor-receptor entry studied downstream of the GH axis',
       dsip: 'Only sleep-focused entry in this category',
       'pt-141': 'Only central-nervous-system-targeted entry here',
     },
@@ -755,7 +788,7 @@ const productFacts: Record<string, ProductFact> = {
   },
   'igf1-lr3': {
     overview:
-      'IGF-1 LR3 is a long-acting IGF-1 analog studied for IGF-1 receptor signaling, cellular growth models, nutrient uptake, and performance-oriented pathway research.',
+      'IGF1-LR3 is a long-acting IGF-1 analog studied for IGF-1 receptor signaling, cellular growth models, nutrient uptake, and performance-oriented pathway research.',
     identity: 'Long arginine 3 IGF-1 analog',
     target: 'IGF-1 receptor pathway',
     pathway: 'IGF-1R activation, PI3K-AKT and MAPK signaling context, cellular uptake and growth models',
@@ -769,7 +802,7 @@ const productFacts: Record<string, ProductFact> = {
       { title: 'Marker-led review', description: 'Encourages qualified oversight around glucose and IGF-axis marker selection.' },
     ],
     researchHighlights: [
-      { title: 'IGF-1R pathway model', journal: 'Growth factor research', takeaway: 'IGF-1 LR3 is studied through IGF-1 receptor signaling and downstream cellular pathway activation.', metric: 'IGF1R' },
+      { title: 'IGF-1R pathway model', journal: 'Growth factor research', takeaway: 'IGF1-LR3 is studied through IGF-1 receptor signaling and downstream cellular pathway activation.', metric: 'IGF1R' },
       { title: 'Binding-protein context', journal: 'Analog design literature', takeaway: 'The LR3 modification is discussed for reduced binding-protein affinity in research settings.', metric: 'LR3' },
       { title: 'Cellular uptake research', journal: 'Performance biology context', takeaway: 'Research may examine nutrient uptake and growth-signaling markers under controlled conditions.', metric: 'AKT' },
     ],
@@ -1296,30 +1329,30 @@ const productFacts: Record<string, ProductFact> = {
 }
 
 const catalogTaglines: Record<string, string> = {
-  retatrutide: 'Triple-receptor incretin biology, in one research entry.',
-  tesamorelin: 'GH-axis signaling research, in a single clean format.',
-  'cjc1295-ipamorelin': 'Two GH-axis mechanisms, paired for combination research.',
-  'mots-c': 'Mitochondrial energy signaling, studied at the AMPK level.',
-  'aod-9604': 'GH-fragment metabolic research, organized for clean review.',
-  'wolverine-stack': 'BPC-157 and TB-500, packaged for combined research review.',
-  klow: 'Kit logistics and documentation, organized before it ships.',
-  'ghk-cu': 'Copper-peptide matrix research, from collagen to wound response.',
-  'ahk-cu': 'A follicle-focused copper peptide, distinct from GHK-Cu.',
-  'igf1-lr3': 'Long-acting IGF-1 receptor research, built for duration studies.',
-  cerebrolysin: 'A neurotrophic peptide mixture, studied for neuronal survival.',
-  semax: 'ACTH-fragment biology behind BDNF-linked cognitive research.',
-  selank: 'Tuftsin-analog research into stress response and neuroimmune signaling.',
-  'nad-plus': 'The cofactor at the center of redox and aging research.',
-  glutathione: "Research literature's most-cited intracellular antioxidant.",
-  epithalon: 'Telomere-adjacent, circadian-linked peptide research.',
-  ss31: 'Mitochondrial membrane research, one cardiolipin interaction at a time.',
-  'thymosin-alpha-1': 'Immune-signaling research with a cellular-defense focus.',
-  dsip: 'Sleep-architecture research from a neuroendocrine angle.',
-  kisspeptin: 'The upstream signal in reproductive-axis research.',
-  hcg: 'Downstream gonadotropin research, one receptor pathway at a time.',
-  'hgh-191aa': 'The full-length GH sequence, studied for axis-level signaling.',
-  'pt-141': 'Central melanocortin-receptor research, not a wellness promise.',
-  'bac-water': 'One standalone 10 mL research-handling accessory.',
+  retatrutide: 'An investigational GIP, GLP-1, and glucagon triple agonist. Studied across nutrient signaling, energy balance, and body-composition research.',
+  tesamorelin: 'A synthetic GHRH analog studied through the GH–IGF-1 axis. Research examines endocrine signaling and body-composition endpoints.',
+  'cjc1295-ipamorelin': 'CJC-1295 and Ipamorelin combine two GH-axis research mechanisms. The formulation supports comparative review of GHRH and ghrelin-receptor signaling.',
+  'mots-c': 'A mitochondria-derived peptide studied in cellular energy signaling. Preclinical research examines metabolic adaptation, AMPK-associated pathways, and mitochondrial communication.',
+  'aod-9604': 'A modified growth-hormone fragment studied separately from intact hGH. Research centers on metabolic signaling and energy-balance models, with limited human evidence.',
+  'wolverine-stack': 'A combined BPC-157 and TB-500 research format. Component literature examines tissue-response signaling, actin biology, and cellular migration in preclinical models.',
+  klow: 'GHK-Cu, BPC-157, TB-500, and KPV in one integrated blend. Positioned for skin biology, tissue signaling, and regenerative research.',
+  'ghk-cu': 'A copper-binding tripeptide studied across extracellular-matrix and tissue-response models. Research examines collagen-related signaling, cellular migration, and skin biology.',
+  'ahk-cu': 'A copper peptide investigated in follicular and skin-related laboratory models. Its research profile remains distinct from the broader GHK-Cu literature.',
+  'igf1-lr3': 'A long-acting IGF-1 analog investigated through receptor-signaling models. Research focuses on duration, downstream cellular response, and controlled endpoint measurement.',
+  cerebrolysin: 'A peptide mixture studied in neurobiological and neuronal-response models. Published research examines neurotrophic signaling, cognition-related endpoints, and neurological context.',
+  semax: 'A synthetic ACTH-fragment analog investigated in cognitive and neurobiological models. Research examines BDNF-associated signaling, neuronal response, and behavioral endpoints.',
+  selank: 'A synthetic tuftsin analog studied in stress-response and neuroimmune models. Research examines signaling pathways associated with cognition and behavioral adaptation.',
+  'nad-plus': 'An endogenous redox cofactor central to cellular energy metabolism. Research spans NAD+/NADH cycling, mitochondrial function, and enzyme-substrate biology.',
+  glutathione: 'An endogenous tripeptide central to intracellular redox balance. Research measures GSH/GSSG cycling, oxidative-stress markers, and enzyme-coupled antioxidant systems.',
+  epithalon: 'A synthetic tetrapeptide studied in aging-related and circadian research models. Evidence spans telomere-associated mechanisms, cellular systems, and limited human observations.',
+  ss31: 'A mitochondria-targeted tetrapeptide studied through cardiolipin and membrane-function models. Research examines bioenergetics, oxidative stress, and mitochondrial response.',
+  'thymosin-alpha-1': 'A thymic peptide studied across innate and adaptive immune-signaling models. Research examines cellular defense pathways and immune-response coordination.',
+  dsip: 'A synthetic sleep-related peptide examined in neuroendocrine research. Studies investigate sleep architecture and physiological signaling, with limited and mixed human evidence.',
+  kisspeptin: 'A reproductive-axis signaling peptide studied upstream of GnRH release. Research examines hypothalamic-pituitary signaling and controlled endocrine-response models.',
+  hcg: 'A glycoprotein hormone studied through luteinizing-hormone receptor signaling. Research contexts include reproductive-axis biology and downstream endocrine-response measurement.',
+  'hgh-191aa': 'Full-length 191-amino-acid growth hormone for GH-receptor research. Laboratory models examine axis-level signaling, IGF-1 response, and metabolic endpoints.',
+  'pt-141': 'A melanocortin-receptor agonist studied in central signaling models. Research focuses on receptor pharmacology and neurobiological response, without implying approved use.',
+  'bac-water': 'A standalone 10 mL bacteriostatic water accessory for qualified laboratory handling. It is listed separately and is not treated as a peptide.',
 }
 
 function getDosage(variants: ProductVariant[]) {
@@ -1349,7 +1382,7 @@ function createPageContent(product: CatalogProduct): ProductPageContent {
     shortDescription:
       facts?.overview ?? `${product.name} is presented as a premium research-use catalog entry for ${focus}.`,
     catalogTagline: catalogTaglines[product.slug] ?? `${product.name} research entry, grouped for catalog review.`,
-    heroImage: product.image,
+    heroImage: getProductHeroImage(product.slug, product.image) ?? product.image,
     badge: `${product.category} research`,
     headline: profile?.headline ?? categoryHeadlines[product.category] ?? 'Premium Research Review. Clear Documentation. Responsible Access.',
     keyHighlights: [
@@ -1572,7 +1605,10 @@ const catalogProducts: CatalogProduct[] = [
     slug: 'klow',
     name: 'KLOW',
     category: 'Recovery & Regeneration',
-    image: 'nad-plus.png',
+    // KLOW is its own four-compound blend (GHK-Cu · BPC-157 · TB-500 · KPV).
+    // It uses the copper-peptide (GHK-Cu) vial — its signature "glow" component —
+    // so it never reuses the Wolverine Stack (BPC-157 + TB-500) artwork.
+    image: 'ghk-cu.png',
     description:
       'A research supplies entry for catalog planning, kit context, and documentation-led follow-up.',
     featured: true,
@@ -1580,8 +1616,8 @@ const catalogProducts: CatalogProduct[] = [
   },
   {
     slug: 'igf1-lr3',
-    name: 'IGF-1 LR3',
-    category: 'Cognitive & Performance',
+    name: 'IGF1-LR3',
+    category: 'Hormone & Wellness',
     image: 'igf1-lr3.png',
     description:
       'A performance research entry structured for concise review, format clarity, and record requests.',
@@ -1884,6 +1920,7 @@ export const products: Product[] = catalogProducts.map((product) => ({
   purityGrade: 'Documentation by request',
   stockStatus: 'Availability by request',
   description: productFacts[product.slug]?.overview ?? product.description,
+  catalogHighlights: catalogHighlightsBySlug[product.slug] ?? [],
   ...createPageContent(product),
   relatedProducts:
     relatedProductsBySlug[product.slug] ??
@@ -1901,6 +1938,7 @@ function validateProductCatalog(entries: Product[]) {
     slugs.add(product.slug)
     if (!categoryNames.includes(product.category)) throw new Error(`Invalid category for product: ${product.slug}`)
     if (!product.image || !product.casNumber || !product.purityGrade || !product.stockStatus) throw new Error(`Missing catalog metadata for product: ${product.slug}`)
+    if (product.catalogHighlights.length !== 3) throw new Error(`Product must have exactly 3 catalog highlights: ${product.slug} (has ${product.catalogHighlights.length})`)
     if (!product.variants.length) throw new Error(`Product has no variants: ${product.slug}`)
     for (const variant of product.variants) {
       if (!variant.label || !variant.format || !Number.isFinite(variant.price) || variant.price < 0) throw new Error(`Invalid variant for product: ${product.slug}`)

@@ -24,10 +24,17 @@ export type EncoreCompleteKitConfigInput = {
   prepPadCount?: number
 }
 
-export function getBacWaterLabel(bacWaterAmount?: string) {
+type Translator = (key: string, vars?: Record<string, string | number>) => string
+
+export function getBacWaterLabel(bacWaterAmount?: string, t?: Translator) {
+  if (!t) {
+    return bacWaterAmount
+      ? `Pre-measured BAC water (${bacWaterAmount})`
+      : encoreCompleteKitDefaults.bacWaterLabel
+  }
   return bacWaterAmount
-    ? `Pre-measured BAC water (${bacWaterAmount})`
-    : encoreCompleteKitDefaults.bacWaterLabel
+    ? t('bacWaterLabelWithAmount', { amount: bacWaterAmount })
+    : t('bacWaterLabelDefault')
 }
 
 export function getEncoreCompleteKitConfig({
@@ -35,10 +42,10 @@ export function getEncoreCompleteKitConfig({
   syringeCount = encoreCompleteKitDefaults.syringeCount,
   syringeGauge = encoreCompleteKitDefaults.syringeGauge,
   prepPadCount = encoreCompleteKitDefaults.prepPadCount,
-}: EncoreCompleteKitConfigInput = {}): EncoreCompleteKitConfig {
+}: EncoreCompleteKitConfigInput = {}, t?: Translator): EncoreCompleteKitConfig {
   return {
     peptideIncluded: true,
-    bacWaterLabel: getBacWaterLabel(bacWaterAmount),
+    bacWaterLabel: getBacWaterLabel(bacWaterAmount, t),
     syringeCount,
     syringeGauge,
     prepPadCount,
@@ -52,54 +59,48 @@ export type EncoreCompleteKitItem = {
   description: string
 }
 
-export function getEncoreCompleteKitItems(input: EncoreCompleteKitConfigInput = {}): EncoreCompleteKitItem[] {
+export function getEncoreCompleteKitItems(input: EncoreCompleteKitConfigInput = {}, t?: Translator): EncoreCompleteKitItem[] {
   const { productName } = input
-  const config = getEncoreCompleteKitConfig(input)
+  const config = getEncoreCompleteKitConfig(input, t)
+
+  if (!t) {
+    return [
+      { key: 'peptide', title: 'Research peptide', description: productName ? `The ${productName} vial included with your order.` : 'The research compound included with your order.' },
+      { key: 'bac-water', title: config.bacWaterLabel, description: 'Measured for this product where applicable, so nothing needs to be sourced separately.' },
+      { key: 'syringes', title: `${config.syringeCount} sterile ${config.syringeGauge} insulin syringes`, description: 'Individually wrapped and ready for research preparation.' },
+      { key: 'prep-pads', title: `${config.prepPadCount} alcohol prep pads`, description: 'Included for clean, consistent preparation.' },
+      { key: 'packaging', title: 'Premium protective packaging', description: 'Every order ships in discreet, protective packaging built for careful transit.' },
+    ]
+  }
 
   return [
     {
       key: 'peptide',
-      title: 'Research peptide',
-      description: productName
-        ? `The ${productName} vial included with your order.`
-        : 'The research compound included with your order.',
+      title: t('peptideTitle'),
+      description: productName ? t('peptideDescriptionWithProduct', { product: productName }) : t('peptideDescriptionGeneric'),
     },
-    {
-      key: 'bac-water',
-      title: config.bacWaterLabel,
-      description: 'Measured for this product where applicable, so nothing needs to be sourced separately.',
-    },
-    {
-      key: 'syringes',
-      title: `${config.syringeCount} sterile ${config.syringeGauge} insulin syringes`,
-      description: 'Individually wrapped and ready for research preparation.',
-    },
-    {
-      key: 'prep-pads',
-      title: `${config.prepPadCount} alcohol prep pads`,
-      description: 'Included for clean, consistent preparation.',
-    },
-    {
-      key: 'packaging',
-      title: 'Premium protective packaging',
-      description: 'Every order ships in discreet, protective packaging built for careful transit.',
-    },
+    { key: 'bac-water', title: config.bacWaterLabel, description: t('bacWaterDescription') },
+    { key: 'syringes', title: t('syringesTitle', { count: config.syringeCount, gauge: config.syringeGauge }), description: t('syringesDescription') },
+    { key: 'prep-pads', title: t('prepPadsTitle', { count: config.prepPadCount }), description: t('prepPadsDescription') },
+    { key: 'packaging', title: t('packagingTitle'), description: t('packagingDescription') },
   ]
 }
 
-export function getEncoreCompleteKitCompactSummary({
-  syringeCount = encoreCompleteKitDefaults.syringeCount,
-}: { syringeCount?: number; prepPadCount?: number } = {}) {
-  return `BAC water, ${syringeCount} sterile syringes, prep pads and premium protective packaging are included.`
+export function getEncoreCompleteKitCompactSummary(
+  { syringeCount = encoreCompleteKitDefaults.syringeCount }: { syringeCount?: number; prepPadCount?: number } = {},
+  t?: Translator,
+) {
+  if (!t) return `BAC water, ${syringeCount} sterile syringes, prep pads and premium protective packaging are included.`
+  return t('compactSummary', { count: syringeCount })
 }
 
 export const encoreCompleteKitCopy = {
   fullEyebrow: 'Complete Kit Included',
   fullHeading: 'Encore Complete Kit',
   fullDescription: 'Everything needed for your research arrives together in one professionally prepared package.',
-  closingMessage: 'No need to purchase essential preparation supplies separately.',
+  closingMessage: 'No separate supply purchases. Product-specific BAC water and essential preparation supplies arrive together.',
   compactHeading: 'Complete Kit Included',
-  cartHeading: 'Included with this product',
+  cartHeading: 'Complete kit included',
   checkoutHeading: "What's Included",
 }
 

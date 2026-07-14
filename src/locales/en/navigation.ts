@@ -1,0 +1,16 @@
+export const navigation = {
+  home: 'Home',
+  catalog: 'Catalog',
+  about: 'About',
+  faq: 'FAQ',
+  contact: 'Contact',
+  howItWorks: 'How It Works',
+  startYourResearch: 'Start Your Research',
+  openMenu: 'Open menu',
+  closeMenu: 'Close menu',
+  mainNavigation: 'Main navigation',
+  cartWithItems: 'Open cart with {count} items',
+  homeAriaLabel: 'Encore Bio Labs home',
+  searchProducts: 'Search products',
+  closeSearch: 'Close product search',
+} as const

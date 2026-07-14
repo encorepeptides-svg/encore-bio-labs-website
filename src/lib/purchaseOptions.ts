@@ -118,11 +118,14 @@ export function quotePurchase(product: Product, variant: ProductVariant, selecti
   }
 }
 
-export function getRetatrutideVariantBadge(product: Product, variant: ProductVariant) {
+export function getRetatrutideVariantBadge(product: Product, variant: ProductVariant, locale: 'en' | 'es' = 'en') {
   if (product.slug !== 'retatrutide') return undefined
   const measurable = product.variants.filter((entry) => entry.strength && entry.price > 0)
-  if (variant === measurable[0]) return 'Starter'
-  if (variant.strength === 20) return 'Most Popular'
-  if (variant.strength === 30) return 'Best Value'
+  const labels = locale === 'es'
+    ? { starter: 'Inicial', mostPopular: 'Más popular', bestValue: 'Mejor valor' }
+    : { starter: 'Starter', mostPopular: 'Most Popular', bestValue: 'Best Value' }
+  if (variant === measurable[0]) return labels.starter
+  if (variant.strength === 20) return labels.mostPopular
+  if (variant.strength === 30) return labels.bestValue
   return undefined
 }

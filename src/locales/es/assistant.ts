@@ -1,0 +1,26 @@
+import type { assistant as assistantEn } from '../en/assistant'
+
+export const assistant = {
+  buttonLabel: 'Preguntar a Encore AI',
+  dialogLabel: 'Asistente de Encore AI',
+  close: 'Cerrar asistente',
+  title: 'Asistente de Encore AI',
+  replyTiming: 'Suele responder en unos segundos',
+  whatsappAria: 'Chatear con Encore Bio Labs por WhatsApp',
+  whatsappTitle: '¿Prefieres WhatsApp?',
+  inputLabel: 'Mensaje para Encore AI',
+  inputPlaceholder: 'Pregunta sobre productos, precios o envíos…',
+  send: 'Enviar mensaje',
+  typing: 'Encore AI está escribiendo',
+  browseProducts: 'Explorar productos',
+  bestSellers: 'Más solicitados',
+  pricing: 'Precios',
+  shipping: 'Envíos',
+  localDelivery: 'Entrega local',
+  trackOrder: 'Rastrear mi pedido',
+  contactTeam: 'Contactar al equipo',
+  orderWhatsapp: 'Pedir por WhatsApp',
+  viewCatalog: 'Ver catálogo',
+  viewCategory: 'Explorar esta categoría',
+  continueWhatsapp: 'Continuar por WhatsApp',
+} satisfies Record<keyof typeof assistantEn, string>

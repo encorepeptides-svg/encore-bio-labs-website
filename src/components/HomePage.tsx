@@ -16,8 +16,8 @@ import heroVideoPoster from '../assets/images/hero/hero-video-poster.jpg'
 import heroVideo from '../assets/videos/encore-hero.mp4'
 import { products, type Product } from '../data/products'
 import { faqLibrary } from '../data/faq'
-import { buildSrcSet, stemOf } from '../lib/responsiveImages'
 import { cn } from '../lib/utils'
+import { useLocale, useTranslation } from '../i18n/LocaleContext'
 import { CategoryShowcase } from './home/CategoryShowcase'
 import { AddToCartButton } from './cart/AddToCartButton'
 import { CTA } from './CTA'
@@ -25,89 +25,20 @@ import { FAQAccordion } from './content/EditorialModules'
 import { EncoreCompleteKit } from './EncoreCompleteKit'
 import { FinalCTA } from './FinalCTA'
 import { ResearchProfilePrompt } from './ResearchProfilePrompt'
-
-const productImages = import.meta.glob('../assets/images/products/*.{png,jpg,jpeg,webp,avif}', {
-  eager: true,
-  import: 'default',
-  query: '?url',
-}) as Record<string, string>
-const HOME_PRODUCT_IMAGE_BASE = '../assets/images/products/'
-const HOME_PRODUCT_WIDTHS = [720, 1000, 1254]
-
-const trustItems = [
-  { icon: FlaskConical, label: 'Research Use Only' },
-  { icon: Snowflake, label: 'Handling Confirmed During Review' },
-  { icon: PackageCheck, label: 'Premium Packaging' },
-  { icon: Timer, label: 'Fulfillment Confirmed During Review' },
-  { icon: FileText, label: 'Documentation Confirmed During Review' },
-]
+import { ProductImage } from './ProductImage'
 
 const bestSellerSlugs = ['retatrutide', 'ghk-cu', 'nad-plus', 'tesamorelin']
 
-const processSteps = [
-  {
-    icon: FlaskConical,
-    title: 'Manufactured',
-    body: 'Research compounds are sourced and organized for laboratory applications.',
-  },
-  {
-    icon: BadgeCheck,
-    title: 'Verified',
-    body: 'Documentation and product context are prepared for qualified review.',
-  },
-  {
-    icon: PackageCheck,
-    title: 'Packaged',
-    body: 'Materials are presented with premium packaging and handling awareness.',
-  },
-  {
-    icon: Truck,
-    title: 'Delivered',
-    body: 'Fulfillment is coordinated for speed, clarity, and receiving workflows.',
-  },
-]
-
-const whyChooseCards = [
-  {
-    icon: FlaskConical,
-    title: 'Curated Research Catalog',
-    body: 'Carefully organized collections that make product discovery easier.',
-  },
-  {
-    icon: FileText,
-    title: 'Documentation Review',
-    body: 'Ask Encore to confirm the identity, purity, and batch records available for a reviewed product.',
-  },
-  {
-    icon: PackageCheck,
-    title: 'Complete Research Kits',
-    body: 'Select products include appropriately measured supporting materials for research planning.',
-  },
-  {
-    icon: UserCheck,
-    title: 'Responsive Human Support',
-    body: 'Our team replies directly to questions before or after your inquiry.',
-  },
-]
+const trustIcons = [FlaskConical, Snowflake, PackageCheck, Timer, FileText]
+const processIcons = [FlaskConical, BadgeCheck, PackageCheck, Truck]
+const whyChooseIcons = [FlaskConical, FileText, PackageCheck, UserCheck]
 
 const previewFaqs = faqLibrary.flatMap((group) => group.items).slice(0, 5)
 
-function getProductImage(product: Product) {
-  return productImages[`../assets/images/products/${product.image}`]
-}
-
-function getProductImageSources(product: Product) {
-  const stem = stemOf(product.image)
-  return {
-    avif: buildSrcSet(productImages, HOME_PRODUCT_IMAGE_BASE, stem, 'avif', HOME_PRODUCT_WIDTHS),
-    webp: buildSrcSet(productImages, HOME_PRODUCT_IMAGE_BASE, stem, 'webp', HOME_PRODUCT_WIDTHS),
-  }
-}
-
-function getResearchOptionPrice(product: Product) {
+function getResearchOptionPrice(product: Product, t: (key: string, vars?: Record<string, string | number>) => string) {
   const prices = product.variants.map((variant) => variant.price).filter((price) => price > 0)
   const startingPrice = prices.length ? Math.min(...prices) : undefined
-  return startingPrice ? `Research options from $${startingPrice.toLocaleString()}` : 'Availability by request'
+  return startingPrice ? t('researchOptionsFrom', { price: `$${startingPrice.toLocaleString()}` }) : t('availabilityByRequest')
 }
 
 function getProductLine(product: Product) {
@@ -115,8 +46,8 @@ function getProductLine(product: Product) {
 }
 
 function FeaturedBestSellerCard({ product }: { product: Product }) {
-  const imageSrc = getProductImage(product)
-  const imageSources = getProductImageSources(product)
+  const { path } = useLocale()
+  const { t } = useTranslation('homepage')
 
   return (
     <article className="group overflow-hidden rounded-[1.75rem] border border-slate-900/10 bg-white shadow-[0_24px_80px_rgba(7,23,36,0.08)] transition duration-300 motion-safe:hover:-translate-y-1 hover:shadow-[0_34px_110px_rgba(20,184,166,0.16)]">
@@ -124,7 +55,7 @@ function FeaturedBestSellerCard({ product }: { product: Product }) {
         <div className="order-2 flex flex-col justify-center gap-5 p-6 sm:p-8 lg:order-1 lg:p-10 xl:p-12">
           <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-teal-700/20 bg-teal-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-teal-800">
             <Star size={13} aria-hidden="true" />
-            Featured Bestseller
+            {t('featuredBestseller')}
           </span>
           <h3 className="text-[clamp(1.85rem,1.1rem+3vw,3rem)] font-semibold leading-[1.03] tracking-[-0.045em] text-[#071724]">
             {product.name}
@@ -132,9 +63,9 @@ function FeaturedBestSellerCard({ product }: { product: Product }) {
           <p className="max-w-lg text-base leading-7 text-slate-600">{getProductLine(product)}</p>
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-              Available strengths and pricing
+              {t('availableStrengths')}
             </p>
-            <ul className="mt-3 flex flex-wrap gap-2" aria-label={`${product.name} available strengths`}>
+            <ul className="mt-3 flex flex-wrap gap-2" aria-label={t('availableStrengthsAria', { product: product.name })}>
               {product.variants.map((variant) => (
                 <li key={`${variant.label}-${variant.format}`}>
                   <span className="inline-flex rounded-full border border-slate-900/10 bg-[#f5f5f2] px-3 py-1.5 text-xs font-semibold text-slate-600">
@@ -145,40 +76,40 @@ function FeaturedBestSellerCard({ product }: { product: Product }) {
             </ul>
           </div>
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-700">
-            {getResearchOptionPrice(product)}
+            {getResearchOptionPrice(product, t)}
           </p>
           <div className="flex flex-col gap-3 pt-2 sm:flex-row">
             <AddToCartButton product={product} className="min-h-12 px-6">
-              Add {product.variants[0]?.label ?? 'Option'} to Cart
+              {t('addVariantToCart', { variant: product.variants[0]?.label ?? '' })}
             </AddToCartButton>
             <a
-              href={`/products/${product.slug}`}
+              href={path(`/products/${product.slug}`)}
               className="inline-flex min-h-12 items-center justify-center rounded-full border border-slate-900/10 bg-white px-6 py-3 text-sm font-semibold text-[#071724] transition hover:bg-teal-50"
             >
-              View Research Details
+              {t('viewResearchDetails')}
             </a>
           </div>
           <a
-            href="/intake"
+            href={path('/intake')}
             className="w-fit text-xs font-semibold text-slate-500 transition hover:text-teal-700"
           >
-            Get personalized guidance
+            {t('getPersonalizedGuidance')}
           </a>
         </div>
 
         <a
-          href={`/products/${product.slug}`}
-          aria-label={`View ${product.name}`}
+          href={path(`/products/${product.slug}`)}
+          aria-label={t('viewProduct', { product: product.name })}
           className="relative order-1 block overflow-hidden bg-[#dfe8e7] lg:order-2"
         >
           <div className="relative flex aspect-[4/3] w-full items-center justify-center p-6 sm:aspect-[16/10] sm:p-10 lg:aspect-auto lg:h-full lg:min-h-[clamp(16rem,10rem+18vw,24rem)] lg:p-10">
-            {imageSrc ? (
-              <picture className="contents">
-                {imageSources.avif ? <source type="image/avif" srcSet={imageSources.avif} sizes="(min-width: 1024px) 45vw, 100vw" /> : null}
-                {imageSources.webp ? <source type="image/webp" srcSet={imageSources.webp} sizes="(min-width: 1024px) 45vw, 100vw" /> : null}
-                <img src={imageSrc} alt={`${product.name} research compound packaging`} loading="eager" decoding="async" className="h-full w-full object-contain drop-shadow-[0_28px_48px_rgba(7,23,36,0.18)] transition duration-500 motion-safe:group-hover:scale-[1.03]" />
-              </picture>
-            ) : null}
+            <ProductImage
+              product={product}
+              alt={t('productImageAlt', { product: product.name })}
+              sizes="(min-width: 1024px) 45vw, 100vw"
+              loading="eager"
+              className="h-full w-full object-contain drop-shadow-[0_28px_48px_rgba(7,23,36,0.18)] transition duration-500 motion-safe:group-hover:scale-[1.03]"
+            />
           </div>
         </a>
       </div>
@@ -187,8 +118,8 @@ function FeaturedBestSellerCard({ product }: { product: Product }) {
 }
 
 function SecondaryBestSellerCard({ product, className }: { product: Product; className?: string }) {
-  const imageSrc = getProductImage(product)
-  const imageSources = getProductImageSources(product)
+  const { path } = useLocale()
+  const { t } = useTranslation('homepage')
 
   return (
     <article
@@ -198,17 +129,16 @@ function SecondaryBestSellerCard({ product, className }: { product: Product; cla
       )}
     >
       <a
-        href={`/products/${product.slug}`}
-        aria-label={`View ${product.name}`}
+        href={path(`/products/${product.slug}`)}
+        aria-label={t('viewProduct', { product: product.name })}
         className="relative block aspect-[4/3] overflow-hidden bg-[#dfe8e7]"
       >
-        {imageSrc ? (
-          <picture className="contents">
-            {imageSources.avif ? <source type="image/avif" srcSet={imageSources.avif} sizes="(min-width: 1024px) 30vw, 100vw" /> : null}
-            {imageSources.webp ? <source type="image/webp" srcSet={imageSources.webp} sizes="(min-width: 1024px) 30vw, 100vw" /> : null}
-            <img src={imageSrc} alt={`${product.name} research compound packaging`} loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-contain object-center opacity-95 transition duration-500 motion-safe:group-hover:scale-[1.035]" />
-          </picture>
-        ) : null}
+        <ProductImage
+          product={product}
+          alt={t('productImageAlt', { product: product.name })}
+          sizes="(min-width: 1024px) 30vw, 100vw"
+          className="absolute inset-0 h-full w-full object-contain object-center opacity-95 transition duration-500 motion-safe:group-hover:scale-[1.035]"
+        />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(255,255,255,0)_0_42%,rgba(255,255,255,0.32)_76%,rgba(255,255,255,0.92)_100%)]" />
         <div className="absolute left-4 top-4 rounded-full border border-white/60 bg-white/78 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#071724] backdrop-blur-xl">
           {product.category}
@@ -217,19 +147,19 @@ function SecondaryBestSellerCard({ product, className }: { product: Product; cla
 
       <div className="flex flex-1 flex-col p-5 sm:p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
-          {getResearchOptionPrice(product)}
+          {getResearchOptionPrice(product, t)}
         </p>
         <h3 className="mt-3 text-2xl font-semibold tracking-[-0.045em] text-[#071724]">{product.name}</h3>
         <p className="mt-3 text-sm leading-6 text-slate-600">{getProductLine(product)}</p>
         <div className="mt-auto flex flex-col gap-3 pt-6 sm:flex-row">
           <AddToCartButton product={product} className="min-h-11 px-4 py-2.5">
-            Add to Cart
+            {t('addToCart')}
           </AddToCartButton>
           <a
-            href={`/products/${product.slug}`}
+            href={path(`/products/${product.slug}`)}
             className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-900/10 bg-white px-4 py-2.5 text-sm font-semibold text-[#071724] transition hover:bg-teal-50"
           >
-            View Research Details
+            {t('viewResearchDetails')}
           </a>
         </div>
       </div>
@@ -238,13 +168,21 @@ function SecondaryBestSellerCard({ product, className }: { product: Product; cla
 }
 
 function CompactWhyChooseEncore() {
+  const { t } = useTranslation('homepage')
+  const whyChooseCards = [
+    { icon: whyChooseIcons[0], title: t('whyCard1Title'), body: t('whyCard1Body') },
+    { icon: whyChooseIcons[1], title: t('whyCard2Title'), body: t('whyCard2Body') },
+    { icon: whyChooseIcons[2], title: t('whyCard3Title'), body: t('whyCard3Body') },
+    { icon: whyChooseIcons[3], title: t('whyCard4Title'), body: t('whyCard4Body') },
+  ]
+
   return (
     <section id="why-encore" className="px-5 py-14 sm:px-8 lg:py-16">
       <div className="mx-auto max-w-[88rem]">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">Why Encore</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">{t('whyEncoreEyebrow')}</p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] text-[#071724] sm:text-4xl">
-            Research Support Built Around Clarity
+            {t('whyEncoreTitle')}
           </h2>
         </div>
 
@@ -269,6 +207,21 @@ function CompactWhyChooseEncore() {
 
 export function HomePage() {
   const prefersReducedMotion = useReducedMotion()
+  const { path } = useLocale()
+  const { t } = useTranslation('homepage')
+  const trustItems = [
+    { icon: trustIcons[0], label: t('trustResearchUseOnly') },
+    { icon: trustIcons[1], label: t('trustHandling') },
+    { icon: trustIcons[2], label: t('trustPackaging') },
+    { icon: trustIcons[3], label: t('trustFulfillment') },
+    { icon: trustIcons[4], label: t('trustDocumentation') },
+  ]
+  const processSteps = [
+    { icon: processIcons[0], title: t('step1Title'), body: t('step1Body') },
+    { icon: processIcons[1], title: t('step2Title'), body: t('step2Body') },
+    { icon: processIcons[2], title: t('step3Title'), body: t('step3Body') },
+    { icon: processIcons[3], title: t('step4Title'), body: t('step4Body') },
+  ]
   const bestSellerProducts = bestSellerSlugs
     .map((slug) => products.find((product) => product.slug === slug))
     .filter((product): product is Product => Boolean(product))
@@ -295,22 +248,21 @@ export function HomePage() {
           >
             <div className="inline-flex items-center gap-2 rounded-full border border-teal-700/15 bg-white/68 px-4 py-2 text-sm font-semibold text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.82),0_12px_34px_rgba(7,23,36,0.05)] backdrop-blur-2xl">
               <Sparkles size={16} aria-hidden="true" className="text-teal-700" />
-              Premium research wellness support
+              {t('heroEyebrow')}
             </div>
             <h1 className="mt-8 max-w-[46rem] text-[clamp(2.75rem,10vw,4.4rem)] font-semibold leading-[0.96] tracking-[-0.05em] text-[#071724] lg:text-[clamp(4rem,5vw,5.4rem)]">
-              Premium research compounds, handled with calm precision.
+              {t('heroTitle')}
             </h1>
             <p className="mt-7 max-w-[35rem] text-lg leading-8 text-slate-600 sm:text-xl sm:leading-9">
-              Answer a few questions and we'll recommend the most appropriate research products
-              for your goals.
+              {t('heroSubtitle')}
             </p>
 
             <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:gap-5">
               <CTA href="/intake" className="min-h-14 w-full px-7 sm:w-auto">
-                Start Your Research
+                {t('startYourResearch')}
               </CTA>
               <CTA href="/catalog" tone="ghost" className="min-h-14 w-full border-slate-900/15 bg-white/42 px-7 sm:w-auto">
-                Browse Catalog
+                {t('browseCatalog')}
               </CTA>
             </div>
           </motion.div>
@@ -349,10 +301,10 @@ export function HomePage() {
               <div className="pointer-events-none absolute left-8 top-8 h-px w-1/2 bg-white/58 shadow-[0_0_28px_rgba(255,255,255,0.45)]" aria-hidden="true" />
               <div className="absolute bottom-4 left-4 right-4 rounded-[1.25rem] border border-white/18 bg-white/14 p-3 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_18px_44px_rgba(7,23,36,0.14)] backdrop-blur-xl sm:bottom-7 sm:left-7 sm:right-7 sm:p-5">
                 <p className="text-[0.66rem] font-semibold uppercase tracking-[0.22em] text-teal-100 sm:text-xs">
-                  PRECISION MEETS PROGRESS
+                  {t('precisionMeetsProgress').toUpperCase()}
                 </p>
                 <p className="mt-2 max-w-sm text-sm font-semibold leading-5 tracking-normal sm:text-base sm:leading-6">
-                  Advanced research compounds for metabolic wellness exploration.
+                  {t('heroVideoCaption')}
                 </p>
               </div>
             </motion.div>
@@ -361,10 +313,10 @@ export function HomePage() {
 
         <a
           href="#trust-strip"
-          aria-label="Scroll to learn more"
+          aria-label={t('scrollToLearnMore')}
           className="home-scroll-cue absolute bottom-5 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-slate-500 transition hover:text-[#071724] lg:flex"
         >
-          <span>Explore</span>
+          <span>{t('explore')}</span>
           <span className="relative h-10 w-6 rounded-full border border-slate-900/18 bg-white/34 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-xl">
             <span className="absolute left-1/2 top-2 size-1.5 -translate-x-1/2 rounded-full bg-teal-700" />
           </span>
@@ -386,17 +338,16 @@ export function HomePage() {
         <div className="mx-auto max-w-[88rem]">
           <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
             <div className="max-w-3xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-teal-700">Best Sellers</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-teal-700">{t('bestSellersEyebrow')}</p>
               <h2 className="mt-4 text-4xl font-semibold tracking-[-0.055em] text-[#071724] sm:text-5xl">
-                Frequently requested research compounds.
+                {t('bestSellersTitle')}
               </h2>
               <p className="mt-5 text-base leading-7 text-slate-600">
-                Start with the products researchers turn to most, spanning several of our
-                frequently requested categories.
+                {t('bestSellersSubtitle')}
               </p>
             </div>
             <CTA href="/catalog" tone="ghost">
-              Browse Catalog
+              {t('browseCatalog')}
             </CTA>
           </div>
 
@@ -434,9 +385,9 @@ export function HomePage() {
       <section id="how-it-works" className="scroll-mt-28 bg-[#071724] px-5 py-16 text-white sm:px-8 lg:py-20">
         <div className="mx-auto max-w-[88rem]">
           <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-teal-200">Research Process</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-teal-200">{t('processEyebrow')}</p>
             <h2 className="mt-4 text-4xl font-semibold tracking-[-0.055em] sm:text-5xl">
-              From manufacturing to delivery.
+              {t('processTitle')}
             </h2>
           </div>
 
@@ -458,19 +409,19 @@ export function HomePage() {
       </section>
 
       <FAQAccordion
-        eyebrow="FAQ Preview"
-        title="Five answers before you browse deeper."
+        eyebrow={t('faqPreviewEyebrow')}
+        title={t('faqPreviewTitle')}
         items={previewFaqs}
-        cta={{ label: 'View All FAQs', href: '/faq' }}
+        cta={{ label: t('viewAllFaqs'), href: '/faq' }}
       />
 
       <FinalCTA />
 
       <a
-        href="/intake"
+        href={path('/intake')}
         className="fixed bottom-5 left-5 z-40 inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/55 bg-[#071724] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_48px_rgba(7,23,36,0.26)] transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2 focus:ring-offset-[#f5f5f2] sm:bottom-6 sm:left-6 lg:hidden"
       >
-        Start Your Research
+        {t('startYourResearch')}
         <ArrowRight size={15} aria-hidden="true" />
       </a>
     </main>

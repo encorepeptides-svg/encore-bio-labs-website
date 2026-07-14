@@ -28,10 +28,12 @@ import {
 import { motion } from 'framer-motion'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { products, type Product } from '../../data/products'
+import { getProductMedia } from '../../data/productMedia'
 import { coaBySlug } from '../../data/coa'
 import { contentTypeLabels, researchArticles } from '../../data/research'
-import { buildSrcSet, stemOf } from '../../lib/responsiveImages'
+import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { buildOrderInquiryMessage, buildWhatsAppUrl } from '../../lib/whatsapp'
+import { ProductImage } from '../ProductImage'
 import { PurchaseSelector } from './PurchaseSelector'
 import { CTA } from '../CTA'
 import { EncoreCompleteKit } from '../EncoreCompleteKit'
@@ -46,27 +48,6 @@ import {
   ResearchUseOnlyBanner,
   TrustAndHandlingSection,
 } from '../content/EditorialModules'
-
-const productImages = import.meta.glob('../../assets/images/products/*.{png,jpg,jpeg,webp,avif}', {
-  eager: true,
-  import: 'default',
-  query: '?url',
-}) as Record<string, string>
-
-const PRODUCT_IMAGE_BASE_PATH = '../../assets/images/products/'
-const PRODUCT_IMAGE_WIDTHS = [720, 1000, 1254, 1400]
-
-function getProductImageSources(imageName: string) {
-  const imageStem = stemOf(imageName)
-  return {
-    avifSrcSet: buildSrcSet(productImages, PRODUCT_IMAGE_BASE_PATH, imageStem, 'avif', PRODUCT_IMAGE_WIDTHS),
-    webpSrcSet: buildSrcSet(productImages, PRODUCT_IMAGE_BASE_PATH, imageStem, 'webp', PRODUCT_IMAGE_WIDTHS),
-  }
-}
-
-function getProductImage(product: Product) {
-  return productImages[`../../assets/images/products/${product.heroImage}`]
-}
 
 function SectionShell({
   id,
@@ -96,28 +77,42 @@ function SectionShell({
   )
 }
 
+const categoryTitleKeyBySlug: Record<string, string> = {
+  'metabolic-weight-management': 'metabolicWeightManagementTitle',
+  'recovery-regeneration': 'recoveryRegenerationTitle',
+  'longevity-cellular-health': 'longevityCellularHealthTitle',
+  'cognitive-performance': 'cognitivePerformanceTitle',
+  'hormone-wellness': 'hormoneWellnessTitle',
+}
+
 export function ProductBreadcrumb({ product }: { product: Product }) {
+  const { path } = useLocale()
+  const { t } = useTranslation('product')
+  const { t: tCategories } = useTranslation('categories')
+  const categorySlug = productCategorySlug(product)
+  const categoryLabel = categoryTitleKeyBySlug[categorySlug] ? tCategories(categoryTitleKeyBySlug[categorySlug]) : product.category
+
   return (
-    <nav aria-label="Breadcrumb" className="px-5 pt-6 sm:px-8">
+    <nav aria-label={t('breadcrumbLabel')} className="px-5 pt-6 sm:px-8">
       <ol className="mx-auto flex max-w-[88rem] flex-wrap items-center gap-2 text-sm text-slate-500">
         <li>
-          <a href="/" className="font-medium transition hover:text-[#071724]">
-            Home
+          <a href={path('/')} className="font-medium transition hover:text-[#071724]">
+            {t('home')}
           </a>
         </li>
         <li aria-hidden="true">/</li>
         <li>
-          <a href="/catalog" className="font-medium transition hover:text-[#071724]">
-            Catalog
+          <a href={path('/catalog')} className="font-medium transition hover:text-[#071724]">
+            {t('catalog')}
           </a>
         </li>
         <li aria-hidden="true">/</li>
         <li>
           <a
-            href={`/categories/${productCategorySlug(product)}`}
+            href={path(`/categories/${categorySlug}`)}
             className="font-medium transition hover:text-[#071724]"
           >
-            {product.category}
+            {categoryLabel}
           </a>
         </li>
         <li aria-hidden="true">/</li>
@@ -131,329 +126,28 @@ export function ProductBreadcrumb({ product }: { product: Product }) {
   )
 }
 
-export function RetatrutideHeroSection({ product }: { product: Product }) {
-  const imageSrc = getProductImage({ ...product, heroImage: product.image })
-  const { avifSrcSet, webpSrcSet } = getProductImageSources(product.image)
-  const bullets = [
-    'GLP-1 + GIP + Glucagon receptor triple agonist',
-    'Documentation details confirmed during review',
-    'Shipping and handling confirmed during review',
-  ]
-  const trustStats = [
-    { value: 'RUO', label: 'Research use' },
-    { value: '3', label: 'Receptor targets' },
-    { value: 'Direct', label: 'Inquiry routing' },
-  ]
-  const receptorTargets = ['GLP-1', 'GIP', 'GCG']
-
-  return (
-    <section className="relative overflow-hidden bg-[var(--bg)] px-5 pb-14 pt-12 sm:px-8 lg:pb-20 lg:pt-16">
-      <div className="molecule-field opacity-[0.12]" />
-      <div className="pointer-events-none absolute right-0 top-12 size-80 rounded-full bg-[var(--teal)]/12 blur-3xl" />
-      <div className="pointer-events-none absolute left-[8%] top-36 size-72 rounded-full bg-white blur-3xl" />
-
-      <div className="relative mx-auto grid max-w-[88rem] gap-10 lg:grid-cols-2 lg:items-center">
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-          className="max-w-3xl"
-        >
-          <a
-            href="/catalog"
-            className="mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white/80 px-4 py-2 text-sm font-semibold text-[var(--muted)] shadow-sm backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-white hover:text-[var(--navy)]"
-          >
-            Back to catalog
-          </a>
-          <p className="inline-flex rounded-full border border-[var(--teal-border)] bg-[var(--teal-light)] px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--teal)]">
-            Triple GLP-1 agonist · Research use only
-          </p>
-          <h1 className="mt-6 text-5xl font-semibold leading-[0.95] tracking-[-0.065em] text-[var(--navy)] sm:text-6xl lg:text-7xl">
-            A triple-receptor peptide at the{' '}
-            <span className="text-[var(--teal)]">center of GLP-1 research.</span>
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--muted)]">
-            Encore Bio Labs supplies research-use-only Retatrutide, studied as a triple agonist
-            targeting GLP-1, GIP, and glucagon receptors simultaneously. Product-specific
-            documentation details are confirmed during qualified research review.
-          </p>
-
-          <div className="mt-7 grid gap-3">
-            {bullets.map((bullet) => (
-              <div key={bullet} className="flex items-start gap-3 text-sm font-semibold leading-6 text-[var(--navy)] sm:text-base">
-                <span className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--teal)] text-[0.7rem] text-white">
-                  ✓
-                </span>
-                <span>{bullet}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <CTA href="#product-specs" tone="ghost" className="border-[var(--border)] bg-white text-[var(--navy)] hover:bg-[var(--teal-light)]">
-              View Research Details
-            </CTA>
-          </div>
-          <div className="mt-6 max-w-2xl">
-            <PurchaseSelector product={product} />
-            <p className="mt-3 text-xs font-semibold text-[var(--muted)]">
-              Availability, handling, and shipping options are confirmed during order review
-            </p>
-          </div>
-
-          <div className="mt-8 grid max-w-2xl grid-cols-3 overflow-hidden rounded-[1.35rem] border border-[var(--border)] bg-white shadow-[0_20px_60px_rgba(26,35,64,0.08)]">
-            {trustStats.map((stat) => (
-              <div key={stat.label} className="border-r border-[var(--border)] p-4 last:border-r-0 sm:p-5">
-                <p className="text-2xl font-semibold tracking-[-0.045em] text-[var(--navy)] sm:text-3xl">
-                  {stat.value}
-                </p>
-                <p className="mt-1 text-xs font-semibold uppercase leading-5 tracking-[0.12em] text-[var(--muted)]">
-                  {stat.label}
-                </p>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 22, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1], delay: 0.08 }}
-          className="group relative mx-auto w-full max-w-2xl transition duration-500 hover:-translate-y-1"
-        >
-          <div className="relative min-h-[34rem] overflow-hidden rounded-[2.25rem] border border-white bg-white p-4 shadow-[0_32px_110px_rgba(26,35,64,0.14)] sm:min-h-[40rem] sm:p-5">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(46,196,165,0.2),transparent_35%),linear-gradient(145deg,#ffffff,#eef7f6_48%,#f8f9fb)]" />
-            <div className="absolute inset-5 rounded-[1.7rem] border border-[var(--border)] bg-white/42" />
-
-            <div className="absolute left-6 top-6 z-10 rounded-full border border-[var(--teal-border)] bg-white/90 px-4 py-2 text-xs font-semibold text-[var(--navy)] shadow-[0_12px_36px_rgba(26,35,64,0.1)] backdrop-blur-xl">
-              Documentation by review
-            </div>
-            <div className="absolute right-6 top-6 z-10 rounded-full border border-[var(--teal-border)] bg-[var(--teal)] px-4 py-2 text-xs font-semibold text-white shadow-[0_12px_36px_rgba(46,196,165,0.24)]">
-              RUO
-            </div>
-
-            <div className="relative min-h-[31rem] overflow-hidden rounded-[1.7rem] sm:min-h-[37rem]">
-              {imageSrc ? (
-                <picture>
-                  {avifSrcSet ? (
-                    <source type="image/avif" srcSet={avifSrcSet} sizes="(min-width: 1024px) 45vw, 100vw" />
-                  ) : null}
-                  {webpSrcSet ? (
-                    <source type="image/webp" srcSet={webpSrcSet} sizes="(min-width: 1024px) 45vw, 100vw" />
-                  ) : null}
-                  <img
-                    src={imageSrc}
-                    alt={`${product.name} research compound packaging`}
-                    width="720"
-                    height="720"
-                    className="absolute inset-0 h-full w-full object-contain object-center transition duration-500 group-hover:scale-[1.025]"
-                  />
-                </picture>
-              ) : (
-                <div className="flex min-h-[31rem] w-full items-center justify-center rounded-[2rem] border border-dashed border-[var(--teal-border)] bg-white/60 text-sm font-semibold uppercase tracking-[0.16em] text-[var(--muted)] sm:min-h-[37rem]">
-                  Product visual
-                </div>
-              )}
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0)_0_44%,rgba(255,255,255,0.24)_78%,rgba(255,255,255,0.72)_100%)]" />
-              <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white/90 to-transparent" />
-            </div>
-
-            <div className="absolute bottom-5 left-5 w-[min(15rem,calc(100%-2.5rem))] rounded-[1.4rem] border border-[var(--border)] bg-white/88 p-4 shadow-[0_20px_58px_rgba(26,35,64,0.14)] backdrop-blur-xl sm:bottom-7 sm:left-7">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
-                Receptor targets
-              </p>
-              <div className="mt-3 grid gap-2.5">
-                {receptorTargets.map((target, index) => (
-                  <div key={target} className="grid grid-cols-[3.4rem_1fr] items-center gap-3">
-                    <p className="text-sm font-semibold text-[var(--navy)]">{target}</p>
-                    <span className="h-2 overflow-hidden rounded-full bg-[var(--teal-light)]">
-                      <span
-                        className="block h-full rounded-full bg-[var(--teal)]"
-                        style={{ width: `${92 - index * 8}%` }}
-                      />
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="absolute bottom-5 right-5 rounded-[1.4rem] border border-[var(--border)] bg-white/90 p-4 text-right shadow-[0_20px_58px_rgba(26,35,64,0.14)] backdrop-blur-xl sm:bottom-7 sm:right-7">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
-                Mechanism
-              </p>
-              <p className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[var(--navy)]">
-                Triple agonist
-              </p>
-              <p className="mt-1 text-xs font-semibold text-[var(--teal)]">
-                GLP-1 · GIP · Glucagon
-              </p>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    </section>
-  )
-}
-
-export function RetatrutideClinicalResearchSection({ product }: { product: Product }) {
-  const imageSrc = getProductImage({ ...product, heroImage: product.image })
-  const { avifSrcSet, webpSrcSet } = getProductImageSources(product.image)
-
-  return (
-    <section
-      id="phase-2-data"
-      className="relative overflow-hidden bg-[var(--bg)] px-5 py-16 sm:px-8 lg:py-24"
-    >
-      <div className="molecule-field opacity-[0.08]" />
-      <div className="pointer-events-none absolute left-[6%] top-16 size-72 rounded-full bg-[var(--teal)]/10 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-12 right-[8%] size-80 rounded-full bg-cyan-200/24 blur-3xl" />
-      <span className="hero-particle left-[12%] top-[22%]" />
-      <span className="hero-particle hero-particle-delay right-[16%] top-[18%]" />
-      <span className="hero-particle hero-particle-slow bottom-[20%] left-[44%]" />
-
-      <div className="relative mx-auto grid max-w-[88rem] gap-10 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-          className="order-2 lg:order-1"
-        >
-          <div className="group relative overflow-hidden rounded-[2.25rem] border border-white/80 bg-white/62 p-3 shadow-[0_34px_120px_rgba(26,35,64,0.12)] backdrop-blur-2xl sm:p-4">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(46,196,165,0.18),transparent_36%),linear-gradient(145deg,rgba(255,255,255,0.95),rgba(238,247,246,0.78))]" />
-            <div className="absolute -left-1/2 top-0 h-full w-1/3 -skew-x-12 bg-white/38 blur-xl transition duration-1000 group-hover:translate-x-[330%]" />
-
-            <div className="relative min-h-[24rem] overflow-hidden rounded-[1.75rem] border border-[var(--border)] bg-white sm:min-h-[35rem] lg:min-h-[42rem]">
-              {imageSrc ? (
-                <picture>
-                  {avifSrcSet ? (
-                    <source type="image/avif" srcSet={avifSrcSet} sizes="(min-width: 1024px) 50vw, 100vw" />
-                  ) : null}
-                  {webpSrcSet ? (
-                    <source type="image/webp" srcSet={webpSrcSet} sizes="(min-width: 1024px) 50vw, 100vw" />
-                  ) : null}
-                  <img
-                    src={imageSrc}
-                    alt={`${product.name} research compound packaging`}
-                    width="900"
-                    height="720"
-                    loading="lazy"
-                    decoding="async"
-                    className="absolute inset-0 h-full w-full object-contain object-center transition duration-700 group-hover:scale-[1.025]"
-                  />
-                </picture>
-              ) : (
-                <div className="flex min-h-[24rem] items-center justify-center text-sm font-semibold uppercase tracking-[0.16em] text-[var(--muted)] sm:min-h-[35rem] lg:min-h-[42rem]">
-                  Retatrutide visual
-                </div>
-              )}
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0)_0_46%,rgba(255,255,255,0.2)_78%,rgba(255,255,255,0.72)_100%)]" />
-              <div className="absolute left-5 top-5 rounded-full border border-white/70 bg-white/84 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--navy)] shadow-[0_14px_42px_rgba(26,35,64,0.12)] backdrop-blur-xl">
-                Phase 2 Research
-              </div>
-              <div className="absolute bottom-5 left-5 rounded-full border border-[var(--teal-border)] bg-white/84 px-4 py-2 text-xs font-semibold text-[var(--teal)] shadow-[0_14px_42px_rgba(26,35,64,0.1)] backdrop-blur-xl">
-                Research Use Only
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 lg:hidden">
-            <div className="inline-flex max-w-full rounded-full border border-[var(--teal-border)] bg-[var(--teal-light)] px-4 py-2 text-sm font-semibold text-[var(--teal)] shadow-[0_14px_42px_rgba(46,196,165,0.12)]">
-              Triple Agonist: GLP-1 • GIP • Glucagon
-            </div>
-            <div className="mt-5">
-              <CTA href="#product-specs" className="w-full bg-[var(--navy)] hover:bg-[var(--navy-deep)] sm:w-auto">
-                View Retatrutide
-              </CTA>
-            </div>
-            <p className="mt-5 max-w-xl text-xs leading-6 text-[var(--muted)]">
-              Research use only. Not intended for human or animal consumption. Published study
-              context is provided for education and is not an individual outcome claim.
-            </p>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1], delay: 0.08 }}
-          className="order-1 lg:order-2"
-        >
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--teal)]">
-            Published study context
-          </p>
-          <h2 className="mt-4 max-w-3xl text-4xl font-semibold tracking-[-0.06em] text-[var(--navy)] sm:text-5xl lg:text-6xl">
-            Retatrutide's published Phase 2 research, in context.
-          </h2>
-          <p className="mt-5 max-w-2xl text-base leading-7 text-[var(--muted)] sm:text-lg sm:leading-8">
-            Retatrutide is discussed here as a published Phase 2 research compound. Study
-            endpoints are presented for population-level context only, not as guidance, treatment
-            use, or a projection of individual results.
-          </p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 18, scale: 0.98 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.12 }}
-            className="mt-8 max-w-xl rounded-[1.8rem] border border-[var(--teal-border)] bg-white/78 p-6 shadow-[0_28px_90px_rgba(46,196,165,0.14)] backdrop-blur-xl sm:p-8"
-          >
-            <p className="text-[5rem] font-semibold leading-none tracking-[-0.08em] text-[var(--navy)] sm:text-[7rem]">
-              P2
-              <span className="text-[var(--teal)]">.</span>
-            </p>
-            <p className="mt-4 text-lg font-semibold tracking-[-0.02em] text-[var(--navy)]">
-              Published Phase 2 endpoint
-            </p>
-            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-              One published research signal, summarized for catalog education only.
-            </p>
-          </motion.div>
-
-          <div className="mt-5 hidden max-w-full rounded-full border border-[var(--teal-border)] bg-[var(--teal-light)] px-4 py-2 text-sm font-semibold text-[var(--teal)] shadow-[0_14px_42px_rgba(46,196,165,0.12)] lg:inline-flex">
-            Triple Agonist: GLP-1 • GIP • Glucagon
-          </div>
-
-          <div className="mt-8 hidden lg:block">
-            <CTA href="#product-specs" className="bg-[var(--navy)] hover:bg-[var(--navy-deep)]">
-              View Retatrutide
-            </CTA>
-          </div>
-
-          <p className="mt-6 hidden max-w-xl text-xs leading-6 text-[var(--muted)] lg:block">
-            Research use only. Not intended for human or animal consumption. Published study
-            context is provided for education and is not an individual outcome claim.
-          </p>
-        </motion.div>
-      </div>
-    </section>
-  )
-}
-
-const productFeatureBullets = [
-  'Research-use only',
-  'Documentation details confirmed during review',
-  'Availability confirmed during review',
-  'Shipping options confirmed during review',
-  'Handling requirements confirmed during review',
-]
-
-function getProductPriceLabel(product: Product) {
+function getProductPriceLabel(product: Product, t: (key: string, vars?: Record<string, string | number>) => string) {
   const prices = product.variants.map((variant) => variant.price).filter((price) => price > 0)
 
-  return prices.length ? `From $${Math.min(...prices).toLocaleString()}` : 'By review'
+  return prices.length ? t('fromPrice', { price: `$${Math.min(...prices).toLocaleString()}` }) : t('byReview')
 }
 
 export function ProductHero({ product }: { product: Product }) {
-  const imageSrc = getProductImage(product)
-  const { avifSrcSet, webpSrcSet } = getProductImageSources(product.heroImage)
-  const heroStats = [
-    { value: 'RUO', label: 'Research use' },
-    { value: `${product.variants.length}`, label: 'Catalog option' },
-    { value: 'Direct', label: 'Inquiry routing' },
+  const { path } = useLocale()
+  const { t } = useTranslation('product')
+  const productFeatureBullets = [
+    t('featureBullet1'),
+    t('featureBullet2'),
+    t('featureBullet3'),
+    t('featureBullet4'),
+    t('featureBullet5'),
   ]
-  const priceLabel = getProductPriceLabel(product)
+  const heroStats = [
+    { value: t('statResearchUseValue'), label: t('statResearchUse') },
+    { value: `${product.variants.length}`, label: t('statCatalogOption') },
+    { value: t('statInquiryValue'), label: t('statInquiryRouting') },
+  ]
+  const priceLabel = getProductPriceLabel(product, t)
 
   return (
     <section className="relative overflow-hidden bg-[var(--bg)] px-5 pb-14 pt-12 sm:px-8 lg:pb-20 lg:pt-16">
@@ -467,10 +161,10 @@ export function ProductHero({ product }: { product: Product }) {
       <div className="relative mx-auto grid max-w-[88rem] gap-10 lg:grid-cols-[0.94fr_1.06fr] lg:items-center">
         <motion.div initial={false} animate={{ opacity: 1, y: 0 }} className="max-w-3xl">
           <a
-            href="/catalog"
+            href={path('/catalog')}
             className="mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white/80 px-4 py-2 text-sm font-semibold text-[var(--muted)] shadow-sm backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-white hover:text-[var(--navy)]"
           >
-            Back to catalog
+            {t('backToCatalog')}
           </a>
           <div className="flex flex-wrap items-center gap-3">
             <p className="inline-flex rounded-full border border-[var(--teal-border)] bg-[var(--teal-light)] px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--teal)]">
@@ -501,7 +195,7 @@ export function ProductHero({ product }: { product: Product }) {
           </div>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <CTA href="#product-specs" tone="ghost" className="border-[var(--border)] bg-white text-[var(--navy)] hover:bg-[var(--teal-light)]">
-              View Research Details
+              {t('viewResearchDetails')}
             </CTA>
             <CTA
               href="https://wa.me/19153595448"
@@ -510,10 +204,18 @@ export function ProductHero({ product }: { product: Product }) {
               tone="ghost"
               className="border-[var(--border)] bg-white text-[var(--navy)] hover:bg-[var(--teal-light)]"
             >
-              Contact Encore
+              {t('contactEncoreWhatsapp')}
             </CTA>
           </div>
           <div className="mt-6 max-w-2xl"><PurchaseSelector product={product} /></div>
+          {product.purchaseRules.kitEligible ? (
+            <EncoreCompleteKit
+              variant="cart"
+              productName={product.name}
+              bacWaterAmount={product.bacWaterAmount}
+              className="mt-4 max-w-2xl"
+            />
+          ) : null}
           <div className="mt-8 grid max-w-2xl grid-cols-3 overflow-hidden rounded-[1.35rem] border border-[var(--border)] bg-white shadow-[0_20px_60px_rgba(26,35,64,0.08)]">
             {heroStats.map((stat) => (
               <div key={stat.label} className="border-r border-[var(--border)] p-4 last:border-r-0 sm:p-5">
@@ -537,39 +239,27 @@ export function ProductHero({ product }: { product: Product }) {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(46,196,165,0.2),transparent_35%),linear-gradient(145deg,#ffffff,#eef7f6_48%,#f8f9fb)]" />
             <div className="absolute inset-5 rounded-[1.7rem] border border-[var(--border)] bg-white/42" />
             <div className="absolute left-6 top-6 z-10 rounded-full border border-[var(--teal-border)] bg-white/90 px-4 py-2 text-xs font-semibold text-[var(--navy)] shadow-[0_12px_36px_rgba(26,35,64,0.1)] backdrop-blur-xl">
-              Documentation by review
+              {t('documentationByReview')}
             </div>
             <div className="absolute right-6 top-6 z-10 rounded-full border border-[var(--teal-border)] bg-[var(--teal)] px-4 py-2 text-xs font-semibold text-white shadow-[0_12px_36px_rgba(46,196,165,0.24)]">
               RUO
             </div>
             <div className="relative min-h-[31rem] overflow-hidden rounded-[1.7rem] sm:min-h-[37rem]">
-              {imageSrc ? (
-                <picture>
-                  {avifSrcSet ? (
-                    <source type="image/avif" srcSet={avifSrcSet} sizes="(min-width: 1024px) 45vw, 100vw" />
-                  ) : null}
-                  {webpSrcSet ? (
-                    <source type="image/webp" srcSet={webpSrcSet} sizes="(min-width: 1024px) 45vw, 100vw" />
-                  ) : null}
-                  <img
-                    src={imageSrc}
-                    alt={`${product.name} research compound packaging`}
-                    width="720"
-                    height="720"
-                    className="absolute inset-0 h-full w-full object-contain object-center transition duration-500 group-hover:scale-[1.025]"
-                  />
-                </picture>
-              ) : (
-                <div className="flex min-h-[31rem] w-full items-center justify-center rounded-[2rem] border border-dashed border-[var(--teal-border)] bg-white/60 text-sm font-semibold uppercase tracking-[0.16em] text-[var(--muted)] sm:min-h-[37rem]">
-                  Product visual
-                </div>
-              )}
+              <ProductImage
+                product={product}
+                alt={t('productImageAlt', { product: product.name })}
+                sizes="(min-width: 1024px) 45vw, 100vw"
+                loading="eager"
+                width={720}
+                height={720}
+                className="absolute inset-0 h-full w-full object-contain object-center transition duration-500 group-hover:scale-[1.025]"
+              />
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0)_0_44%,rgba(255,255,255,0.24)_78%,rgba(255,255,255,0.72)_100%)]" />
               <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white/90 to-transparent" />
             </div>
             <div className="absolute bottom-5 left-5 right-5 rounded-[1.4rem] border border-[var(--border)] bg-white/88 p-4 shadow-[0_20px_58px_rgba(26,35,64,0.14)] backdrop-blur-xl sm:bottom-7 sm:left-7 sm:right-auto sm:w-[min(20rem,calc(100%-3.5rem))]">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
-                Primary review lens
+                {t('primaryReviewLens')}
               </p>
               <p className="mt-2 text-xl font-semibold tracking-[-0.04em] text-[var(--navy)]">
                 {product.biologyPoints[0]?.title}
@@ -577,7 +267,7 @@ export function ProductHero({ product }: { product: Product }) {
               <div className="mt-4 grid gap-2">
                 {product.mechanismSteps.slice(0, 3).map((step, index) => (
                   <div key={step} className="grid grid-cols-[5.5rem_1fr] items-center gap-3">
-                    <p className="text-xs font-semibold text-[var(--navy)]">Stage {index + 1}</p>
+                    <p className="text-xs font-semibold text-[var(--navy)]">{t('stage', { number: index + 1 })}</p>
                     <span className="h-2 overflow-hidden rounded-full bg-[var(--teal-light)]">
                       <span className="block h-full rounded-full bg-[var(--teal)]" style={{ width: `${92 - index * 14}%` }} />
                     </span>
@@ -764,38 +454,39 @@ export function ProductCompleteKitCallout({ product }: { product: Product }) {
 }
 
 export function ProductQualityFocus({ product }: { product: Product }) {
+  const { t } = useTranslation('product')
   const storageSpec = product.specs.find((spec) => spec.label === 'Research markers')
   const coa = coaBySlug[product.slug]
 
   return (
     <>
       <TrustAndHandlingSection
-        title="Documentation-first standards, applied per product."
+        title={t('qualityTitle')}
         items={[
           {
-            title: 'Identity focus',
+            title: t('identityFocusTitle'),
             description: coa
-              ? `Confirmed by ${coa.labName} (${coa.labLocation}) via ${coa.method}.`
-              : `Product identity for ${product.name} is supported through documentation available on request.`,
+              ? t('identityFocusConfirmed', { lab: coa.labName, location: coa.labLocation, method: coa.method })
+              : t('identityFocusFallback', { product: product.name }),
           },
           {
-            title: 'Purity focus',
+            title: t('purityFocusTitle'),
             description: coa
               ? coa.results.map((result) => `${result.component}: ${result.value}`).join(' · ')
-              : 'Purity documentation and batch-level context are available through the approved inquiry process.',
+              : t('purityFocusFallback'),
           },
           {
-            title: 'Batch documentation',
+            title: t('batchDocumentationTitle'),
             description: coa
-              ? `${coa.batchReference}, reported ${coa.reportDate}. Full signed certificate below.`
-              : 'Lot and batch documentation are organized and ready for qualified review requests.',
+              ? t('batchDocumentationConfirmed', { batch: coa.batchReference, date: coa.reportDate })
+              : t('batchDocumentationFallback'),
           },
           {
-            title: 'Storage guidance',
+            title: t('storageGuidanceTitle'),
             description: product.reconstitution.overview,
           },
         ]}
-        footnote={storageSpec ? 'Storage guidance is educational only and does not replace qualified laboratory oversight.' : undefined}
+        footnote={storageSpec ? t('storageFootnote') : undefined}
       />
       {coa ? <ProductCertificateOfAnalysis product={product} coa={coa} /> : null}
     </>
@@ -803,6 +494,8 @@ export function ProductQualityFocus({ product }: { product: Product }) {
 }
 
 function ProductCertificateOfAnalysis({ product, coa }: { product: Product; coa: (typeof coaBySlug)[string] }) {
+  const { t } = useTranslation('product')
+
   return (
     <section className="px-5 pb-14 sm:px-8 lg:pb-20">
       <div className="mx-auto max-w-[88rem] rounded-[2rem] border border-[var(--border)] bg-white p-6 shadow-[0_18px_48px_rgba(7,23,36,0.06)] sm:p-8">
@@ -810,15 +503,15 @@ function ProductCertificateOfAnalysis({ product, coa }: { product: Product; coa:
           <div className="max-w-2xl">
             <p className="inline-flex items-center gap-2 rounded-full border border-[var(--teal-border)] bg-[var(--teal-light)] px-3 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--teal)]">
               <BadgeCheck size={14} aria-hidden="true" />
-              On-file Certificate of Analysis
+              {t('onFileCoa')}
             </p>
             <h3 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-[var(--navy)]">
-              {coa.labName} tested this {coa.scope === 'finished-product' ? 'packaged product' : 'production batch'}.
+              {coa.scope === 'finished-product' ? t('coaTestedPackaged', { lab: coa.labName }) : t('coaTestedBatch', { lab: coa.labName })}
             </h3>
             <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
               {coa.scope === 'finished-product'
-                ? `Independent lab results for the ${product.name} kit (${coa.batchReference}), reported ${coa.reportDate}.`
-                : `Independent lab results for the ${product.name} raw material used in this product (${coa.batchReference}), reported ${coa.reportDate}. This reflects manufacturing-stage testing, not a test of the finished, packaged kit.`}
+                ? t('coaFinishedProduct', { product: product.name, batch: coa.batchReference, date: coa.reportDate })
+                : t('coaRawMaterial', { product: product.name, batch: coa.batchReference, date: coa.reportDate })}
             </p>
             <dl className="mt-5 grid gap-3 sm:grid-cols-2">
               {coa.results.map((result) => (
@@ -846,7 +539,7 @@ function ProductCertificateOfAnalysis({ product, coa }: { product: Product; coa:
             rel="noopener noreferrer"
             className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[var(--navy)] px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(7,23,36,0.18)] transition hover:bg-teal-700"
           >
-            View full Certificate of Analysis
+            {t('viewFullCoa')}
             <ArrowUpRight size={16} aria-hidden="true" />
           </a>
         </div>
@@ -855,22 +548,23 @@ function ProductCertificateOfAnalysis({ product, coa }: { product: Product; coa:
   )
 }
 
-function getProductHowItWorksSteps(kitEligible: boolean) {
+function getProductHowItWorksSteps(kitEligible: boolean, t: (key: string) => string) {
   return [
-    { icon: FileSearch, title: 'Select product and strength', copy: 'Choose the catalog option that matches the requirements of your research review.' },
+    { icon: FileSearch, title: t('step1Title'), copy: t('step1Copy') },
     kitEligible
-      ? { icon: PackageCheck, title: 'Receive the Encore Complete Kit', copy: 'The product and confirmed supporting kit components arrive together, if selected.' }
-      : { icon: PackageCheck, title: 'Receive your order', copy: 'The product arrives in standard Encore packaging.' },
-    { icon: ClipboardCheck, title: 'Review included documentation', copy: 'Review the product label, accompanying documentation, and included materials.' },
-    { icon: ShieldCheck, title: 'Conduct appropriate research', copy: 'Use appropriate laboratory procedures and qualified research oversight.' },
+      ? { icon: PackageCheck, title: t('step2KitTitle'), copy: t('step2KitCopy') }
+      : { icon: PackageCheck, title: t('step2NoKitTitle'), copy: t('step2NoKitCopy') },
+    { icon: ClipboardCheck, title: t('step3Title'), copy: t('step3Copy') },
+    { icon: ShieldCheck, title: t('step4Title'), copy: t('step4Copy') },
   ]
 }
 
 export function ProductHowItWorksFlow({ product }: { product: Product }) {
-  const productHowItWorksSteps = getProductHowItWorksSteps(product.purchaseRules.kitEligible)
+  const { t } = useTranslation('product')
+  const productHowItWorksSteps = getProductHowItWorksSteps(product.purchaseRules.kitEligible, t)
 
   return (
-    <SectionShell eyebrow="How it works" title="A consistent four-step research workflow.">
+    <SectionShell eyebrow={t('howItWorksEyebrow')} title={t('howItWorksTitle')}>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {productHowItWorksSteps.map((step, index) => (
           <motion.div
@@ -948,10 +642,11 @@ function AnimatedMetric({ value }: { value: string }) {
 }
 
 export function ProductBenefits({ product }: { product: Product }) {
+  const { t } = useTranslation('product')
   const icons = [Activity, Zap, HeartPulse, Brain, Microscope, PackageCheck]
 
   return (
-    <SectionShell eyebrow="Research Highlights" title="Key research areas for high-signal review.">
+    <SectionShell eyebrow={t('researchHighlightsEyebrow')} title={t('researchHighlightsTitle')}>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {product.benefits.map((benefit, index) => {
           const Icon = icons[index] ?? Sparkles
@@ -1176,16 +871,16 @@ export function ProductDifferentiator({ product }: { product: Product }) {
 }
 
 export function ProductGallery({ product }: { product: Product }) {
-  const imageSrc = getProductImage({ ...product, heroImage: product.image }) ?? getProductImage(product)
-  const primarySources = getProductImageSources(product.image)
-  const fallbackSources = getProductImageSources(product.heroImage)
-  const avifSrcSet = primarySources.avifSrcSet || fallbackSources.avifSrcSet
-  const webpSrcSet = primarySources.webpSrcSet || fallbackSources.webpSrcSet
+  const { t } = useTranslation('product')
+  const media = getProductMedia(product.slug)
+  const captions = media?.gallery.length
+    ? product.galleryCaptions.slice(0, media.gallery.length)
+    : [product.galleryCaptions[0] ?? media?.hero.alt ?? `${product.name} research packaging`]
 
   return (
     <SectionShell eyebrow="Product gallery" title="Premium vial presentation with molecular context.">
       <div className="grid gap-5 lg:grid-cols-3">
-        {product.galleryCaptions.map((caption, index) => (
+        {captions.map((caption, index) => (
           <motion.div
             key={caption}
             initial={{ opacity: 0, y: 18 }}
@@ -1195,24 +890,14 @@ export function ProductGallery({ product }: { product: Product }) {
             className="group overflow-hidden rounded-[1.75rem] border border-white/70 bg-white p-4 shadow-[0_24px_72px_rgba(7,23,36,0.08)]"
           >
             <div className="relative min-h-[20rem] overflow-hidden rounded-[1.35rem] bg-[linear-gradient(145deg,#ffffff,#edf8f6)]">
-              {imageSrc ? (
-                <picture>
-                  {avifSrcSet ? (
-                    <source type="image/avif" srcSet={avifSrcSet} sizes="(min-width: 1024px) 33vw, 100vw" />
-                  ) : null}
-                  {webpSrcSet ? (
-                    <source type="image/webp" srcSet={webpSrcSet} sizes="(min-width: 1024px) 33vw, 100vw" />
-                  ) : null}
-                  <img
-                    src={imageSrc}
-                    alt={caption}
-                    width="640"
-                    height="640"
-                    loading="lazy"
-                    className="absolute inset-0 h-full w-full object-contain object-center transition duration-500 group-hover:scale-[1.03]"
-                  />
-                </picture>
-              ) : null}
+              <ProductImage
+                product={product}
+                alt={t('productImageAlt', { product: product.name })}
+                sizes="(min-width: 1024px) 33vw, 100vw"
+                width={640}
+                height={640}
+                className="absolute inset-0 h-full w-full object-contain object-center transition duration-500 group-hover:scale-[1.03]"
+              />
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_34%,rgba(255,255,255,0)_0_46%,rgba(255,255,255,0.28)_76%,rgba(255,255,255,0.9)_100%)]" />
               <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white/95 to-transparent" />
             </div>
@@ -1245,12 +930,19 @@ export function ProductOverview({ product }: { product: Product }) {
 }
 
 export function ResearchUseDisclaimer({ product }: { product: Product }) {
-  return <ResearchUseOnlyBanner title="Research-use disclaimer" body={product.disclaimer} />
+  const { locale } = useLocale()
+  const { t } = useTranslation('product')
+  const { t: tBrand } = useTranslation('brand')
+  // product.disclaimer is always the shared brandText.complianceDisclaimer value (see products.ts);
+  // route through the brand namespace so it's translated instead of duplicating the override per product.
+  const body = product.disclaimer === undefined || locale === 'en' ? product.disclaimer : tBrand('complianceDisclaimer')
+  return <ResearchUseOnlyBanner title={t('researchUseDisclaimerTitle')} body={body} />
 }
 
 export function ProductSpecs({ product }: { product: Product }) {
+  const { t } = useTranslation('product')
   return (
-    <SectionShell id="product-specs" eyebrow="Specs" title="Product specs for catalog review.">
+    <SectionShell id="product-specs" eyebrow={t('specsEyebrow')} title={t('specsTitle')}>
       <div className="overflow-hidden rounded-[1.75rem] border border-slate-900/10 bg-white shadow-[0_24px_72px_rgba(7,23,36,0.08)]">
         {product.specs.map((spec) => (
           <div
@@ -1310,11 +1002,12 @@ export function ReconstitutionGuide({ product }: { product: Product }) {
 }
 
 export function FAQSection({ product }: { product: Product }) {
+  const { t } = useTranslation('product')
   return (
     <FAQAccordion
-      title={`Common ${product.name} research questions.`}
+      title={t('faqTitle', { product: product.name })}
       items={product.faqs}
-      cta={{ label: 'Still have questions? Find My Match', href: '/intake' }}
+      cta={{ label: t('faqCtaLabel'), href: '/intake' }}
     />
   )
 }
@@ -1400,7 +1093,8 @@ export function RelatedProducts({ product }: { product: Product }) {
 }
 
 export function FinalPurchaseCTA({ product }: { product: Product }) {
-  const priceLabel = getProductPriceLabel(product)
+  const { t } = useTranslation('product')
+  const priceLabel = getProductPriceLabel(product, t)
 
   return (
     <section className="px-5 py-10 sm:px-8 lg:py-14">
@@ -1408,13 +1102,11 @@ export function FinalPurchaseCTA({ product }: { product: Product }) {
         <div className="flex flex-col items-start gap-5 rounded-[1.75rem] border border-slate-900/10 bg-white p-6 shadow-[0_22px_70px_rgba(7,23,36,0.07)] sm:flex-row sm:items-center sm:justify-between sm:p-8">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
-              Ready to order {product.name}?
+              {t('readyToOrder', { product: product.name })}
             </p>
             <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#071724]">{priceLabel}</p>
             <p className="mt-1 text-sm text-slate-500">
-              {product.purchaseRules.kitEligible
-                ? 'Vial Only, the Encore Complete Kit, or a Multi-Vial Research Pack — configure your order above.'
-                : 'Configure your order above, then add it to your cart.'}
+              {product.purchaseRules.kitEligible ? t('kitConfigureOptions') : t('configureThenCart')}
             </p>
           </div>
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
@@ -1423,7 +1115,7 @@ export function FinalPurchaseCTA({ product }: { product: Product }) {
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#071724] px-6 text-sm font-semibold text-white transition hover:bg-teal-700"
             >
               <ShoppingCart size={16} aria-hidden="true" />
-              Configure your order
+              {t('configureOrder')}
             </a>
             <a
               href="https://wa.me/19153595448"
@@ -1431,7 +1123,7 @@ export function FinalPurchaseCTA({ product }: { product: Product }) {
               rel="noopener noreferrer"
               className="inline-flex min-h-12 items-center justify-center rounded-full border border-slate-900/10 bg-white px-6 text-sm font-semibold text-[#071724] transition hover:bg-teal-50"
             >
-              Contact Support
+              {t('contactSupport')}
             </a>
           </div>
         </div>

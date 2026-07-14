@@ -2,11 +2,12 @@ import { Bandage, Check, Droplet, FlaskConical, PackageCheck, Syringe } from 'lu
 import type { ComponentType } from 'react'
 import { cn } from '../lib/utils'
 import {
-  encoreCompleteKitCopy,
   getEncoreCompleteKitCompactSummary,
   getEncoreCompleteKitItems,
   type EncoreCompleteKitItem,
 } from '../data/encoreCompleteKit'
+import { useLocale, useTranslation } from '../i18n/LocaleContext'
+import kitHeroImage from '../assets/images/complete-research-kit-hero.webp'
 
 const itemIcons: Record<EncoreCompleteKitItem['key'], ComponentType<{ size?: number; 'aria-hidden'?: boolean | 'true' | 'false'; className?: string }>> = {
   peptide: FlaskConical,
@@ -39,10 +40,11 @@ export function EncoreCompleteKit({
   showClosingMessage = true,
   className,
 }: EncoreCompleteKitProps) {
-  const items = getEncoreCompleteKitItems({ productName, bacWaterAmount, syringeCount, prepPadCount })
+  const { t } = useTranslation('kit')
+  const items = getEncoreCompleteKitItems({ productName, bacWaterAmount, syringeCount, prepPadCount }, t)
 
   if (variant === 'compact') return <CompactCard syringeCount={syringeCount} className={className} />
-  if (variant === 'inline') return <InlineCard items={items} showClosingMessage={showClosingMessage} className={className} />
+  if (variant === 'inline') return <InlineCard className={className} />
   if (variant === 'cart') return <CartReminder items={items} className={className} />
   if (variant === 'checkout') return <CheckoutReminder items={items} className={className} />
   return (
@@ -66,6 +68,8 @@ function FullCard({
   showClosingMessage: boolean
   className?: string
 }) {
+  const { t } = useTranslation('kit')
+
   return (
     <div
       className={cn(
@@ -75,13 +79,13 @@ function FullCard({
     >
       <div className="inline-flex items-center gap-2 rounded-full border border-teal-700/15 bg-teal-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-teal-800">
         <PackageCheck size={15} aria-hidden="true" />
-        {encoreCompleteKitCopy.fullEyebrow}
+        {t('fullEyebrow')}
       </div>
 
       <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-[#071724] sm:text-3xl">
-        {encoreCompleteKitCopy.fullHeading}
+        {t('fullHeading')}
       </h2>
-      <p className="mt-3 max-w-2xl text-base leading-7 text-slate-600">{encoreCompleteKitCopy.fullDescription}</p>
+      <p className="mt-3 max-w-2xl text-base leading-7 text-slate-600">{t('fullDescription')}</p>
 
       <ul className="mt-6 grid gap-3 sm:grid-cols-2">
         {items.map((item) => (
@@ -102,71 +106,55 @@ function FullCard({
 
       {showClosingMessage ? (
         <p className="mt-6 rounded-xl bg-teal-50 px-4 py-3 text-sm font-medium text-teal-800">
-          {encoreCompleteKitCopy.closingMessage}
+          {t('closingMessage')}
         </p>
       ) : null}
     </div>
   )
 }
 
-function InlineCard({
-  items,
-  showClosingMessage,
-  className,
-}: {
-  items: EncoreCompleteKitItem[]
-  showClosingMessage: boolean
-  className?: string
-}) {
+/**
+ * Homepage "Complete Research Kit" presentation. The approved artwork already
+ * contains the eyebrow, headline, contents list, badges, and CTAs, so this
+ * section deliberately renders ONLY that image (wrapped in one accessible link
+ * to the kits page) — no duplicated copy, mock cards, or competing buttons.
+ */
+function InlineCard({ className }: { className?: string }) {
+  const { path } = useLocale()
+  const { t } = useTranslation('kit')
+
   return (
     <div
+      id="complete-research-kit"
       className={cn(
-        'rounded-[1.75rem] border border-slate-900/10 bg-white p-6 shadow-[0_20px_64px_rgba(7,23,36,0.07)] sm:p-8',
+        'rounded-[1.75rem] bg-[linear-gradient(135deg,#f8fcfb,#eef5f4)] p-4 sm:p-6 lg:p-8',
         className,
       )}
     >
-      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-        <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-teal-700/15 bg-teal-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-teal-800">
-            <PackageCheck size={14} aria-hidden="true" />
-            {encoreCompleteKitCopy.fullEyebrow}
-          </div>
-          <h2 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-[#071724] sm:text-3xl">
-            {encoreCompleteKitCopy.fullHeading}
-          </h2>
-          <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 sm:text-base">
-            {encoreCompleteKitCopy.fullDescription}
-          </p>
-          {showClosingMessage ? (
-            <p className="mt-4 text-sm font-semibold text-teal-800">{encoreCompleteKitCopy.closingMessage}</p>
-          ) : null}
-          <a
-            href="/catalog"
-            className="mt-5 inline-flex items-center justify-center rounded-full bg-[#071724] px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-700"
-          >
-            Browse Catalog
-          </a>
-        </div>
-
-        <ul className="grid grid-cols-2 gap-3">
-          {items.map((item) => (
-            <li
-              key={item.key}
-              className="rounded-2xl border border-slate-900/10 bg-[#f8fafc] p-4 transition motion-safe:hover:-translate-y-0.5 motion-safe:hover:border-teal-200/60"
-            >
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-800">
-                <KitIcon item={item} />
-              </span>
-              <p className="mt-3 text-sm font-semibold text-[#071724]">{item.title}</p>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <a
+        href={path('/kits')}
+        aria-label={t('homeImageAlt')}
+        className="group mx-auto block w-full max-w-[1120px] rounded-[1.25rem] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-4 focus-visible:ring-offset-[#f1f7f6]"
+      >
+        <img
+          src={kitHeroImage}
+          alt={t('homeImageAlt')}
+          width="1536"
+          height="1024"
+          loading="lazy"
+          decoding="async"
+          className="h-auto w-full rounded-[1.25rem] object-contain drop-shadow-[0_20px_60px_rgba(7,23,36,0.10)] transition duration-500 motion-safe:group-hover:-translate-y-1"
+          sizes="(min-width: 1160px) 1120px, 92vw"
+          style={{ aspectRatio: '3 / 2' }}
+        />
+      </a>
     </div>
   )
 }
 
 function CompactCard({ syringeCount, className }: { syringeCount?: number; className?: string }) {
+  const { t } = useTranslation('kit')
+
   return (
     <div
       className={cn(
@@ -177,10 +165,10 @@ function CompactCard({ syringeCount, className }: { syringeCount?: number; class
       <PackageCheck size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-teal-700" />
       <div className="min-w-0">
         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-teal-800">
-          {encoreCompleteKitCopy.compactHeading}
+          {t('compactHeading')}
         </p>
         <p className="mt-1 text-xs leading-5 text-slate-600">
-          {getEncoreCompleteKitCompactSummary({ syringeCount })}
+          {getEncoreCompleteKitCompactSummary({ syringeCount }, t)}
         </p>
       </div>
     </div>
@@ -188,39 +176,69 @@ function CompactCard({ syringeCount, className }: { syringeCount?: number; class
 }
 
 function CartReminder({ items, className }: { items: EncoreCompleteKitItem[]; className?: string }) {
+  const { t } = useTranslation('kit')
+
   return (
     <div className={cn('rounded-lg bg-teal-50/70 px-3 py-2', className)}>
-      <p className="flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.06em] text-teal-800">
-        <PackageCheck size={13} aria-hidden="true" className="shrink-0" />
-        {encoreCompleteKitCopy.cartHeading}
-      </p>
-      <ul className="mt-1 flex flex-wrap gap-x-2.5 gap-y-0.5 text-[0.7rem] leading-5 text-teal-800/90">
-        {items.map((item, index) => (
-          <li key={item.key}>
-            {item.title}
-            {index < items.length - 1 ? <span aria-hidden="true">,</span> : null}
-          </li>
-        ))}
-      </ul>
+      <div className="flex items-start gap-2.5">
+        <img
+          src={kitHeroImage}
+          alt={t('kitThumbnailAlt')}
+          width="96"
+          height="64"
+          loading="lazy"
+          decoding="async"
+          className="size-12 shrink-0 rounded-lg border border-teal-900/10 object-cover object-[62%_center]"
+        />
+        <div className="min-w-0">
+          <p className="flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.06em] text-teal-800">
+            <PackageCheck size={13} aria-hidden="true" className="shrink-0" />
+            {t('cartHeading')}
+          </p>
+          <ul className="mt-1 flex flex-wrap gap-x-2.5 gap-y-0.5 text-[0.7rem] leading-5 text-teal-800/90">
+            {items.map((item, index) => (
+              <li key={item.key}>
+                {item.title}
+                {index < items.length - 1 ? <span aria-hidden="true">,</span> : null}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   )
 }
 
 function CheckoutReminder({ items, className }: { items: EncoreCompleteKitItem[]; className?: string }) {
+  const { t } = useTranslation('kit')
+
   return (
     <div className={cn('rounded-2xl border border-slate-900/10 bg-[#f8fafc] p-4', className)}>
-      <p className="flex items-center gap-2 text-sm font-semibold text-[#071724]">
-        <PackageCheck size={16} aria-hidden="true" className="text-teal-700" />
-        {encoreCompleteKitCopy.checkoutHeading}
-      </p>
-      <ul className="mt-3 grid gap-1.5">
-        {items.map((item) => (
-          <li key={item.key} className="flex items-center gap-2 text-xs leading-5 text-slate-600">
-            <Check size={12} aria-hidden="true" className="shrink-0 text-teal-700" />
-            {item.title}
-          </li>
-        ))}
-      </ul>
+      <div className="flex items-start gap-3">
+        <img
+          src={kitHeroImage}
+          alt={t('kitThumbnailAlt')}
+          width="96"
+          height="64"
+          loading="lazy"
+          decoding="async"
+          className="size-14 shrink-0 rounded-xl border border-slate-900/10 object-cover object-[62%_center]"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="flex items-center gap-2 text-sm font-semibold text-[#071724]">
+            <PackageCheck size={16} aria-hidden="true" className="text-teal-700" />
+            {t('checkoutHeading')}
+          </p>
+          <ul className="mt-3 grid gap-1.5">
+            {items.map((item) => (
+              <li key={item.key} className="flex items-center gap-2 text-xs leading-5 text-slate-600">
+                <Check size={12} aria-hidden="true" className="shrink-0 text-teal-700" />
+                {item.title}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   )
 }

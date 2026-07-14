@@ -1,0 +1,24 @@
+import type { footer as footerEn } from '../en/footer'
+
+export const footer = {
+  explore: 'Explorar',
+  contact: 'Contacto',
+  legal: 'Legal',
+  catalog: 'Catálogo',
+  howItWorks: 'Cómo funciona',
+  categories: 'Categorías',
+  researchLibrary: 'Biblioteca de investigación',
+  aboutEncore: 'Sobre Encore Bio Labs',
+  kits: 'Kits',
+  documentation: 'Documentación',
+  faq: 'Preguntas frecuentes',
+  website: 'Sitio web: encorebiolabs.com',
+  instagram: 'Instagram: @encorebiolabs',
+  whatsapp: 'WhatsApp: 9153595448',
+  contactLink: 'Contacto',
+  terms: 'Términos',
+  privacyPolicy: 'Política de privacidad',
+  shippingReturns: 'Envíos y devoluciones',
+  copyright: '© 2026 Encore Bio Labs. Todos los derechos reservados.',
+  language: 'Idioma',
+} satisfies Record<keyof typeof footerEn, string>

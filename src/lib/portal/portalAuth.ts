@@ -11,8 +11,6 @@ export type PortalIdentity = {
   profile: { legal_name: string; preferred_name: string; email: string }
 }
 
-export const genericAuthError = 'Unable to complete that request. Check your information and try again.'
-
 function requireSupabase() {
   if (!isSupabaseConfigured || !supabase) throw new Error('Portal authentication is not configured.')
   return supabase

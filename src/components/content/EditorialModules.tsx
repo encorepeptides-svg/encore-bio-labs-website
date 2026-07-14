@@ -12,7 +12,7 @@ import {
   Snowflake,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { brandText } from '../../../config/brandText'
+import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { CTA } from '../CTA'
 import { Reveal } from '../Reveal'
 import { SectionHeader } from '../SectionHeader'
@@ -183,6 +183,9 @@ export function ProductComparisonTable({
   rows: ProductComparisonRow[]
   showFocus?: boolean
 }) {
+  const { path } = useLocale()
+  const { t } = useTranslation('editorial')
+
   return (
     <EditorialShell eyebrow={eyebrow} title={title} description={description}>
       <div className="overflow-x-auto rounded-[1.75rem] border border-slate-900/10 bg-white shadow-[0_24px_72px_rgba(7,23,36,0.08)]">
@@ -201,7 +204,7 @@ export function ProductComparisonTable({
               <tr key={row.product} className="align-top">
                 <td className="border-b border-slate-900/10 px-5 py-4 font-semibold text-[#071724]">
                   {row.href ? (
-                    <a href={row.href} className="hover:text-teal-700">
+                    <a href={path(row.href)} className="hover:text-teal-700">
                       {row.product}
                     </a>
                   ) : (
@@ -210,7 +213,7 @@ export function ProductComparisonTable({
                 </td>
                 {showFocus ? <td className="border-b border-slate-900/10 px-5 py-4 text-slate-600">{row.focus}</td> : null}
                 <td className="border-b border-slate-900/10 px-5 py-4 text-slate-600">{row.format}</td>
-                <td className="border-b border-slate-900/10 px-5 py-4 text-slate-600">{row.price ?? 'By review'}</td>
+                <td className="border-b border-slate-900/10 px-5 py-4 text-slate-600">{row.price ?? t('byReview')}</td>
                 <td className="border-b border-slate-900/10 px-5 py-4 text-slate-600">{row.note}</td>
               </tr>
             ))}
@@ -229,37 +232,39 @@ export type RelatedProductCard = {
 }
 
 export function RelatedProductsSection({
-  title = 'Continue exploring adjacent catalog entries.',
+  title,
   products,
 }: {
   title?: string
   products: RelatedProductCard[]
 }) {
+  const { path } = useLocale()
+  const { t } = useTranslation('editorial')
   if (!products.length) return null
 
   return (
-    <EditorialShell eyebrow="Related products" title={title}>
+    <EditorialShell eyebrow={t('relatedProductsEyebrow')} title={title ?? t('relatedProductsTitle')}>
       <div className="grid gap-4 md:grid-cols-3">
         {products.map((product) => (
           <a
             key={product.href}
-            href={product.href}
+            href={path(product.href)}
             className="group rounded-[1.5rem] border border-slate-900/10 bg-white p-5 shadow-[0_18px_48px_rgba(7,23,36,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(20,184,166,0.14)]"
           >
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">{product.category}</p>
             <h3 className="mt-3 text-xl font-semibold tracking-[-0.035em] text-[#071724]">{product.name}</h3>
             {product.description ? <p className="mt-3 text-sm leading-6 text-slate-600 line-clamp-3">{product.description}</p> : null}
             <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-teal-800">
-              View product
+              {t('viewProduct')}
               <ArrowRight size={15} aria-hidden="true" className="transition group-hover:translate-x-1" />
             </span>
           </a>
         ))}
       </div>
       <p className="mt-6 text-center text-sm font-medium text-slate-500">
-        Still comparing options?{' '}
-        <a href="/intake" className="font-semibold text-teal-700 transition hover:text-teal-800">
-          Find My Match
+        {t('stillComparing')}{' '}
+        <a href={path('/intake')} className="font-semibold text-teal-700 transition hover:text-teal-800">
+          {t('findMyMatch')}
         </a>
       </p>
     </EditorialShell>
@@ -274,25 +279,27 @@ export type RelatedArticleCard = {
 }
 
 export function RelatedArticlesSection({
-  title = 'Go deeper on the science',
+  title,
   articles,
 }: {
   title?: string
   articles: RelatedArticleCard[]
 }) {
+  const { path } = useLocale()
+  const { t } = useTranslation('editorial')
   if (!articles.length) return null
 
   return (
     <EditorialShell
-      eyebrow="From the Research Library"
-      title={title}
-      description="Plain-language explainers and comparisons related to this research area."
+      eyebrow={t('fromResearchLibrary')}
+      title={title ?? t('goDeeperTitle')}
+      description={t('goDeeperDescription')}
     >
       <div className="grid gap-4 md:grid-cols-3">
         {articles.map((article) => (
           <a
             key={`${article.href}-${article.title}`}
-            href={article.href}
+            href={path(article.href)}
             className="group rounded-[1.5rem] border border-slate-900/10 bg-white p-5 shadow-[0_18px_48px_rgba(7,23,36,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(20,184,166,0.14)]"
           >
             <BookOpen size={18} aria-hidden="true" className="text-teal-700" />
@@ -300,15 +307,15 @@ export function RelatedArticlesSection({
             <h3 className="mt-3 text-lg font-semibold tracking-[-0.03em] text-[#071724]">{article.title}</h3>
             {article.description ? <p className="mt-2 text-sm leading-6 text-slate-600 line-clamp-3">{article.description}</p> : null}
             <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-teal-800">
-              Read more
+              {t('readMore')}
               <ArrowRight size={14} aria-hidden="true" className="transition group-hover:translate-x-1" />
             </span>
           </a>
         ))}
       </div>
       <div className="mt-6">
-        <a href="/research" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-[#071724]">
-          Visit the full Research Library
+        <a href={path('/research')} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-[#071724]">
+          {t('visitResearchLibrary')}
           <ArrowRight size={16} aria-hidden="true" />
         </a>
       </div>
@@ -351,6 +358,8 @@ export function FAQAccordion({
   cta?: { label: string; href: string }
   secondaryCta?: { label: string; href: string }
 }) {
+  const { path } = useLocale()
+
   return (
     <EditorialShell id="faq" eyebrow={eyebrow} title={title}>
       <div className="grid gap-3">
@@ -371,7 +380,7 @@ export function FAQAccordion({
         <div className="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
           {cta ? (
             <a
-              href={cta.href}
+              href={path(cta.href)}
               className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-[#071724]"
             >
               {cta.label}
@@ -380,7 +389,7 @@ export function FAQAccordion({
           ) : null}
           {secondaryCta ? (
             <a
-              href={secondaryCta.href}
+              href={path(secondaryCta.href)}
               className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-[#071724]"
             >
               {secondaryCta.label}
@@ -484,6 +493,8 @@ export function ProductDiscoveryCTA({
   secondaryTarget?: string
   secondaryRel?: string
 }) {
+  const { t: tBrand } = useTranslation('brand')
+
   return (
     <section className="px-5 py-12 sm:px-8 lg:py-16">
       <div className="mx-auto grid max-w-[88rem] gap-6 rounded-[2rem] border border-white/70 bg-[linear-gradient(135deg,#071724,#0d3144)] p-6 text-white shadow-[0_34px_110px_rgba(7,23,36,0.22)] sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center">
@@ -492,7 +503,7 @@ export function ProductDiscoveryCTA({
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.045em] sm:text-4xl">{title}</h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-slate-200">{body}</p>
           <p className="mt-4 max-w-2xl text-xs leading-5 text-slate-300">
-            {brandText.researchUseLabel}. {brandText.educationalDisclaimer}
+            {tBrand('researchUseLabel')}. {tBrand('educationalDisclaimer')}
           </p>
         </div>
         <div className="flex flex-wrap gap-3 lg:justify-end">
@@ -530,6 +541,8 @@ export function InternalLinkGrid({
   title: string
   links: InternalLink[]
 }) {
+  const { path } = useLocale()
+  const { t: tCommon } = useTranslation('common')
   if (!links.length) return null
 
   return (
@@ -538,7 +551,7 @@ export function InternalLinkGrid({
         {links.map((link) => (
           <a
             key={link.href}
-            href={link.href}
+            href={path(link.href)}
             className="group rounded-[1.5rem] border border-slate-900/10 bg-white p-5 shadow-[0_18px_48px_rgba(7,23,36,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(20,184,166,0.14)]"
           >
             <Link2 size={18} aria-hidden="true" className="text-teal-700" />
@@ -546,7 +559,7 @@ export function InternalLinkGrid({
             <h3 className="mt-3 text-xl font-semibold tracking-[-0.035em] text-[#071724]">{link.title}</h3>
             {link.description ? <p className="mt-3 text-sm leading-6 text-slate-600">{link.description}</p> : null}
             <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-teal-800">
-              Explore
+              {tCommon('explore')}
               <ArrowRight size={15} aria-hidden="true" className="transition group-hover:translate-x-1" />
             </span>
           </a>

@@ -1,0 +1,25 @@
+import type { faq as faqEn } from '../en/faq'
+
+export const faq = {
+  home: 'Inicio',
+  faq: 'Preguntas frecuentes',
+  eyebrow: 'Biblioteca completa de preguntas frecuentes',
+  title: 'Todas tus preguntas, organizadas por tema.',
+  subtitle: 'La biblioteca completa de preguntas frecuentes de Encore Bio Labs — desde el posicionamiento de uso exclusivo para investigación hasta envíos, almacenamiento y contexto de investigación por categoría. Ve directo a la sección que te interese.',
+  startingPointsEyebrow: 'Puntos de partida sugeridos',
+  startingPointsTitle: 'De las preguntas a la página correcta',
+  categoriesLabel: 'Categorías de investigación',
+  categoriesTitle: 'Compara las cinco áreas del catálogo',
+  categoriesDescription: 'Comienza con las categorías de investigación metabólica, de recuperación, longevidad, cognitiva u hormonal.',
+  featuredProductLabel: 'Producto destacado',
+  featuredProductTitle: 'Revisa el contexto de investigación de Retatrutide',
+  featuredProductDescription: 'Descubre cómo una página de producto presenta variantes, documentación, lenguaje de uso exclusivo para investigación e investigación relacionada.',
+  trustLabel: 'Confianza y cumplimiento',
+  trustTitle: 'Sobre los estándares de Encore Bio Labs',
+  trustDescription: 'Conoce cómo la documentación, la estructura por categorías y la revisión humana dan forma al catálogo.',
+  reminderEyebrow: 'Recordatorio de uso exclusivo para investigación',
+  stillHaveQuestion: '¿Todavía tienes una pregunta?',
+  reachPerson: 'Habla directamente con alguien de nuestro equipo.',
+  findMyMatch: 'Encuentra tu opción ideal',
+  contactEncore: 'Contactar a Encore',
+} satisfies Record<keyof typeof faqEn, string>

@@ -2,6 +2,7 @@ import { ShoppingCart } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import type { Product, ProductVariant } from '../../data/products'
 import { useCart } from '../../context/useCart'
+import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { cn } from '../../lib/utils'
 import { isProductPurchasable } from '../../lib/purchaseOptions'
 
@@ -18,22 +19,24 @@ export function AddToCartButton({
   product,
   variant = product.variants[0],
   quantity = 1,
-  children = 'Add to Cart',
+  children,
   className,
   tone = 'dark',
 }: AddToCartButtonProps) {
   const { addToCart } = useCart()
+  const { path } = useLocale()
+  const { t } = useTranslation('common')
 
   if (!variant || variant.price <= 0 || !isProductPurchasable(product)) {
     return (
       <a
-        href={`/intake?product=${encodeURIComponent(product.slug)}`}
+        href={path(`/intake?product=${encodeURIComponent(product.slug)}`)}
         className={cn(
           'inline-flex min-h-12 items-center justify-center rounded-full border border-slate-900/10 bg-white px-5 py-3 text-sm font-semibold text-[#071724] transition hover:bg-teal-50',
           className,
         )}
       >
-        Request availability
+        {t('requestAvailability')}
       </a>
     )
   }
@@ -51,7 +54,7 @@ export function AddToCartButton({
       )}
     >
       <ShoppingCart size={16} aria-hidden="true" />
-      {children}
+      {children ?? t('addToCart')}
     </button>
   )
 }
@@ -65,6 +68,7 @@ export function VariantAddToCartPanel({
   selectedVariant?: ProductVariant
   onSelectVariant?: (variant: ProductVariant) => void
 }) {
+  const { t } = useTranslation('common')
   const [internalVariant, setInternalVariant] = useState<ProductVariant>(product.variants[0])
   const selectedVariant = controlledVariant ?? internalVariant
   const setSelectedVariant = onSelectVariant ?? setInternalVariant
@@ -75,7 +79,7 @@ export function VariantAddToCartPanel({
       {hasMultipleVariants ? (
         <>
           <p id="variant-selector-label" className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-            Select option
+            {t('selectOption')}
           </p>
           <div role="group" aria-labelledby="variant-selector-label" className="mt-3 flex flex-wrap gap-2">
             {product.variants.map((variant) => {
@@ -104,7 +108,7 @@ export function VariantAddToCartPanel({
       ) : (
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Format</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{t('format')}</p>
             <p className="mt-1 text-sm font-semibold text-[#071724]">
               {selectedVariant.label} · {selectedVariant.format}
             </p>
@@ -119,20 +123,20 @@ export function VariantAddToCartPanel({
       <AddToCartButton product={product} variant={selectedVariant} className="mt-4 w-full">
         {selectedVariant.price > 0
           ? hasMultipleVariants
-            ? `Add ${selectedVariant.label} to Cart`
-            : 'Add to Cart'
-          : 'Request availability'}
+            ? t('addVariantToCart', { variant: selectedVariant.label })
+            : t('addToCart')
+          : t('requestAvailability')}
       </AddToCartButton>
       <p className="mt-3 text-xs leading-5 text-slate-500">
-        {hasMultipleVariants
-          ? 'Each strength ships as its own listing, so your cart always reflects exactly what you selected.'
-          : 'This product is available in one catalog format.'}
+        {hasMultipleVariants ? t('eachStrengthShips') : t('oneFormatAvailable')}
       </p>
     </div>
   )
 }
 
 export function MobileStickyPurchaseBar({ product, variant }: { product: Product; variant: ProductVariant }) {
+  const { t } = useTranslation('common')
+
   return (
     <div
       className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-900/10 bg-white/95 px-4 py-2.5 shadow-[0_-8px_28px_rgba(7,23,36,0.08)] backdrop-blur-xl lg:hidden"
@@ -144,11 +148,11 @@ export function MobileStickyPurchaseBar({ product, variant }: { product: Product
             {variant.label}
           </p>
           <p className="text-base font-semibold tracking-[-0.02em] text-[#071724]">
-            {variant.price > 0 ? `$${variant.price.toLocaleString()}` : 'Quote'}
+            {variant.price > 0 ? `$${variant.price.toLocaleString()}` : t('quote')}
           </p>
         </div>
         <AddToCartButton product={product} variant={variant} className="shrink-0 px-5 py-2.5 text-xs">
-          {variant.price > 0 ? 'Add to Cart' : 'Request availability'}
+          {variant.price > 0 ? t('addToCart') : t('requestAvailability')}
         </AddToCartButton>
       </div>
     </div>

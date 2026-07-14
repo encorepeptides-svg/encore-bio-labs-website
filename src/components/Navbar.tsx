@@ -1,29 +1,38 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { Menu, X } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { Menu, Search, X } from 'lucide-react'
+import { lazy, Suspense, useEffect, useRef, useState, type MouseEvent } from 'react'
 import logo from '../assets/images/logo/encore-logo.png'
+import { stripLocalePrefix } from '../i18n/config'
+import { useLocale, useTranslation } from '../i18n/LocaleContext'
 import { CartNavButton } from './cart/CartDrawer'
+import { LanguageSelector } from './LanguageSelector'
 
-const primaryNavItems = [
-  { label: 'Home', href: '/' },
-  { label: 'Catalog', href: '/catalog' },
-  { label: 'About', href: '/about' },
-  { label: 'FAQ', href: '/faq' },
-  { label: 'Contact', href: '/#contact' },
-]
-
-const mobileNavItems = [
-  ...primaryNavItems,
-  { label: 'How It Works', href: '/#how-it-works' },
-]
+const ProductSearch = lazy(() => import('./search/ProductSearch').then((module) => ({ default: module.ProductSearch })))
 
 const PREMIUM_EASE = [0.16, 1, 0.3, 1] as const
 
 export function Navbar() {
+  const { path } = useLocale()
+  const { t } = useTranslation('navigation')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [location, setLocation] = useState(() => ({ pathname: window.location.pathname, hash: window.location.hash }))
   const menuRef = useRef<HTMLDivElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
+  const searchReturnFocusRef = useRef<HTMLElement | null>(null)
+
+  const primaryNavItems = [
+    { key: 'Home', label: t('home'), href: '/' },
+    { key: 'Catalog', label: t('catalog'), href: '/catalog' },
+    { key: 'About', label: t('about'), href: '/about' },
+    { key: 'FAQ', label: t('faq'), href: '/faq' },
+    { key: 'Contact', label: t('contact'), href: '/contact' },
+  ]
+
+  const mobileNavItems = [
+    ...primaryNavItems,
+    { key: 'HowItWorks', label: t('howItWorks'), href: '/#how-it-works' },
+  ]
 
   useEffect(() => {
     function updateLocation() {
@@ -96,19 +105,32 @@ export function Navbar() {
     }
   }, [isMenuOpen])
 
-  function isActive(label: string) {
-    if (label === 'Home') return location.pathname === '/' && !location.hash
-    if (label === 'Catalog') return ['/catalog', '/products/', '/categories/'].some((path) => location.pathname === path || location.pathname.startsWith(path))
-    if (label === 'About') return location.pathname === '/about' || location.pathname === '/about/'
-    if (label === 'FAQ') return location.pathname === '/faq' || location.pathname === '/faq/'
-    if (label === 'Contact') return location.hash === '#contact'
+  function openSearch(event: MouseEvent<HTMLElement>) {
+    searchReturnFocusRef.current = event.currentTarget
+    setIsMenuOpen(false)
+    setIsSearchOpen(true)
+  }
+
+  function closeSearch() {
+    setIsSearchOpen(false)
+    window.requestAnimationFrame(() => searchReturnFocusRef.current?.focus())
+  }
+
+  const logicalPathname = stripLocalePrefix(location.pathname).path
+
+  function isActive(key: string) {
+    if (key === 'Home') return logicalPathname === '/' && !location.hash
+    if (key === 'Catalog') return ['/catalog', '/products/', '/categories/'].some((p) => logicalPathname === p || logicalPathname.startsWith(p))
+    if (key === 'About') return logicalPathname === '/about' || logicalPathname === '/about/'
+    if (key === 'FAQ') return logicalPathname === '/faq' || logicalPathname === '/faq/'
+    if (key === 'Contact') return logicalPathname === '/contact' || logicalPathname === '/contact/'
     return false
   }
 
   return (
     <header className="sticky top-2 z-50 px-3 sm:px-5">
       <nav className="relative z-50 mx-auto flex max-w-[88rem] items-center justify-between gap-3 rounded-2xl border border-white/75 bg-[#f5f5f2]/88 px-4 py-2.5 shadow-[0_16px_50px_rgba(7,23,36,0.13)] backdrop-blur-2xl sm:px-5 lg:gap-5 lg:px-6">
-        <a href="/" className="flex items-center gap-3" aria-label="Encore Bio Labs home">
+        <a href={path('/')} className="flex items-center gap-3" aria-label={t('homeAriaLabel')}>
           <img
             src={logo}
             alt="Encore Bio Labs"
@@ -120,28 +142,48 @@ export function Navbar() {
 
         <div className="hidden items-center gap-3 lg:flex xl:gap-5">
           {primaryNavItems.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              aria-current={isActive(item.label) ? 'page' : undefined}
-              className={`whitespace-nowrap border-b py-1.5 text-sm font-medium transition ${isActive(item.label) ? 'border-teal-700 text-[#071724]' : 'border-transparent text-slate-600 hover:border-teal-700/35 hover:text-[#071724]'}`}
-            >
-              {item.label}
-            </a>
+            <div key={item.key} className="flex items-center gap-2">
+              <a
+                href={path(item.href)}
+                aria-current={isActive(item.key) ? 'page' : undefined}
+                className={`whitespace-nowrap border-b py-1.5 text-sm font-medium transition ${isActive(item.key) ? 'border-teal-700 text-[#071724]' : 'border-transparent text-slate-600 hover:border-teal-700/35 hover:text-[#071724]'}`}
+              >
+                {item.label}
+              </a>
+            </div>
           ))}
         </div>
 
         <div className="hidden items-center gap-3 lg:flex">
+          <button
+            type="button"
+            onClick={openSearch}
+            aria-label={t('searchProducts')}
+            title={t('searchProducts')}
+            className="inline-flex size-9 items-center justify-center rounded-full text-slate-600 transition hover:bg-white hover:text-[#071724] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+          >
+            <Search size={17} aria-hidden="true" />
+          </button>
+          <LanguageSelector variant="nav" />
           <CartNavButton />
           <a
-            href="/intake"
+            href={path('/intake')}
             className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-[#071724] px-5 text-sm font-bold text-white shadow-[0_14px_34px_rgba(7,23,36,0.2)] transition duration-[220ms] ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#102a3d] hover:shadow-[0_18px_42px_rgba(7,23,36,0.25)] active:translate-y-0"
           >
-            Start Your Research
+            {t('startYourResearch')}
           </a>
         </div>
 
         <div className="flex items-center gap-2 lg:hidden">
+          <button
+            type="button"
+            onClick={openSearch}
+            aria-label={t('searchProducts')}
+            title={t('searchProducts')}
+            className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-slate-900/10 bg-white/70 text-[#071724] shadow-sm backdrop-blur-xl transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+          >
+            <Search size={19} aria-hidden="true" />
+          </button>
           <CartNavButton />
           <button
             ref={menuButtonRef}
@@ -149,7 +191,7 @@ export function Navbar() {
             onClick={() => setIsMenuOpen((open) => !open)}
             aria-expanded={isMenuOpen}
             aria-controls="mobile-menu"
-            aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-label={isMenuOpen ? t('closeMenu') : t('openMenu')}
             className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-slate-900/10 bg-white/70 text-[#071724] shadow-sm backdrop-blur-xl transition hover:bg-white"
           >
             {isMenuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
@@ -162,7 +204,7 @@ export function Navbar() {
           <>
             <motion.button
               type="button"
-              aria-label="Close menu"
+              aria-label={t('closeMenu')}
               onClick={() => setIsMenuOpen(false)}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -175,7 +217,7 @@ export function Navbar() {
               id="mobile-menu"
               role="dialog"
               aria-modal="true"
-              aria-label="Main navigation"
+              aria-label={t('mainNavigation')}
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
@@ -185,27 +227,33 @@ export function Navbar() {
               <div className="grid gap-1">
                 {mobileNavItems.map((item) => (
                   <a
-                    key={item.label}
-                    href={item.href}
+                    key={item.key}
+                    href={path(item.href)}
                     onClick={() => setIsMenuOpen(false)}
-                    aria-current={isActive(item.label) ? 'page' : undefined}
-                    className={`rounded-xl px-4 py-3 text-base font-semibold transition ${isActive(item.label) ? 'bg-teal-50 text-teal-900' : 'text-[#071724] hover:bg-white'}`}
+                    aria-current={isActive(item.key) ? 'page' : undefined}
+                    className={`rounded-xl px-4 py-3 text-base font-semibold transition ${isActive(item.key) ? 'bg-teal-50 text-teal-900' : 'text-[#071724] hover:bg-white'}`}
                   >
                     {item.label}
                   </a>
                 ))}
               </div>
+              <div className="mt-4 flex justify-center">
+                <LanguageSelector variant="mobile" />
+              </div>
               <a
-                href="/intake"
+                href={path('/intake')}
                 onClick={() => setIsMenuOpen(false)}
                 className="mt-4 flex min-h-12 w-full items-center justify-center whitespace-nowrap rounded-full bg-[#071724] px-7 text-base font-bold text-white shadow-[0_16px_36px_rgba(7,23,36,0.22)] transition duration-[220ms] ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98]"
               >
-                Start Your Research
+                {t('startYourResearch')}
               </a>
             </motion.div>
           </>
         ) : null}
       </AnimatePresence>
+      <Suspense fallback={null}>
+        {isSearchOpen ? <ProductSearch open={isSearchOpen} onClose={closeSearch} /> : null}
+      </Suspense>
     </header>
   )
 }

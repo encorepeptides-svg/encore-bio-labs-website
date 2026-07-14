@@ -1,10 +1,12 @@
 import { useCallback, useMemo, useState } from 'react'
-import { bestSellers, contactInfo, shippingInfo } from '../../data/assistantKnowledgeBase'
+import { useLocale } from '../../i18n/LocaleContext'
+import { bestSellers, contactInfo } from '../../data/assistantKnowledgeBase'
 import { getAssistantProvider } from '../../lib/assistant/aiProvider'
 import { emptyEscalationData, escalationSteps, type EscalationData } from '../../lib/assistant/escalationFlow'
-import { WELCOME_MESSAGE, welcomeQuickReplies } from '../../lib/assistant/welcome'
 import type { ChatMessage, QuickReply } from '../../lib/assistant/types'
-import { buildEscalationMessage, buildWhatsAppUrl, GENERAL_INQUIRY_MESSAGE } from '../../lib/whatsapp'
+import { buildEscalationMessage, buildWhatsAppUrl, getGeneralInquiryMessage } from '../../lib/whatsapp'
+import { getAssistantCopy } from '../../lib/assistant/localizedCopy'
+import { localizePath } from '../../i18n/config'
 
 function createId() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
@@ -17,9 +19,11 @@ function delay(ms: number) {
 type EscalationState = { stepIndex: number; data: EscalationData }
 
 export function useConversationManager() {
-  const provider = useMemo(() => getAssistantProvider(), [])
+  const { locale } = useLocale()
+  const copy = useMemo(() => getAssistantCopy(locale), [locale])
+  const provider = useMemo(() => getAssistantProvider(locale), [locale])
   const [messages, setMessages] = useState<ChatMessage[]>(() => [
-    { id: createId(), role: 'assistant', text: WELCOME_MESSAGE, quickReplies: welcomeQuickReplies },
+    { id: createId(), role: 'assistant', text: copy.welcome, quickReplies: copy.quickReplies },
   ])
   const [isTyping, setIsTyping] = useState(false)
   const [escalation, setEscalation] = useState<EscalationState | null>(null)
@@ -39,10 +43,10 @@ export function useConversationManager() {
         setIsTyping(true)
         await delay(450)
         setIsTyping(false)
-        pushMessage({ role: 'assistant', text: escalationSteps[stepIndex].prompt })
+        pushMessage({ role: 'assistant', text: copy.escalationPrompts[escalationSteps[stepIndex].field] })
       }
     },
-    [pushMessage],
+    [copy, pushMessage],
   )
 
   const completeEscalation = useCallback(
@@ -50,110 +54,106 @@ export function useConversationManager() {
       setIsTyping(true)
       await delay(450)
       setIsTyping(false)
-      const whatsappMessage = buildEscalationMessage(data)
+      const whatsappMessage = buildEscalationMessage({ ...data, locale })
       pushMessage({
         role: 'assistant',
-        text: 'Thank you. One of our specialists will continue your order through WhatsApp.',
-        cta: { label: 'Continue on WhatsApp', href: buildWhatsAppUrl(whatsappMessage), external: true },
+        text: copy.thanks,
+        cta: { label: copy.continueWhatsapp, href: buildWhatsAppUrl(whatsappMessage), external: true },
       })
       setEscalation(null)
     },
-    [pushMessage],
+    [copy, locale, pushMessage],
   )
 
   const handleAction = useCallback(
     async (actionId: string) => {
       switch (actionId) {
         case 'browse-products': {
-          pushMessage({ role: 'user', text: 'Browse Products' })
+          pushMessage({ role: 'user', text: locale === 'es' ? 'Explorar productos' : 'Browse Products' })
           setIsTyping(true)
           await delay(400)
           setIsTyping(false)
-          pushMessage({
-            role: 'assistant',
-            text: 'Here is our full research catalog, organized by category — Metabolic & Weight Management, Recovery & Regeneration, Longevity & Cellular Health, Cognitive & Performance, and Hormone & Wellness.',
-            cta: { label: 'View Catalog', href: '/catalog' },
-          })
+          pushMessage({ role: 'assistant', text: copy.catalogResponse, cta: { label: locale === 'es' ? 'Ver catálogo' : 'View Catalog', href: localizePath('/catalog', locale) } })
           return
         }
         case 'best-sellers': {
-          pushMessage({ role: 'user', text: 'Best Sellers' })
+          pushMessage({ role: 'user', text: locale === 'es' ? 'Más solicitados' : 'Best Sellers' })
           setIsTyping(true)
           await delay(400)
           setIsTyping(false)
-          const list = bestSellers.map((product) => `• ${product.name} — from $${product.startingPrice}`).join('\n')
+          const list = bestSellers.map((product) => `• ${product.name} — ${locale === 'es' ? 'desde' : 'from'} $${product.startingPrice}`).join('\n')
           pushMessage({
             role: 'assistant',
-            text: `Some of our most requested catalog entries:\n\n${list}`,
-            cta: { label: 'View Catalog', href: '/catalog' },
+            text: `${copy.bestSellersIntro}\n\n${list}`,
+            cta: { label: locale === 'es' ? 'Ver catálogo' : 'View Catalog', href: localizePath('/catalog', locale) },
           })
           return
         }
         case 'pricing': {
-          pushMessage({ role: 'user', text: 'Pricing' })
+          pushMessage({ role: 'user', text: locale === 'es' ? 'Precios' : 'Pricing' })
           setIsTyping(true)
           await delay(400)
           setIsTyping(false)
           pushMessage({
             role: 'assistant',
-            text: 'Pricing varies by product and strength — every catalog card shows a starting price, and our team confirms exact pricing and availability before you order.',
-            cta: { label: 'View Catalog', href: '/catalog' },
+            text: copy.pricingResponse,
+            cta: { label: locale === 'es' ? 'Ver catálogo' : 'View Catalog', href: localizePath('/catalog', locale) },
           })
           return
         }
         case 'shipping': {
-          pushMessage({ role: 'user', text: 'Shipping' })
+          pushMessage({ role: 'user', text: locale === 'es' ? 'Envíos' : 'Shipping' })
           setIsTyping(true)
           await delay(400)
           setIsTyping(false)
-          pushMessage({ role: 'assistant', text: `${shippingInfo.nationwide} ${shippingInfo.mexico}` })
+          pushMessage({ role: 'assistant', text: copy.shippingResponse })
           return
         }
         case 'local-delivery': {
-          pushMessage({ role: 'user', text: 'Local Delivery' })
+          pushMessage({ role: 'user', text: locale === 'es' ? 'Entrega local' : 'Local Delivery' })
           setIsTyping(true)
           await delay(400)
           setIsTyping(false)
-          pushMessage({ role: 'assistant', text: shippingInfo.local })
+          pushMessage({ role: 'assistant', text: copy.localDeliveryResponse })
           return
         }
         case 'track-order': {
-          pushMessage({ role: 'user', text: 'Track My Order' })
+          pushMessage({ role: 'user', text: locale === 'es' ? 'Rastrear mi pedido' : 'Track My Order' })
           setIsTyping(true)
           await delay(400)
           setIsTyping(false)
           pushMessage({
             role: 'assistant',
-            text: 'For order status, our team can look that up directly on WhatsApp.',
+            text: copy.trackResponse,
             cta: {
-              label: 'Continue on WhatsApp',
-              href: buildWhatsAppUrl('Hello Encore Bio Labs, I would like an update on my order status.'),
+              label: copy.continueWhatsapp,
+              href: buildWhatsAppUrl(locale === 'es' ? 'Hola Encore Bio Labs, quisiera una actualización sobre el estado de mi pedido.' : 'Hello Encore Bio Labs, I would like an update on my order status.'),
               external: true,
             },
           })
           return
         }
         case 'contact-team': {
-          pushMessage({ role: 'user', text: 'Contact Team' })
+          pushMessage({ role: 'user', text: locale === 'es' ? 'Contactar al equipo' : 'Contact Team' })
           setIsTyping(true)
           await delay(400)
           setIsTyping(false)
           pushMessage({
             role: 'assistant',
-            text: `You can reach our team on WhatsApp at ${contactInfo.whatsappDisplay}. ${contactInfo.hours}`,
-            cta: { label: 'Continue on WhatsApp', href: contactInfo.whatsappUrl, external: true },
+            text: `${copy.contactResponse} ${contactInfo.whatsappDisplay}.`,
+            cta: { label: copy.continueWhatsapp, href: contactInfo.whatsappUrl, external: true },
           })
           return
         }
         case 'order-whatsapp':
         case 'start-order': {
-          pushMessage({ role: 'user', text: 'Order on WhatsApp' })
+          pushMessage({ role: 'user', text: locale === 'es' ? 'Pedir por WhatsApp' : 'Order on WhatsApp' })
           setIsTyping(true)
           await delay(400)
           setIsTyping(false)
           pushMessage({
             role: 'assistant',
-            text: "I can help set that up. Let's collect a few details so our specialist can pick up right where you left off.",
+            text: copy.orderResponse,
           })
           await startEscalation()
           return
@@ -162,7 +162,7 @@ export function useConversationManager() {
           return
       }
     },
-    [pushMessage, startEscalation],
+    [copy, locale, pushMessage, startEscalation],
   )
 
   const sendUserMessage = useCallback(
@@ -184,7 +184,7 @@ export function useConversationManager() {
           setIsTyping(true)
           await delay(450)
           setIsTyping(false)
-          pushMessage({ role: 'assistant', text: escalationSteps[nextIndex].prompt })
+          pushMessage({ role: 'assistant', text: copy.escalationPrompts[escalationSteps[nextIndex].field] })
         }
         return
       }
@@ -200,7 +200,7 @@ export function useConversationManager() {
         await startEscalation()
       }
     },
-    [completeEscalation, escalation, messages, provider, pushMessage, startEscalation],
+    [completeEscalation, copy, escalation, messages, provider, pushMessage, startEscalation],
   )
 
   const handleQuickReply = useCallback(
@@ -211,10 +211,10 @@ export function useConversationManager() {
   )
 
   const resetConversation = useCallback(() => {
-    setMessages([{ id: createId(), role: 'assistant', text: WELCOME_MESSAGE, quickReplies: welcomeQuickReplies }])
+    setMessages([{ id: createId(), role: 'assistant', text: copy.welcome, quickReplies: copy.quickReplies }])
     setEscalation(null)
     setIsTyping(false)
-  }, [])
+  }, [copy])
 
   return {
     messages,
@@ -224,6 +224,6 @@ export function useConversationManager() {
     handleAction,
     handleQuickReply,
     resetConversation,
-    generalInquiryUrl: buildWhatsAppUrl(GENERAL_INQUIRY_MESSAGE),
+    generalInquiryUrl: buildWhatsAppUrl(getGeneralInquiryMessage(locale)),
   }
 }

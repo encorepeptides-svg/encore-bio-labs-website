@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1672 941" role="img" aria-labelledby="title desc">
+  <title id="title">Viaje de investigación de reducción de cintura</title>
+  <desc id="desc">Visualización abstracta de una reducción promedio de cintura de hasta 24,1 centímetros reportada a 80 semanas en TRIUMPH-1.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#eefaf7"/></linearGradient>
+    <linearGradient id="body" x1="0" x2="1"><stop stop-color="#dce8e8"/><stop offset=".5" stop-color="#f9fcfb"/><stop offset="1" stop-color="#c4d9d8"/></linearGradient>
+    <radialGradient id="glow"><stop stop-color="#3dd8c1" stop-opacity=".34"/><stop offset="1" stop-color="#3dd8c1" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="1672" height="941" fill="url(#bg)"/>
+  <g fill="none" stroke="#8ecac2" stroke-opacity=".28"><ellipse cx="830" cy="430" rx="640" ry="360"/><ellipse cx="830" cy="430" rx="590" ry="325"/><ellipse cx="830" cy="430" rx="540" ry="290"/></g>
+  <text x="836" y="82" fill="#071724" font-family="Arial,sans-serif" font-size="52" text-anchor="middle"><tspan font-weight="700">Viaje de investigación</tspan><tspan font-weight="300"> de reducción de cintura</tspan></text>
+  <g opacity=".95" fill="url(#body)" stroke="#b3cbca" stroke-width="2">
+    <path d="M360 226c-15-38 0-68 34-83 28-12 47-25 51-55h52c4 30 23 43 51 55 34 15 49 45 34 83l-12 204c-4 68-12 112-32 175H404c-20-63-28-107-32-175z" transform="translate(0 0) scale(1.08 1)"/>
+    <path d="M360 226c-15-38 0-68 34-83 28-12 47-25 51-55h52c4 30 23 43 51 55 34 15 49 45 34 83l-12 204c-4 68-12 112-32 175H404c-20-63-28-107-32-175z" transform="translate(318 32) scale(.88 .9)" opacity=".72"/>
+    <path d="M360 226c-15-38 0-68 34-83 28-12 47-25 51-55h52c4 30 23 43 51 55 34 15 49 45 34 83l-12 204c-4 68-12 112-32 175H404c-20-63-28-107-32-175z" transform="translate(620 32) scale(.86 .9)" opacity=".68"/>
+    <path d="M360 226c-15-38 0-68 34-83 28-12 47-25 51-55h52c4 30 23 43 51 55 34 15 49 45 34 83l-12 204c-4 68-12 112-32 175H404c-20-63-28-107-32-175z" transform="translate(922 10) scale(.82 .95)" opacity=".88"/>
+  </g>
+  <ellipse cx="760" cy="430" rx="470" ry="130" fill="url(#glow)"/>
+  <g fill="none" stroke="#159b8b" stroke-width="3"><path d="M178 375h180c70 0 110 18 180 22 230 14 360 3 600 0 55 0 100-12 150-12h85" stroke-dasharray="10 7"/><path d="M178 464h180c60 0 100-8 170 0 220 25 380 5 590-1 70-2 108 10 155 10h80"/></g>
+  <g fill="#087f70" font-family="Arial,sans-serif" font-size="24"><text x="86" y="368">Línea base</text><text x="86" y="474">Semana 80</text></g>
+  <g stroke="#087f70" stroke-width="3" fill="none"><path d="M1390 370v100"/><path d="M1378 370h24M1378 470h24"/></g>
+  <text x="1430" y="374" fill="#087f70" font-family="Arial,sans-serif" font-size="22">Hasta</text><text x="1430" y="430" fill="#087f70" font-family="Arial,sans-serif" font-size="60" font-weight="700">24,1 cm</text><text x="1430" y="465" fill="#314b59" font-family="Arial,sans-serif" font-size="20">Reducción promedio</text><text x="1430" y="492" fill="#314b59" font-family="Arial,sans-serif" font-size="20">de cintura reportada</text>
+  <g stroke="#438e8a" stroke-width="2" fill="white"><path d="M360 650h850"/><circle cx="360" cy="650" r="10"/><circle cx="640" cy="650" r="10"/><circle cx="920" cy="650" r="10"/><circle cx="1210" cy="650" r="14" fill="#087f70"/></g>
+  <g fill="#24424d" font-family="Arial,sans-serif" font-size="21" text-anchor="middle"><text x="360" y="690">Inicio</text><text x="640" y="690">Semana 24</text><text x="920" y="690">Semana 48</text><text x="1210" y="690" font-weight="700">Semana 80</text></g>
+  <g stroke="#087f70" stroke-width="2" fill="none"><path d="M520 760h640"/><circle cx="520" cy="760" r="35"/><circle cx="840" cy="760" r="35"/><circle cx="1160" cy="760" r="35"/></g>
+  <g fill="#24424d" font-family="Arial,sans-serif" font-size="20" text-anchor="middle"><text x="520" y="825">Peso corporal</text><text x="840" y="825">Circunferencia de cintura</text><text x="1160" y="825">Composición corporal</text></g>
+  <text x="836" y="890" fill="#087f70" font-family="Arial,sans-serif" font-size="24" font-weight="700" text-anchor="middle" letter-spacing="5">TRIUMPH-1 · 80 SEMANAS</text>
+</svg>

@@ -1,29 +1,19 @@
 import { FlaskConical, MessageCircle, Target } from 'lucide-react'
+import { useTranslation } from '../i18n/LocaleContext'
 import { CTA } from './CTA'
 import { Reveal } from './Reveal'
 
-const previewSteps = [
-  {
-    icon: FlaskConical,
-    label: 'What you’re researching',
-  },
-  {
-    icon: Target,
-    label: 'Your current priorities',
-  },
-  {
-    icon: MessageCircle,
-    label: 'The support you need',
-  },
-]
-
-const microcopy = [
-  'Takes only a few minutes.',
-  'No purchase required.',
-  'Your answers help us provide more relevant product information.',
-]
-
 export function ResearchProfilePrompt() {
+  const { t } = useTranslation('homepage')
+
+  const previewSteps = [
+    { icon: FlaskConical, label: t('promptStep1') },
+    { icon: Target, label: t('promptStep2') },
+    { icon: MessageCircle, label: t('promptStep3') },
+  ]
+
+  const microcopy = [t('promptMicrocopy1'), t('promptMicrocopy2'), t('promptMicrocopy3')]
+
   return (
     <section id="research-profile-prompt" className="px-5 py-14 sm:px-8 lg:py-20">
       <div className="mx-auto max-w-[88rem]">
@@ -34,26 +24,25 @@ export function ResearchProfilePrompt() {
           <div className="relative grid gap-10 px-6 py-14 sm:px-10 sm:py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-8">
             <Reveal className="text-center lg:text-left">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-200">
-                Personalized Guidance
+                {t('promptEyebrow')}
               </p>
               <h2 className="mt-4 text-3xl font-semibold tracking-[-0.045em] text-white sm:text-4xl lg:text-5xl">
-                Not Sure Where to Begin?
+                {t('promptTitle')}
               </h2>
               <p className="mx-auto mt-5 max-w-lg text-base leading-7 text-slate-300 lg:mx-0">
-                Tell us what you are researching, your priorities, and the type of support you
-                need. We&apos;ll help narrow the catalog into a clearer starting point.
+                {t('promptBody')}
               </p>
 
               <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row lg:items-start">
                 <CTA href="/intake" tone="light">
-                  Start Your Research
+                  {t('startYourResearch')}
                 </CTA>
                 <CTA
                   href="/catalog"
                   tone="ghost"
                   className="border-white/20 bg-white/10 text-white hover:bg-white/15"
                 >
-                  Browse the Full Catalog
+                  {t('promptBrowseCatalog')}
                 </CTA>
               </div>
 
@@ -67,7 +56,7 @@ export function ResearchProfilePrompt() {
             <Reveal delay={0.08} className="mx-auto w-full max-w-sm">
               <div className="rounded-[1.5rem] border border-white/10 bg-white/6 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-200">
-                  A few minutes, three quick questions
+                  {t('promptCardEyebrow')}
                 </p>
                 <div className="mt-5 flex flex-col gap-3">
                   {previewSteps.map((step) => (

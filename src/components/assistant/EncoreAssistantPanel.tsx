@@ -6,12 +6,14 @@ import { UserMessage } from './UserMessage'
 import { TypingIndicator } from './TypingIndicator'
 import { QuickActions } from './QuickActions'
 import { buildOrderInquiryMessage, buildWhatsAppUrl, GENERAL_INQUIRY_MESSAGE } from '../../lib/whatsapp'
+import { useTranslation } from '../../i18n/LocaleContext'
 
 export function EncoreAssistantPanel({ onClose, productName }: { onClose: () => void; productName?: string }) {
   const whatsAppHref = buildWhatsAppUrl(
     productName ? buildOrderInquiryMessage({ product: productName }) : GENERAL_INQUIRY_MESSAGE,
   )
   const { messages, isTyping, escalation, sendUserMessage, handleAction, handleQuickReply } = useAssistant()
+  const { t } = useTranslation('assistant')
   const [draft, setDraft] = useState('')
   const listRef = useRef<HTMLDivElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
@@ -64,13 +66,13 @@ export function EncoreAssistantPanel({ onClose, productName }: { onClose: () => 
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Encore AI Assistant"
+      aria-label={t('dialogLabel')}
       onKeyDown={handleFocusTrap}
       className="fixed inset-0 z-[80] flex items-end justify-end sm:inset-auto sm:bottom-6 sm:right-6"
     >
       <button
         type="button"
-        aria-label="Close assistant"
+        aria-label={t('close')}
         onClick={onClose}
         className="absolute inset-0 bg-[#071724]/24 backdrop-blur-sm sm:hidden"
       />
@@ -88,8 +90,8 @@ export function EncoreAssistantPanel({ onClose, productName }: { onClose: () => 
               <Sparkles size={18} aria-hidden="true" />
             </span>
             <div>
-              <p className="text-sm font-semibold text-[var(--navy)]">Encore AI Assistant</p>
-              <p className="text-xs text-[var(--muted)]">Usually replies in a few seconds</p>
+              <p className="text-sm font-semibold text-[var(--navy)]">{t('title')}</p>
+              <p className="text-xs text-[var(--muted)]">{t('replyTiming')}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -97,8 +99,8 @@ export function EncoreAssistantPanel({ onClose, productName }: { onClose: () => 
               href={whatsAppHref}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Chat with Encore Bio Labs on WhatsApp instead"
-              title="Prefer WhatsApp?"
+              aria-label={t('whatsappAria')}
+              title={t('whatsappTitle')}
               className="flex size-9 items-center justify-center rounded-full border border-slate-900/8 bg-white text-[#25D366] transition hover:bg-slate-100"
             >
               <MessageCircle size={16} aria-hidden="true" />
@@ -107,7 +109,7 @@ export function EncoreAssistantPanel({ onClose, productName }: { onClose: () => 
               ref={closeButtonRef}
               type="button"
               onClick={onClose}
-              aria-label="Close assistant"
+              aria-label={t('close')}
               className="flex size-9 items-center justify-center rounded-full border border-slate-900/8 bg-white text-[var(--navy)] transition hover:bg-slate-100"
             >
               <X size={16} aria-hidden="true" />
@@ -130,19 +132,19 @@ export function EncoreAssistantPanel({ onClose, productName }: { onClose: () => 
 
         <form onSubmit={handleSubmit} className="flex items-center gap-2 border-t border-slate-900/8 bg-white/80 p-3">
           <label htmlFor="encore-assistant-input" className="sr-only">
-            Message Encore AI Assistant
+            {t('inputLabel')}
           </label>
           <input
             id="encore-assistant-input"
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
-            placeholder="Ask about products, pricing, shipping..."
+            placeholder={t('inputPlaceholder')}
             autoComplete="off"
             className="h-11 flex-1 rounded-full border border-slate-900/8 bg-white px-4 text-sm text-[var(--navy)] outline-none transition placeholder:text-slate-400 focus:border-teal-500/70 focus:ring-4 focus:ring-teal-100"
           />
           <button
             type="submit"
-            aria-label="Send message"
+            aria-label={t('send')}
             disabled={!draft.trim()}
             className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[var(--navy)] text-white transition hover:bg-[var(--navy-deep)] disabled:opacity-40"
           >

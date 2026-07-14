@@ -1,19 +1,14 @@
 import {
-  assistantKnowledgeBase,
   bestSellers,
   categorySummaries,
   contactInfo,
   productSummaries,
-  shippingInfo,
 } from '../../data/assistantKnowledgeBase'
 import { COMPLIANCE_RESPONSE, isRestrictedQuery } from './complianceRules'
 import type { AssistantAIProvider, AssistantAnswer, ConversationTurn } from './types'
-
-const topicQuickReplies = [
-  { id: 'pricing', label: 'Pricing' },
-  { id: 'shipping', label: 'Shipping' },
-  { id: 'order-whatsapp', label: 'Order on WhatsApp' },
-]
+import type { Locale } from '../../i18n/config'
+import { getAssistantCopy } from './localizedCopy'
+import { localizePath } from '../../i18n/config'
 
 function matchesAny(text: string, patterns: RegExp[]) {
   return patterns.some((pattern) => pattern.test(text))
@@ -35,98 +30,106 @@ function findCategoryMatch(text: string) {
  * dependency. Implements AssistantAIProvider so it can be swapped for a
  * hosted model without touching any UI component.
  */
-export const localKnowledgeBaseProvider: AssistantAIProvider = {
+export function createLocalKnowledgeBaseProvider(locale: Locale = 'en'): AssistantAIProvider {
+  const copy = getAssistantCopy(locale)
+  const topicQuickReplies = copy.quickReplies
+  return {
   async respond(userText: string, _history: ConversationTurn[]): Promise<AssistantAnswer> {
     const text = userText.trim()
 
     if (isRestrictedQuery(text)) {
-      return { text: COMPLIANCE_RESPONSE, quickReplies: topicQuickReplies }
+      return { text: locale === 'es' ? 'Este catálogo ofrece contexto de investigación únicamente. No proporciona consejo médico, diagnóstico, tratamiento, dosificación ni instrucciones de uso.' : COMPLIANCE_RESPONSE, quickReplies: topicQuickReplies }
     }
 
     if (matchesAny(text, [/\border\b/i, /\bbuy\b/i, /\bpurchase\b/i, /\bcheckout\b/i, /\bplace an order\b/i])) {
       return {
-        text: "I can help you start that order. Let's collect a few quick details so our specialist can pick up right where you left off.",
+        text: copy.orderResponse,
         action: 'start-escalation',
       }
     }
 
     if (/\bmexico\b/i.test(text)) {
       return {
-        text: `${shippingInfo.mexico} ${shippingInfo.nationwide}`,
-        quickReplies: [{ id: 'order-whatsapp', label: 'Order on WhatsApp' }],
+        text: copy.shippingResponse,
+        quickReplies: topicQuickReplies,
       }
     }
 
     if (matchesAny(text, [/\bel paso\b/i, /local delivery/i, /same[- ]day/i])) {
-      return { text: shippingInfo.local, quickReplies: [{ id: 'order-whatsapp', label: 'Order on WhatsApp' }] }
+      return { text: copy.localDeliveryResponse, quickReplies: topicQuickReplies }
     }
 
     if (/\bship/i.test(text)) {
       return {
-        text: `${shippingInfo.nationwide} ${shippingInfo.mexico}`,
-        quickReplies: [{ id: 'local-delivery', label: 'Local Delivery' }],
+        text: copy.shippingResponse,
+        quickReplies: [{ id: 'local-delivery', label: locale === 'es' ? 'Entrega local' : 'Local Delivery' }],
       }
     }
 
     if (matchesAny(text, [/\bprice/i, /\bpricing\b/i, /\bcost\b/i, /how much/i])) {
       return {
-        text: 'Pricing varies by product and strength. Every catalog card shows a starting price, and our team confirms exact pricing and availability before you order.',
-        cta: { label: 'View Catalog', href: '/catalog' },
+        text: copy.pricingResponse,
+        cta: { label: locale === 'es' ? 'Ver catálogo' : 'View Catalog', href: localizePath('/catalog', locale) },
       }
     }
 
     if (matchesAny(text, [/\btrack/i, /where is my order/i, /order status/i])) {
       return {
-        text: 'For order status, our team can look it up directly on WhatsApp.',
-        cta: { label: 'Continue on WhatsApp', href: contactInfo.whatsappUrl, external: true },
+        text: copy.trackResponse,
+        cta: { label: copy.continueWhatsapp, href: contactInfo.whatsappUrl, external: true },
       }
     }
 
     if (matchesAny(text, [/\bcontact\b/i, /\bphone\b/i, /\bemail\b/i, /talk to (a )?(human|person|someone|specialist)/i])) {
       return {
-        text: `You can reach our team on WhatsApp at ${contactInfo.whatsappDisplay}. ${contactInfo.hours}`,
-        cta: { label: 'Continue on WhatsApp', href: contactInfo.whatsappUrl, external: true },
+        text: `${copy.contactResponse} ${contactInfo.whatsappDisplay}.`,
+        cta: { label: copy.continueWhatsapp, href: contactInfo.whatsappUrl, external: true },
       }
     }
 
     if (matchesAny(text, [/best.?seller/i, /most popular/i, /top product/i])) {
-      const list = bestSellers.map((product) => `• ${product.name} — from $${product.startingPrice}`).join('\n')
-      return { text: `Some of our most requested catalog entries:\n\n${list}`, cta: { label: 'View Catalog', href: '/catalog' } }
+      const list = bestSellers.map((product) => `• ${product.name} — ${locale === 'es' ? 'desde' : 'from'} $${product.startingPrice}`).join('\n')
+      return { text: `${copy.bestSellersIntro}\n\n${list}`, cta: { label: locale === 'es' ? 'Ver catálogo' : 'View Catalog', href: localizePath('/catalog', locale) } }
     }
 
     const productMatch = findProductMatch(text)
     if (productMatch) {
       return {
-        text: `${productMatch.name} (${productMatch.category}) — ${productMatch.description} Starting at $${productMatch.startingPrice}.`,
-        cta: { label: `View ${productMatch.name}`, href: productMatch.href },
-        quickReplies: [{ id: 'order-whatsapp', label: 'Order on WhatsApp' }],
+        text: locale === 'es'
+          ? `${productMatch.name} (${productMatch.category}) — Esta entrada se presenta para contexto de investigación. Precio inicial desde $${productMatch.startingPrice}.`
+          : `${productMatch.name} (${productMatch.category}) — ${productMatch.description} Starting at $${productMatch.startingPrice}.`,
+        cta: { label: locale === 'es' ? `Ver ${productMatch.name}` : `View ${productMatch.name}`, href: localizePath(productMatch.href, locale) },
+        quickReplies: [{ id: 'order-whatsapp', label: locale === 'es' ? 'Pedir por WhatsApp' : 'Order on WhatsApp' }],
       }
     }
 
     const categoryMatch = findCategoryMatch(text)
     if (categoryMatch) {
       return {
-        text: `${categoryMatch.name}: ${categoryMatch.description}`,
-        cta: { label: 'Browse this category', href: categoryMatch.href },
+        text: locale === 'es' ? `${categoryMatch.name}: Área de investigación del catálogo.` : `${categoryMatch.name}: ${categoryMatch.description}`,
+        cta: { label: locale === 'es' ? 'Ver esta categoría' : 'Browse this category', href: localizePath(categoryMatch.href, locale) },
       }
     }
 
     if (matchesAny(text, [/\bproducts?\b/i, /\bcatalog\b/i, /what do you (sell|have|offer)/i])) {
       return {
-        text: `${assistantKnowledgeBase.company.name} carries research compounds across ${categorySummaries.length} categories — Metabolic & Weight Management, Recovery & Regeneration, Longevity & Cellular Health, Cognitive & Performance, and Hormone & Wellness.`,
-        cta: { label: 'View Catalog', href: '/catalog' },
+        text: copy.catalogResponse,
+        cta: { label: locale === 'es' ? 'Ver catálogo' : 'View Catalog', href: localizePath('/catalog', locale) },
       }
     }
 
     if (matchesAny(text, [/^hi\b/i, /^hello\b/i, /^hey\b/i])) {
       return {
-        text: 'Hello! I can help with product information, pricing, shipping, delivery, and ordering — what would you like to know?',
+        text: copy.helloResponse,
       }
     }
 
     return {
-      text: 'I can help with product information, pricing, shipping, delivery, and ordering. You can also reach our team directly on WhatsApp for anything else.',
+      text: copy.fallbackResponse,
       quickReplies: topicQuickReplies,
     }
   },
+  }
 }
+
+export const localKnowledgeBaseProvider: AssistantAIProvider = createLocalKnowledgeBaseProvider('en')

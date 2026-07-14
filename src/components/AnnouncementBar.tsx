@@ -1,7 +1,10 @@
 import { FlaskConical } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useTranslation } from '../i18n/LocaleContext'
 
 export function AnnouncementBar() {
+  const { t } = useTranslation('announcement')
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -8 }}
@@ -11,7 +14,7 @@ export function AnnouncementBar() {
     >
       <div className="mx-auto flex max-w-[88rem] items-center justify-center gap-2 text-xs font-medium tracking-wide text-slate-600 sm:text-sm">
         <FlaskConical size={14} aria-hidden="true" className="shrink-0 text-teal-700" />
-        <span>Research-use-only catalog with complete kits and product-specific documentation and shipping review.</span>
+        <span>{t('bar')}</span>
       </div>
     </motion.div>
   )

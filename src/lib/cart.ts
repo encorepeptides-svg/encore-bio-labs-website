@@ -1,4 +1,5 @@
 import type { Product, ProductVariant } from '../data/products'
+import { getProductHeroImage } from '../data/productMedia'
 import { getDefaultPurchaseSelection, quotePurchase, type PurchaseOptionId, type PurchaseSelection } from './purchaseOptions'
 
 export type CartItemId = string
@@ -76,7 +77,7 @@ export function createCartItem(product: Product, variant: ProductVariant, quanti
     productName: product.name,
     variantLabel: variant.label,
     variantFormat: variant.format,
-    image: product.image,
+    image: getProductHeroImage(product.slug, product.image) ?? product.image,
     unitPrice: quote.unitPrice,
     sku: quote.sku,
     optionId: quote.optionId,

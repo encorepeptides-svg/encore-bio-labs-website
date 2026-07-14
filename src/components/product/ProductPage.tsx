@@ -1,5 +1,8 @@
 import { useEffect } from 'react'
 import { products } from '../../data/products'
+import { getLocalizedProduct } from '../../data/productTranslations'
+import { useLocale } from '../../i18n/LocaleContext'
+import { applyDocumentMetadata } from '../../i18n/applyMetadata'
 import {
   FAQSection,
   FinalPurchaseCTA,
@@ -14,6 +17,8 @@ import {
   ResearchUseDisclaimer,
 } from './ProductPageSections'
 import { RetatrutideProductPage } from './RetatrutideProductPage'
+import { getProductResearchContent } from '../../data/productResearchContent'
+import { ProductResearchExperience } from './ProductResearchExperience'
 
 function findProductBySlug(slug: string) {
   try {
@@ -23,55 +28,44 @@ function findProductBySlug(slug: string) {
   }
 }
 
+const titleSuffix = { en: 'Research Product | Encore Bio Labs', es: 'Producto de Investigación | Encore Bio Labs' }
+const notFoundTitle = { en: 'Product Not Found | Encore Bio Labs', es: 'Producto no encontrado | Encore Bio Labs' }
+const notFoundDescription = { en: 'The requested Encore Bio Labs research product is not available.', es: 'El producto de investigación de Encore Bio Labs solicitado no está disponible.' }
+
 export function ProductPage({ slug }: { slug: string }) {
-  const product = findProductBySlug(slug)
+  const { locale, path } = useLocale()
+  const baseProduct = findProductBySlug(slug)
+  const product = baseProduct ? getLocalizedProduct(baseProduct, locale) : null
+  const researchContent = product ? getProductResearchContent(product.slug) : undefined
 
   useEffect(() => {
-    const title = product ? `${product.name} Research Product | Encore Bio Labs` : 'Product Not Found | Encore Bio Labs'
+    const title = product ? `${product.name} ${titleSuffix[locale]}` : notFoundTitle[locale]
     const description = product
       ? product.shortDescription || product.description
-      : 'The requested Encore Bio Labs research product is not available.'
-    const previousTitle = document.title
-    const descriptionMeta = document.querySelector<HTMLMetaElement>('meta[name="description"]')
-    const previousDescription = descriptionMeta?.content
-    let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]')
-    const createdCanonical = !canonical
-
-    document.title = title
-    if (descriptionMeta) descriptionMeta.content = description
-
-    if (!canonical) {
-      canonical = document.createElement('link')
-      canonical.rel = 'canonical'
-      document.head.appendChild(canonical)
-    }
-    canonical.href = `https://encorebiolabs.com/products/${product?.slug ?? slug}`
-
-    return () => {
-      document.title = previousTitle
-      if (descriptionMeta && previousDescription !== undefined) descriptionMeta.content = previousDescription
-      if (createdCanonical) canonical?.remove()
-    }
-  }, [product, slug])
+      : notFoundDescription[locale]
+    applyDocumentMetadata(`/products/${product?.slug ?? slug}`, locale, { title, description })
+  }, [locale, product, slug])
 
   if (!product) {
     return (
       <main id="main-content" className="bg-[#F8FAFC] px-5 py-20 sm:px-8">
         <div className="mx-auto max-w-3xl rounded-[2rem] border border-slate-900/10 bg-white p-8 text-center shadow-[0_24px_80px_rgba(7,23,36,0.08)]">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">
-            Product not found
+            {locale === 'es' ? 'Producto no encontrado' : 'Product not found'}
           </p>
           <h1 className="mt-4 text-4xl font-semibold tracking-[-0.05em] text-[#071724]">
-            This product page is not available.
+            {locale === 'es' ? 'Esta página de producto no está disponible.' : 'This product page is not available.'}
           </h1>
           <p className="mt-4 text-base leading-7 text-slate-600">
-            Return to the Encore Bio Labs catalog to continue exploring research-use entries.
+            {locale === 'es'
+              ? 'Vuelve al catálogo de Encore Bio Labs para seguir explorando productos de uso exclusivo para investigación.'
+              : 'Return to the Encore Bio Labs catalog to continue exploring research-use entries.'}
           </p>
           <a
-            href="/catalog"
+            href={path('/catalog')}
             className="mt-7 inline-flex rounded-full bg-[#071724] px-5 py-3 text-sm font-semibold text-white"
           >
-            Back to catalog
+            {locale === 'es' ? 'Volver al catálogo' : 'Back to catalog'}
           </a>
         </div>
       </main>
@@ -87,11 +81,10 @@ export function ProductPage({ slug }: { slug: string }) {
       <ProductBreadcrumb product={product} />
       <ProductHero product={product} />
       <ProductCompleteKitCallout product={product} />
-      <ProductBenefits product={product} />
-      <ProductHowItWorksFlow product={product} />
+      {researchContent ? <ProductResearchExperience product={product} content={researchContent} /> : <><ProductBenefits product={product} /><ProductHowItWorksFlow product={product} /></>}
       <ProductSpecs product={product} />
       <ProductQualityFocus product={product} />
-      <FAQSection product={product} />
+      {researchContent ? null : <FAQSection product={product} />}
       <RelatedProducts product={product} />
       <FinalPurchaseCTA product={product} />
       <ResearchUseDisclaimer product={product} />

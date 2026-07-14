@@ -1,82 +1,9 @@
 import { LegalPageLayout, type LegalSection } from './LegalPageLayout'
+import { useLocale } from '../../i18n/LocaleContext'
 
-const sections: LegalSection[] = [
-  {
-    heading: '1. Shipping areas',
-    body: (
-      <ul className="ml-5 list-disc">
-        <li>Available delivery areas and methods are confirmed during order review.</li>
-        <li>Shipping timing is provided only after product availability and destination are reviewed.</li>
-        <li>Any shipping charge is confirmed before the order proceeds.</li>
-      </ul>
-    ),
-  },
-  {
-    heading: '2. Processing time',
-    body: (
-      <p>
-        Orders are processed after an inquiry is approved and product availability is confirmed.
-        Processing and delivery timing are confirmed during order review.
-      </p>
-    ),
-  },
-  {
-    heading: '3. Shipping costs',
-    body: (
-      <p>
-        Shipping costs are provided during the approved inquiry process. The website checkout does
-        not calculate or promise a shipping charge.
-      </p>
-    ),
-  },
-  {
-    heading: '4. Returns and refunds',
-    body: (
-      <p>
-        Because products are sold for laboratory research use only and may have handling and
-        storage requirements, returns are reviewed case by case. Contact Encore Bio Labs before
-        returning any item; unauthorized returns may not be accepted.
-      </p>
-    ),
-  },
-  {
-    heading: '5. Damaged, lost, or incorrect shipments',
-    body: (
-      <p>
-        If your order arrives damaged, is lost in transit, or does not match what was ordered,
-        contact us promptly after delivery (or expected delivery) through the research intake
-        process so we can investigate and make it right.
-      </p>
-    ),
-  },
-  {
-    heading: '6. Storage and handling on arrival',
-    body: (
-      <p>
-        Storage requirements can vary by product and format. Review the product-specific storage
-        guidance on each product page and use qualified laboratory handling practices upon
-        receipt.
-      </p>
-    ),
-  },
-  {
-    heading: '7. Contact',
-    body: (
-      <p>
-        Shipping or return questions can be sent through the research intake process or WhatsApp{' '}
-        <strong>9153595448</strong>.
-      </p>
-    ),
-  },
-]
+const copy = {
+  en: { title: 'Shipping & Returns', intro: 'This page explains how Encore Bio Labs handles shipping, delivery timing, and returns for research catalog orders.', sections: [['1. Shipping areas','Available delivery areas and methods are confirmed during order review. Timing and any shipping charge are confirmed only after product availability and destination are reviewed.'],['2. Processing time','Orders are processed after an inquiry is approved and product availability is confirmed. Processing and delivery timing are confirmed during order review.'],['3. Shipping costs','Shipping costs are provided during the approved inquiry process. Website checkout does not calculate or promise a shipping charge.'],['4. Returns and refunds','Because products are sold for laboratory research use and may have handling and storage requirements, returns are reviewed case by case. Contact Encore Bio Labs before returning any item.'],['5. Damaged, lost, or incorrect shipments','If an order arrives damaged, is lost in transit, or does not match what was ordered, contact us promptly through the research intake process so we can investigate.'],['6. Storage and handling on arrival','Storage requirements vary by product and format. Review product-specific guidance and use qualified laboratory handling practices upon receipt.'],['7. Contact','Shipping or return questions can be sent through the research intake process or WhatsApp 9153595448.']] },
+  es: { title: 'Envíos y devoluciones', intro: 'Esta página explica cómo Encore Bio Labs gestiona los envíos, los plazos de entrega y las devoluciones de pedidos del catálogo de investigación.', sections: [['1. Zonas de envío','Las zonas y métodos de entrega disponibles se confirman durante la revisión del pedido. El plazo y cualquier cargo de envío se confirman después de revisar la disponibilidad y el destino.'],['2. Tiempo de procesamiento','Los pedidos se procesan después de aprobar una consulta y confirmar la disponibilidad. El plazo de procesamiento y entrega se confirma durante la revisión.'],['3. Costos de envío','Los costos de envío se proporcionan durante el proceso de consulta aprobada. El checkout del sitio no calcula ni promete un cargo de envío.'],['4. Devoluciones y reembolsos','Como los productos se venden para investigación de laboratorio y pueden requerir manejo y almacenamiento específicos, las devoluciones se revisan caso por caso. Contacta a Encore Bio Labs antes de devolver cualquier artículo.'],['5. Envíos dañados, perdidos o incorrectos','Si un pedido llega dañado, se pierde en tránsito o no coincide con lo solicitado, contáctanos pronto mediante la admisión de investigación para investigar el caso.'],['6. Almacenamiento y manejo al recibirlo','Los requisitos de almacenamiento varían según el producto y el formato. Revisa la guía específica y utiliza prácticas calificadas de manejo de laboratorio al recibirlo.'],['7. Contacto','Las preguntas sobre envíos o devoluciones pueden enviarse mediante la admisión de investigación o WhatsApp 9153595448.']] },
+} as const
 
-export function ShippingReturnsPage() {
-  return (
-    <LegalPageLayout
-      title="Shipping & Returns"
-      effectiveDate="July 7, 2026"
-      intro="This page explains how Encore Bio Labs handles shipping, delivery timing, and returns for research catalog orders."
-      sections={sections}
-    />
-  )
-}
+export function ShippingReturnsPage() { const { locale } = useLocale(); const page = copy[locale]; const sections: LegalSection[] = page.sections.map(([heading, body]) => ({ heading, body: <p>{body}</p> })); return <LegalPageLayout title={page.title} effectiveDate={locale === 'es' ? '7 de julio de 2026' : 'July 7, 2026'} intro={page.intro} sections={sections} /> }

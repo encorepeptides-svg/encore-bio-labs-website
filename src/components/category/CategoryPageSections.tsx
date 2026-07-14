@@ -9,11 +9,15 @@ import {
   type Product,
   type ResearchArea,
 } from '../../data/products'
+import { getLocalizedProduct } from '../../data/productTranslations'
+import { localizeResearchArea } from '../../data/categoryTranslations'
 import { contentTypeLabels, researchArticles } from '../../data/research'
 import { buildSrcSet, stemOf } from '../../lib/responsiveImages'
 import { CTA } from '../CTA'
+import { ProductImage } from '../ProductImage'
 import { Reveal } from '../Reveal'
 import { SectionHeader } from '../SectionHeader'
+import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import {
   CategoryEducationSection,
   FAQAccordion,
@@ -46,14 +50,6 @@ function getCategoryImage(area: ResearchArea) {
   return productImages[`../../assets/images/products/${getCategoryImageName(area)}`]
 }
 
-function getProductImageName(product: Product) {
-  return productImages[`../../assets/images/products/${product.heroImage}`] ? product.heroImage : product.image
-}
-
-function getProductImage(product: Product) {
-  return productImages[`../../assets/images/products/${product.heroImage}`] ?? productImages[`../../assets/images/products/${product.image}`]
-}
-
 function SectionShell({
   id,
   eyebrow,
@@ -78,15 +74,17 @@ function SectionShell({
 }
 
 export function CategoryBreadcrumb({ area }: { area: ResearchArea }) {
+  const { path } = useLocale()
+  const { t } = useTranslation('categoryPage')
   return (
     <div className="px-5 pt-6 sm:px-8">
       <div className="mx-auto flex max-w-[88rem] items-center gap-2 text-sm text-slate-500">
-        <a href="/" className="font-medium transition hover:text-[#071724]">
-          Home
+        <a href={path('/')} className="font-medium transition hover:text-[#071724]">
+          {t('home')}
         </a>
         <span aria-hidden="true">/</span>
-        <a href="/#products" className="font-medium transition hover:text-[#071724]">
-          Categories
+        <a href={path('/#products')} className="font-medium transition hover:text-[#071724]">
+          {t('categories')}
         </a>
         <span aria-hidden="true">/</span>
         <span className="font-semibold text-[#071724]">{area.name}</span>
@@ -96,6 +94,8 @@ export function CategoryBreadcrumb({ area }: { area: ResearchArea }) {
 }
 
 export function CategoryHero({ area, content }: { area: ResearchArea; content: CategoryContent }) {
+  const { path } = useLocale()
+  const { t } = useTranslation('categoryPage')
   const imageSrc = getCategoryImage(area)
   const imageStem = stemOf(getCategoryImageName(area))
   const avifSrcSet = buildSrcSet(productImages, CATEGORY_IMAGE_BASE_PATH, imageStem, 'avif', IMAGE_WIDTHS)
@@ -125,10 +125,10 @@ export function CategoryHero({ area, content }: { area: ResearchArea; content: C
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <CTA href="#featured-in-category" className="bg-[#071724] hover:bg-[#102a3d]">
-              View {area.name} Products
+              {t('viewProducts', { name: area.name })}
             </CTA>
-            <CTA href="/intake" tone="ghost">
-              Find My Match
+            <CTA href={path('/intake')} tone="ghost">
+              {t('findMatch')}
             </CTA>
           </div>
         </motion.div>
@@ -163,58 +163,61 @@ export function CategoryHero({ area, content }: { area: ResearchArea; content: C
 }
 
 export function CategoryOverview({ content }: { content: CategoryContent }) {
+  const { t } = useTranslation('categoryPage')
   return (
     <ResearchOverviewSection
-      eyebrow="Overview"
-      title="What is this category?"
+      eyebrow={t('overview')}
+      title={t('whatCategory')}
       body={content.overview}
       facts={[
-        { label: 'Positioning', value: 'Research use only', note: 'No treatment, dosing, or outcome claims.' },
-        { label: 'Page model', value: 'Education first', note: 'Context, product comparison, and adjacent research links.' },
-        { label: 'Review path', value: 'Human reviewed', note: 'Research intake routes to a person on the Encore team.' },
+        { label: t('positioning'), value: t('researchOnly'), note: t('noClaims') },
+        { label: t('pageModel'), value: t('educationFirst'), note: t('contextNote') },
+        { label: t('reviewPath'), value: t('humanReviewed'), note: t('intakeNote') },
       ]}
     />
   )
 }
 
 export function WhyStudied({ content }: { content: CategoryContent }) {
+  const { t } = useTranslation('categoryPage')
   return (
     <ResearchOverviewSection
-      eyebrow="Research Context"
-      title="Why this area is being studied"
+      eyebrow={t('researchContext')}
+      title={t('whyStudied')}
       body={content.whyStudied}
     />
   )
 }
 
 export function KeyThemes({ content }: { content: CategoryContent }) {
+  const { t } = useTranslation('categoryPage')
   return (
     <CategoryEducationSection
-      eyebrow="Key Research Themes"
-      title="What mechanisms are being studied"
+      eyebrow={t('keyThemes')}
+      title={t('mechanisms')}
       items={content.themes}
     />
   )
 }
 
 export function CategoryFeaturedProducts({ area }: { area: ResearchArea }) {
-  const categoryProducts = products.filter((product) => product.category === area.name)
+  const { t } = useTranslation('categoryPage')
+  const { locale, path } = useLocale()
+  const sourceArea = getResearchAreaBySlug(area.slug) ?? area
+  const categoryProducts = products.filter((product) => product.category === sourceArea.name)
 
   if (!categoryProducts.length) return null
 
   return (
     <SectionShell
       id="featured-in-category"
-      eyebrow="Featured Products"
-      title={`${area.name} catalog entries`}
-      description="Each product page includes full research context, format options, and documentation availability."
+      eyebrow={t('featured')}
+      title={t('catalogEntries', { name: area.name })}
+      description={t('productContext')}
     >
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {categoryProducts.map((product, index) => {
-          const imageSrc = getProductImage(product)
-          const imageStem = stemOf(getProductImageName(product))
-          const avifSrcSet = buildSrcSet(productImages, CATEGORY_IMAGE_BASE_PATH, imageStem, 'avif', IMAGE_WIDTHS)
-          const webpSrcSet = buildSrcSet(productImages, CATEGORY_IMAGE_BASE_PATH, imageStem, 'webp', IMAGE_WIDTHS)
+          const displayProduct = getLocalizedProduct(product, locale)
 
           return (
             <Reveal
@@ -223,31 +226,24 @@ export function CategoryFeaturedProducts({ area }: { area: ResearchArea }) {
               delay={index * 0.05}
               className="group overflow-hidden rounded-[1.5rem] border border-slate-900/10 bg-white shadow-[0_18px_48px_rgba(7,23,36,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(20,184,166,0.14)]"
             >
-              <a href={`/products/${product.slug}`} className="flex h-full flex-col">
+              <a href={path(`/products/${product.slug}`)} className="flex h-full flex-col">
                 <div className="relative h-40 overflow-hidden bg-[radial-gradient(circle_at_50%_20%,rgba(118,228,211,0.2),transparent_36%),linear-gradient(135deg,#ffffff,#e7eeee)]">
-                  {imageSrc ? (
-                    <picture>
-                      {avifSrcSet ? <source type="image/avif" srcSet={avifSrcSet} sizes={CARD_IMAGE_SIZES} /> : null}
-                      {webpSrcSet ? <source type="image/webp" srcSet={webpSrcSet} sizes={CARD_IMAGE_SIZES} /> : null}
-                      <img
-                        src={imageSrc}
-                        alt={`${product.name} research compound packaging`}
-                        width="480"
-                        height="360"
-                        loading="lazy"
-                        decoding="async"
-                        className="absolute inset-0 h-full w-full object-contain object-center p-3"
-                      />
-                    </picture>
-                  ) : null}
+                  <ProductImage
+                    product={product}
+                    alt={t('productImageAlt', { product: displayProduct.name })}
+                    sizes={CARD_IMAGE_SIZES}
+                    width={480}
+                    height={360}
+                    className="absolute inset-0 h-full w-full object-contain object-center p-3"
+                  />
                 </div>
                 <div className="flex flex-1 flex-col p-5">
-                  <h3 className="text-lg font-semibold tracking-[-0.03em] text-[#071724]">{product.name}</h3>
+                  <h3 className="text-lg font-semibold tracking-[-0.03em] text-[#071724]">{displayProduct.name}</h3>
                   <p className="mt-2 flex-1 text-sm leading-6 text-slate-600 line-clamp-3">
-                    {product.shortDescription}
+                    {displayProduct.shortDescription}
                   </p>
                   <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-teal-800">
-                    View product
+                    {t('viewProduct')}
                     <ArrowRight size={15} aria-hidden="true" className="transition group-hover:translate-x-1" />
                   </span>
                 </div>
@@ -261,29 +257,33 @@ export function CategoryFeaturedProducts({ area }: { area: ResearchArea }) {
 }
 
 export function CategoryComparisonTable({ area, content }: { area: ResearchArea; content: CategoryContent }) {
-  const categoryProducts = products.filter((product) => product.category === area.name)
+  const { t } = useTranslation('categoryPage')
+  const { locale, path } = useLocale()
+  const sourceArea = getResearchAreaBySlug(area.slug) ?? area
+  const categoryProducts = products.filter((product) => product.category === sourceArea.name)
 
   if (!categoryProducts.length) return null
 
   function getComparisonPrice(product: Product) {
     const prices = product.variants.map((variant) => variant.price).filter((price) => price > 0)
 
-    return prices.length ? `From $${Math.min(...prices)}` : 'By review'
+    return prices.length ? `From $${Math.min(...prices)}` : t('byReview')
   }
 
   return (
     <ProductComparisonTable
-      eyebrow="Comparison"
-      title="How these products differ"
-      description="A side-by-side view of research focus and format — not a ranking, and not a recommendation of which to choose."
+      eyebrow={t('comparison')}
+      title={t('differences')}
+      description={t('comparisonNote')}
       rows={categoryProducts.map((product) => {
+        const displayProduct = getLocalizedProduct(product, locale)
         return {
           product: product.name,
-          href: `/products/${product.slug}`,
-          focus: product.shortDescription,
-          format: product.variants[0]?.format ?? 'Vial format',
+          href: path(`/products/${product.slug}`),
+          focus: displayProduct.shortDescription,
+          format: product.variants[0]?.format ?? t('vialFormat'),
           price: getComparisonPrice(product),
-          note: content.comparisonNotes[product.slug] ?? 'See product page for research context',
+          note: content.comparisonNotes[product.slug] ?? t('productContext'),
         }
       })}
       showFocus
@@ -292,12 +292,12 @@ export function CategoryComparisonTable({ area, content }: { area: ResearchArea;
 }
 
 export function CategoryFAQSection({ area, content }: { area: ResearchArea; content: CategoryContent }) {
-  return (
-    <FAQAccordion eyebrow="Common Questions" title={`${area.name} research questions`} items={content.faqs} />
-  )
+  const { t } = useTranslation('categoryPage')
+  return <FAQAccordion eyebrow={t('commonQuestions')} title={t('researchQuestions', { name: area.name })} items={content.faqs} />
 }
 
 export function CategoryResearchLinks({ area }: { area: ResearchArea }) {
+  const { locale, path } = useLocale()
   const articles = researchArticles.filter((article) => article.categorySlug === area.slug).slice(0, 3)
 
   if (!articles.length) return null
@@ -305,16 +305,18 @@ export function CategoryResearchLinks({ area }: { area: ResearchArea }) {
   return (
     <RelatedArticlesSection
       articles={articles.map((article) => ({
-        label: contentTypeLabels[article.contentType],
-        title: article.title,
-        href: article.href,
-        description: article.description,
+        label: locale === 'es' ? 'Artículo de investigación' : contentTypeLabels[article.contentType],
+        title: locale === 'es' ? `Investigación: ${article.title}` : article.title,
+        href: path(article.href),
+        description: locale === 'es' ? 'Consulta el contexto y las limitaciones de la literatura disponible.' : article.description,
       }))}
     />
   )
 }
 
 export function RelatedCategories({ content }: { content: CategoryContent }) {
+  const { path, locale } = useLocale()
+  const { t } = useTranslation('categoryPage')
   const related = content.relatedCategorySlugs
     .map((slug) => getResearchAreaBySlug(slug))
     .filter((area): area is ResearchArea => Boolean(area))
@@ -323,13 +325,13 @@ export function RelatedCategories({ content }: { content: CategoryContent }) {
 
   return (
     <InternalLinkGrid
-      eyebrow="Related Research Topics"
-      title="Explore adjacent research areas"
+      eyebrow={t('relatedTopics')}
+      title={t('adjacent')}
       links={related.map((area) => ({
-        label: 'Research Category',
-        title: area.name,
-        href: `/categories/${area.slug}`,
-        description: area.description,
+        label: t('researchCategory'),
+        title: localizeResearchArea(area, locale).name,
+        href: path(`/categories/${area.slug}`),
+        description: localizeResearchArea(area, locale).description,
       }))}
     />
   )
@@ -340,14 +342,16 @@ export function CategoryDisclaimer({ content }: { content: CategoryContent }) {
 }
 
 export function CategoryFinalCTA({ area }: { area: ResearchArea }) {
+  const { path } = useLocale()
+  const { t } = useTranslation('categoryPage')
   return (
     <ProductDiscoveryCTA
-      title={`Ready to look closer at the ${area.name.toLowerCase()} research?`}
-      body="Explore individual product pages for pathway detail and documentation availability, or start a Research Match and we'll help route the inquiry to an appropriate catalog area."
-      primaryLabel={`Explore ${area.name} Products`}
+      title={t('ready', { name: area.name.toLowerCase() })}
+      body={t('readyBody')}
+      primaryLabel={t('exploreProducts', { name: area.name })}
       primaryHref="#featured-in-category"
-      secondaryLabel="Find My Match"
-      secondaryHref="/intake"
+      secondaryLabel={t('findMatchShort')}
+      secondaryHref={path('/intake')}
     />
   )
 }

@@ -26,6 +26,12 @@ Rules:
 - Product variants live inside each product object
 - Do not duplicate product cards for different strengths
 
+## Mandatory bilingual parity / Paridad bilingüe obligatoria
+
+**English:** Every update, edit, or new addition must be completed in **both English and Spanish**. Work is not considered complete until both language versions have been updated and checked for equivalent meaning, formatting, links, metadata, functionality, and user experience.
+
+**Español:** Cada actualización, modificación o contenido nuevo debe completarse en **inglés y español**. El trabajo no se considerará terminado hasta que ambas versiones hayan sido actualizadas y revisadas para garantizar equivalencia de significado, formato, enlaces, metadatos, funcionalidad y experiencia de usuario.
+
 Main sections:
 - Navbar
 - Hero

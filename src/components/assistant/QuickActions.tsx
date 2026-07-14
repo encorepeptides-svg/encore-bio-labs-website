@@ -9,19 +9,20 @@ import {
   Truck,
   type LucideIcon,
 } from 'lucide-react'
-
-const actions: Array<{ id: string; label: string; icon: LucideIcon }> = [
-  { id: 'browse-products', label: 'Browse Products', icon: Boxes },
-  { id: 'best-sellers', label: 'Best Sellers', icon: Sparkles },
-  { id: 'pricing', label: 'Pricing', icon: CreditCard },
-  { id: 'shipping', label: 'Shipping', icon: Truck },
-  { id: 'local-delivery', label: 'Local Delivery', icon: MapPin },
-  { id: 'track-order', label: 'Track My Order', icon: PackageSearch },
-  { id: 'contact-team', label: 'Contact Team', icon: Headphones },
-  { id: 'order-whatsapp', label: 'Order on WhatsApp', icon: MessageCircle },
-]
+import { useTranslation } from '../../i18n/LocaleContext'
 
 export function QuickActions({ onAction }: { onAction: (id: string) => void }) {
+  const { t } = useTranslation('assistant')
+  const actions: Array<{ id: string; label: string; icon: LucideIcon }> = [
+    { id: 'browse-products', label: t('browseProducts'), icon: Boxes },
+    { id: 'best-sellers', label: t('bestSellers'), icon: Sparkles },
+    { id: 'pricing', label: t('pricing'), icon: CreditCard },
+    { id: 'shipping', label: t('shipping'), icon: Truck },
+    { id: 'local-delivery', label: t('localDelivery'), icon: MapPin },
+    { id: 'track-order', label: t('trackOrder'), icon: PackageSearch },
+    { id: 'contact-team', label: t('contactTeam'), icon: Headphones },
+    { id: 'order-whatsapp', label: t('orderWhatsapp'), icon: MessageCircle },
+  ]
   return (
     <div className="grid grid-cols-2 gap-2 border-t border-slate-900/8 bg-white/70 px-4 py-3">
       {actions.map((action) => (

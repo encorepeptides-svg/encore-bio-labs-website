@@ -13,7 +13,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from 'lucide-react'
-import { brandText } from '../../../config/brandText'
+import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { products } from '../../data/products'
 import {
   createLeadFromIntake,
@@ -27,7 +27,7 @@ import {
 } from '../../data/intake'
 import { createCRMLeadFromIntake, saveLead } from '../../lib/crmStorage'
 
-const steps = ['Goal', 'Biometrics', 'Lifestyle', 'Experience', 'Review']
+const stepKeys = ['stepGoal', 'stepBiometrics', 'stepLifestyle', 'stepExperience', 'stepReview'] as const
 const sexOptions = ['Female', 'Male', 'Intersex', 'Prefer not to say']
 const activityOptions = ['Sedentary', 'Light', 'Moderate', 'Very active', 'Athletic']
 const lifestyleOptions = ['Mostly seated', 'Mixed movement', 'Physically demanding', 'Training-focused']
@@ -37,6 +37,95 @@ const nutritionOptions = ['Very consistent', 'Mostly consistent', 'Inconsistent'
 const peptideExperienceOptions = ['No', 'Some research', 'Experienced researcher', 'Prefer to discuss']
 const glpExperienceOptions = ['No', 'Yes', 'Related category research', 'Prefer to discuss']
 const contactOptions = ['Email', 'SMS', 'WhatsApp']
+
+type TranslationFunction = (key: string, vars?: Record<string, string | number>) => string
+
+const intakeValueKeys: Record<string, string> = {
+  'Metabolic Signaling': 'goalMetabolic',
+  'Cellular Resilience / Aging Biology': 'goalCellularResilience',
+  'Repair & Regeneration Models': 'goalRepair',
+  'Endocrine Signaling': 'goalEndocrine',
+  'Neurobiology & Performance Models': 'goalNeurobiology',
+  'General Research Review': 'goalGeneral',
+  Female: 'optionFemale',
+  Male: 'optionMale',
+  Intersex: 'optionIntersex',
+  'Prefer not to say': 'optionPreferNotToSay',
+  Sedentary: 'optionSedentary',
+  Light: 'optionLight',
+  Moderate: 'optionModerate',
+  'Very active': 'optionVeryActive',
+  Athletic: 'optionAthletic',
+  'Mostly seated': 'optionMostlySeated',
+  'Mixed movement': 'optionMixedMovement',
+  'Physically demanding': 'optionPhysicallyDemanding',
+  'Training-focused': 'optionTrainingFocused',
+  Excellent: 'optionExcellent',
+  Good: 'optionGood',
+  Inconsistent: 'optionInconsistent',
+  Poor: 'optionPoor',
+  Steady: 'optionSteady',
+  'Afternoon dips': 'optionAfternoonDips',
+  'Low most days': 'optionLowMostDays',
+  Variable: 'optionVariable',
+  'Very consistent': 'optionVeryConsistent',
+  'Mostly consistent': 'optionMostlyConsistent',
+  'Needs structure': 'optionNeedsStructure',
+  No: 'optionNo',
+  'Some research': 'optionSomeResearch',
+  'Experienced researcher': 'optionExperiencedResearcher',
+  'Prefer to discuss': 'optionPreferToDiscuss',
+  Yes: 'optionYes',
+  'Related category research': 'optionRelatedCategoryResearch',
+  Email: 'contactEmail',
+  SMS: 'contactSms',
+  WhatsApp: 'contactWhatsapp',
+  'Metabolic & Weight Management': 'categoryMetabolic',
+  'Recovery & Regeneration': 'categoryRecovery',
+  'Longevity & Cellular Health': 'categoryLongevity',
+  'Cognitive & Performance': 'categoryCognitive',
+  'Hormone & Wellness': 'categoryHormone',
+}
+
+const recommendationKeys: Record<string, string> = {
+  'Metabolic Signaling': 'recommendationMetabolic',
+  'Cellular Resilience / Aging Biology': 'recommendationCellularResilience',
+  'Repair & Regeneration Models': 'recommendationRepair',
+  'Endocrine Signaling': 'recommendationEndocrine',
+  'Neurobiology & Performance Models': 'recommendationNeurobiology',
+  'General Research Review': 'recommendationGeneral',
+}
+
+export const INTAKE_SESSION_KEY = 'encore-intake-draft-v1'
+
+type IntakeDraft = {
+  formData: IntakeFormData
+  step: number
+  phase: 'form' | 'loading' | 'results'
+  lead: CustomerLead | null
+}
+
+export function readIntakeDraft(): IntakeDraft {
+  if (typeof window === 'undefined') return { formData: defaultIntakeFormData, step: 0, phase: 'form', lead: null }
+  try {
+    const saved = window.sessionStorage.getItem(INTAKE_SESSION_KEY)
+    if (!saved) return { formData: defaultIntakeFormData, step: 0, phase: 'form', lead: null }
+    const parsed = JSON.parse(saved) as Partial<IntakeDraft>
+    return {
+      formData: { ...defaultIntakeFormData, ...(parsed.formData ?? {}) },
+      step: Math.min(Math.max(Number(parsed.step) || 0, 0), stepKeys.length - 1),
+      phase: parsed.phase === 'loading' || parsed.phase === 'results' ? parsed.phase : 'form',
+      lead: parsed.lead ?? null,
+    }
+  } catch {
+    return { formData: defaultIntakeFormData, step: 0, phase: 'form', lead: null }
+  }
+}
+
+function getIntakeValueLabel(t: TranslationFunction, value: string) {
+  const key = intakeValueKeys[value]
+  return key ? t(key) : value
+}
 
 const categorySlugs: Record<string, string> = {
   'Metabolic & Weight Management': 'metabolic-weight-management',
@@ -120,7 +209,7 @@ function SelectField({
   value,
   onChange,
   options,
-  placeholder = 'Select one',
+  placeholder,
 }: {
   name: keyof IntakeFormData
   value: string
@@ -128,6 +217,7 @@ function SelectField({
   options: string[]
   placeholder?: string
 }) {
+  const { t } = useTranslation('intake')
   return (
     <select
       name={name}
@@ -136,10 +226,10 @@ function SelectField({
       onChange={(event) => onChange(name, event.target.value)}
       className={inputClass()}
     >
-      <option value="">{placeholder}</option>
+      <option value="">{placeholder ?? t('selectOne')}</option>
       {options.map((option) => (
         <option key={option} value={option}>
-          {option}
+          {getIntakeValueLabel(t, option)}
         </option>
       ))}
     </select>
@@ -157,6 +247,7 @@ function ChoiceGrid({
   options: string[]
   onChange: (name: keyof IntakeFormData, value: string) => void
 }) {
+  const { t } = useTranslation('intake')
   return (
     <div className="grid gap-2 sm:grid-cols-2">
       {options.map((option) => (
@@ -177,7 +268,7 @@ function ChoiceGrid({
             onChange={(event) => onChange(name, event.target.value)}
             className="sr-only"
           />
-          {option}
+          {getIntakeValueLabel(t, option)}
         </label>
       ))}
     </div>
@@ -272,13 +363,24 @@ function isStepComplete(step: number, data: IntakeFormData) {
 }
 
 export function IntakePage() {
-  const [formData, setFormData] = useState(defaultIntakeFormData)
-  const [step, setStep] = useState(0)
-  const [phase, setPhase] = useState<'form' | 'loading' | 'results'>('form')
-  const [lead, setLead] = useState<CustomerLead | null>(null)
+  const { path } = useLocale()
+  const { t } = useTranslation('intake')
+  const [initialDraft] = useState(readIntakeDraft)
+  const [formData, setFormData] = useState(initialDraft.formData)
+  const [step, setStep] = useState(initialDraft.step)
+  const [phase, setPhase] = useState<'form' | 'loading' | 'results'>(initialDraft.phase)
+  const [lead, setLead] = useState<CustomerLead | null>(initialDraft.lead)
   const recommendation = useMemo(() => generateRecommendation(formData), [formData])
   const canContinue = isStepComplete(step, formData)
-  const progress = Math.round(((step + 1) / steps.length) * 100)
+  const progress = Math.round(((step + 1) / stepKeys.length) * 100)
+
+  useEffect(() => {
+    try {
+      window.sessionStorage.setItem(INTAKE_SESSION_KEY, JSON.stringify({ formData, step, phase, lead }))
+    } catch {
+      // Draft persistence is best-effort; a private browsing policy must not block intake.
+    }
+  }, [formData, lead, phase, step])
 
   useEffect(() => {
     if (phase !== 'loading') {
@@ -375,24 +477,17 @@ export function IntakePage() {
               <Microscope size={21} aria-hidden="true" />
             </span>
             <p className="relative mt-8 text-xs font-semibold uppercase tracking-[0.22em] text-teal-200">
-              Research Match
+              {t('sidebarEyebrow')}
             </p>
             <h1 className="relative mt-4 text-4xl font-semibold tracking-[-0.055em] sm:text-5xl">
-              Find your research match in minutes.
+              {t('sidebarTitle')}
             </h1>
             <p className="relative mt-5 max-w-xl text-sm leading-7 text-slate-300">
-              Tell us what you're researching — metabolic pathways, regeneration models, cellular
-              resilience, neurobiology, or hormonal signaling — plus a few basics about your
-              research context. We'll map it to relevant categories and catalog entries.
+              {t('sidebarBody')}
             </p>
 
             <div className="relative mt-8 grid gap-3">
-              {[
-                'Reviewed by a real person, not auto-generated',
-                'Research-use-only language throughout',
-                'We do not sell your personal information',
-                'No dosing guidance or protocols, ever',
-              ].map((item) => (
+              {[t('sidebarPoint1'), t('sidebarPoint2'), t('sidebarPoint3'), t('sidebarPoint4')].map((item) => (
                 <div key={item} className="flex items-start gap-3 text-sm text-slate-300">
                   <CheckCircle2 size={17} aria-hidden="true" className="mt-0.5 shrink-0 text-teal-300" />
                   <span>{item}</span>
@@ -403,30 +498,30 @@ export function IntakePage() {
             <div className="relative mt-8 rounded-2xl border border-white/10 bg-white/7 p-4 text-sm leading-6 text-slate-300">
               <div className="mb-2 flex items-center gap-2 font-semibold text-white">
                 <ShieldCheck size={16} aria-hidden="true" className="text-teal-300" />
-                Compliance boundary
+                {t('complianceBoundaryTitle')}
               </div>
-              Outputs are educational research summaries only. The intake does not provide use instructions, personal health direction, dosing guidance, or promised outcomes.
+              {t('complianceBoundaryBody')}
             </div>
 
             <div className="relative mt-5 rounded-2xl border border-white/10 bg-white/7 p-4 text-sm leading-6 text-slate-300">
               <div className="mb-1 flex items-center gap-2 font-semibold text-white">
                 <LockKeyhole size={16} aria-hidden="true" className="text-teal-300" />
-                Prefer to reach us directly?
+                {t('reachDirectlyTitle')}
               </div>
-              WhatsApp: 9153595448. Research-use-only inquiries only.
+              {t('reachDirectlyBody')}
             </div>
 
             <div className="relative mt-5 grid gap-2 text-sm">
-              <a href="/#products" className="inline-flex items-center gap-2 font-semibold text-teal-200 transition hover:text-white">
-                Browse research categories before intake
+              <a href={path('/#products')} className="inline-flex items-center gap-2 font-semibold text-teal-200 transition hover:text-white">
+                {t('browseCategoriesLink')}
                 <ArrowRight size={15} aria-hidden="true" />
               </a>
-              <a href="/research" className="inline-flex items-center gap-2 font-semibold text-teal-200 transition hover:text-white">
-                Read the research library
+              <a href={path('/research')} className="inline-flex items-center gap-2 font-semibold text-teal-200 transition hover:text-white">
+                {t('readResearchLibraryLink')}
                 <ArrowRight size={15} aria-hidden="true" />
               </a>
-              <a href="/faq#ordering" className="inline-flex items-center gap-2 font-semibold text-teal-200 transition hover:text-white">
-                Review ordering FAQs
+              <a href={path('/faq#ordering')} className="inline-flex items-center gap-2 font-semibold text-teal-200 transition hover:text-white">
+                {t('reviewFaqsLink')}
                 <ArrowRight size={15} aria-hidden="true" />
               </a>
             </div>
@@ -447,10 +542,10 @@ export function IntakePage() {
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">
-                      Step {step + 1} of {steps.length}
+                      {t('stepOf', { current: step + 1, total: stepKeys.length })}
                     </p>
                     <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em] text-[#071724]">
-                      {steps[step]}
+                      {t(stepKeys[step])}
                     </h2>
                   </div>
                   <span className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-500 shadow-sm">
@@ -470,17 +565,12 @@ export function IntakePage() {
                   <div className="grid gap-5">
                     <TrustCard
                       icon={<LockKeyhole size={18} aria-hidden="true" />}
-                      eyebrow="Your data"
-                      title="Your information helps us create a more relevant research match."
-                      body="Your intake responses are stored securely and used only to review your research interests, product fit, and follow-up preferences. We do not sell your personal information."
-                      bullets={[
-                        'Secure intake submission',
-                        'Used only for research-support review',
-                        'Contact preference respected',
-                        'Stored for lead follow-up and support',
-                      ]}
+                      eyebrow={t('yourDataEyebrow')}
+                      title={t('yourDataTitle')}
+                      body={t('yourDataBody')}
+                      bullets={[t('yourDataBullet1'), t('yourDataBullet2'), t('yourDataBullet3'), t('yourDataBullet4')]}
                     />
-                    <Field label="What are you most interested in researching?">
+                    <Field label={t('mainGoalQuestion')}>
                       <ChoiceGrid name="mainGoal" value={formData.mainGoal} options={mainGoalOptions} onChange={updateField} />
                     </Field>
                   </div>
@@ -490,38 +580,38 @@ export function IntakePage() {
                   <div className="grid gap-5">
                     <ReviewProcessCard />
                     <div className="grid gap-4 md:grid-cols-2">
-                      <Field label="Age">
+                      <Field label={t('age')}>
                         <TextInput name="age" value={formData.age} type="number" onChange={updateField} />
                       </Field>
-                      <Field label="Biological sex">
+                      <Field label={t('biologicalSex')}>
                         <SelectField name="sex" value={formData.sex} options={sexOptions} onChange={updateField} />
                       </Field>
-                      <Field label="Height">
+                      <Field label={t('height')}>
                         <TextInput name="height" value={formData.height} onChange={updateField} placeholder={'5\'10"'} />
                       </Field>
-                      <Field label="Current weight">
+                      <Field label={t('currentWeight')}>
                         <TextInput name="currentWeight" value={formData.currentWeight} type="number" onChange={updateField} />
                       </Field>
-                      <Field label="Goal weight">
+                      <Field label={t('goalWeight')}>
                         <TextInput name="goalWeight" value={formData.goalWeight} type="number" onChange={updateField} />
                       </Field>
-                      <Field label="Body fat estimate if known">
-                        <TextInput name="bodyFat" value={formData.bodyFat} onChange={updateField} placeholder="Unknown or percentage" />
+                      <Field label={t('bodyFatEstimate')}>
+                        <TextInput name="bodyFat" value={formData.bodyFat} onChange={updateField} placeholder={t('bodyFatPlaceholder')} />
                       </Field>
-                      <Field label="Activity level">
+                      <Field label={t('activityLevel')}>
                         <SelectField name="activityLevel" value={formData.activityLevel} options={activityOptions} onChange={updateField} />
                       </Field>
-                      <Field label="Waist measurement if known">
-                        <TextInput name="waist" value={formData.waist} onChange={updateField} placeholder="Unknown or inches" />
+                      <Field label={t('waistMeasurement')}>
+                        <TextInput name="waist" value={formData.waist} onChange={updateField} placeholder={t('waistPlaceholder')} />
                       </Field>
                       <div className="md:col-span-2">
-                        <Field label="Current compounds or study materials being reviewed">
-                          <TextArea name="medicationsOrCompounds" value={formData.medicationsOrCompounds} onChange={updateField} placeholder="Enter none, unknown, or relevant details." />
+                        <Field label={t('currentCompounds')}>
+                          <TextArea name="medicationsOrCompounds" value={formData.medicationsOrCompounds} onChange={updateField} placeholder={t('noneUnknownPlaceholder')} />
                         </Field>
                       </div>
                       <div className="md:col-span-2">
-                        <Field label="Any known sensitivities or concerns">
-                          <TextArea name="sensitivities" value={formData.sensitivities} onChange={updateField} placeholder="Enter none, unknown, or relevant details." />
+                        <Field label={t('sensitivities')}>
+                          <TextArea name="sensitivities" value={formData.sensitivities} onChange={updateField} placeholder={t('noneUnknownPlaceholder')} />
                         </Field>
                       </div>
                     </div>
@@ -530,24 +620,24 @@ export function IntakePage() {
 
                 {step === 2 ? (
                   <div className="grid gap-5">
-                    <Field label="How active is your lifestyle?">
+                    <Field label={t('lifestyleQuestion')}>
                       <ChoiceGrid name="lifestyleActivity" value={formData.lifestyleActivity} options={lifestyleOptions} onChange={updateField} />
                     </Field>
                     <div className="grid gap-4 md:grid-cols-2">
-                      <Field label="How many days per week do you exercise?">
-                        <TextInput name="exerciseDays" value={formData.exerciseDays} type="number" onChange={updateField} placeholder="0-7" />
+                      <Field label={t('exerciseDaysQuestion')}>
+                        <TextInput name="exerciseDays" value={formData.exerciseDays} type="number" onChange={updateField} placeholder={t('exerciseDaysPlaceholder')} />
                       </Field>
-                      <Field label="How is your sleep quality?">
+                      <Field label={t('sleepQualityQuestion')}>
                         <SelectField name="sleepQuality" value={formData.sleepQuality} options={sleepOptions} onChange={updateField} />
                       </Field>
-                      <Field label="How would you describe your energy levels?">
+                      <Field label={t('energyLevelsQuestion')}>
                         <SelectField name="energyLevels" value={formData.energyLevels} options={energyOptions} onChange={updateField} />
                       </Field>
-                      <Field label="How consistent is your nutrition?">
+                      <Field label={t('nutritionQuestion')}>
                         <SelectField name="nutritionConsistency" value={formData.nutritionConsistency} options={nutritionOptions} onChange={updateField} />
                       </Field>
                     </div>
-                    <Field label="Main obstacle right now">
+                    <Field label={t('mainObstacle')}>
                       <TextArea name="mainObstacle" value={formData.mainObstacle} onChange={updateField} />
                     </Field>
                   </div>
@@ -555,17 +645,17 @@ export function IntakePage() {
 
                 {step === 3 ? (
                   <div className="grid gap-5">
-                    <Field label="Have you researched peptides before?">
+                    <Field label={t('peptideExperienceQuestion')}>
                       <ChoiceGrid name="peptideExperience" value={formData.peptideExperience} options={peptideExperienceOptions} onChange={updateField} />
                     </Field>
-                    <Field label="Have you previously reviewed GLP-1 / GIP / glucagon-based research compounds?">
+                    <Field label={t('glpExperienceQuestion')}>
                       <ChoiceGrid name="glpExperience" value={formData.glpExperience} options={glpExperienceOptions} onChange={updateField} />
                     </Field>
                     <div className="grid gap-2">
-                      <p className="text-sm font-semibold text-[#071724]">Which products are you interested in?</p>
+                      <p className="text-sm font-semibold text-[#071724]">{t('interestedProductsQuestion')}</p>
                       <ProductChoiceGrid selected={formData.interestedProducts} onToggle={toggleProduct} />
                     </div>
-                    <Field label="What research question are you trying to understand?">
+                    <Field label={t('desiredResultQuestion')}>
                       <TextArea name="desiredResearchResult" value={formData.desiredResearchResult} onChange={updateField} />
                     </Field>
                   </div>
@@ -576,13 +666,13 @@ export function IntakePage() {
                     <NextStepsCard />
                     <NotMedicalAdviceCard />
                     <div className="grid gap-4 md:grid-cols-2">
-                      <Field label="First name">
+                      <Field label={t('firstName')}>
                         <TextInput name="firstName" value={formData.firstName} onChange={updateField} autoComplete="given-name" />
                       </Field>
-                      <Field label="Last name">
+                      <Field label={t('lastName')}>
                         <TextInput name="lastName" value={formData.lastName} onChange={updateField} autoComplete="family-name" />
                       </Field>
-                      <Field label="Email">
+                      <Field label={t('email')}>
                         <TextInput
                           name="email"
                           value={formData.email}
@@ -592,7 +682,7 @@ export function IntakePage() {
                           required={formData.preferredContactMethod === 'Email'}
                         />
                       </Field>
-                      <Field label="Phone number">
+                      <Field label={t('phoneNumber')}>
                         <TextInput
                           name="phone"
                           value={formData.phone}
@@ -602,17 +692,17 @@ export function IntakePage() {
                           required={formData.preferredContactMethod === 'SMS' || formData.preferredContactMethod === 'WhatsApp'}
                         />
                       </Field>
-                      <Field label="City">
+                      <Field label={t('city')}>
                         <TextInput name="city" value={formData.city} onChange={updateField} autoComplete="address-level2" />
                       </Field>
-                      <Field label="Preferred contact method">
+                      <Field label={t('preferredContactMethod')}>
                         <SelectField name="preferredContactMethod" value={formData.preferredContactMethod} options={contactOptions} onChange={updateField} />
                       </Field>
                     </div>
                     <ResponseTimelineCard />
                     <ConsentChecklist data={formData} onChange={updateConsent} />
                     <div className="rounded-2xl border border-teal-700/20 bg-teal-50 p-4 text-sm leading-6 text-teal-950">
-                      Form submission unlocks a public confirmation only. Any product-specific catalog match is subject to internal review and sent through your selected contact method.
+                      {t('formUnlocksNote')}
                     </div>
                   </div>
                 ) : null}
@@ -626,26 +716,26 @@ export function IntakePage() {
                   className="inline-flex h-12 items-center justify-center gap-3 rounded-full border border-slate-900/10 bg-white px-6 text-sm font-semibold text-[#071724] transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ArrowLeft size={16} aria-hidden="true" />
-                  Back
+                  {t('back')}
                 </button>
 
-                {step === steps.length - 1 ? (
+                {step === stepKeys.length - 1 ? (
                   <button
                     type="submit"
                     disabled={!canContinue}
                     className="inline-flex h-12 items-center justify-center gap-3 rounded-full bg-[#071724] px-6 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(7,23,36,0.18)] transition hover:bg-[#102a3d] disabled:cursor-not-allowed disabled:opacity-45"
                   >
-                    Submit for Review
+                    {t('submitForReview')}
                     <Sparkles size={16} aria-hidden="true" />
                   </button>
                 ) : (
                   <button
                     type="button"
                     disabled={!canContinue}
-                    onClick={() => setStep((current) => Math.min(current + 1, steps.length - 1))}
+                    onClick={() => setStep((current) => Math.min(current + 1, stepKeys.length - 1))}
                     className="inline-flex h-12 items-center justify-center gap-3 rounded-full bg-[#071724] px-6 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(7,23,36,0.18)] transition hover:bg-[#102a3d] disabled:cursor-not-allowed disabled:opacity-45"
                   >
-                    Continue
+                    {t('continue')}
                     <ArrowRight size={16} aria-hidden="true" />
                   </button>
                 )}
@@ -659,6 +749,7 @@ export function IntakePage() {
 }
 
 function LoadingScreen() {
+  const { t } = useTranslation('intake')
   return (
     <div className="grid min-h-[36rem] place-items-center text-center">
       <div className="max-w-xl">
@@ -666,11 +757,11 @@ function LoadingScreen() {
           <LoaderCircle size={26} aria-hidden="true" className="animate-spin text-teal-300" />
         </div>
         <h2 className="mt-7 text-3xl font-semibold tracking-[-0.045em] text-[#071724]">
-          Finding your research match...
+          {t('loadingTitle')}
         </h2>
         <div className="mt-6 grid gap-3 text-sm font-semibold text-slate-600">
-          <p>Matching your answers with Encore Bio Labs research categories...</p>
-          <p>Preparing a personalized research summary...</p>
+          <p>{t('loadingLine1')}</p>
+          <p>{t('loadingLine2')}</p>
         </div>
       </div>
     </div>
@@ -715,11 +806,8 @@ function TrustCard({
 }
 
 function ReviewProcessCard() {
-  const steps = [
-    'You complete the intake',
-    'AI organizes your research match',
-    'Encore Bio Labs reviews and follows up privately',
-  ]
+  const { t } = useTranslation('intake')
+  const steps = [t('reviewStep1'), t('reviewStep2'), t('reviewStep3')]
 
   return (
     <div className="rounded-[1.5rem] border border-slate-900/10 bg-white/82 p-5 shadow-[0_18px_50px_rgba(7,23,36,0.06)]">
@@ -728,9 +816,9 @@ function ReviewProcessCard() {
           <ClipboardCheck size={18} aria-hidden="true" />
         </span>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Review process</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">{t('reviewProcessEyebrow')}</p>
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            After submission, your intake is reviewed internally by the Encore Bio Labs support team. The profile system helps organize your research interests and catalog matches, but product-specific follow-up is reviewed before it is sent.
+            {t('reviewProcessBody')}
           </p>
         </div>
       </div>
@@ -749,23 +837,20 @@ function ReviewProcessCard() {
 }
 
 function NextStepsCard() {
+  const { t } = useTranslation('intake')
   return (
     <TrustCard
       icon={<FileCheck2 size={18} aria-hidden="true" />}
-      eyebrow="Next steps"
-      title="Your profile moves into internal review after submission."
-      body="After you submit, we will review your profile and send any product-specific catalog match through your preferred contact method: email, SMS, or WhatsApp. Public results on the website will only show product categories and general research information."
-      bullets={[
-        'Intake submitted instantly',
-        'Internal review begins after submission',
-        'Follow-up sent after review',
-        'Complex profiles may require additional questions',
-      ]}
+      eyebrow={t('nextStepsEyebrow')}
+      title={t('nextStepsTitle')}
+      body={t('nextStepsBody')}
+      bullets={[t('nextStepsBullet1'), t('nextStepsBullet2'), t('nextStepsBullet3'), t('nextStepsBullet4')]}
     />
   )
 }
 
 function NotMedicalAdviceCard() {
+  const { t: tBrand } = useTranslation('brand')
   return (
     <div className="rounded-[1.5rem] border border-slate-900/10 bg-white/82 p-5 shadow-[0_18px_50px_rgba(7,23,36,0.06)]">
       <div className="flex items-start gap-4">
@@ -774,10 +859,10 @@ function NotMedicalAdviceCard() {
         </span>
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">
-            {brandText.notMedicalAdviceLabel}
+            {tBrand('notMedicalAdviceLabel')}
           </p>
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            {brandText.intakeDisclaimer}
+            {tBrand('intakeDisclaimer')}
           </p>
         </div>
       </div>
@@ -786,11 +871,12 @@ function NotMedicalAdviceCard() {
 }
 
 function ResponseTimelineCard() {
+  const { t } = useTranslation('intake')
   return (
     <div className="rounded-[1.5rem] border border-slate-900/10 bg-[#f5f5f2]/80 p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Response timeline</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">{t('responseTimelineEyebrow')}</p>
       <p className="mt-3 text-sm leading-6 text-slate-600">
-        Typical follow-up timing depends on review volume and profile complexity. Most profiles are reviewed in order received. If more information is needed, our team may contact you before sending product-specific follow-up.
+        {t('responseTimelineBody')}
       </p>
     </div>
   )
@@ -803,17 +889,18 @@ function ConsentChecklist({
   data: IntakeFormData
   onChange: (name: keyof IntakeFormData, value: boolean) => void
 }) {
+  const { t } = useTranslation('intake')
   const consentItems: Array<[keyof IntakeFormData, string]> = [
-    ['consentResearchUseOnly', 'I understand Encore Bio Labs products are for research-use-only.'],
-    ['consentNoMedicalAdvice', 'I understand this intake does not provide medical advice, diagnosis, treatment, prescriptions, dosing guidance, or use instructions.'],
-    ['consentAccuracy', 'I confirm the information I provided is accurate to the best of my knowledge.'],
-    ['consentContact', 'I agree to be contacted through my selected method: email, SMS, or WhatsApp.'],
-    ['consentInternalReview', 'I understand any product-specific follow-up is subject to internal review.'],
+    ['consentResearchUseOnly', t('consent1')],
+    ['consentNoMedicalAdvice', t('consent2')],
+    ['consentAccuracy', t('consent3')],
+    ['consentContact', t('consent4')],
+    ['consentInternalReview', t('consent5')],
   ]
 
   return (
     <div className="grid gap-3 rounded-[1.5rem] border border-slate-900/10 bg-white/82 p-5">
-      <p className="text-sm font-semibold text-[#071724]">Eligibility & safety review</p>
+      <p className="text-sm font-semibold text-[#071724]">{t('consentEligibilityTitle')}</p>
       {consentItems.map(([name, label]) => (
         <label
           key={name}
@@ -838,6 +925,8 @@ function ResultsPage({
 }: {
   lead: CustomerLead
 }) {
+  const { path } = useLocale()
+  const { t } = useTranslation('intake')
   const categories = [
     lead.recommendationSummary.primaryCategory,
     lead.recommendationSummary.secondaryCategory,
@@ -851,43 +940,43 @@ function ResultsPage({
             <Sparkles size={19} aria-hidden="true" />
           </span>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Pending review</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">{t('resultsPendingEyebrow')}</p>
             <h2 className="mt-1 text-2xl font-semibold tracking-[-0.035em] text-[#071724]">
-              Your research match has been submitted.
+              {t('resultsSubmittedTitle')}
             </h2>
           </div>
         </div>
         <p className="mt-4 text-sm leading-6 text-slate-600">
-          Thank you. Your intake has been received and will be reviewed by the Encore Bio Labs team. Your public results page may show general product categories, but any product-specific catalog match will only be sent after review through your selected contact method.
+          {t('resultsSubmittedBody')}
         </p>
       </div>
 
       <div className="grid gap-3 md:grid-cols-3">
-        <SummaryTile label="Selected contact method" value={lead.preferredContactMethod} />
-        <SummaryTile label="Main research category" value={lead.recommendationSummary.primaryCategory} />
-        <SummaryTile label="Status" value="Pending Review" />
+        <SummaryTile label={t('selectedContactMethod')} value={getIntakeValueLabel(t, lead.preferredContactMethod)} />
+        <SummaryTile label={t('mainResearchCategory')} value={getIntakeValueLabel(t, lead.recommendationSummary.primaryCategory)} />
+        <SummaryTile label={t('status')} value={t('pendingReview')} />
       </div>
 
       <div className="rounded-[1.5rem] border border-slate-900/10 bg-white/82 p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">Matched research categories</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">{t('matchedCategories')}</p>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {categories.map((category) => (
             <a
               key={category}
-              href={`/categories/${categorySlugs[category] ?? ''}`}
+              href={path(`/categories/${categorySlugs[category] ?? ''}`)}
               className="rounded-2xl border border-slate-900/10 bg-[#f5f5f2]/70 p-4 text-sm font-semibold text-[#071724] transition hover:-translate-y-0.5 hover:border-teal-500/50 hover:bg-white"
             >
-              {category}
-              <span className="mt-2 block text-xs font-semibold text-teal-700">View category page</span>
+              {getIntakeValueLabel(t, category)}
+              <span className="mt-2 block text-xs font-semibold text-teal-700">{t('viewCategoryPage')}</span>
             </a>
           ))}
         </div>
       </div>
 
       <div className="rounded-[1.5rem] border border-slate-900/10 bg-white/82 p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">Next steps</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">{t('resultsNextStepsEyebrow')}</p>
         <p className="mt-3 text-sm leading-6 text-slate-600">
-          After submission, internal review begins and follow-up is sent after review through your selected contact method. Complex profiles may require additional questions before product-specific follow-up is sent.
+          {t('resultsNextStepsBody')}
         </p>
       </div>
 
@@ -895,12 +984,12 @@ function ResultsPage({
         {lead.recommendedProducts.map((product) => (
           <a
             key={product.slug}
-            href={`/products/${product.slug}`}
+            href={path(`/products/${product.slug}`)}
             className="rounded-2xl border border-slate-900/10 bg-white/82 p-4 transition hover:-translate-y-0.5 hover:border-teal-500/50 hover:shadow-[0_18px_44px_rgba(7,23,36,0.09)]"
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">{product.category}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">{getIntakeValueLabel(t, product.category)}</p>
             <h3 className="mt-2 text-lg font-semibold tracking-[-0.03em] text-[#071724]">{product.name}</h3>
-            <p className="mt-3 text-sm font-semibold text-slate-500">View product page</p>
+            <p className="mt-3 text-sm font-semibold text-slate-500">{t('viewProductPage')}</p>
           </a>
         ))}
       </div>
@@ -908,20 +997,22 @@ function ResultsPage({
       <div className="rounded-[1.5rem] border border-slate-900/10 bg-[#071724] p-5 text-white">
         <div className="flex items-center gap-2 text-sm font-semibold">
           <FlaskConical size={17} aria-hidden="true" className="text-teal-300" />
-          Research-use-only explanation
+          {t('researchUseExplanationTitle')}
         </div>
-        <p className="mt-4 text-sm leading-7 text-slate-300">{lead.recommendationSummary.explanation}</p>
+        <p className="mt-4 text-sm leading-7 text-slate-300">
+          {t(recommendationKeys[lead.mainGoal] ?? 'recommendationGeneral')}
+        </p>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">
-        <a href="/catalog" className="inline-flex h-12 items-center justify-center rounded-full bg-[#071724] px-6 text-sm font-semibold text-white">
-          Browse Products
+        <a href={path('/catalog')} className="inline-flex h-12 items-center justify-center rounded-full bg-[#071724] px-6 text-sm font-semibold text-white">
+          {t('browseProducts')}
         </a>
-        <a href="/research" className="inline-flex h-12 items-center justify-center rounded-full border border-slate-900/10 bg-white px-6 text-sm font-semibold text-[#071724]">
-          Research Library
+        <a href={path('/research')} className="inline-flex h-12 items-center justify-center rounded-full border border-slate-900/10 bg-white px-6 text-sm font-semibold text-[#071724]">
+          {t('researchLibrary')}
         </a>
-        <a href="/" className="inline-flex h-12 items-center justify-center rounded-full border border-slate-900/10 bg-white px-6 text-sm font-semibold text-[#071724]">
-          Return Home
+        <a href={path('/')} className="inline-flex h-12 items-center justify-center rounded-full border border-slate-900/10 bg-white px-6 text-sm font-semibold text-[#071724]">
+          {t('returnHome')}
         </a>
         <a
           href="https://wa.me/19153595448"
@@ -929,7 +1020,7 @@ function ResultsPage({
           rel="noopener noreferrer"
           className="inline-flex h-12 items-center justify-center rounded-full border border-slate-900/10 bg-white px-6 text-sm font-semibold text-[#071724]"
         >
-          Contact Support
+          {t('contactSupport')}
         </a>
       </div>
     </div>
@@ -937,10 +1028,11 @@ function ResultsPage({
 }
 
 function SummaryTile({ label, value }: { label: string; value: string }) {
+  const { t } = useTranslation('intake')
   return (
     <div className="rounded-2xl border border-slate-900/10 bg-white/82 p-4">
       <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">{label}</div>
-      <div className="mt-2 text-sm font-semibold leading-6 text-[#071724]">{value || 'Not selected'}</div>
+      <div className="mt-2 text-sm font-semibold leading-6 text-[#071724]">{value || t('notSelected')}</div>
     </div>
   )
 }

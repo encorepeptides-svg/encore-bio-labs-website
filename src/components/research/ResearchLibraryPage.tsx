@@ -10,6 +10,7 @@ import {
 import { CTA } from '../CTA'
 import { Reveal } from '../Reveal'
 import { SectionHeader } from '../SectionHeader'
+import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 
 const contentTypeIcons: Record<ResearchContentType, typeof BookOpen> = {
   'deep-dive': BookOpen,
@@ -21,11 +22,13 @@ const contentTypeIcons: Record<ResearchContentType, typeof BookOpen> = {
 const contentTypeOrder: ResearchContentType[] = ['beginner', 'deep-dive', 'mechanism', 'comparison']
 
 function ArticleCard({ article }: { article: (typeof researchArticles)[number] }) {
+  const { path, locale } = useLocale()
+  const { t } = useTranslation('researchLibrary')
   const Icon = contentTypeIcons[article.contentType]
 
   return (
     <a
-      href={article.href}
+      href={path(article.href)}
       className="group flex h-full flex-col rounded-[1.5rem] border border-slate-900/10 bg-white p-5 shadow-[0_18px_48px_rgba(7,23,36,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(20,184,166,0.14)]"
     >
       <span className="flex size-10 items-center justify-center rounded-2xl bg-teal-50 text-teal-800">
@@ -35,11 +38,11 @@ function ArticleCard({ article }: { article: (typeof researchArticles)[number] }
         {contentTypeLabels[article.contentType]}
       </p>
       <h3 className="mt-2 text-lg font-semibold tracking-[-0.02em] text-[#071724]">
-        {article.title}
+        {locale === 'es' ? `Investigación: ${article.title}` : article.title}
       </h3>
-      <p className="mt-2 flex-1 text-sm leading-6 text-slate-600">{article.description}</p>
+      <p className="mt-2 flex-1 text-sm leading-6 text-slate-600">{locale === 'es' ? 'Artículo de referencia sobre el modelo, la vía estudiada y sus limitaciones.' : article.description}</p>
       <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-teal-800">
-        Explore
+        {t('explore')}
         <ArrowRight size={14} aria-hidden="true" className="transition group-hover:translate-x-1" />
       </span>
     </a>
@@ -47,6 +50,8 @@ function ArticleCard({ article }: { article: (typeof researchArticles)[number] }
 }
 
 export function ResearchLibraryPage() {
+  const { path, locale } = useLocale()
+  const { t } = useTranslation('researchLibrary')
   const beginnerShelf = researchArticles.filter((article) => article.contentType === 'beginner').slice(0, 4)
 
   return (
@@ -54,25 +59,23 @@ export function ResearchLibraryPage() {
       <div className="px-5 pt-6 sm:px-8">
         <div className="mx-auto flex max-w-[88rem] items-center gap-2 text-sm text-slate-500">
           <a href="/" className="font-medium transition hover:text-[#071724]">
-            Home
+            {t('home')}
           </a>
           <span aria-hidden="true">/</span>
-          <span className="font-semibold text-[#071724]">Research Library</span>
+          <span className="font-semibold text-[#071724]">{t('library')}</span>
         </div>
       </div>
 
       <section className="px-5 pb-10 pt-8 sm:px-8 lg:pb-14">
         <div className="mx-auto max-w-[88rem]">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">
-            Research Library
+            {t('eyebrow')}
           </p>
           <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-[-0.05em] text-[#071724] sm:text-5xl">
-            The science behind the catalog.
+            {t('title')}
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
-            Plain-language explainers, comparisons, and reference material on the research areas
-            Encore Bio Labs covers — written to help you ask better questions, not to replace the
-            primary literature.
+            {t('body')}
           </p>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
             {brandText.researchLibraryDisclaimer}
@@ -80,10 +83,10 @@ export function ResearchLibraryPage() {
 
           <div className="mt-8 flex flex-wrap gap-3">
             <CTA href="#start-here" className="bg-[#071724] hover:bg-[#102a3d]">
-              Start With the Basics
+              {t('startBasics')}
             </CTA>
             <CTA href="#by-category" tone="ghost">
-              Browse by Category
+              {t('browseCategory')}
             </CTA>
           </div>
         </div>
@@ -93,9 +96,9 @@ export function ResearchLibraryPage() {
         <div className="mx-auto max-w-[88rem]">
           <SectionHeader
             align="left"
-            eyebrow="Browse by Content Type"
-            title="Four ways to learn"
-            description="Every article in the library is one of these four types — pick the depth that fits what you're looking for."
+            eyebrow={t('browseType')}
+            title={t('fourWays')}
+            description={t('typeBody')}
           />
           <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {contentTypeOrder.map((type) => {
@@ -114,7 +117,7 @@ export function ResearchLibraryPage() {
                   <h3 className="mt-4 text-lg font-semibold tracking-[-0.02em] text-[#071724]">
                     {contentTypeLabels[type]}
                   </h3>
-                  <p className="mt-2 text-sm text-slate-500">{count} topics</p>
+                  <p className="mt-2 text-sm text-slate-500">{t('topics', { count })}</p>
                 </a>
               )
             })}
@@ -126,9 +129,9 @@ export function ResearchLibraryPage() {
         <div className="mx-auto max-w-[88rem]">
           <SectionHeader
             align="left"
-            eyebrow="Browse by Research Category"
-            title="Start from a research area"
-            description="Each category page explains the shared biology before pointing you to individual products."
+            eyebrow={t('browseResearchCategory')}
+            title={t('startArea')}
+            description={t('categoryBody')}
           />
           <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
             {researchAreas.map((area) => {
@@ -137,7 +140,7 @@ export function ResearchLibraryPage() {
               return (
                 <a
                   key={area.slug}
-                  href={`/categories/${area.slug}`}
+                  href={path(`/categories/${area.slug}`)}
                   className="group rounded-[1.5rem] border border-slate-900/10 bg-white p-5 shadow-[0_18px_48px_rgba(7,23,36,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(20,184,166,0.14)]"
                 >
                   <span
@@ -145,10 +148,10 @@ export function ResearchLibraryPage() {
                     style={{ backgroundColor: area.accent }}
                     aria-hidden="true"
                   />
-                  <h3 className="text-lg font-semibold tracking-[-0.02em] text-[#071724]">{area.name}</h3>
-                  <p className="mt-2 text-sm text-slate-500">{relatedCount} related topics</p>
+                  <h3 className="text-lg font-semibold tracking-[-0.02em] text-[#071724]">{locale === 'es' ? `Investigación: ${area.name}` : area.name}</h3>
+                  <p className="mt-2 text-sm text-slate-500">{t('relatedTopics', { count: relatedCount })}</p>
                   <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-teal-800">
-                    View category
+                    {t('viewCategory')}
                     <ArrowRight size={14} aria-hidden="true" className="transition group-hover:translate-x-1" />
                   </span>
                 </a>
@@ -162,9 +165,9 @@ export function ResearchLibraryPage() {
         <div className="mx-auto max-w-[88rem]">
           <SectionHeader
             align="left"
-            eyebrow="Start Here"
-            title="New to research-use compounds?"
-            description="A short shelf of foundational topics before you go deeper into any one category."
+            eyebrow={t('startHere')}
+            title={t('newToResearch')}
+            description={t('shelfBody')}
           />
           <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {beginnerShelf.map((article) => (
@@ -182,12 +185,12 @@ export function ResearchLibraryPage() {
               eyebrow={contentTypeLabels[type]}
               title={
                 type === 'beginner'
-                  ? 'All beginner education topics'
+                  ? t('allBeginner')
                   : type === 'deep-dive'
-                    ? 'All compound deep dives'
+                    ? t('allDeep')
                     : type === 'mechanism'
-                      ? 'All mechanism explainers'
-                      : 'All comparison guides'
+                      ? t('allMechanism')
+                      : t('allComparison')
               }
               description=""
             />
@@ -208,9 +211,9 @@ export function ResearchLibraryPage() {
         <div className="mx-auto max-w-[88rem]">
           <SectionHeader
             align="left"
-            eyebrow="Glossary"
-            title="Reference terms"
-            description="Short definitions for vocabulary used throughout the catalog and this library."
+            eyebrow={t('glossary')}
+            title={t('terms')}
+            description={t('glossaryBody')}
           />
           <div className="mt-8 grid gap-4 md:grid-cols-2">
             {glossaryTerms.map((entry) => (
@@ -230,12 +233,10 @@ export function ResearchLibraryPage() {
       <section className="px-5 py-6 sm:px-8">
         <div className="mx-auto max-w-[88rem] rounded-[1.75rem] border border-teal-900/10 bg-[#071724] p-6 text-white shadow-[0_26px_80px_rgba(7,23,36,0.16)] sm:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-200">
-            Research-Use-Only Reminder
+            {t('reminder')}
           </p>
           <p className="mt-4 max-w-4xl text-lg leading-8 text-slate-100">
-            This library is educational content only. It does not diagnose, treat, cure, or
-            prevent any condition, and it is not a substitute for reading the primary research
-            literature or consulting a qualified professional.
+            {t('reminderBody')}
           </p>
         </div>
       </section>
@@ -243,21 +244,20 @@ export function ResearchLibraryPage() {
       <section className="px-5 py-12 sm:px-8 lg:py-16">
         <div className="mx-auto max-w-[88rem] rounded-[2rem] border border-white/10 bg-[linear-gradient(135deg,#071724,#0d3144)] px-6 py-14 text-center text-white shadow-[0_34px_110px_rgba(7,23,36,0.22)] sm:px-10 sm:py-16">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-200">
-            Keep Exploring
+            {t('keepExploring')}
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.045em] sm:text-4xl">
-            Ready to look at the catalog itself?
+            {t('ready')}
           </h2>
           <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-slate-300">
-            Every article here links back to a real product or category page — start with whichever
-            research area is closest to your question.
+            {t('readyBody')}
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <CTA href="/#products" tone="light">
-              Browse Categories
+            <CTA href={path('/#products')} tone="light">
+              {t('browseCategories')}
             </CTA>
-            <CTA href="/intake" tone="ghost" className="border-white/20 bg-white/10 text-white hover:bg-white/15">
-              Find My Match
+            <CTA href={path('/intake')} tone="ghost" className="border-white/20 bg-white/10 text-white hover:bg-white/15">
+              {t('findMatch')}
             </CTA>
           </div>
         </div>

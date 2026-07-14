@@ -7,6 +7,11 @@ import { RouteLoadingFallback } from './components/RouteLoadingFallback'
 import { CartProvider } from './context/CartContext'
 import { PortalAuthProvider } from './context/PortalAuthContext'
 import { ProtectedPortal } from './components/portal/ProtectedPortal'
+import { LocaleProvider, useTranslation } from './i18n/LocaleContext'
+import { LatamSuggestionBanner } from './components/LatamSuggestionBanner'
+import { stripLocalePrefix } from './i18n/config'
+import { applyDocumentMetadata } from './i18n/applyMetadata'
+import { getCategoryMetadata, notFoundMetadata, pageMetadata } from './i18n/metadata'
 
 // Route pages are code-split so each experience only loads when it renders.
 const AboutPage = lazy(() => import('./components/AboutPage').then((m) => ({ default: m.AboutPage })))
@@ -18,6 +23,7 @@ const CatalogPage = lazy(() => import('./components/catalog/CatalogPage').then((
 const CategoryPage = lazy(() => import('./components/category/CategoryPage').then((m) => ({ default: m.CategoryPage })))
 const CartPage = lazy(() => import('./components/cart/CartPage').then((m) => ({ default: m.CartPage })))
 const CheckoutPage = lazy(() => import('./components/checkout/CheckoutPage').then((m) => ({ default: m.CheckoutPage })))
+const ContactPage = lazy(() => import('./components/ContactPage').then((m) => ({ default: m.ContactPage })))
 const FAQLibraryPage = lazy(() => import('./components/faq/FAQLibraryPage').then((m) => ({ default: m.FAQLibraryPage })))
 const IntakePage = lazy(() => import('./components/intake/IntakePage').then((m) => ({ default: m.IntakePage })))
 const KitsPage = lazy(() => import('./components/kits/KitsPage').then((m) => ({ default: m.KitsPage })))
@@ -49,12 +55,8 @@ const knownCategorySlugs = new Set([
   'hormone-wellness',
 ])
 
-function getPathname() {
-  return typeof window === 'undefined' ? '/' : window.location.pathname
-}
-
-function getRouteParam(pattern: RegExp) {
-  const match = getPathname().match(pattern)
+function getRouteParam(path: string, pattern: RegExp) {
+  const match = path.match(pattern)
   const value = match?.[1]
 
   if (!value) {
@@ -68,101 +70,92 @@ function getRouteParam(pattern: RegExp) {
   }
 }
 
-function getProductSlugFromPath() {
-  return getRouteParam(/^\/products\/([^/]+)\/?$/)
+function getProductSlugFromPath(path: string) {
+  return getRouteParam(path, /^\/products\/([^/]+)\/?$/)
 }
 
-function getCategorySlugFromPath() {
-  return getRouteParam(/^\/categories\/([^/]+)\/?$/)
+function getCategorySlugFromPath(path: string) {
+  return getRouteParam(path, /^\/categories\/([^/]+)\/?$/)
+}
+
+function SkipToMainLink() {
+  const { t } = useTranslation('common')
+  return (
+    <a
+      href="#main-content"
+      className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-[#071724] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+    >
+      {t('skipToMain')}
+    </a>
+  )
 }
 
 function App() {
-  const productSlug = getProductSlugFromPath()
-  const categorySlug = getCategorySlugFromPath()
-  const pathname = getPathname()
+  const rawPathname = typeof window === 'undefined' ? '/' : window.location.pathname
+  const { locale, path: logicalPath } = stripLocalePrefix(rawPathname)
+  const productSlug = getProductSlugFromPath(logicalPath)
+  const categorySlug = getCategorySlugFromPath(logicalPath)
 
   useEffect(() => {
     if (productSlug) return
 
-    const pageMetadata: Record<string, { title: string; description: string }> = {
-      '/': { title: 'Encore Bio Labs | Research-grade compounds', description: 'Explore Encore Bio Labs research-use-only products, documentation, complete kits, and inquiry support.' },
-      '/catalog': { title: 'Research Product Catalog | Encore Bio Labs', description: 'Browse Encore Bio Labs research products, available formats, catalog pricing, and documentation pathways.' },
-      '/cart': { title: 'Research Cart | Encore Bio Labs', description: 'Review selected research products, strengths, quantities, and catalog subtotal.' },
-      '/checkout': { title: 'Order Information | Encore Bio Labs', description: 'Review an Encore Bio Labs research order inquiry and provide contact and shipping information.' },
-      '/faq': { title: 'Research Product FAQ | Encore Bio Labs', description: 'Read answers about research-use classification, products, documentation, ordering, shipping, and support.' },
-      '/about': { title: 'About Encore Bio Labs', description: 'Learn about Encore Bio Labs, its research catalog, documentation-first approach, and responsible product positioning.' },
-      '/intake': { title: 'Research Intake | Encore Bio Labs', description: 'Share your research interests for a qualified Encore Bio Labs catalog review.' },
-      '/quality': { title: 'Quality and Documentation | Encore Bio Labs', description: 'Review Encore Bio Labs quality, documentation, handling, and research-use standards.' },
-      '/kits': { title: 'Encore Complete Kit', description: 'Review the shared components included with eligible Encore Bio Labs research products.' },
-      '/research': { title: 'Research Library | Encore Bio Labs', description: 'Explore research-use educational material and product-category context from Encore Bio Labs.' },
-      '/research/retatrutide': { title: 'Retatrutide Research | Encore Bio Labs', description: 'Review educational Retatrutide research context, evidence status, and research-use limitations.' },
-      '/legal/terms': { title: 'Terms of Service | Encore Bio Labs', description: 'Read the Encore Bio Labs terms governing site access and research catalog inquiries.' },
-      '/legal/privacy': { title: 'Privacy Policy | Encore Bio Labs', description: 'Read how Encore Bio Labs handles information submitted through the website.' },
-      '/legal/shipping-returns': { title: 'Shipping and Returns | Encore Bio Labs', description: 'Review Encore Bio Labs shipping, delivery, return, and support policies.' },
-    }
-    const normalizedPath = pathname.length > 1 ? pathname.replace(/\/$/, '') : pathname
+    const normalizedPath = logicalPath.length > 1 ? logicalPath.replace(/\/$/, '') : logicalPath
     const categoryName = categorySlug && knownCategorySlugs.has(categorySlug)
       ? categorySlug.split('-').map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`).join(' ')
       : undefined
-    const metadata = pageMetadata[normalizedPath] ?? (categoryName
-      ? { title: `${categoryName} Research | Encore Bio Labs`, description: `Explore Encore Bio Labs ${categoryName.toLowerCase()} research products and educational context.` }
-      : { title: 'Page Not Found | Encore Bio Labs', description: 'The requested Encore Bio Labs page is not available.' })
-    const descriptionMeta = document.querySelector<HTMLMetaElement>('meta[name="description"]')
-    let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]')
-
-    document.title = metadata.title
-    if (descriptionMeta) descriptionMeta.content = metadata.description
-    if (!canonical) {
-      canonical = document.createElement('link')
-      canonical.rel = 'canonical'
-      document.head.appendChild(canonical)
-    }
-    canonical.href = `https://encorebiolabs.com${normalizedPath}`
-  }, [categorySlug, pathname, productSlug])
+    const isPortalSubRoute = normalizedPath.startsWith('/portal/') || normalizedPath.startsWith('/admin')
+    const metadataKey = isPortalSubRoute ? '/portal' : normalizedPath
+    const localizedMeta = pageMetadata[metadataKey] ?? (categoryName ? getCategoryMetadata(categorySlug!, categoryName) : notFoundMetadata)
+    applyDocumentMetadata(normalizedPath, locale, localizedMeta[locale])
+  }, [categorySlug, locale, logicalPath, productSlug])
 
   const page = (() => {
-    const authMode = pathname === '/client-login' ? 'login' : pathname === '/client-register' ? 'register' : pathname === '/client-forgot-password' ? 'forgot' : pathname === '/client-reset-password' ? 'reset' : undefined
+    const authMode = logicalPath === '/client-login' ? 'login' : logicalPath === '/client-register' ? 'register' : logicalPath === '/client-forgot-password' ? 'forgot' : logicalPath === '/client-reset-password' ? 'reset' : undefined
     if (authMode) return <PortalAuthPage mode={authMode} />
-    if (pathname === '/portal/onboarding') return <ProtectedPortal allowOnboarding><OnboardingPage /></ProtectedPortal>
-    if (pathname === '/portal' || pathname.startsWith('/portal/')) {
-      const section = pathname === '/portal' ? 'overview' : pathname.slice('/portal/'.length)
+    if (logicalPath === '/portal/onboarding') return <ProtectedPortal allowOnboarding><OnboardingPage /></ProtectedPortal>
+    if (logicalPath === '/portal' || logicalPath.startsWith('/portal/')) {
+      const section = logicalPath === '/portal' ? 'overview' : logicalPath.slice('/portal/'.length)
       const allowPending = section === 'security'
       return <ProtectedPortal allowOnboarding={allowPending}><ClientPortalPage section={section} /></ProtectedPortal>
     }
-    if (pathname === '/admin' || pathname.startsWith('/admin/')) {
-      if (pathname === '/admin/crm' || pathname.startsWith('/admin/crm/')) return <CRMAdmin />
-      const section = pathname === '/admin' ? 'overview' : pathname.slice('/admin/'.length)
+    if (logicalPath === '/admin' || logicalPath.startsWith('/admin/')) {
+      if (logicalPath === '/admin/crm' || logicalPath.startsWith('/admin/crm/')) return <CRMAdmin />
+      const section = logicalPath === '/admin' ? 'overview' : logicalPath.slice('/admin/'.length)
       return <ProtectedPortal admin><AdminPortalPage section={section} /></ProtectedPortal>
     }
-    if (pathname === '/intake' || pathname === '/intake/') {
+    if (logicalPath === '/intake' || logicalPath === '/intake/') {
       return <IntakePage />
     }
 
-    if (pathname === '/about' || pathname === '/about/') {
+    if (logicalPath === '/about' || logicalPath === '/about/') {
       return <AboutPage />
     }
 
-    if (pathname === '/') {
+    if (logicalPath === '/') {
       return <HomePage />
     }
 
-    if (pathname === '/catalog' || pathname === '/catalog/') {
+    if (logicalPath === '/catalog' || logicalPath === '/catalog/') {
       return <CatalogPage />
     }
 
-    if (pathname === '/cart' || pathname === '/cart/') {
+    if (logicalPath === '/cart' || logicalPath === '/cart/') {
       return <CartPage />
     }
 
-    if (pathname === '/checkout' || pathname === '/checkout/') {
+    if (logicalPath === '/checkout' || logicalPath === '/checkout/') {
       return <CheckoutPage />
     }
 
-    if (pathname === '/kits' || pathname === '/kits/') {
+    if (logicalPath === '/contact' || logicalPath === '/contact/') {
+      return <ContactPage />
+    }
+
+    if (logicalPath === '/kits' || logicalPath === '/kits/') {
       return <KitsPage />
     }
 
-    if (pathname === '/quality' || pathname === '/quality/') {
+    if (logicalPath === '/quality' || logicalPath === '/quality/') {
       return <QualityPage />
     }
 
@@ -170,23 +163,23 @@ function App() {
       return <CategoryPage slug={categorySlug} />
     }
 
-    if (pathname === '/legal/terms' || pathname === '/legal/terms/') {
+    if (logicalPath === '/legal/terms' || logicalPath === '/legal/terms/') {
       return <TermsPage />
     }
 
-    if (pathname === '/legal/privacy' || pathname === '/legal/privacy/') {
+    if (logicalPath === '/legal/privacy' || logicalPath === '/legal/privacy/') {
       return <PrivacyPage />
     }
 
-    if (pathname === '/legal/shipping-returns' || pathname === '/legal/shipping-returns/') {
+    if (logicalPath === '/legal/shipping-returns' || logicalPath === '/legal/shipping-returns/') {
       return <ShippingReturnsPage />
     }
 
-    if (pathname === '/faq' || pathname === '/faq/') {
+    if (logicalPath === '/faq' || logicalPath === '/faq/') {
       return <FAQLibraryPage />
     }
 
-    if (pathname === '/research' || pathname === '/research/' || pathname === '/research/retatrutide' || pathname === '/research/retatrutide/') {
+    if (logicalPath === '/research' || logicalPath === '/research/' || logicalPath === '/research/retatrutide' || logicalPath === '/research/retatrutide/') {
       return <ResearchLibraryPage />
     }
 
@@ -196,37 +189,35 @@ function App() {
 
     return <NotFoundPage />
   })()
-  const isPortalRoute = pathname === '/portal' || pathname.startsWith('/portal/') || pathname === '/admin' || pathname.startsWith('/admin/')
-  const isPortalAuthRoute = ['/client-login','/client-register','/client-forgot-password','/client-reset-password'].includes(pathname)
-  const isInternalAdminRoute = pathname === '/admin/crm' || pathname.startsWith('/admin/crm/')
+  const isPortalRoute = logicalPath === '/portal' || logicalPath.startsWith('/portal/') || logicalPath === '/admin' || logicalPath.startsWith('/admin/')
+  const isPortalAuthRoute = ['/client-login', '/client-register', '/client-forgot-password', '/client-reset-password'].includes(logicalPath)
+  const isInternalAdminRoute = logicalPath === '/admin/crm' || logicalPath.startsWith('/admin/crm/')
   const isCheckoutRoute =
-    pathname === '/checkout' ||
-    pathname === '/checkout/'
+    logicalPath === '/checkout' ||
+    logicalPath === '/checkout/'
   const hideGlobalChrome = isInternalAdminRoute || isCheckoutRoute || isPortalRoute || isPortalAuthRoute
 
   return (
-    <PortalAuthProvider>
-      <CartProvider>
-        <div className="min-h-screen overflow-x-clip bg-[#f5f5f2] text-[#071724]">
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-[#071724] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
-        >
-          Skip to main content
-        </a>
-        {hideGlobalChrome ? null : <AnnouncementBar />}
-        {hideGlobalChrome ? null : <Navbar />}
-        <Suspense fallback={<RouteLoadingFallback />}>{page}</Suspense>
-        {hideGlobalChrome ? null : <Footer />}
-        {hideGlobalChrome ? null : <CartDrawer />}
-        {hideGlobalChrome ? null : (
-          <Suspense fallback={null}>
-            <AssistantWidget />
-          </Suspense>
-        )}
-        </div>
-      </CartProvider>
-    </PortalAuthProvider>
+    <LocaleProvider locale={locale} logicalPath={logicalPath}>
+      <PortalAuthProvider>
+        <CartProvider>
+          <div className="min-h-screen overflow-x-clip bg-[#f5f5f2] text-[#071724]">
+            <SkipToMainLink />
+            {hideGlobalChrome ? null : <LatamSuggestionBanner />}
+            {hideGlobalChrome ? null : <AnnouncementBar />}
+            {hideGlobalChrome ? null : <Navbar />}
+            <Suspense fallback={<RouteLoadingFallback />}>{page}</Suspense>
+            {hideGlobalChrome ? null : <Footer />}
+            {hideGlobalChrome ? null : <CartDrawer />}
+            {hideGlobalChrome ? null : (
+              <Suspense fallback={null}>
+                <AssistantWidget />
+              </Suspense>
+            )}
+          </div>
+        </CartProvider>
+      </PortalAuthProvider>
+    </LocaleProvider>
   )
 }
 

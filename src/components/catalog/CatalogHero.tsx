@@ -1,0 +1,96 @@
+import { ArrowRight, FlaskConical } from 'lucide-react'
+import { motion, useReducedMotion } from 'framer-motion'
+import { useTranslation } from '../../i18n/LocaleContext'
+import { buildSrcSet, stemOf } from '../../lib/responsiveImages'
+
+const heroImages = import.meta.glob('../../assets/images/*.{png,jpg,jpeg,webp,avif}', {
+  eager: true,
+  import: 'default',
+  query: '?url',
+}) as Record<string, string>
+
+const HERO_BASE_PATH = '../../assets/images/'
+const HERO_WIDTHS = [720, 1000, 1400]
+const HERO_IMAGE = 'complete-research-kit-hero.webp'
+
+export function CatalogHero() {
+  const prefersReducedMotion = useReducedMotion()
+  const { t } = useTranslation('catalog')
+
+  const imageSrc = heroImages[`${HERO_BASE_PATH}${HERO_IMAGE}`]
+  const stem = stemOf(HERO_IMAGE)
+  const avif = buildSrcSet(heroImages, HERO_BASE_PATH, stem, 'avif', HERO_WIDTHS)
+  const webp = buildSrcSet(heroImages, HERO_BASE_PATH, stem, 'webp', HERO_WIDTHS)
+
+  const enter = (delay: number) =>
+    prefersReducedMotion
+      ? { initial: false as const, animate: { opacity: 1 } }
+      : {
+          initial: { opacity: 0, y: 16 },
+          animate: { opacity: 1, y: 0 },
+          transition: { duration: 0.5, ease: 'easeOut' as const, delay },
+        }
+
+  return (
+    <section className="relative overflow-hidden bg-[#F8FAFC] px-5 py-10 sm:px-8 sm:py-12 lg:py-14">
+      <div className="molecule-field opacity-[0.08]" aria-hidden="true" />
+      <div className="pointer-events-none absolute right-[-6rem] top-[-5rem] size-[24rem] rounded-full bg-teal-200/30 blur-3xl" aria-hidden="true" />
+
+      <div className="relative mx-auto grid max-w-[88rem] items-center gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-12">
+        {/* Left: compact editorial copy */}
+        <div>
+          <motion.span
+            {...enter(0)}
+            className="inline-flex items-center gap-2 rounded-full border border-teal-700/15 bg-white/70 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-teal-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.82),0_10px_28px_rgba(7,23,36,0.05)] backdrop-blur-xl"
+          >
+            <FlaskConical size={14} aria-hidden="true" />
+            {t('heroEyebrow')}
+          </motion.span>
+
+          <motion.h1
+            {...enter(0.06)}
+            className="mt-5 max-w-xl text-[clamp(2.1rem,1.3rem+2.8vw,3.4rem)] font-semibold leading-[1.04] tracking-[-0.05em] text-[#071724]"
+          >
+            {t('heroTitle')}
+          </motion.h1>
+
+          <motion.p {...enter(0.12)} className="mt-4 max-w-md text-base leading-7 text-slate-600 sm:text-lg">
+            {t('heroSupporting')}
+          </motion.p>
+
+          <motion.div {...enter(0.18)} className="mt-7">
+            <a
+              href="#catalog-products"
+              className="inline-flex min-h-12 items-center justify-center gap-2.5 rounded-full bg-[#071724] px-7 py-3.5 text-sm font-semibold text-white shadow-[0_16px_40px_rgba(7,23,36,0.18)] transition duration-300 hover:-translate-y-0.5 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+            >
+              {t('heroPrimaryCta')}
+              <ArrowRight size={16} aria-hidden="true" />
+            </a>
+          </motion.div>
+        </div>
+
+        {/* Right: premium kit visual */}
+        <motion.div {...enter(0.14)} className="relative mx-auto w-full max-w-[42rem] lg:max-w-none">
+          <div className="relative mx-auto aspect-[3/2] w-full overflow-hidden rounded-[2rem] border border-teal-900/10 bg-white shadow-[0_28px_70px_rgba(7,23,36,0.12)]">
+            {imageSrc ? (
+              <picture>
+                {avif ? <source type="image/avif" srcSet={avif} sizes="(min-width: 1024px) 44vw, 92vw" /> : null}
+                {webp ? <source type="image/webp" srcSet={webp} sizes="(min-width: 1024px) 44vw, 92vw" /> : null}
+                <img
+                  src={imageSrc}
+                  alt={t('heroVisualAlt')}
+                  width="1536"
+                  height="1024"
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
+                  className="relative h-full w-full object-contain"
+                />
+              </picture>
+            ) : null}
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  )
+}

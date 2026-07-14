@@ -1,5 +1,6 @@
 import { ArrowRight } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { useLocale } from '../i18n/LocaleContext'
 import { cn } from '../lib/utils'
 
 type CTAProps = {
@@ -18,9 +19,11 @@ const tones = {
 }
 
 export function CTA({ children, href, tone = 'dark', className, target, rel }: CTAProps) {
+  const { path } = useLocale()
+
   return (
     <a
-      href={href}
+      href={path(href)}
       target={target}
       rel={rel}
       className={cn(

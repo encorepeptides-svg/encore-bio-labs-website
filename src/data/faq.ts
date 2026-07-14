@@ -90,6 +90,7 @@ export const faqLibrary: FAQGroup[] = [
       { question: 'Can multiple researchers share one order?', answer: "Orders are placed under one contact, but how the research materials are used within your institution is your team's responsibility." },
       { question: 'How are kit-format products packaged differently?', answer: 'Kits group supporting components (like documentation and, where applicable, BAC water) together instead of requiring you to source them separately.' },
       { question: 'What handling standards does Encore Bio Labs follow before shipping?', answer: 'Products are organized and packaged with documentation-first handling practices; specifics are available on request through intake.' },
+      { question: 'What is included with an Encore Bio Labs research kit?', answer: 'Eligible complete kits include the selected research peptide, product-specific pre-measured bacteriostatic water, four sterile 30G insulin syringes, six alcohol prep pads, and protective packaging. Kit contents may vary by product and are shown before ordering.' },
     ],
   },
   {
@@ -182,11 +183,10 @@ export const faqLibrary: FAQGroup[] = [
     title: 'Cognitive and Performance Research',
     intro: 'Cognitive & Performance category questions.',
     items: [
-      { question: 'What compounds are studied for cognitive and performance research?', answer: 'IGF-1 LR3, Cerebrolysin, Semax, and Selank.' },
+      { question: 'What compounds are studied for cognitive and performance research?', answer: 'Cerebrolysin, Semax, and Selank.' },
       { question: 'What is Semax studied for?', answer: 'A synthetic ACTH-fragment analog studied for neuropeptide signaling and BDNF-related expression relevant to cognitive-performance research.' },
       { question: 'What is Selank studied for?', answer: 'A synthetic tuftsin analog studied for stress-response and neuroimmune signaling research.' },
       { question: 'How are Semax and Selank different?', answer: "They're structurally distinct compounds (an ACTH-fragment analog vs. a tuftsin analog) commonly reviewed together for complementary research questions, not as substitutes for one another." },
-      { question: 'What is IGF-1 LR3 studied for?', answer: 'A long-acting IGF-1 analog studied for IGF-1 receptor signaling and downstream cellular-growth research relevant to performance-oriented questions.' },
       { question: 'What is Cerebrolysin?', answer: 'A neurotrophic peptide mixture studied for neuronal-survival models and cognitive-research relevance.' },
       { question: 'Does this category include performance-enhancement claims?', answer: '"Performance" here describes the research questions being studied, not a claim that any product enhances cognitive or physical performance.' },
       { question: 'Are these compounds used in nootropic research?', answer: "Some of the research literature referenced for this category touches nootropic-adjacent themes, though we don't frame these products as nootropics or supplements." },
@@ -199,7 +199,8 @@ export const faqLibrary: FAQGroup[] = [
     title: 'Hormone and Wellness Research',
     intro: 'Hormone & Wellness category questions.',
     items: [
-      { question: 'What compounds fall under hormone and wellness research?', answer: 'Kisspeptin, HCG, HGH 191AA, DSIP, and PT-141.' },
+      { question: 'What compounds fall under hormone and wellness research?', answer: 'IGF1-LR3, Kisspeptin, HCG, HGH 191AA, DSIP, and PT-141.' },
+      { question: 'What is IGF1-LR3 studied for?', answer: 'A long-acting IGF-1 analog studied for IGF-1 receptor signaling and downstream cellular-growth research within the growth-hormone and growth-factor axis.' },
       { question: 'What is Kisspeptin studied for?', answer: 'A neuropeptide studied for reproductive-axis signaling and GnRH pulse regulation.' },
       { question: 'What is HCG studied for?', answer: 'A glycoprotein hormone studied for LH/CG receptor signaling and gonadal steroidogenesis research.' },
       { question: 'What is HGH 191AA?', answer: 'The 191-amino-acid human growth hormone sequence, studied for GH receptor signaling and IGF-1 axis research.' },
