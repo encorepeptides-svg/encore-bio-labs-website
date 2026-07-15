@@ -21,6 +21,8 @@ import { getLocalizedProduct, localizedCategoryLabel } from '../data/productTran
 import { cn } from '../lib/utils'
 import { useLocale, useTranslation } from '../i18n/LocaleContext'
 import { CategoryShowcase } from './home/CategoryShowcase'
+import { TestimonialsSection } from './social-proof/TestimonialsSection'
+import { TransformationSection } from './social-proof/TransformationSection'
 import { AddToCartButton } from './cart/AddToCartButton'
 import { CTA } from './CTA'
 import { FAQAccordion } from './content/EditorialModules'
@@ -424,6 +426,12 @@ export function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Social proof. Each renders nothing until approved, publishable records
+          exist, so the page flows straight from "how it works" to the FAQ with
+          no reserved space while the collections are empty. */}
+      <TestimonialsSection />
+      <TransformationSection placement="home" />
 
       <FAQAccordion
         eyebrow={t('faqPreviewEyebrow')}

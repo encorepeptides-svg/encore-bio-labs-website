@@ -29,6 +29,7 @@ import { retatrutide } from './retatrutide'
 import { retatrutideResearch } from './retatrutideResearch'
 import { researchLibrary } from './researchLibrary'
 import { search } from './search'
+import { socialProof } from './socialProof'
 
 export const en = {
   common,
@@ -62,4 +63,5 @@ export const en = {
   productResearch,
   assistant,
   search,
+  socialProof,
 }

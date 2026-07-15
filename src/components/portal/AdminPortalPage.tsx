@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from '../../i18n/LocaleContext'
 import { supabase } from '../../lib/supabaseClient'
 import { PortalShell } from './PortalShell'
+import { SocialProofAdmin } from './SocialProofAdmin'
 
 type ApplicationRow={user_id:string;submitted_at:string|null;decision:string;profiles?:{legal_name:string;email:string}|null}
 
@@ -13,7 +14,8 @@ export function AdminPortalPage({ section = 'overview' }: { section?: string }) 
   return <PortalShell admin><p className="text-xs font-bold uppercase tracking-[.18em] text-teal-700">{t('adminLabel')}</p><h1 className="mt-3 text-4xl font-semibold tracking-[-.055em] sm:text-5xl">{section==='applications'?t('adminApplicationsTitle'):t('adminOperationsTitle')}</h1><p className="mt-4 max-w-2xl leading-7 text-slate-600">{t('adminIntro')}</p>
     {section==='overview'?<div className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><Stat label={t('adminPendingApplications')} value={loading?'—':String(applications.length)}/><Stat label={t('adminActiveClients')} value={t('adminServerQueryRequired')}/><Stat label={t('adminOpenSupport')} value={t('adminPhase4')}/><Stat label={t('adminSecurityAlerts')} value={t('adminServerQueryRequired')}/></div>:null}
     {section==='applications'?<div className="mt-9 overflow-hidden rounded-[1.5rem] border border-slate-900/8"><div className="grid grid-cols-[1fr_auto] bg-slate-50 px-5 py-3 text-xs font-bold uppercase tracking-wide text-slate-500"><span>{t('adminApplicant')}</span><span>{t('adminSubmitted')}</span></div>{loading?<p className="p-6 text-sm text-slate-500">{t('adminLoadingApplications')}</p>:error?<p role="alert" className="p-6 text-sm text-red-700">{error}</p>:applications.length?applications.map((application)=><div key={application.user_id} className="grid grid-cols-[1fr_auto] gap-4 border-t border-slate-900/8 px-5 py-4"><div><p className="font-semibold">{application.profiles?.legal_name||t('adminClientApplication')}</p><p className="mt-1 text-sm text-slate-500">{application.profiles?.email}</p></div><time className="text-sm text-slate-500">{application.submitted_at?new Date(application.submitted_at).toLocaleDateString():''}</time></div>):<p className="p-6 text-sm text-slate-500">{t('adminNoPendingApplications')}</p>}</div>:null}
-    {!['overview','applications'].includes(section)?<div className="mt-9 rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-8"><h2 className="text-xl font-semibold">{sectionTitle}</h2><p className="mt-2 text-sm leading-6 text-slate-600">{t('adminModulePending')}</p></div>:null}
+    {section==='content'?<SocialProofAdmin/>:null}
+    {!['overview','applications','content'].includes(section)?<div className="mt-9 rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-8"><h2 className="text-xl font-semibold">{sectionTitle}</h2><p className="mt-2 text-sm leading-6 text-slate-600">{t('adminModulePending')}</p></div>:null}
   </PortalShell>
 }
 
