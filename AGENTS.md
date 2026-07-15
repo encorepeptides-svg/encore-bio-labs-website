@@ -77,3 +77,25 @@ The main site is the primary conversion destination. Its messaging should be con
 - Pre-landers use calm premium visuals, generous spacing, limited navigation, softer CTAs, clear disclosures, and fast mobile performance.
 - The main site uses strong product imagery, prominent choices and pricing, high-contrast CTAs, energetic hierarchy, clear kit presentation, and persistent access to search, intake, catalog, and contact.
 - Both environments must remain recognizably part of the Encore Bio Labs brand.
+
+## Shared-team Git and coordination workflow
+
+This repository is the single source of truth for every Codex task working on the Encore Bio Labs website. All agents must act as one shared engineering team, even when work happens in separate Codex conversations.
+
+### Before starting work
+
+- Confirm the project is `/Users/hector/Documents/encore-bio-labs-website`, the branch is `main`, and the remote is `origin`.
+- Inspect `git status` before editing. Existing files may belong to another active task; do not delete, overwrite, revert, stage, or commit them unless they are explicitly in scope.
+- Fetch `origin/main` before substantial work when network access is available. Synchronize only when safe for other tasks' changes.
+- Search the current code before implementing so concurrent work is reused instead of duplicated.
+
+### Mandatory completion workflow
+
+1. Run the appropriate lint, tests, type checking, and production build.
+2. Review the diff and stage only files changed for the completed task.
+3. Automatically create a concise task-specific Git commit without waiting for another request.
+4. Fetch `origin/main`, safely integrate remote commits, and automatically push the commit to `origin/main`.
+5. If another task's changes, a conflict, authentication, validation, or remote rejection makes pushing unsafe, preserve all work and report the exact blocker. Never overwrite another task's work.
+6. Report validation, commit hash, GitHub push status, and production deployment status separately.
+
+Never use `git reset --hard`, force-push, or blanket checkout/restore operations for coordination. A GitHub push is automatic under this rule; production deployment still requires an explicit request unless an approved workflow deploys `main` automatically.
