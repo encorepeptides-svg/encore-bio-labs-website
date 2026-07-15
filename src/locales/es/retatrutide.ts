@@ -1,7 +1,7 @@
 import type { retatrutide as retatrutideEn } from '../en/retatrutide'
 
 export const retatrutide = {
-  eyebrow: 'Investigación metabólica',
+  eyebrow: 'Producto insignia de Encore · Investigación metabólica',
   imageAlt: 'Empaque del vial de investigación Retatrutide',
   headline: 'Tres vías receptoras. Cinco concentraciones. Una plataforma insignia de investigación.',
   intro: 'Configura el principal compuesto de investigación metabólica de Encore y revisa el contexto clínico reportado por el patrocinador sobre su mecanismo en investigación de GLP-1, GIP y glucagón.',

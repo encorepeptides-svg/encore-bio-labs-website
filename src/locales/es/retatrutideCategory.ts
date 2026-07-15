@@ -40,6 +40,8 @@ export const retatrutideCategory = {
   portfolioEyebrow: 'OTRAS VÍAS DE INVESTIGACIÓN METABÓLICA',
   portfolioTitle: 'Una categoría. Cinco enfoques de investigación realmente distintos.',
   portfolioDescription: 'Retatrutide lidera la colección, mientras cada compuesto complementario responde una pregunta de vía diferente. Compara el mecanismo antes de elegir un formato.',
+  portfolioHighlightsLabel: 'Aspectos destacados de investigación',
+  portfolioSupportingNote: 'Cuatro compuestos complementarios. Tres aspectos de investigación claros por producto. Un sistema de comparación consistente.',
   crossSellEyebrow: 'EXPLORA EL RESTO DE LA COLECCIÓN',
   crossSellTitle: 'Otras vías de investigación metabólica',
   crossSellDescription: 'Amplía tu revisión de Retatrutide con opciones distintas para el eje GH, la señalización mitocondrial y la investigación metabólica.',

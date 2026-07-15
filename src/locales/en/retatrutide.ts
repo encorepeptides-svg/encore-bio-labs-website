@@ -1,5 +1,5 @@
 export const retatrutide = {
-  eyebrow: 'Metabolic Research',
+  eyebrow: "Encore's Flagship · Metabolic Research",
   imageAlt: 'Retatrutide research vial packaging',
   headline: 'Three receptor pathways. Five strengths. One flagship research platform.',
   intro: 'Configure Encore’s leading metabolic research compound, then review the sponsor-reported clinical context behind its investigational GLP-1, GIP, and glucagon mechanism.',

@@ -31,6 +31,7 @@ import { ProductImage } from '../ProductImage'
 import { RetatrutidePathways } from '../retatrutide/RetatrutidePathways'
 import { RetatrutideResearchContext } from '../retatrutide/RetatrutideResearchContext'
 import { ProductBreadcrumb } from './ProductPageSections'
+import { RetatrutideBenefitsSection } from './retatrutide/RetatrutideBenefitsSection'
 import { RetatrutideEvidenceStrip } from './retatrutide/RetatrutideEvidenceStrip'
 import { RetatrutideQualitySection } from './retatrutide/RetatrutideQualitySection'
 
@@ -138,6 +139,7 @@ function PurchaseConfigurator({ product }: { product: Product }) {
 
 export function RetatrutideProductPage({ product }: { product: Product }) {
   const { t } = useTranslation('retatrutide')
+  const { t: researchT } = useTranslation('retatrutideResearch')
   const [openFaq, setOpenFaq] = useState(0)
   const reducedMotion = useReducedMotion()
   const lowestPrice = Math.min(...product.variants.map((variant) => variant.price))
@@ -185,8 +187,14 @@ export function RetatrutideProductPage({ product }: { product: Product }) {
           <motion.div initial={reducedMotion ? false : { opacity: 0, y: 22, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.7, delay: reducedMotion ? 0 : 0.08 }} className="relative mx-auto w-full max-w-[42rem]">
             <div className="absolute inset-[9%] rounded-full bg-teal-300/15 blur-3xl" aria-hidden="true" />
             <div className="retatrutide-vial-float relative aspect-square"><ProductImage product={product} alt={t('imageAlt')} loading="eager" sizes="(min-width: 1024px) 44vw, 90vw" className="size-full object-contain drop-shadow-[0_42px_50px_rgba(0,0,0,0.52)]" /></div>
-            <div className="relative -mt-8 grid grid-cols-5 gap-2 border border-white/15 bg-[#071724]/85 p-3 backdrop-blur-xl sm:p-4">
-              {product.variants.map((variant) => <a key={variant.sku} href="#retatrutide-purchase" className="rounded-xl border border-white/12 bg-white/[0.06] px-2 py-3 text-center transition hover:border-teal-200/50 hover:bg-teal-300/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-300"><span className="block text-xs font-bold text-white sm:text-sm">{variant.label}</span><span className="mt-1 block text-[0.65rem] font-semibold text-teal-200 sm:text-xs">{money(variant.price)}</span></a>)}
+            <div className="relative -mt-8 border border-white/15 bg-[#071724]/90 p-3 shadow-[0_28px_70px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:p-4">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-xl bg-white/[0.07] p-4"><p className="text-3xl font-semibold tracking-[-0.055em] text-teal-200">28.3%</p><p className="mt-1 text-[0.68rem] font-semibold leading-4 text-slate-300">{researchT('phaseStat1Label')}</p></div>
+                <div className="rounded-xl bg-white/[0.07] p-4"><p className="text-3xl font-semibold tracking-[-0.055em] text-teal-200">24.1 cm</p><p className="mt-1 text-[0.68rem] font-semibold leading-4 text-slate-300">{researchT('bodyCompositionMetricLabel')}</p></div>
+              </div>
+              <div className="mt-2 grid grid-cols-5 gap-2">
+                {product.variants.map((variant) => <a key={variant.sku} href="#retatrutide-purchase" className="rounded-xl border border-white/12 bg-white/[0.06] px-2 py-3 text-center transition hover:border-teal-200/50 hover:bg-teal-300/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-300"><span className="block text-xs font-bold text-white sm:text-sm">{variant.label}</span><span className="mt-1 block text-[0.65rem] font-semibold text-teal-200 sm:text-xs">{money(variant.price)}</span></a>)}
+              </div>
             </div>
           </motion.div>
         </div>
@@ -200,14 +208,20 @@ export function RetatrutideProductPage({ product }: { product: Product }) {
       </section>
 
       <RetatrutideEvidenceStrip />
-      <RetatrutidePathways id="retatrutide-full-research" />
+      <RetatrutideBenefitsSection />
       <RetatrutideResearchContext />
+      <RetatrutidePathways />
       <RetatrutideQualitySection />
-      <MetabolicPortfolio mode="product" />
+
+      <section className="bg-white px-5 py-16 sm:px-8 sm:py-20 lg:py-24">
+        <div className="mx-auto max-w-[88rem]"><EncoreCompleteKit productName={product.name} bacWaterAmount={product.bacWaterAmount} /></div>
+      </section>
 
       <section className="px-5 py-20 sm:px-8 lg:py-28">
         <div className="mx-auto max-w-4xl"><p className="text-center text-xs font-bold uppercase tracking-[0.2em] text-teal-700">{t('faqEyebrow')}</p><h2 className="mt-4 text-center text-4xl font-semibold tracking-[-0.055em] sm:text-5xl">{t('faqTitle')}</h2><div className="mt-10 divide-y divide-slate-900/8 rounded-[2rem] bg-white px-6 shadow-[0_24px_75px_rgba(7,23,36,0.07)] sm:px-8">{faqs.map((faq, index) => { const open = openFaq === index; return <div key={faq.question}><button type="button" aria-expanded={open} onClick={() => setOpenFaq(open ? -1 : index)} className="flex min-h-20 w-full items-center justify-between gap-5 py-5 text-left"><span className="text-lg font-semibold tracking-[-0.02em]">{faq.question}</span><ChevronDown size={20} className={cn('shrink-0 text-teal-700 transition', open && 'rotate-180')} /></button><AnimatePresence initial={false}>{open ? <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden"><p className="max-w-3xl pb-6 text-base leading-7 text-slate-600">{faq.answer}</p></motion.div> : null}</AnimatePresence></div>})}</div></div>
       </section>
+
+      <MetabolicPortfolio mode="product" />
 
       <section className="px-5 pb-24 pt-20 sm:px-8 lg:pb-32 lg:pt-28">
         <div className="mx-auto max-w-[88rem] overflow-hidden bg-[#071724] px-6 py-16 text-center text-white shadow-[0_38px_110px_rgba(7,23,36,0.22)] sm:px-10 lg:py-24"><h2 className="text-5xl font-semibold tracking-[-0.06em] sm:text-6xl">{t('beginYourResearch')}</h2><p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-slate-300">{t('finalCtaLine1')}<br />{t('finalCtaLine2')}<br />{t('finalCtaLine3')}</p><a href="#retatrutide-purchase" className="retatrutide-primary-cta mt-9 inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-teal-400 px-8 text-base font-bold text-[#071724] shadow-[0_18px_48px_rgba(20,184,166,0.28)] transition hover:-translate-y-1 hover:bg-white">{t('finalConfigureCta')}<ArrowRight size={18} aria-hidden="true" /></a></div>

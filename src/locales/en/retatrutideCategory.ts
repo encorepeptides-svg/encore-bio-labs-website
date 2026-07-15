@@ -40,6 +40,8 @@ export const retatrutideCategory = {
   portfolioEyebrow: 'OTHER METABOLIC RESEARCH PATHWAYS',
   portfolioTitle: 'One category. Five materially different research approaches.',
   portfolioDescription: 'Retatrutide leads the collection, while each supporting compound answers a different pathway question. Compare the mechanism before choosing a format.',
+  portfolioHighlightsLabel: 'Research highlights',
+  portfolioSupportingNote: 'Four supporting compounds. Three clear research highlights each. One consistent comparison system.',
   crossSellEyebrow: 'EXPLORE THE REST OF THE COLLECTION',
   crossSellTitle: 'Other metabolic research pathways',
   crossSellDescription: 'Extend a Retatrutide review with distinct GH-axis, mitochondrial, and metabolic-signaling research options.',
