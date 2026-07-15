@@ -23,8 +23,16 @@ export function isPublishableTestimonial(record: TestimonialRecord): boolean {
   return (
     record.status === 'approved' &&
     record.consentVerified === true &&
+    record.claimReviewPassed === true &&
     isNonEmpty(record.quote) &&
     isNonEmpty(record.displayName) &&
+    isNonEmpty(record.submissionDate) &&
+    isNonEmpty(record.consentRecordReference) &&
+    isNonEmpty(record.relationshipToBusiness) &&
+    isNonEmpty(record.sourceRecordReference) &&
+    isNonEmpty(record.verificationNotes) &&
+    isNonEmpty(record.reviewedBy) &&
+    isNonEmpty(record.reviewedAt) &&
     // Any material connection or incentive must be clearly disclosed.
     (record.incentiveProvided ? isNonEmpty(record.incentiveDisclosure) : true) &&
     // "Approved for public use" is represented by an actual publication stamp.

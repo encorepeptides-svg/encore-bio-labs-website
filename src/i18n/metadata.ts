@@ -105,6 +105,18 @@ const categoryNameEs: Record<string, string> = {
 }
 
 export function getCategoryMetadata(slug: string, englishName: string): LocalizedPageMeta {
+  if (slug === 'metabolic-weight-management') {
+    return {
+      en: {
+        title: 'Retatrutide Research Overview | Metabolic Research | Encore Bio Labs',
+        description: 'Explore retatrutide’s triple-receptor mechanism, sponsor-reported clinical-trial milestones, and available research documentation.',
+      },
+      es: {
+        title: 'Panorama de investigación sobre Retatrutide | Encore Bio Labs',
+        description: 'Conoce el mecanismo de tres receptores de Retatrutide, los hitos clínicos reportados por el patrocinador y la documentación de investigación disponible.',
+      },
+    }
+  }
   const spanishName = categoryNameEs[slug] ?? englishName
   return {
     en: {

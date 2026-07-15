@@ -37,6 +37,8 @@ export type TestimonialRecord = {
   incentiveDisclosure: string
   sourceRecordReference: string
   verificationNotes: string
+  /** Explicit reviewer attestation that the quote contains no prohibited medical or human-outcome claim. */
+  claimReviewPassed: boolean
   reviewedBy: string
   reviewedAt: string | null
   publishedAt: string | null

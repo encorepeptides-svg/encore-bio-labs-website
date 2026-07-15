@@ -142,14 +142,26 @@ function TestimonialsPanel() {
             <Field label="Quote">
               <textarea defaultValue={String(row.quote ?? '')} onBlur={(e) => void update(row.id, { quote: e.target.value })} className="min-h-16 rounded-lg border border-slate-300 px-2 py-1 text-sm font-normal text-slate-800" />
             </Field>
+            <Field label="Submission date">
+              <input type="date" defaultValue={String(row.submission_date ?? '')} onBlur={(e) => void update(row.id, { submission_date: e.target.value || null })} className="h-9 rounded-lg border border-slate-300 px-2 text-sm font-normal text-slate-800" />
+            </Field>
             <Field label="Alt text (photo)">
               <input defaultValue={String(row.alt_text ?? '')} onBlur={(e) => void update(row.id, { alt_text: e.target.value })} className="h-9 rounded-lg border border-slate-300 px-2 text-sm font-normal text-slate-800" />
             </Field>
             <Field label="Source record reference">
               <input defaultValue={String(row.source_record_reference ?? '')} onBlur={(e) => void update(row.id, { source_record_reference: e.target.value })} className="h-9 rounded-lg border border-slate-300 px-2 text-sm font-normal text-slate-800" />
             </Field>
+            <Field label="Consent record reference">
+              <input defaultValue={String(row.consent_record_reference ?? '')} onBlur={(e) => void update(row.id, { consent_record_reference: e.target.value })} className="h-9 rounded-lg border border-slate-300 px-2 text-sm font-normal text-slate-800" />
+            </Field>
+            <Field label="Relationship to business (public disclosure)">
+              <input defaultValue={String(row.relationship_to_business ?? '')} onBlur={(e) => void update(row.id, { relationship_to_business: e.target.value })} className="h-9 rounded-lg border border-slate-300 px-2 text-sm font-normal text-slate-800" />
+            </Field>
             <Field label="Incentive disclosure">
               <input defaultValue={String(row.incentive_disclosure ?? '')} onBlur={(e) => void update(row.id, { incentive_disclosure: e.target.value })} className="h-9 rounded-lg border border-slate-300 px-2 text-sm font-normal text-slate-800" />
+            </Field>
+            <Field label="Verification notes (private)">
+              <textarea defaultValue={String(row.verification_notes ?? '')} onBlur={(e) => void update(row.id, { verification_notes: e.target.value })} className="min-h-16 rounded-lg border border-slate-300 px-2 py-1 text-sm font-normal text-slate-800" />
             </Field>
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-600">
@@ -160,6 +172,10 @@ function TestimonialsPanel() {
             <label className="flex items-center gap-2">
               <input type="checkbox" defaultChecked={Boolean(row.incentive_provided)} onChange={(e) => void update(row.id, { incentive_provided: e.target.checked })} />
               Incentive provided
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" defaultChecked={Boolean(row.claim_review_passed)} onChange={(e) => void update(row.id, { claim_review_passed: e.target.checked })} />
+              Claim review passed: service-only, no medical or human-outcome claims
             </label>
             <span className="flex items-center gap-2">
               Sort
@@ -172,7 +188,7 @@ function TestimonialsPanel() {
               <button type="button" onClick={() => fileRefs.current[row.id]?.click()} className="rounded border border-slate-300 px-2 py-1">Upload private</button>
             </span>
           </div>
-          <p className="mt-2 text-[0.7rem] text-slate-400">Publishes only when: approved · consent verified · quote &amp; name present · incentive disclosed if any · published.</p>
+          <p className="mt-2 text-[0.7rem] text-slate-400">Publishes only when: approved · submission and source verified · consent verified · relationship disclosed · service-only claim review passed · reviewer recorded · incentive disclosed if any · published.</p>
         </div>
       ))}
     </div>

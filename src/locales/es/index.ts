@@ -26,6 +26,7 @@ import { productResearch } from './productResearch'
 import { purchaseSelector } from './purchaseSelector'
 import { quality } from './quality'
 import { retatrutide } from './retatrutide'
+import { retatrutideCategory } from './retatrutideCategory'
 import { retatrutideResearch } from './retatrutideResearch'
 import { researchLibrary } from './researchLibrary'
 import { search } from './search'
@@ -48,6 +49,7 @@ export const es = {
   editorial,
   product,
   retatrutide,
+  retatrutideCategory,
   retatrutideResearch,
   researchLibrary,
   purchaseSelector,

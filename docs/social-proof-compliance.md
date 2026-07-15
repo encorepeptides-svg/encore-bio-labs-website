@@ -33,6 +33,11 @@ they cannot reach the browser. Flipping a client-side flag cannot publish a row;
 the row must satisfy the view's `WHERE` clause on the server.
 
 The TypeScript guards in `guards.ts` mirror those same rules as a second layer.
+Testimonials also require a dated source record, consent reference, documented
+relationship, reviewer stamp, verification notes, and an explicit
+`claim_review_passed` attestation. This keeps medical, body-transformation,
+dosing, side-effect, and other human-outcome claims out of the public service
+feedback component.
 
 ### Transformation page placement
 
@@ -44,8 +49,9 @@ record.
 
 ## Deploying the backend
 
-1. Apply `supabase/migrations/202607150001_social_proof.sql` to the target
-   Supabase project (SQL editor or CLI).
+1. Apply `supabase/migrations/202607150001_social_proof.sql`, followed by
+   `202607150002_testimonial_publication_gates.sql`, to the target Supabase
+   project (SQL editor or CLI).
 2. Grant a reviewer the content-admin role **server-side** with the service-role
    key (never in Vite env). Either:
    - set `app_metadata.role = 'content_admin'` on the auth user, or

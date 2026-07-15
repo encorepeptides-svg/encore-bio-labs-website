@@ -16,6 +16,7 @@ import {
   WhyStudied,
 } from './CategoryPageSections'
 import { HormoneWellnessCategoryPage } from './HormoneWellnessCategoryPage'
+import { MetabolicWeightManagementCategoryPage } from './MetabolicWeightManagementCategoryPage'
 
 export function CategoryPage({ slug }: { slug: string }) {
   const { locale, path } = useLocale()
@@ -51,6 +52,7 @@ export function CategoryPage({ slug }: { slug: string }) {
   const displayContent = localizeCategoryContent(area, content, locale)
 
   if (slug === 'hormone-wellness') return <HormoneWellnessCategoryPage area={displayArea} />
+  if (slug === 'metabolic-weight-management') return <MetabolicWeightManagementCategoryPage area={displayArea} />
 
   return (
     <main id="main-content" className="bg-[#F8FAFC]">

@@ -1,4 +1,4 @@
-import { Quote } from 'lucide-react'
+import { CircleCheck, Quote } from 'lucide-react'
 import { useTranslation } from '../../i18n/LocaleContext'
 import type { PublishedTestimonial } from '../../data/socialProof/types'
 import { useTestimonials } from './useSocialProof'
@@ -20,7 +20,11 @@ function TestimonialCard({ item }: { item: PublishedTestimonial }) {
             decoding="async"
             className="size-11 shrink-0 rounded-full object-cover"
           />
-        ) : null}
+        ) : (
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-teal-50 text-teal-700" aria-hidden="true">
+            <CircleCheck size={20} />
+          </span>
+        )}
         <span className="text-sm font-semibold text-[#071724]">{item.displayName}</span>
       </figcaption>
       {disclosure ? (
@@ -32,12 +36,12 @@ function TestimonialCard({ item }: { item: PublishedTestimonial }) {
   )
 }
 
-/** Renders nothing until at least one approved, publishable testimonial exists. */
-export function TestimonialsSection() {
+/** Renders nothing until the requested minimum of approved testimonials exists. */
+export function TestimonialsSection({ minimumItems = 1 }: { minimumItems?: number } = {}) {
   const items = useTestimonials()
   const { t } = useTranslation('socialProof')
 
-  if (items.length === 0) return null
+  if (items.length < minimumItems) return null
 
   return (
     <section className="bg-[#F8FAFC] px-5 py-[clamp(56px,7vw,96px)] sm:px-8">
