@@ -1,26 +1,12 @@
 import { ArrowDown, ArrowRight, FlaskConical } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { useTranslation } from '../../i18n/LocaleContext'
-import { buildSrcSet, stemOf } from '../../lib/responsiveImages'
 
-const heroImages = import.meta.glob('../../assets/images/hero/*.{png,jpg,jpeg,webp,avif}', {
-  eager: true,
-  import: 'default',
-  query: '?url',
-}) as Record<string, string>
-
-const HERO_BASE_PATH = '../../assets/images/hero/'
-const HERO_WIDTHS = [720, 1000, 1400]
-const HERO_IMAGE = 'encore-kit-hero.png'
+const HERO_IMAGE = '/images/catalog/encore-complete-research-kit-hero.png'
 
 export function CatalogHero() {
   const prefersReducedMotion = useReducedMotion()
   const { t } = useTranslation('catalog')
-
-  const imageSrc = heroImages[`${HERO_BASE_PATH}${HERO_IMAGE}`]
-  const stem = stemOf(HERO_IMAGE)
-  const avif = buildSrcSet(heroImages, HERO_BASE_PATH, stem, 'avif', HERO_WIDTHS)
-  const webp = buildSrcSet(heroImages, HERO_BASE_PATH, stem, 'webp', HERO_WIDTHS)
 
   const enter = (delay: number) =>
     prefersReducedMotion
@@ -83,23 +69,17 @@ export function CatalogHero() {
 
         {/* Right: premium kit visual */}
         <motion.div {...enter(0.14)} className="relative mx-auto w-full max-w-[42rem] md:max-w-none">
-          <div className="relative mx-auto aspect-[16/9] max-h-[28rem] w-full overflow-hidden rounded-[1.75rem] border border-teal-900/10 bg-white shadow-[0_24px_60px_rgba(7,23,36,0.10)] md:aspect-[4/3]">
-            {imageSrc ? (
-              <picture>
-                {avif ? <source type="image/avif" srcSet={avif} sizes="(min-width: 1024px) 44vw, 92vw" /> : null}
-                {webp ? <source type="image/webp" srcSet={webp} sizes="(min-width: 1024px) 44vw, 92vw" /> : null}
-                <img
-                  src={imageSrc}
-                  alt={t('heroVisualAlt')}
-                  width="1536"
-                  height="1024"
-                  loading="eager"
-                  fetchPriority="high"
-                  decoding="async"
-                  className="relative h-full w-full object-cover object-center"
-                />
-              </picture>
-            ) : null}
+          <div className="relative mx-auto aspect-video max-h-[28rem] w-full overflow-hidden rounded-[1.75rem] border border-teal-900/10 bg-white shadow-[0_24px_60px_rgba(7,23,36,0.10)]">
+            <img
+              src={HERO_IMAGE}
+              alt={t('heroVisualAlt')}
+              width="1672"
+              height="941"
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
+              className="relative h-full w-full object-contain object-center"
+            />
           </div>
         </motion.div>
       </div>
