@@ -144,8 +144,8 @@ function getPlainProductDescription(product: Product, researchContent: ProductRe
   if (!researchContent) return product.shortDescription
   const areas = [...new Set(researchContent.researchAreas.slice(0, 3).map((area) => plainResearchArea(area.title, locale)))].join(locale === 'es' ? ', ' : ', ')
   return locale === 'es'
-    ? `${product.name} es un producto de investigación estudiado en ${areas}. La evidencia disponible depende del modelo y de cada estudio.`
-    : `${product.name} is a research product studied in ${areas}. Available evidence depends on the model and the study design.`
+    ? `${product.name} es un compuesto de investigación premium estudiado en ${areas}, disponible ahora con documentación a solicitud.`
+    : `${product.name} is a premium research compound studied in ${areas}, available now with documentation on request.`
 }
 
 export function ProductHero({ product, researchContent }: { product: Product; researchContent?: ProductResearchContent }) {
