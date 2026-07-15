@@ -53,6 +53,17 @@ describe('Spanish storefront experience', () => {
     expect(klow.image).toBe('klow-es.png')
   })
 
+  it('uses the approved conversion copy for Retatrutide and KLOW', () => {
+    expect(translate('es', 'catalog', 'retaEyebrow')).toBe('TRES VÍAS. UNA SOLA MOLÉCULA.')
+    expect(translate('es', 'catalog', 'retaPullQuote')).toBe('Lleva tu investigación metabólica más lejos.')
+    expect(translate('es', 'catalog', 'retaPrimaryCta')).toBe('Elegir concentración')
+    expect(translate('es', 'catalog', 'retaSecondaryCta')).toBe('Comparar concentraciones')
+    expect(translate('es', 'catalog', 'klowEyebrow')).toBe('MEZCLA REGENERATIVA DE CUATRO COMPUESTOS')
+    expect(translate('es', 'catalog', 'klowTitle')).toBe('KLOW: cuatro compuestos en una fórmula de investigación más completa.')
+    expect(translate('es', 'catalog', 'klowCta')).toBe('Comprar KLOW')
+    expect(translate('es', 'catalog', 'klowVisualAlt')).toMatch(/KLOW.*GHK-Cu.*BPC-157.*TB-500.*KPV/)
+  })
+
   it('keeps the Spanish research glossary free of English definitions', () => {
     const glossary = getLocalizedGlossaryTerms('es')
     expect(glossary).toHaveLength(10)
