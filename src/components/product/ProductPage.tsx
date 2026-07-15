@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { products } from '../../data/products'
 import { getLocalizedProduct } from '../../data/productTranslations'
-import { useLocale } from '../../i18n/LocaleContext'
+import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { applyDocumentMetadata } from '../../i18n/applyMetadata'
 import {
   FinalPurchaseCTA,
@@ -33,6 +33,7 @@ const notFoundDescription = { en: 'The requested Encore Bio Labs research produc
 
 export function ProductPage({ slug }: { slug: string }) {
   const { locale, path } = useLocale()
+  const { t } = useTranslation('product')
   const baseProduct = findProductBySlug(slug)
   const product = baseProduct ? getLocalizedProduct(baseProduct, locale) : null
   const researchContent = product ? getProductResearchContent(product.slug) : undefined
@@ -50,21 +51,19 @@ export function ProductPage({ slug }: { slug: string }) {
       <main id="main-content" className="bg-[#F8FAFC] px-5 py-20 sm:px-8">
         <div className="mx-auto max-w-3xl rounded-[2rem] border border-slate-900/10 bg-white p-8 text-center shadow-[0_24px_80px_rgba(7,23,36,0.08)]">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">
-            {locale === 'es' ? 'Producto no encontrado' : 'Product not found'}
+            {t('notFoundEyebrow')}
           </p>
           <h1 className="mt-4 text-4xl font-semibold tracking-[-0.05em] text-[#071724]">
-            {locale === 'es' ? 'Esta página de producto no está disponible.' : 'This product page is not available.'}
+            {t('notFoundTitle')}
           </h1>
           <p className="mt-4 text-base leading-7 text-slate-600">
-            {locale === 'es'
-              ? 'Vuelve al catálogo de Encore Bio Labs para seguir explorando productos de uso exclusivo para investigación.'
-              : 'Return to the Encore Bio Labs catalog to continue exploring research-use entries.'}
+            {t('notFoundBody')}
           </p>
           <a
             href={path('/catalog')}
             className="mt-7 inline-flex rounded-full bg-[#071724] px-5 py-3 text-sm font-semibold text-white"
           >
-            {locale === 'es' ? 'Volver al catálogo' : 'Back to catalog'}
+            {t('notFoundCta')}
           </a>
         </div>
       </main>

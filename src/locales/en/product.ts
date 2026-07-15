@@ -110,4 +110,8 @@ export const product = {
   discoveryTitle: 'Start a compliant review for {product}.',
   discoveryBody: 'Request screening, product documentation, and catalog guidance through the approved Encore Bio Labs process.',
   contactEncore: 'Contact Encore',
+  notFoundEyebrow: 'Product not found',
+  notFoundTitle: 'This product page is not available.',
+  notFoundBody: 'Return to the Encore Bio Labs catalog to continue exploring research-use entries.',
+  notFoundCta: 'Back to catalog',
 } as const

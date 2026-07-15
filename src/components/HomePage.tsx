@@ -16,6 +16,8 @@ import heroVideoPoster from '../assets/images/hero/hero-video-poster.jpg'
 import heroVideo from '../assets/videos/encore-hero.mp4'
 import { products, type Product } from '../data/products'
 import { faqLibrary } from '../data/faq'
+import { getLocalizedFaqGroup } from '../data/faqTranslations'
+import { getLocalizedProduct, localizedCategoryLabel } from '../data/productTranslations'
 import { cn } from '../lib/utils'
 import { useLocale, useTranslation } from '../i18n/LocaleContext'
 import { CategoryShowcase } from './home/CategoryShowcase'
@@ -33,21 +35,23 @@ const trustIcons = [FlaskConical, Snowflake, PackageCheck, Timer, FileText]
 const processIcons = [FlaskConical, BadgeCheck, PackageCheck, Truck]
 const whyChooseIcons = [FlaskConical, FileText, PackageCheck, UserCheck]
 
-const previewFaqs = faqLibrary.flatMap((group) => group.items).slice(0, 5)
-
 function getResearchOptionPrice(product: Product, t: (key: string, vars?: Record<string, string | number>) => string) {
   const prices = product.variants.map((variant) => variant.price).filter((price) => price > 0)
   const startingPrice = prices.length ? Math.min(...prices) : undefined
   return startingPrice ? t('researchOptionsFrom', { price: `$${startingPrice.toLocaleString()}` }) : t('availabilityByRequest')
 }
 
-function getProductLine(product: Product) {
+function getProductLine(product: Product, locale: 'en' | 'es') {
+  // In Spanish, catalogTagline is localized for every product while shortDescription
+  // is only translated for a few, so fall back through it to avoid English leaking.
+  if (locale === 'es') return product.catalogTagline || product.shortDescription || product.description
   return product.shortDescription || product.description
 }
 
-function FeaturedBestSellerCard({ product }: { product: Product }) {
-  const { path } = useLocale()
+function FeaturedBestSellerCard({ product: baseProduct }: { product: Product }) {
+  const { path, locale } = useLocale()
   const { t } = useTranslation('homepage')
+  const product = getLocalizedProduct(baseProduct, locale)
 
   return (
     <article className="group overflow-hidden rounded-[1.75rem] border border-slate-900/10 bg-white shadow-[0_24px_80px_rgba(7,23,36,0.08)] transition duration-300 motion-safe:hover:-translate-y-1 hover:shadow-[0_34px_110px_rgba(20,184,166,0.16)]">
@@ -60,7 +64,7 @@ function FeaturedBestSellerCard({ product }: { product: Product }) {
           <h3 className="text-[clamp(1.85rem,1.1rem+3vw,3rem)] font-semibold leading-[1.03] tracking-[-0.045em] text-[#071724]">
             {product.name}
           </h3>
-          <p className="max-w-lg text-base leading-7 text-slate-600">{getProductLine(product)}</p>
+          <p className="max-w-lg text-base leading-7 text-slate-600">{getProductLine(product, locale)}</p>
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
               {t('availableStrengths')}
@@ -117,9 +121,10 @@ function FeaturedBestSellerCard({ product }: { product: Product }) {
   )
 }
 
-function SecondaryBestSellerCard({ product, className }: { product: Product; className?: string }) {
-  const { path } = useLocale()
+function SecondaryBestSellerCard({ product: baseProduct, className }: { product: Product; className?: string }) {
+  const { path, locale } = useLocale()
   const { t } = useTranslation('homepage')
+  const product = getLocalizedProduct(baseProduct, locale)
 
   return (
     <article
@@ -141,7 +146,7 @@ function SecondaryBestSellerCard({ product, className }: { product: Product; cla
         />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(255,255,255,0)_0_42%,rgba(255,255,255,0.32)_76%,rgba(255,255,255,0.92)_100%)]" />
         <div className="absolute left-4 top-4 rounded-full border border-white/60 bg-white/78 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#071724] backdrop-blur-xl">
-          {product.category}
+          {localizedCategoryLabel(baseProduct.category, locale)}
         </div>
       </a>
 
@@ -150,7 +155,7 @@ function SecondaryBestSellerCard({ product, className }: { product: Product; cla
           {getResearchOptionPrice(product, t)}
         </p>
         <h3 className="mt-3 text-2xl font-semibold tracking-[-0.045em] text-[#071724]">{product.name}</h3>
-        <p className="mt-3 text-sm leading-6 text-slate-600">{getProductLine(product)}</p>
+        <p className="mt-3 text-sm leading-6 text-slate-600">{getProductLine(product, locale)}</p>
         <div className="mt-auto flex flex-col gap-3 pt-6 sm:flex-row">
           <AddToCartButton product={product} className="min-h-11 px-4 py-2.5">
             {t('addToCart')}
@@ -228,6 +233,7 @@ export function HomePage() {
     .filter((product): product is Product => Boolean(product))
   const heroProduct = bestSellerProducts.find((product) => product.slug === 'retatrutide')
   const supportingProducts = bestSellerProducts.filter((product) => product.slug !== 'retatrutide')
+  const previewFaqs = faqLibrary.flatMap((group) => getLocalizedFaqGroup(group, locale).items).slice(0, 5)
 
   return (
     <main id="main-content" className="bg-[#f5f5f2]">

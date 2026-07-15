@@ -1,9 +1,9 @@
 import type { categories as categoriesEn } from '../en/categories'
 
 export const categories = {
-  sectionEyebrow: 'Explora por área de investigación',
-  sectionTitle: 'Encuentra la categoría de investigación que se ajusta a lo que buscas.',
-  sectionSubtitle: 'Explora Encore Bio Labs en áreas de investigación metabólica, de recuperación, longevidad, cognición y hormonas.',
+  sectionEyebrow: 'Ve directo al compuesto que buscas',
+  sectionTitle: 'Elige lo que buscas. Encuentra el producto correcto.',
+  sectionSubtitle: 'Compara las cinco categorías, revisa sus productos y pasa de la búsqueda a una opción concreta sin rodeos.',
   viewFullCatalog: 'Ver catálogo completo',
   featuredBadge: 'Área de investigación destacada',
   exploreCategory: 'Explorar categoría',
@@ -15,8 +15,13 @@ export const categories = {
   recoveryRegenerationDescription: 'Compuestos estudiados en reparación de tejidos, señalización del tejido conectivo e investigación de recuperación.',
   longevityCellularHealthTitle: 'Longevidad y salud celular',
   longevityCellularHealthDescription: 'Investigación centrada en la resiliencia celular, la función mitocondrial y las vías del envejecimiento saludable.',
-  cognitivePerformanceTitle: 'Rendimiento cognitivo',
+  cognitivePerformanceTitle: 'Investigación cognitiva',
   cognitivePerformanceDescription: 'Explora compuestos relacionados con el enfoque, la cognición, la señalización neurológica y el rendimiento.',
   hormoneWellnessTitle: 'Hormonas y bienestar',
   hormoneWellnessDescription: 'Investigación sobre señalización endocrina, compuestos relacionados con hormonas y vías de bienestar.',
+  metabolicWeightManagementImageAlt: 'Pareja caminando fuera de un centro de bienestar junto a un vial de Encore Bio Labs',
+  recoveryRegenerationImageAlt: 'Pareja estirándose en un espacio de recuperación junto a un vial de Encore Bio Labs',
+  longevityCellularHealthImageAlt: 'Pareja descansando al aire libre con un vial de Encore Bio Labs sobre la mesa',
+  cognitivePerformanceImageAlt: 'Pareja revisando notas en una computadora con un vial de Encore Bio Labs sobre la mesa',
+  hormoneWellnessImageAlt: 'Pareja en una cocina de bienestar con un vial de Encore Bio Labs en primer plano',
 } satisfies Record<keyof typeof categoriesEn, string>

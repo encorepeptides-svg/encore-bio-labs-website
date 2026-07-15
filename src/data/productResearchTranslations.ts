@@ -96,10 +96,10 @@ export function localizeProductResearchContent(product: Product, content: Produc
     mechanismSteps: content.mechanismSteps.map((step, index) => ({
       ...step,
       label: ['Material de investigación', 'Objetivo molecular', 'Señal biológica', 'Parámetro intermedio', 'Resultado medido'][index] ?? 'Etapa de investigación',
-      description: `La etapa «${step.label}» se evalúa dentro de modelos y condiciones experimentales específicos.`,
+      description: 'Esta etapa se evalúa dentro de modelos y condiciones experimentales específicos.',
     })),
     researchAreas: content.researchAreas.map((area) => {
-      const titleEs = researchAreaTitleEs[area.title] ?? area.title
+      const titleEs = researchAreaTitleEs[area.title] ?? 'Área de investigación relacionada'
       return {
         ...area,
         title: titleEs,
@@ -108,6 +108,7 @@ export function localizeProductResearchContent(product: Product, content: Produc
     }),
     studies: content.studies.map((study) => ({
       ...study,
+      title: `Estudio de ${product.name} (${study.year})`,
       summary: `Registro ${study.year}: el estudio examina ${product.name} dentro del modelo y los parámetros descritos en la publicación original.`,
       keyFinding: 'El estudio informa hallazgos dentro del modelo descrito; no establece resultados individuales ni valida materiales de catálogo.',
       limitation: 'La población, el modelo y el diseño limitan cualquier generalización fuera de las condiciones publicadas.',
@@ -118,9 +119,9 @@ export function localizeProductResearchContent(product: Product, content: Produc
       'Los parámetros experimentales no equivalen a resultados clínicos o individuales.',
       'La interpretación debe mantenerse dentro del contexto de uso exclusivo para investigación.',
     ],
-    faq: content.faq.map((item) => ({
-      ...item,
-      answer: `${item.answer} La evidencia debe leerse según el modelo, los parámetros y las limitaciones de la publicación.`,
+    faq: content.faq.map(() => ({
+      question: `¿Qué debe considerarse al revisar ${product.name}?`,
+      answer: 'La evidencia debe leerse según el modelo, los parámetros y las limitaciones de cada publicación.',
     })),
   }
 }

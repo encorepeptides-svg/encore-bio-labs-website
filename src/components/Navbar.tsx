@@ -139,7 +139,7 @@ export function Navbar() {
           />
         </a>
 
-        <div className="hidden items-center gap-3 lg:flex xl:gap-5">
+        <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-5 xl:flex">
           {primaryNavItems.map((item) => (
             <div key={item.key} className="flex items-center gap-2">
               <a
@@ -153,7 +153,7 @@ export function Navbar() {
           ))}
         </div>
 
-        <div className="hidden items-center gap-3 lg:flex">
+        <div className="hidden items-center gap-3 xl:flex">
           <button
             type="button"
             onClick={openSearch}
@@ -173,7 +173,7 @@ export function Navbar() {
           </a>
         </div>
 
-        <div className="flex items-center gap-2 lg:hidden">
+        <div className="flex items-center gap-2 xl:hidden">
           <button
             type="button"
             onClick={openSearch}
@@ -209,7 +209,7 @@ export function Navbar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-40 bg-[#071724]/25 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-40 bg-[#071724]/25 backdrop-blur-sm xl:hidden"
             />
             <motion.div
               ref={menuRef}
@@ -221,7 +221,7 @@ export function Navbar() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.22, ease: PREMIUM_EASE }}
-              className="absolute inset-x-0 top-[calc(100%+0.5rem)] z-50 rounded-2xl border border-white/80 bg-[#f5f5f2]/96 px-4 pb-5 pt-4 shadow-[0_28px_70px_rgba(7,23,36,0.18)] backdrop-blur-2xl sm:px-5 lg:hidden"
+              className="absolute inset-x-0 top-[calc(100%+0.5rem)] z-50 rounded-2xl border border-white/80 bg-[#f5f5f2]/96 px-4 pb-5 pt-4 shadow-[0_28px_70px_rgba(7,23,36,0.18)] backdrop-blur-2xl sm:px-5 xl:hidden"
             >
               <div className="grid gap-1">
                 {mobileNavItems.map((item) => (

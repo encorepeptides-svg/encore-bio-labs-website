@@ -8,7 +8,7 @@ import { isSupabaseConfigured } from '../../lib/supabaseClient'
 type AuthMode = 'login' | 'register' | 'forgot' | 'reset'
 
 export function PortalAuthPage({ mode }: { mode: AuthMode }) {
-  const { path } = useLocale()
+  const { path, locale } = useLocale()
   const { t } = useTranslation('portal')
   const trustPoints = [t('trustPoint1'), t('trustPoint2'), t('trustPoint3')]
   const [step, setStep] = useState(1)
@@ -16,7 +16,7 @@ export function PortalAuthPage({ mode }: { mode: AuthMode }) {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [form, setForm] = useState({ legalName: '', email: '', mobile: '', language: 'English', password: '', confirmPassword: '', terms: false, privacy: false, ruo: false, electronic: false })
+  const [form, setForm] = useState({ legalName: '', email: '', mobile: '', language: locale === 'es' ? 'Spanish' : 'English', password: '', confirmPassword: '', terms: false, privacy: false, ruo: false, electronic: false })
 
   function update(name: keyof typeof form, value: string | boolean) { setForm((current) => ({ ...current, [name]: value })) }
 
@@ -74,7 +74,7 @@ export function PortalAuthPage({ mode }: { mode: AuthMode }) {
               <Field label={t('legalNameLabel')}><input value={form.legalName} onChange={(e)=>update('legalName',e.target.value)} autoComplete="name" required className="portal-input" /></Field>
               <Field label={t('emailLabel')}><input type="email" value={form.email} onChange={(e)=>update('email',e.target.value)} autoComplete="email" required className="portal-input" /></Field>
               <Field label={t('mobileLabel')}><input value={form.mobile} onChange={(e)=>update('mobile',e.target.value)} autoComplete="tel" required className="portal-input" /></Field>
-              <Field label={t('preferredLanguageLabel')}><select value={form.language} onChange={(e)=>update('language',e.target.value)} className="portal-input"><option>English</option><option>Spanish</option></select></Field>
+              <Field label={t('preferredLanguageLabel')}><select value={form.language} onChange={(e)=>update('language',e.target.value)} className="portal-input"><option value="English">{t('languageEnglish')}</option><option value="Spanish">{t('languageSpanish')}</option></select></Field>
             </> : null}
             {(mode === 'login' || mode === 'forgot') ? <Field label={t('emailLabel')}><input type="email" value={form.email} onChange={(e)=>update('email',e.target.value)} autoComplete="email" required className="portal-input" /></Field> : null}
             {(mode === 'login' || mode === 'reset' || mode === 'register' && step === 1) ? <PasswordField label={mode === 'reset' ? t('newPasswordLabel') : t('passwordLabel')} value={form.password} onChange={(value)=>update('password',value)} show={showPassword} toggle={()=>setShowPassword((v)=>!v)} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} showLabel={t('showPassword')} hideLabel={t('hidePassword')} /> : null}

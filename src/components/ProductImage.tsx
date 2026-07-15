@@ -34,7 +34,11 @@ export function ProductImage({
   decoding = 'async',
 }: ProductImageProps) {
   const media = getProductMedia(product.slug)
-  const imageName = media?.hero.src ?? product.heroImage ?? product.image
+  // A locale layer may intentionally override `image` while the canonical
+  // `heroImage` still points at the shared media manifest. Honor that explicit
+  // override before responsive canonical assets (used by Spanish KLOW artwork).
+  const localizedImageOverride = product.image !== product.heroImage ? product.image : undefined
+  const imageName = localizedImageOverride ?? media?.hero.src ?? product.heroImage ?? product.image
   const fallbackName = media?.fallback.src ?? 'category-recovery-regeneration.png'
   const resolvedName = productImages[`${IMAGE_BASE_PATH}${imageName}`] ? imageName : fallbackName
   const imageSrc = productImages[`${IMAGE_BASE_PATH}${resolvedName}`]

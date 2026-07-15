@@ -15,7 +15,7 @@ export const product = {
   featureBullet3: 'Disponibilidad confirmada durante la revisión',
   featureBullet4: 'Opciones de envío confirmadas durante la revisión',
   featureBullet5: 'Requisitos de manejo confirmados durante la revisión',
-  viewResearchDetails: 'Ver detalles de investigación',
+  viewResearchDetails: 'Ver productos',
   contactEncoreWhatsapp: 'Hablar con nosotros',
   documentationByReview: 'Documentación sujeta a revisión',
   productVisual: 'Imagen del producto',
@@ -112,4 +112,8 @@ export const product = {
   discoveryTitle: 'Inicia una revisión responsable de {product}.',
   discoveryBody: 'Solicita evaluación, documentación del producto y orientación de catálogo mediante el proceso aprobado de Encore Bio Labs.',
   contactEncore: 'Contactar a Encore',
+  notFoundEyebrow: 'Producto no encontrado',
+  notFoundTitle: 'Esta página de producto no está disponible.',
+  notFoundBody: 'Vuelve al catálogo de Encore Bio Labs para seguir explorando productos de uso exclusivo para investigación.',
+  notFoundCta: 'Volver al catálogo',
 } satisfies Record<keyof typeof productEn, string>

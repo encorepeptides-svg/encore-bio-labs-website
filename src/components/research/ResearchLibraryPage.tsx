@@ -1,12 +1,15 @@
 import { ArrowRight, BookOpen, GitCompare, GraduationCap, Waypoints } from 'lucide-react'
-import { brandText } from '../../../config/brandText'
-import { researchAreas } from '../../data/products'
+import { products, researchAreas } from '../../data/products'
+import { localizeResearchArea } from '../../data/categoryTranslations'
 import {
-  contentTypeLabels,
-  glossaryTerms,
   researchArticles,
   type ResearchContentType,
 } from '../../data/research'
+import {
+  getLocalizedGlossaryTerms,
+  getLocalizedResearchArticle,
+  localizedContentTypeLabel,
+} from '../../data/researchTranslations'
 import { CTA } from '../CTA'
 import { Reveal } from '../Reveal'
 import { SectionHeader } from '../SectionHeader'
@@ -25,6 +28,11 @@ function ArticleCard({ article }: { article: (typeof researchArticles)[number] }
   const { path, locale } = useLocale()
   const { t } = useTranslation('researchLibrary')
   const Icon = contentTypeIcons[article.contentType]
+  const productSlug = article.href.match(/^\/products\/([^/]+)/)?.[1]
+  const productName = products.find((product) => product.slug === productSlug)?.name
+  const area = researchAreas.find((entry) => entry.slug === article.categorySlug)
+  const categoryName = area ? localizeResearchArea(area, locale).name : undefined
+  const displayArticle = getLocalizedResearchArticle(article, locale, { productName, categoryName })
 
   return (
     <a
@@ -35,12 +43,12 @@ function ArticleCard({ article }: { article: (typeof researchArticles)[number] }
         <Icon size={17} aria-hidden="true" />
       </span>
       <p className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">
-        {contentTypeLabels[article.contentType]}
+        {localizedContentTypeLabel(article.contentType, locale)}
       </p>
       <h3 className="mt-2 text-lg font-semibold tracking-[-0.02em] text-[#071724]">
-        {locale === 'es' ? `Investigación: ${article.title}` : article.title}
+        {displayArticle.title}
       </h3>
-      <p className="mt-2 flex-1 text-sm leading-6 text-slate-600">{locale === 'es' ? 'Artículo de referencia sobre el modelo, la vía estudiada y sus limitaciones.' : article.description}</p>
+      <p className="mt-2 flex-1 text-sm leading-6 text-slate-600">{displayArticle.description}</p>
       <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-teal-800">
         {t('explore')}
         <ArrowRight size={14} aria-hidden="true" className="transition group-hover:translate-x-1" />
@@ -52,13 +60,15 @@ function ArticleCard({ article }: { article: (typeof researchArticles)[number] }
 export function ResearchLibraryPage() {
   const { path, locale } = useLocale()
   const { t } = useTranslation('researchLibrary')
+  const { t: tBrand } = useTranslation('brand')
   const beginnerShelf = researchArticles.filter((article) => article.contentType === 'beginner').slice(0, 4)
+  const localizedGlossaryTerms = getLocalizedGlossaryTerms(locale)
 
   return (
     <main id="main-content" className="bg-[#F8FAFC]">
       <div className="px-5 pt-6 sm:px-8">
         <div className="mx-auto flex max-w-[88rem] items-center gap-2 text-sm text-slate-500">
-          <a href="/" className="font-medium transition hover:text-[#071724]">
+          <a href={path('/')} className="font-medium transition hover:text-[#071724]">
             {t('home')}
           </a>
           <span aria-hidden="true">/</span>
@@ -78,7 +88,7 @@ export function ResearchLibraryPage() {
             {t('body')}
           </p>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
-            {brandText.researchLibraryDisclaimer}
+            {tBrand('researchLibraryDisclaimer')}
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -115,7 +125,7 @@ export function ResearchLibraryPage() {
                     <Icon size={19} aria-hidden="true" />
                   </span>
                   <h3 className="mt-4 text-lg font-semibold tracking-[-0.02em] text-[#071724]">
-                    {contentTypeLabels[type]}
+                    {localizedContentTypeLabel(type, locale)}
                   </h3>
                   <p className="mt-2 text-sm text-slate-500">{t('topics', { count })}</p>
                 </a>
@@ -148,7 +158,7 @@ export function ResearchLibraryPage() {
                     style={{ backgroundColor: area.accent }}
                     aria-hidden="true"
                   />
-                  <h3 className="text-lg font-semibold tracking-[-0.02em] text-[#071724]">{locale === 'es' ? `Investigación: ${area.name}` : area.name}</h3>
+                  <h3 className="text-lg font-semibold tracking-[-0.02em] text-[#071724]">{localizeResearchArea(area, locale).name}</h3>
                   <p className="mt-2 text-sm text-slate-500">{t('relatedTopics', { count: relatedCount })}</p>
                   <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-teal-800">
                     {t('viewCategory')}
@@ -182,7 +192,7 @@ export function ResearchLibraryPage() {
           <div className="mx-auto max-w-[88rem]">
             <SectionHeader
               align="left"
-              eyebrow={contentTypeLabels[type]}
+              eyebrow={localizedContentTypeLabel(type, locale)}
               title={
                 type === 'beginner'
                   ? t('allBeginner')
@@ -216,7 +226,7 @@ export function ResearchLibraryPage() {
             description={t('glossaryBody')}
           />
           <div className="mt-8 grid gap-4 md:grid-cols-2">
-            {glossaryTerms.map((entry) => (
+            {localizedGlossaryTerms.map((entry) => (
               <div
                 key={entry.term}
                 id={entry.term.toLowerCase().replace(/[^a-z0-9]+/g, '-')}

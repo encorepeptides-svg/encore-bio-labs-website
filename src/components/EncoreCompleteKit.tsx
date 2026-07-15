@@ -1,4 +1,4 @@
-import { Bandage, Check, Droplet, FlaskConical, PackageCheck, Syringe } from 'lucide-react'
+import { ArrowRight, Bandage, Check, Droplet, FlaskConical, PackageCheck, Syringe } from 'lucide-react'
 import type { ComponentType } from 'react'
 import { cn } from '../lib/utils'
 import {
@@ -8,6 +8,7 @@ import {
 } from '../data/encoreCompleteKit'
 import { useLocale, useTranslation } from '../i18n/LocaleContext'
 import kitHeroImage from '../assets/images/complete-research-kit-hero.webp'
+import kitHeroVisualEs from '../assets/images/complete-research-kit-visual-es.png'
 
 const itemIcons: Record<EncoreCompleteKitItem['key'], ComponentType<{ size?: number; 'aria-hidden'?: boolean | 'true' | 'false'; className?: string }>> = {
   peptide: FlaskConical,
@@ -102,13 +103,15 @@ function FullCard({
   className?: string
 }) {
   const { t } = useTranslation('kit')
+  const { locale } = useLocale()
+  const thumbnailImage = locale === 'es' ? kitHeroVisualEs : kitHeroImage
 
   const bacWater = items.find((item) => item.key === 'bac-water')
   const preparation = items.find((item) => item.key === 'syringes')
   const packaging = items.find((item) => item.key === 'packaging')
   return <div className={cn('overflow-hidden rounded-[1.5rem] border border-slate-900/10 bg-white shadow-[0_18px_55px_rgba(7,23,36,.07)]', className)}>
     <div className="grid items-center gap-5 p-5 sm:p-6 lg:grid-cols-[10rem_1fr]">
-      <img src={kitHeroImage} alt={t('kitThumbnailAlt')} width="240" height="160" loading="lazy" decoding="async" className="h-28 w-full rounded-xl border border-teal-900/10 object-cover object-[62%_center]" />
+      <img src={thumbnailImage} alt={t('kitThumbnailAlt')} width="240" height="160" loading="lazy" decoding="async" className="h-28 w-full rounded-xl border border-teal-900/10 object-cover object-[72%_center]" />
       <div>
         <p className="text-xs font-bold uppercase tracking-[.16em] text-teal-700">{t('fullEyebrow')}</p>
         <h2 className="mt-2 text-xl font-semibold tracking-[-.03em] text-[#071724] sm:text-2xl">{t('fullHeading')}</h2>
@@ -124,42 +127,61 @@ function FullCard({
   </div>
 }
 
-/**
- * Homepage "Complete Research Kit" presentation. The approved artwork already
- * contains the eyebrow, headline, contents list, badges, and CTAs, so this
- * section deliberately renders ONLY that image (wrapped in one accessible link
- * to the kits page) — no duplicated copy, mock cards, or competing buttons.
- */
+/** Homepage kit presentation. All meaningful copy is accessible localized HTML;
+ *  the image is a text-free supporting product photograph. */
 function InlineCard({ className }: { className?: string }) {
   const { path } = useLocale()
   const { t } = useTranslation('kit')
 
   return (
-    <div
+    <section
       id="complete-research-kit"
       className={cn(
-        'rounded-[1.75rem] bg-[linear-gradient(135deg,#f8fcfb,#eef5f4)] p-4 sm:p-6 lg:p-8',
+        'relative overflow-hidden rounded-[1.75rem] border border-teal-900/10 bg-[linear-gradient(135deg,#f8fcfb,#eef5f4)] shadow-[0_24px_70px_rgba(7,23,36,0.08)]',
         className,
       )}
     >
-      <a
-        href={path('/kits')}
-        aria-label={t('homeImageAlt')}
-        className="group mx-auto block w-full max-w-[1120px] rounded-[1.25rem] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-4 focus-visible:ring-offset-[#f1f7f6]"
-      >
-        <img
-          src={kitHeroImage}
-          alt={t('homeImageAlt')}
-          width="1536"
-          height="1024"
-          loading="lazy"
-          decoding="async"
-          className="h-auto w-full rounded-[1.25rem] object-contain drop-shadow-[0_20px_60px_rgba(7,23,36,0.10)] transition duration-500 motion-safe:group-hover:-translate-y-1"
-          sizes="(min-width: 1160px) 1120px, 92vw"
-          style={{ aspectRatio: '3 / 2' }}
-        />
-      </a>
-    </div>
+      <div className="grid items-stretch lg:grid-cols-[0.88fr_1.12fr]">
+        <div className="relative z-10 flex flex-col justify-center p-6 sm:p-9 lg:p-12">
+          <p className="inline-flex w-fit items-center gap-2 rounded-full border border-teal-700/20 bg-white/80 px-3.5 py-2 text-xs font-bold uppercase tracking-[0.16em] text-teal-800">
+            <PackageCheck size={15} aria-hidden="true" />
+            {t('homeEyebrow')}
+          </p>
+          <h2 className="mt-5 max-w-xl text-[clamp(2rem,1.35rem+2.5vw,3.7rem)] font-semibold leading-[0.98] tracking-[-0.055em] text-[#071724]">
+            {t('homeHeading')}
+          </h2>
+          <p className="mt-5 max-w-xl text-base leading-7 text-slate-600">{t('homeDescription')}</p>
+          <p className="mt-5 flex items-start gap-2 text-sm font-semibold leading-6 text-teal-900">
+            <Check size={17} aria-hidden="true" className="mt-0.5 shrink-0 text-teal-600" />
+            {t('homeTrust')}
+          </p>
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+            <a href={path('/catalog')} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#071724] px-6 py-3 text-sm font-semibold text-white transition hover:bg-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2">
+              {t('homeCta')}
+              <ArrowRight size={16} aria-hidden="true" />
+            </a>
+            <a href={path('/kits')} className="inline-flex min-h-12 items-center justify-center rounded-full border border-slate-900/12 bg-white px-6 py-3 text-sm font-semibold text-[#071724] transition hover:border-teal-300 hover:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2">
+              {t('homeSecondary')}
+            </a>
+          </div>
+          <p className="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{t('homeResearchNotice')}</p>
+        </div>
+        <div className="relative min-h-[20rem] overflow-hidden bg-white sm:min-h-[26rem] lg:min-h-[34rem]">
+          <img
+            src={kitHeroVisualEs}
+            alt=""
+            aria-hidden="true"
+            width="1536"
+            height="1024"
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover object-[72%_center]"
+            sizes="(min-width: 1024px) 55vw, 100vw"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(248,252,251,0.22),transparent_24%)]" aria-hidden="true" />
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -188,12 +210,14 @@ function CompactCard({ syringeCount, className }: { syringeCount?: number; class
 
 function CartReminder({ items, className }: { items: EncoreCompleteKitItem[]; className?: string }) {
   const { t } = useTranslation('kit')
+  const { locale } = useLocale()
+  const thumbnailImage = locale === 'es' ? kitHeroVisualEs : kitHeroImage
 
   return (
     <div className={cn('rounded-lg bg-teal-50/70 px-3 py-2', className)}>
       <div className="flex items-start gap-2.5">
         <img
-          src={kitHeroImage}
+          src={thumbnailImage}
           alt={t('kitThumbnailAlt')}
           width="96"
           height="64"
@@ -222,12 +246,14 @@ function CartReminder({ items, className }: { items: EncoreCompleteKitItem[]; cl
 
 function CheckoutReminder({ items, className }: { items: EncoreCompleteKitItem[]; className?: string }) {
   const { t } = useTranslation('kit')
+  const { locale } = useLocale()
+  const thumbnailImage = locale === 'es' ? kitHeroVisualEs : kitHeroImage
 
   return (
     <div className={cn('rounded-2xl border border-slate-900/10 bg-[#f8fafc] p-4', className)}>
       <div className="flex items-start gap-3">
         <img
-          src={kitHeroImage}
+          src={thumbnailImage}
           alt={t('kitThumbnailAlt')}
           width="96"
           height="64"

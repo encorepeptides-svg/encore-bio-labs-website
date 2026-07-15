@@ -17,4 +17,9 @@ export const categories = {
   cognitivePerformanceDescription: 'Explore compounds associated with focus, cognition, neurological signaling, and performance.',
   hormoneWellnessTitle: 'Hormone & Wellness',
   hormoneWellnessDescription: 'Research involving endocrine signaling, hormone-adjacent compounds, and wellness pathways.',
+  metabolicWeightManagementImageAlt: 'Couple walking outside a wellness retreat with an Encore Bio Labs vial nearby',
+  recoveryRegenerationImageAlt: 'Couple stretching in a recovery space beside an Encore Bio Labs vial',
+  longevityCellularHealthImageAlt: 'Couple relaxing outdoors with an Encore Bio Labs vial on the table',
+  cognitivePerformanceImageAlt: 'Couple reviewing notes on a laptop with an Encore Bio Labs vial on the table',
+  hormoneWellnessImageAlt: 'Couple in a wellness kitchen with an Encore Bio Labs vial in the foreground',
 } as const

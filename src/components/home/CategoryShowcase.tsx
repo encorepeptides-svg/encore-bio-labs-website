@@ -9,7 +9,7 @@ type ResearchCategoryCard = {
   titleKey: string
   descriptionKey: string
   image: string
-  imageAlt: string
+  imageAltKey: string
   imagePosition: CategoryImagePosition
   featured?: boolean
 }
@@ -36,7 +36,7 @@ const categoryCards: ResearchCategoryCard[] = [
     titleKey: 'metabolicWeightManagementTitle',
     descriptionKey: 'metabolicWeightManagementDescription',
     image: 'metabolic-weight-management.webp',
-    imageAlt: 'Couple walking outside a wellness retreat with an Encore Bio Labs vial nearby',
+    imageAltKey: 'metabolicWeightManagementImageAlt',
     imagePosition: {
       desktop: '50% 56%',
       tablet: '50% 43%',
@@ -49,7 +49,7 @@ const categoryCards: ResearchCategoryCard[] = [
     titleKey: 'recoveryRegenerationTitle',
     descriptionKey: 'recoveryRegenerationDescription',
     image: 'recovery-regeneration.webp',
-    imageAlt: 'Couple in a recovery space stretching beside an Encore Bio Labs vial',
+    imageAltKey: 'recoveryRegenerationImageAlt',
     imagePosition: {
       desktop: '62% 55%',
       tablet: '60% 54%',
@@ -61,7 +61,7 @@ const categoryCards: ResearchCategoryCard[] = [
     titleKey: 'longevityCellularHealthTitle',
     descriptionKey: 'longevityCellularHealthDescription',
     image: 'longevity-cellular-health.webp',
-    imageAlt: 'Couple relaxing outdoors with an Encore Bio Labs vial on the table',
+    imageAltKey: 'longevityCellularHealthImageAlt',
     imagePosition: {
       desktop: '55% 55%',
       tablet: '55% 54%',
@@ -73,7 +73,7 @@ const categoryCards: ResearchCategoryCard[] = [
     titleKey: 'cognitivePerformanceTitle',
     descriptionKey: 'cognitivePerformanceDescription',
     image: 'cognitive-performance.webp',
-    imageAlt: 'Couple reviewing notes on a laptop with an Encore Bio Labs vial on the table',
+    imageAltKey: 'cognitivePerformanceImageAlt',
     imagePosition: {
       desktop: '58% 56%',
       tablet: '57% 54%',
@@ -85,7 +85,7 @@ const categoryCards: ResearchCategoryCard[] = [
     titleKey: 'hormoneWellnessTitle',
     descriptionKey: 'hormoneWellnessDescription',
     image: 'hormone-wellness.webp',
-    imageAlt: 'Couple in a wellness kitchen with an Encore Bio Labs vial near the foreground',
+    imageAltKey: 'hormoneWellnessImageAlt',
     imagePosition: {
       desktop: '54% 56%',
       tablet: '53% 55%',
@@ -131,7 +131,7 @@ function CategoryCard({ area, featured = false }: { area: ResearchArea; featured
         {imageSrc ? (
           <img
             src={imageSrc}
-            alt={copy.imageAlt}
+            alt={t(copy.imageAltKey)}
             decoding="async"
             sizes={FEATURED_IMAGE_SIZES}
             style={imageStyle}
@@ -173,7 +173,7 @@ function CategoryCard({ area, featured = false }: { area: ResearchArea; featured
         {imageSrc ? (
           <img
             src={imageSrc}
-            alt={copy.imageAlt}
+            alt={t(copy.imageAltKey)}
             loading="lazy"
             decoding="async"
             sizes={SUPPORTING_IMAGE_SIZES}

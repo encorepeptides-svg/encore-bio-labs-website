@@ -1,3 +1,5 @@
+import type { Locale } from '../i18n/config'
+
 // Real, on-file Certificates of Analysis. Only add an entry here once a signed
 // lab report for that product has actually been received and reviewed — this
 // list is intentionally shorter than the product catalog. Do not extrapolate
@@ -16,6 +18,20 @@ export type CoaRecord = {
   fileType: 'pdf' | 'image'
   /** Public, independently checkable verification, if the lab offers one. */
   verify?: { label: string; url: string }
+}
+
+/**
+ * Spanish translations for the free-text COA method descriptions. Lab-standard
+ * acronyms (LC-MS, LC-MS-UV) are language-neutral and pass through unchanged, so
+ * only the full-sentence methods need an entry. Keeps the English data untouched.
+ */
+const coaMethodEs: Record<string, string> = {
+  'Analytical testing referencing USP / EP / ChP methodology': 'Pruebas analíticas con referencia a metodología USP / EP / ChP',
+}
+
+/** Localizes a COA method string for display; unmapped values pass through as-is. */
+export function localizeCoaMethod(method: string, locale: Locale): string {
+  return locale === 'es' ? coaMethodEs[method] ?? method : method
 }
 
 export const coaBySlug: Record<string, CoaRecord> = {

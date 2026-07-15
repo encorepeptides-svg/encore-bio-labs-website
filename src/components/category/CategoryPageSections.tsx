@@ -9,9 +9,10 @@ import {
   type Product,
   type ResearchArea,
 } from '../../data/products'
-import { getLocalizedProduct } from '../../data/productTranslations'
+import { getLocalizedProduct, localizedFormatLabel } from '../../data/productTranslations'
+import { getLocalizedResearchArticle, localizedContentTypeLabel } from '../../data/researchTranslations'
 import { localizeResearchArea } from '../../data/categoryTranslations'
-import { contentTypeLabels, researchArticles } from '../../data/research'
+import { researchArticles } from '../../data/research'
 import { buildSrcSet, stemOf } from '../../lib/responsiveImages'
 import { CTA } from '../CTA'
 import { ProductImage } from '../ProductImage'
@@ -267,7 +268,7 @@ export function CategoryComparisonTable({ area, content }: { area: ResearchArea;
   function getComparisonPrice(product: Product) {
     const prices = product.variants.map((variant) => variant.price).filter((price) => price > 0)
 
-    return prices.length ? `From $${Math.min(...prices)}` : t('byReview')
+    return prices.length ? t('fromPrice', { price: `$${Math.min(...prices)}` }) : t('byReview')
   }
 
   return (
@@ -281,7 +282,7 @@ export function CategoryComparisonTable({ area, content }: { area: ResearchArea;
           product: product.name,
           href: path(`/products/${product.slug}`),
           focus: displayProduct.shortDescription,
-          format: product.variants[0]?.format ?? t('vialFormat'),
+          format: localizedFormatLabel(product.variants[0]?.format ?? t('vialFormat'), locale),
           price: getComparisonPrice(product),
           note: content.comparisonNotes[product.slug] ?? t('productContext'),
         }
@@ -298,18 +299,24 @@ export function CategoryFAQSection({ area, content }: { area: ResearchArea; cont
 
 export function CategoryResearchLinks({ area }: { area: ResearchArea }) {
   const { locale, path } = useLocale()
+  const { t } = useTranslation('categoryPage')
   const articles = researchArticles.filter((article) => article.categorySlug === area.slug).slice(0, 3)
 
   if (!articles.length) return null
 
   return (
     <RelatedArticlesSection
-      articles={articles.map((article) => ({
-        label: locale === 'es' ? 'Artículo de investigación' : contentTypeLabels[article.contentType],
-        title: locale === 'es' ? `Investigación: ${article.title}` : article.title,
-        href: path(article.href),
-        description: locale === 'es' ? 'Consulta el contexto y las limitaciones de la literatura disponible.' : article.description,
-      }))}
+      articles={articles.map((article) => {
+        const productSlug = article.href.match(/^\/products\/([^/]+)/)?.[1]
+        const productName = products.find((product) => product.slug === productSlug)?.name
+        const displayArticle = getLocalizedResearchArticle(article, locale, { productName, categoryName: area.name })
+        return {
+          label: locale === 'es' ? t('researchArticle') : localizedContentTypeLabel(article.contentType, locale),
+          title: displayArticle.title,
+          href: path(article.href),
+          description: displayArticle.description,
+        }
+      })}
     />
   )
 }

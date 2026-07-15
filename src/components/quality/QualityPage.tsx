@@ -1,5 +1,5 @@
 import { ArrowRight, ArrowUpRight, BadgeCheck, ShieldCheck } from 'lucide-react'
-import { coaBySlug } from '../../data/coa'
+import { coaBySlug, localizeCoaMethod } from '../../data/coa'
 import { products } from '../../data/products'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { QualitySection } from '../QualitySection'
@@ -7,7 +7,7 @@ import { Reveal } from '../Reveal'
 import { InternalLinkGrid } from '../content/EditorialModules'
 
 export function QualityPage() {
-  const { path } = useLocale()
+  const { path, locale } = useLocale()
   const { t } = useTranslation('quality')
 
   return (
@@ -65,7 +65,7 @@ export function QualityPage() {
                   </span>
                   <p className="mt-4 text-base font-semibold tracking-[-0.02em] text-[#071724]">{product.name}</p>
                   <p className="mt-1 text-xs leading-5 text-slate-500">
-                    {coa.labName} · {coa.method} · {coa.reportDate}
+                    {coa.labName} · {localizeCoaMethod(coa.method, locale)} · {coa.reportDate}
                   </p>
                   <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-teal-800">
                     {t('viewCertificate')}

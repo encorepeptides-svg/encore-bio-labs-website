@@ -365,19 +365,25 @@ export const catalogHighlightsEs: Record<string, [string, string, string]> = {
  * naturally in Spanish. Keyed by the English category display string.
  */
 const categoryNameEs: Record<string, string> = {
-  'Metabolic & Weight Management': 'Metabolismo y composición corporal',
+  'Metabolic & Weight Management': 'Metabolismo y control de peso',
   'Recovery & Regeneration': 'Recuperación y regeneración',
-  'Longevity & Cellular Health': 'Energía celular y longevidad',
+  'Longevity & Cellular Health': 'Longevidad y salud celular',
   'Cognitive & Performance': 'Investigación cognitiva',
-  'Hormone & Wellness': 'Señalización hormonal',
+  'Hormone & Wellness': 'Hormonas y bienestar',
 }
 
 const badgeByCategoryEs: Record<string, string> = {
-  'Metabolic & Weight Management': 'Metabolismo y composición corporal · investigación',
+  'Metabolic & Weight Management': 'Metabolismo y control de peso · investigación',
   'Recovery & Regeneration': 'Recuperación y regeneración · investigación',
-  'Longevity & Cellular Health': 'Energía celular y longevidad · investigación',
+  'Longevity & Cellular Health': 'Longevidad y salud celular · investigación',
   'Cognitive & Performance': 'Investigación cognitiva',
-  'Hormone & Wellness': 'Señalización hormonal · investigación',
+  'Hormone & Wellness': 'Hormonas y bienestar · investigación',
+}
+
+/** Locale-specific artwork used when the English source image contains an
+ *  incorrect product label or English-only legal copy. */
+const productImageEs: Record<string, string> = {
+  klow: 'klow-es.png',
 }
 
 /** Localized category display name (used for card eyebrows, etc.). */
@@ -442,6 +448,11 @@ function formatWordEs(value: string): string {
   return value
 }
 
+/** Localized display label for stable English variant-format values. */
+export function localizedFormatLabel(value: string, locale: Locale): string {
+  return locale === 'es' ? formatWordEs(value) : value
+}
+
 /** Localizes the fixed-shape product spec rows to Spanish, reusing the already
  *  translated key highlights for the identity/target/markers values. */
 function localizeSpecsEs(product: Product, keyHighlights?: string[]): Product['specs'] {
@@ -482,12 +493,14 @@ export function getLocalizedProduct(product: Product, locale: Locale): Product {
   const overrides = productTranslationsEs[product.slug]
   const highlightsEs = catalogHighlightsEs[product.slug]
   const badgeEs = badgeByCategoryEs[product.category]
-  if (!overrides && !highlightsEs && !badgeEs) return product
+  const imageEs = productImageEs[product.slug]
+  if (!overrides && !highlightsEs && !badgeEs && !imageEs) return product
   const keyHighlights = overrides?.keyHighlights
   const lensTitleEs = product.biologyPoints[0] ? reviewLensEs[product.biologyPoints[0].title] : undefined
   return {
     ...product,
     ...(badgeEs ? { badge: badgeEs } : {}),
+    ...(imageEs ? { image: imageEs } : {}),
     ...overrides,
     ...(highlightsEs ? { catalogHighlights: highlightsEs } : {}),
     specs: localizeSpecsEs(product, keyHighlights),

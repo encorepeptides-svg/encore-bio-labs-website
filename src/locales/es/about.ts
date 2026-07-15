@@ -61,7 +61,7 @@ export const about = {
   questionsDescription: 'Respuestas sobre pedidos, envíos, manejo, almacenamiento, categorías y cumplimiento normativo.',
   finalEyebrow: 'Descubrimiento de investigación',
   finalTitle: '¿Listo para ver dónde encaja tu pregunta de investigación?',
-  finalBody: 'Comienza con las categorías, explora la biblioteca de investigación o inicia un Research Match para recibir seguimiento revisado por una persona. Sea cual sea tu punto de partida, te ayudamos a conectar tu pregunta de investigación con un siguiente paso claro.',
+  finalBody: 'Comienza con las categorías, explora la biblioteca o solicita una evaluación personalizada. Te ayudamos a convertir tu búsqueda en un siguiente paso claro.',
   findMyMatch: 'Encuentra tu opción ideal',
   visitResearchLibrary: 'Visitar la biblioteca de investigación',
 } satisfies Record<keyof typeof aboutEn, string>

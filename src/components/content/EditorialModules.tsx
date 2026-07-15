@@ -296,9 +296,9 @@ export function RelatedArticlesSection({
       description={t('goDeeperDescription')}
     >
       <div className="grid gap-4 md:grid-cols-3">
-        {articles.map((article) => (
+        {articles.map((article, index) => (
           <a
-            key={`${article.href}-${article.title}`}
+            key={`${article.href}-${article.title}-${index}`}
             href={path(article.href)}
             className="group rounded-[1.5rem] border border-slate-900/10 bg-white p-5 shadow-[0_18px_48px_rgba(7,23,36,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(20,184,166,0.14)]"
           >

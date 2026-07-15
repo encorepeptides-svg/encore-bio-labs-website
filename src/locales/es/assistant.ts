@@ -2,6 +2,7 @@ import type { assistant as assistantEn } from '../en/assistant'
 
 export const assistant = {
   buttonLabel: 'Preguntar a Encore AI',
+  whatsappButtonLabel: 'Hablar por WhatsApp',
   dialogLabel: 'Asistente de Encore AI',
   close: 'Cerrar asistente',
   title: 'Asistente de Encore AI',
