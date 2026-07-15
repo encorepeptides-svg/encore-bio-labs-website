@@ -35,7 +35,7 @@ function AssistantWidgetInner() {
           className="fixed bottom-6 right-4 z-[70] inline-flex min-h-14 items-center gap-2 rounded-full bg-[#25D366] px-4 text-sm font-bold text-[#071724] shadow-[0_18px_50px_rgba(7,23,36,0.2)] transition hover:-translate-y-1 hover:bg-[#39df77] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F8FAFC] md:bottom-24 md:right-6"
         >
           <MessageCircle size={20} aria-hidden="true" />
-          <span className="hidden sm:inline">{t('whatsappButtonLabel')}</span>
+          <span className="hidden xl:inline">{t('whatsappButtonLabel')}</span>
         </a>
       ) : null}
       {isOpen && <EncoreAssistantPanel onClose={close} productName={productName} />}

@@ -15,6 +15,7 @@ import {
   RelatedCategories,
   WhyStudied,
 } from './CategoryPageSections'
+import { HormoneWellnessCategoryPage } from './HormoneWellnessCategoryPage'
 
 export function CategoryPage({ slug }: { slug: string }) {
   const { locale, path } = useLocale()
@@ -48,6 +49,9 @@ export function CategoryPage({ slug }: { slug: string }) {
 
   const displayArea = localizeResearchArea(area, locale)
   const displayContent = localizeCategoryContent(area, content, locale)
+
+  if (slug === 'hormone-wellness') return <HormoneWellnessCategoryPage area={displayArea} />
+
   return (
     <main id="main-content" className="bg-[#F8FAFC]">
       <CategoryBreadcrumb area={displayArea} />

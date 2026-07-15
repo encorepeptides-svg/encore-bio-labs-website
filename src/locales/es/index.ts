@@ -13,6 +13,7 @@ import { editorial } from './editorial'
 import { faq } from './faq'
 import { footer } from './footer'
 import { homepage } from './homepage'
+import { hormoneWellness } from './hormoneWellness'
 import { intake } from './intake'
 import { kit } from './kit'
 import { languageSwitcher } from './languageSwitcher'
@@ -37,6 +38,7 @@ export const es = {
   languageSwitcher,
   cart,
   homepage,
+  hormoneWellness,
   categories,
   kit,
   catalog,
