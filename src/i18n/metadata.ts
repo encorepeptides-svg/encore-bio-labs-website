@@ -108,12 +108,12 @@ export function getCategoryMetadata(slug: string, englishName: string): Localize
   if (slug === 'metabolic-weight-management') {
     return {
       en: {
-        title: 'Retatrutide Research Overview | Metabolic Research | Encore Bio Labs',
-        description: 'Explore retatrutide’s triple-receptor mechanism, sponsor-reported clinical-trial milestones, and available research documentation.',
+        title: 'Metabolic Research Peptides | Encore Bio Labs',
+        description: 'Compare Retatrutide, Tesamorelin, MOTS-C, AOD-9604, and CJC-1295 + Ipamorelin by research pathway, format, price, and documentation.',
       },
       es: {
-        title: 'Panorama de investigación sobre Retatrutide | Encore Bio Labs',
-        description: 'Conoce el mecanismo de tres receptores de Retatrutide, los hitos clínicos reportados por el patrocinador y la documentación de investigación disponible.',
+        title: 'Péptidos de investigación metabólica | Encore Bio Labs',
+        description: 'Compara Retatrutide, Tesamorelin, MOTS-C, AOD-9604 y CJC-1295 + Ipamorelin por vía de investigación, formato, precio y documentación.',
       },
     }
   }

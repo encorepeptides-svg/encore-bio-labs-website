@@ -1,54 +1,25 @@
-import {
-  ArrowDown,
-  ArrowRight,
-  Check,
-  ExternalLink,
-  FileCheck2,
-  FlaskConical,
-  Info,
-  Network,
-  ShieldAlert,
-  X,
-} from 'lucide-react'
-import { useEffect, type ReactNode } from 'react'
+import { ArrowRight, BadgeCheck, FileCheck2, FlaskConical, ShieldCheck } from 'lucide-react'
+import { useEffect } from 'react'
 import heroArtworkAvif1586 from '../../assets/images/research/retatrutide-triple-pathway-hero-1586.avif'
 import heroArtworkAvif768 from '../../assets/images/research/retatrutide-triple-pathway-hero-768.avif'
 import heroArtworkWebp1586 from '../../assets/images/research/retatrutide-triple-pathway-hero-1586.webp'
 import heroArtworkWebp768 from '../../assets/images/research/retatrutide-triple-pathway-hero-768.webp'
-import {
-  retatrutideDocumentation,
-  retatrutideTimeline,
-  sourceById,
-  type ResearchDocumentationRecord,
-} from '../../data/retatrutideClinicalData'
-import type { ResearchArea } from '../../data/products'
+import { products, type ResearchArea } from '../../data/products'
+import { getLocalizedProduct } from '../../data/productTranslations'
 import { SITE_ORIGIN } from '../../i18n/config'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { track } from '../../lib/analytics'
-import { FAQAccordion } from '../content/EditorialModules'
-import { TestimonialsSection } from '../social-proof/TestimonialsSection'
+import { money } from '../../lib/purchaseOptions'
+import { MetabolicPortfolio } from '../metabolic/MetabolicPortfolio'
+import { ProductImage } from '../ProductImage'
+import { RetatrutidePathways } from '../retatrutide/RetatrutidePathways'
 import { CategoryBreadcrumb } from './CategoryPageSections'
-import { RetatrutideDataExplorer } from './RetatrutideDataExplorer'
-
-function SectionIntro({ eyebrow, title, description, inverted = false }: { eyebrow: string; title: string; description?: string; inverted?: boolean }) {
-  return (
-    <div className="max-w-4xl">
-      <p className={`text-xs font-bold uppercase tracking-[0.22em] ${inverted ? 'text-teal-200' : 'text-teal-700'}`}>{eyebrow}</p>
-      <h2 className={`mt-4 text-3xl font-semibold leading-[1.03] tracking-[-0.05em] sm:text-5xl ${inverted ? 'text-white' : 'text-[#071724]'}`}>{title}</h2>
-      {description ? <p className={`mt-5 max-w-3xl text-base leading-7 sm:text-lg ${inverted ? 'text-slate-300' : 'text-slate-600'}`}>{description}</p> : null}
-    </div>
-  )
-}
-
-function SectionShell({ children, className = '', id }: { children: ReactNode; className?: string; id?: string }) {
-  return <section id={id} className={`scroll-mt-24 px-5 py-16 sm:px-8 sm:py-20 lg:py-24 ${className}`}><div className="mx-auto max-w-[88rem]">{children}</div></section>
-}
 
 function StructuredData({ areaName }: { areaName: string }) {
   const { locale, path } = useLocale()
 
   useEffect(() => {
-    const id = 'retatrutide-category-structured-data'
+    const id = 'metabolic-category-structured-data'
     document.getElementById(id)?.remove()
     const url = `${SITE_ORIGIN}${path('/categories/metabolic-weight-management')}`
     const home = `${SITE_ORIGIN}${path('/')}`
@@ -59,13 +30,13 @@ function StructuredData({ areaName }: { areaName: string }) {
       '@context': 'https://schema.org',
       '@graph': [
         {
-          '@type': 'WebPage',
+          '@type': 'CollectionPage',
           '@id': url,
           url,
-          name: locale === 'es' ? 'Panorama de investigación sobre Retatrutide' : 'Retatrutide Research Overview',
+          name: locale === 'es' ? 'Investigación metabólica y control de peso' : 'Metabolic and Weight-Management Research',
           description: locale === 'es'
-            ? 'Conoce el mecanismo de tres receptores de Retatrutide, los hitos clínicos reportados por el patrocinador y la documentación de investigación disponible.'
-            : 'Explore retatrutide’s triple-receptor mechanism, sponsor-reported clinical-trial milestones, and available research documentation.',
+            ? 'Compara Retatrutide, Tesamorelin, MOTS-C, AOD-9604 y CJC-1295 + Ipamorelin por vía de investigación, formato, precio y documentación.'
+            : 'Compare Retatrutide, Tesamorelin, MOTS-C, AOD-9604, and CJC-1295 + Ipamorelin by research pathway, format, price, and documentation.',
           inLanguage: locale,
         },
         {
@@ -84,227 +55,97 @@ function StructuredData({ areaName }: { areaName: string }) {
   return null
 }
 
-function DocumentationFields({ record }: { record: ResearchDocumentationRecord }) {
-  const { locale } = useLocale()
-  const { t } = useTranslation('retatrutideCategory')
-  const fields = [
-    ['batchId', record.batchId],
-    ['testingDate', record.testingDate],
-    ['laboratory', record.laboratory],
-    ['method', record.method],
-    ['purity', record.purity],
-    ['hplcResult', record.hplcResult],
-    ['massSpectrometryResult', record.massSpectrometryResult],
-    ['storage', record.storage],
-    ['version', record.version],
-    ['lastVerified', record.lastVerified],
-  ] as const
-
-  return (
-    <article className="rounded-[1.75rem] border border-slate-900/10 bg-white p-6 shadow-[0_20px_55px_rgba(7,23,36,0.08)]">
-      <dl className="grid gap-4 sm:grid-cols-2">
-        {fields.filter(([, value]) => value.trim()).map(([key, value]) => (
-          <div key={key} className="rounded-2xl bg-slate-50 p-4">
-            <dt className="text-[0.68rem] font-bold uppercase tracking-[0.13em] text-slate-500">{t(key)}</dt>
-            <dd className="mt-2 text-sm font-semibold leading-6 text-[#071724]">{value}</dd>
-          </div>
-        ))}
-      </dl>
-      {record.reportUrl ? (
-        <a
-          href={record.reportUrl}
-          target="_blank"
-          rel="noreferrer"
-          onClick={() => track('coa_document_open', { batchId: record.batchId, locale })}
-          className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-[#071724] px-5 py-2.5 text-sm font-bold text-white hover:bg-teal-700"
-        >
-          {t('openReport')}<ExternalLink size={15} aria-hidden="true" />
-        </a>
-      ) : null}
-    </article>
-  )
-}
-
 export function MetabolicWeightManagementCategoryPage({ area }: { area: ResearchArea }) {
   const { locale, path } = useLocale()
   const { t } = useTranslation('retatrutideCategory')
-  const pathwayCards = [
-    { key: 'gip', accent: 'from-cyan-400 to-cyan-200' },
-    { key: 'glp1', accent: 'from-teal-400 to-emerald-200' },
-    { key: 'glucagon', accent: 'from-indigo-400 to-violet-300' },
-  ] as const
-  const suggests = [1, 2, 3].map((index) => t(`suggests${index}`))
-  const notEstablished = [1, 2, 3, 4, 5, 6].map((index) => t(`notEstablish${index}`))
-  const faqItems = Array.from({ length: 8 }, (_, index) => ({
-    question: t(`faq${index + 1}Question`),
-    answer: t(`faq${index + 1}Answer`),
-  }))
+  const baseProduct = products.find((product) => product.slug === 'retatrutide')
+  const product = baseProduct ? getLocalizedProduct(baseProduct, locale) : null
+
+  if (!product) return null
+
+  const purchaseHref = path('/products/retatrutide#retatrutide-purchase')
+  const researchHref = path('/products/retatrutide#retatrutide-full-research')
+  const lowestPrice = Math.min(...product.variants.map((variant) => variant.price))
 
   return (
-    <main id="main-content" className="retatrutide-category-page overflow-x-clip bg-[#F8FAFC]">
+    <main id="main-content" className="overflow-x-clip bg-[#F8FAFC]">
       <StructuredData areaName={area.name} />
       <CategoryBreadcrumb area={area} />
 
-      <section className="relative min-h-[calc(100svh-9rem)] overflow-hidden bg-[#030b18] px-5 pb-14 pt-8 text-white sm:px-8 lg:flex lg:items-center lg:py-16">
+      <section className="relative overflow-hidden bg-[#030b18] px-5 pb-16 pt-10 text-white sm:px-8 sm:pb-20 lg:min-h-[calc(100svh-9rem)] lg:flex lg:items-center lg:py-16">
         <picture>
           <source type="image/avif" srcSet={`${heroArtworkAvif768} 768w, ${heroArtworkAvif1586} 1586w`} sizes="100vw" />
           <source type="image/webp" srcSet={`${heroArtworkWebp768} 768w, ${heroArtworkWebp1586} 1586w`} sizes="100vw" />
-          <img
-            src={heroArtworkWebp1586}
-            alt={t('heroVisualAlt')}
-            width="1586"
-            height="1024"
-            fetchPriority="high"
-            className="absolute inset-0 size-full object-cover object-[62%_center] opacity-75"
-          />
+          <img src={heroArtworkWebp1586} alt="" width="1586" height="1024" fetchPriority="high" className="absolute inset-0 size-full object-cover object-[68%_center] opacity-60" />
         </picture>
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,#030b18_0%,rgba(3,11,24,0.96)_34%,rgba(3,11,24,0.52)_62%,rgba(3,11,24,0.2)_100%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_48%,rgba(34,211,238,0.14),transparent_30%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,#030b18_0%,rgba(3,11,24,0.98)_38%,rgba(3,11,24,0.62)_70%,rgba(3,11,24,0.25)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_76%_46%,rgba(34,211,238,0.18),transparent_28%)]" />
 
-        <div className="relative mx-auto grid w-full max-w-[88rem] gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+        <div className="relative mx-auto grid w-full max-w-[88rem] gap-12 lg:grid-cols-[1.04fr_0.96fr] lg:items-center">
           <div className="max-w-4xl">
             <p className="inline-flex rounded-full border border-teal-200/25 bg-teal-200/10 px-4 py-2 text-[0.68rem] font-bold uppercase tracking-[0.2em] text-teal-100">{t('heroEyebrow')}</p>
-            <h1 className="mt-6 text-[clamp(2.8rem,7.8vw,6.9rem)] font-semibold leading-[0.88] tracking-[-0.07em] text-white">{t('heroTitle')}</h1>
+            <h1 className="mt-6 text-[clamp(3rem,7.3vw,6.7rem)] font-semibold leading-[0.87] tracking-[-0.07em] text-white">{t('heroTitle')}</h1>
             <p className="mt-6 max-w-2xl text-base leading-7 text-slate-200 sm:text-lg sm:leading-8">{t('heroDescription')}</p>
-            <p className="mt-6 inline-flex items-center gap-2 rounded-full border border-amber-200/25 bg-amber-100/10 px-4 py-2 text-xs font-bold text-amber-50 sm:text-sm"><ShieldAlert size={16} aria-hidden="true" />{t('statusBadge')}</p>
-            <div className="mt-8 flex flex-col gap-3 pr-14 sm:flex-row sm:flex-wrap sm:pr-0">
-              <a
-                href="#triumph-data"
-                onClick={() => track('retatrutide_hero_research_click', { locale })}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#28e0c1] px-6 py-3 text-sm font-bold text-[#071724] shadow-[0_18px_44px_rgba(45,212,191,0.25)] transition hover:-translate-y-0.5 hover:bg-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-200/40"
-              >
-                {t('heroPrimaryCta')}<ArrowRight size={16} aria-hidden="true" />
-              </a>
-              <a
-                href="#research-documentation"
-                onClick={() => track('retatrutide_documentation_click', { placement: 'hero', locale })}
-                className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/25 bg-white/8 px-6 py-3 text-sm font-bold text-white backdrop-blur transition hover:border-white/50 hover:bg-white/14 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/20"
-              >
-                {t('heroSecondaryCta')}
-              </a>
+
+            <div className="mt-7 flex flex-wrap gap-2 pr-12 sm:pr-0">
+              <span className="rounded-full border border-teal-200/20 bg-white/8 px-3 py-2 text-xs font-bold text-teal-100">GIP</span>
+              <span className="rounded-full border border-teal-200/20 bg-white/8 px-3 py-2 text-xs font-bold text-teal-100">GLP-1</span>
+              <span className="rounded-full border border-teal-200/20 bg-white/8 px-3 py-2 text-xs font-bold text-teal-100">{t('glucagonTitle')}</span>
+              <span className="rounded-full border border-amber-200/20 bg-amber-100/10 px-3 py-2 text-xs font-bold text-amber-50">{t('statusBadge')}</span>
+            </div>
+
+            <div className="mt-8 flex flex-col gap-3 pr-12 sm:flex-row sm:flex-wrap sm:pr-0">
+              <a href={purchaseHref} onClick={() => track('retatrutide_category_purchase_click', { locale })} className="inline-flex min-h-13 items-center justify-center gap-2 rounded-full bg-[#28e0c1] px-7 py-3.5 text-sm font-bold text-[#071724] shadow-[0_18px_44px_rgba(45,212,191,0.25)] transition hover:-translate-y-0.5 hover:bg-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-200/40">{t('categoryPrimaryCta')}<ArrowRight size={17} aria-hidden="true" /></a>
+              <a href="#other-metabolic-pathways" className="inline-flex min-h-13 items-center justify-center rounded-full border border-white/25 bg-white/8 px-7 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:border-white/50 hover:bg-white/14 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/20">{t('categorySecondaryCta')}</a>
             </div>
             <p className="mt-7 max-w-2xl border-l-2 border-teal-300/60 pl-4 text-xs font-semibold leading-6 text-slate-300 sm:text-sm">{t('researchUseNotice')}</p>
           </div>
 
-          <div className="self-end lg:pb-8">
-            <p className="ml-auto max-w-sm rounded-[1.5rem] border border-white/12 bg-black/25 p-5 text-sm font-semibold leading-6 text-slate-100 shadow-[0_22px_64px_rgba(0,0,0,0.2)] backdrop-blur-sm">{t('heroVisualLabel')}</p>
+          <div className="relative mx-auto w-full max-w-[38rem]">
+            <div className="absolute inset-[8%] rounded-full bg-teal-300/15 blur-3xl" aria-hidden="true" />
+            <div className="relative aspect-square">
+              <ProductImage product={product} alt={t('categoryProductImageAlt')} loading="eager" sizes="(min-width: 1024px) 42vw, 90vw" className="size-full object-contain drop-shadow-[0_38px_46px_rgba(0,0,0,0.5)]" />
+            </div>
+
+            <div className="relative -mt-10 border border-white/15 bg-[#071724]/88 p-5 shadow-[0_26px_80px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:p-6">
+              <div className="flex items-end justify-between gap-5"><div><p className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-teal-200">{t('quickSelectEyebrow')}</p><h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-white">Retatrutide</h2></div><p className="text-right text-sm text-slate-300">{t('portfolioFrom')} <strong className="block text-2xl text-white">{money(lowestPrice)}</strong></p></div>
+              <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-5">
+                {product.variants.map((variant) => <a key={variant.sku} href={purchaseHref} className="rounded-xl border border-white/15 bg-white/[0.06] px-3 py-3 transition hover:border-teal-200/50 hover:bg-teal-300/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-300"><span className="block text-sm font-bold text-white">{variant.label}</span><span className="mt-1 block text-xs font-semibold text-teal-200">{money(variant.price)}</span></a>)}
+              </div>
+              <div className="mt-5 flex flex-wrap items-center justify-between gap-3"><span className="inline-flex items-center gap-2 text-xs font-semibold text-slate-300"><ShieldCheck size={15} aria-hidden="true" />{t('documentationByRequest')}</span><a href={researchHref} className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-teal-200 underline-offset-4 hover:underline">{t('categoryResearchCta')}<ArrowRight size={15} aria-hidden="true" /></a></div>
+            </div>
           </div>
         </div>
-
-        <a href="#triple-pathways" className="absolute bottom-5 left-1/2 hidden -translate-x-1/2 items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-slate-300 transition hover:text-white lg:inline-flex">
-          {t('scrollCue')}<ArrowDown size={15} aria-hidden="true" />
-        </a>
       </section>
 
-      <SectionShell id="triple-pathways" className="bg-white">
-        <SectionIntro eyebrow={t('pathwaysEyebrow')} title={t('pathwaysTitle')} description={t('pathwaysDescription')} />
-        <div className="relative mt-10 grid gap-5 lg:grid-cols-3">
-          <span className="pointer-events-none absolute left-[16%] right-[16%] top-10 hidden h-px bg-gradient-to-r from-cyan-300 via-teal-400 to-violet-300 lg:block" aria-hidden="true" />
-          {pathwayCards.map((card, index) => (
-            <article key={card.key} className="relative overflow-hidden rounded-[1.75rem] border border-slate-900/10 bg-[#F8FAFC] p-6 shadow-[0_20px_55px_rgba(7,23,36,0.07)] sm:p-7">
-              <span className={`flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br ${card.accent} text-[#071724] shadow-lg`}><Network size={22} aria-hidden="true" /></span>
-              <span className="absolute right-5 top-5 text-5xl font-semibold tracking-[-0.06em] text-slate-200">0{index + 1}</span>
-              <h3 className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-[#071724]">{t(`${card.key}Title`)}</h3>
-              <p className="mt-4 text-base leading-7 text-slate-600">{t(`${card.key}Body`)}</p>
-              <details className="group mt-5 rounded-xl border border-slate-900/8 bg-white p-3">
-                <summary className="flex cursor-pointer list-none items-center gap-2 text-xs font-bold text-teal-800"><Info size={14} aria-hidden="true" />{t('definitionLabel')}</summary>
-                <p className="mt-3 text-xs leading-5 text-slate-600">{t(`${card.key}Definition`)}</p>
-              </details>
-            </article>
-          ))}
+      <RetatrutidePathways compact />
+
+      <section className="bg-[#071724] px-5 py-10 text-white sm:px-8">
+        <div className="mx-auto flex max-w-[88rem] flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div><p className="text-xs font-bold uppercase tracking-[0.18em] text-teal-200">{t('categoryResearchBridgeEyebrow')}</p><h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">{t('categoryResearchBridgeTitle')}</h2><p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">{t('categoryResearchBridgeBody')}</p></div>
+          <a href={researchHref} className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-teal-400 px-6 py-3 text-sm font-bold text-[#071724] transition hover:bg-white">{t('categoryResearchCta')}<ArrowRight size={16} aria-hidden="true" /></a>
         </div>
-      </SectionShell>
+      </section>
 
-      <RetatrutideDataExplorer />
+      <MetabolicPortfolio />
 
-      <SectionShell className="bg-[#eef4f3]">
-        <SectionIntro eyebrow={t('meaningEyebrow')} title={t('meaningTitle')} />
-        <div className="mt-10 grid gap-5 lg:grid-cols-2">
-          <article className="rounded-[1.75rem] border border-teal-800/10 bg-white p-6 shadow-[0_20px_55px_rgba(7,23,36,0.07)] sm:p-8">
-            <span className="flex size-12 items-center justify-center rounded-2xl bg-teal-100 text-teal-800"><Check size={22} aria-hidden="true" /></span>
-            <h3 className="mt-5 text-2xl font-semibold tracking-[-0.04em] text-[#071724]">{t('suggestsTitle')}</h3>
-            <ul className="mt-6 grid gap-4">{suggests.map((item) => <li key={item} className="flex items-start gap-3 text-sm leading-6 text-slate-700"><Check size={17} aria-hidden="true" className="mt-1 shrink-0 text-teal-600" />{item}</li>)}</ul>
-          </article>
-          <article className="rounded-[1.75rem] border border-amber-900/10 bg-[#fffaf0] p-6 shadow-[0_20px_55px_rgba(7,23,36,0.07)] sm:p-8">
-            <span className="flex size-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-800"><X size={22} aria-hidden="true" /></span>
-            <h3 className="mt-5 text-2xl font-semibold tracking-[-0.04em] text-[#071724]">{t('notEstablishTitle')}</h3>
-            <ul className="mt-6 grid gap-4">{notEstablished.map((item) => <li key={item} className="flex items-start gap-3 text-sm leading-6 text-slate-700"><X size={16} aria-hidden="true" className="mt-1 shrink-0 text-amber-700" />{item}</li>)}</ul>
-          </article>
-        </div>
-      </SectionShell>
-
-      <SectionShell className="bg-white">
-        <SectionIntro eyebrow={t('timelineEyebrow')} title={t('timelineTitle')} description={t('timelineDescription')} />
-        <ol className="relative mt-12 grid gap-5 border-l-2 border-teal-200 pl-7 lg:grid-cols-5 lg:border-l-0 lg:border-t-2 lg:pl-0 lg:pt-8">
-          {retatrutideTimeline.map((item) => {
-            const source = sourceById(item.sourceId)
-            const date = item.date.length === 4 ? item.date : new Intl.DateTimeFormat(locale, { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${item.date}T00:00:00Z`))
-            return (
-              <li key={`${item.date}-${item.labelKey}`} className="relative rounded-2xl border border-slate-900/10 bg-[#F8FAFC] p-5 shadow-sm lg:min-h-52">
-                <span className="absolute -left-[2.15rem] top-6 size-3 rounded-full bg-teal-500 ring-4 ring-white lg:-top-[2.45rem] lg:left-5" aria-hidden="true" />
-                <time className="text-xs font-bold uppercase tracking-[0.14em] text-teal-700">{date}</time>
-                <h3 className="mt-3 text-lg font-semibold leading-6 tracking-[-0.03em] text-[#071724]">{t(item.labelKey)}</h3>
-                {source ? <a href={source.url} target="_blank" rel="noreferrer" className="mt-5 inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 underline decoration-teal-300 underline-offset-4 hover:text-[#071724]">{t('timelineSource')}<ExternalLink size={13} aria-hidden="true" /></a> : null}
-              </li>
-            )
-          })}
-        </ol>
-      </SectionShell>
-
-      <SectionShell id="research-documentation" className="bg-[#edf5f4]">
-        <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
-          <div>
-            <SectionIntro eyebrow={t('documentationEyebrow')} title={t('documentationTitle')} description={t('documentationDescription')} />
-            <p className="mt-6 flex items-start gap-2 text-xs font-semibold leading-5 text-slate-500"><Info size={15} aria-hidden="true" className="mt-0.5 shrink-0" />{t('documentationDisclosure')}</p>
-          </div>
-          <div className="grid gap-5">
-            {retatrutideDocumentation.length ? retatrutideDocumentation.map((record) => <DocumentationFields key={record.batchId} record={record} />) : (
-              <div className="rounded-[1.75rem] border border-slate-900/10 bg-white p-6 shadow-[0_22px_60px_rgba(7,23,36,0.08)] sm:p-8">
-                <span className="flex size-12 items-center justify-center rounded-2xl bg-teal-50 text-teal-800"><FileCheck2 size={22} aria-hidden="true" /></span>
-                <p className="mt-5 text-lg font-semibold leading-8 text-[#071724]">{t('documentationEmpty')}</p>
-                <a
-                  href={path('/products/retatrutide')}
-                  onClick={() => track('retatrutide_documentation_click', { placement: 'documentation', locale })}
-                  className="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#071724] px-6 py-3 text-sm font-bold text-white transition hover:bg-teal-700"
-                >
-                  {t('documentationCta')}<ArrowRight size={16} aria-hidden="true" />
-                </a>
-              </div>
-            )}
+      <section className="bg-white px-5 py-16 sm:px-8 sm:py-20">
+        <div className="mx-auto max-w-[88rem]">
+          <div className="max-w-3xl"><p className="text-xs font-bold uppercase tracking-[0.2em] text-teal-700">{t('confidenceEyebrow')}</p><h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] text-[#071724] sm:text-5xl">{t('confidenceTitle')}</h2><p className="mt-5 text-base leading-7 text-slate-600">{t('confidenceDescription')}</p></div>
+          <div className="mt-10 grid gap-px overflow-hidden border border-slate-900/10 bg-slate-900/10 md:grid-cols-3">
+            {[
+              { icon: BadgeCheck, title: t('confidenceItem1Title'), body: t('confidenceItem1Body') },
+              { icon: FileCheck2, title: t('confidenceItem2Title'), body: t('confidenceItem2Body') },
+              { icon: ShieldCheck, title: t('confidenceItem3Title'), body: t('confidenceItem3Body') },
+            ].map((item) => <article key={item.title} className="bg-[#F8FAFC] p-7 sm:p-8"><item.icon size={24} className="text-teal-700" aria-hidden="true" /><h3 className="mt-5 text-xl font-semibold text-[#071724]">{item.title}</h3><p className="mt-3 text-sm leading-6 text-slate-600">{item.body}</p></article>)}
           </div>
         </div>
-      </SectionShell>
-
-      <TestimonialsSection minimumItems={3} />
-
-      <div className="bg-white py-6 sm:py-10">
-        <FAQAccordion eyebrow={t('faqEyebrow')} title={t('faqTitle')} items={faqItems} />
-      </div>
+      </section>
 
       <section className="bg-[#071724] px-5 pb-32 pt-16 text-white sm:px-8 sm:pb-20 lg:py-24">
-        <div className="mx-auto grid max-w-[88rem] gap-8 overflow-hidden rounded-[2rem] border border-white/12 bg-[radial-gradient(circle_at_88%_20%,rgba(45,212,191,0.22),transparent_34%),rgba(255,255,255,0.05)] p-6 shadow-[0_28px_80px_rgba(0,0,0,0.22)] sm:p-9 lg:grid-cols-[1fr_auto] lg:items-end lg:p-12">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-teal-200">{t('finalEyebrow')}</p>
-            <h2 className="mt-4 max-w-4xl text-3xl font-semibold leading-[1.02] tracking-[-0.05em] sm:text-5xl">{t('finalTitle')}</h2>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">{t('finalDescription')}</p>
-            <p className="mt-7 max-w-3xl border-l-2 border-teal-300/50 pl-4 text-xs font-semibold leading-5 text-slate-300">{t('independenceDisclosure')}</p>
-          </div>
-          <div className="flex flex-col gap-3">
-            <a
-              href="#research-documentation"
-              onClick={() => track('retatrutide_documentation_click', { placement: 'final', locale })}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#28e0c1] px-6 py-3 text-sm font-bold text-[#071724] transition hover:bg-white"
-            >
-              {t('finalPrimaryCta')}<ArrowRight size={16} aria-hidden="true" />
-            </a>
-            <a
-              href={path('/intake?interest=retatrutide')}
-              onClick={() => track('research_inquiry_start', { source: 'retatrutide_category', locale })}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/20 bg-white/8 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/14"
-            >
-              <FlaskConical size={16} aria-hidden="true" />{t('finalSecondaryCta')}
-            </a>
-          </div>
+        <div className="mx-auto grid max-w-[88rem] gap-8 border border-white/12 bg-[radial-gradient(circle_at_88%_20%,rgba(45,212,191,0.22),transparent_34%),rgba(255,255,255,0.05)] p-7 shadow-[0_28px_80px_rgba(0,0,0,0.22)] sm:p-10 lg:grid-cols-[1fr_auto] lg:items-end lg:p-12">
+          <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-teal-200">{t('categoryFinalEyebrow')}</p><h2 className="mt-4 max-w-4xl text-3xl font-semibold leading-[1.02] tracking-[-0.05em] sm:text-5xl">{t('categoryFinalTitle')}</h2><p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">{t('categoryFinalDescription')}</p></div>
+          <div className="flex flex-col gap-3"><a href={purchaseHref} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#28e0c1] px-6 py-3 text-sm font-bold text-[#071724] transition hover:bg-white">{t('categoryPrimaryCta')}<ArrowRight size={16} aria-hidden="true" /></a><a href={path('/catalog?category=Metabolic%20Research')} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/20 bg-white/8 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/14"><FlaskConical size={16} aria-hidden="true" />{t('categoryBrowseCta')}</a></div>
         </div>
       </section>
     </main>

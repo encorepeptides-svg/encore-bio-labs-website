@@ -40,7 +40,7 @@ export const catalog = {
   retaReceptorGlucagon: 'Glucagón',
   retaStrengthsLabel: 'Concentraciones disponibles',
   retaPrimaryCta: 'Elegir concentración',
-  retaSecondaryCta: 'Comparar concentraciones',
+  retaSecondaryCta: 'Revisar la investigación',
   retaCompliance: 'Compuesto en investigación. Uso exclusivo para investigación; no destinado a uso humano ni veterinario.',
   retaVisualAlt: 'Vial del compuesto de investigación en fase experimental Retatrutide',
 

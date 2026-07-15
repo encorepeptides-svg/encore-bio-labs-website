@@ -4,8 +4,12 @@ import {
   ChevronDown,
   ShoppingCart,
 } from 'lucide-react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { useMemo, useState } from 'react'
+import heroArtworkAvif1586 from '../../assets/images/research/retatrutide-triple-pathway-hero-1586.avif'
+import heroArtworkAvif768 from '../../assets/images/research/retatrutide-triple-pathway-hero-768.avif'
+import heroArtworkWebp1586 from '../../assets/images/research/retatrutide-triple-pathway-hero-1586.webp'
+import heroArtworkWebp768 from '../../assets/images/research/retatrutide-triple-pathway-hero-768.webp'
 import { useCart } from '../../context/useCart'
 import type { Product, ProductVariant } from '../../data/products'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
@@ -22,9 +26,11 @@ import {
 } from '../../lib/purchaseOptions'
 import { cn } from '../../lib/utils'
 import { EncoreCompleteKit } from '../EncoreCompleteKit'
+import { MetabolicPortfolio } from '../metabolic/MetabolicPortfolio'
 import { ProductImage } from '../ProductImage'
+import { RetatrutidePathways } from '../retatrutide/RetatrutidePathways'
+import { RetatrutideResearchContext } from '../retatrutide/RetatrutideResearchContext'
 import { ProductBreadcrumb } from './ProductPageSections'
-import { RetatrutideBenefitsSection } from './retatrutide/RetatrutideBenefitsSection'
 import { RetatrutideEvidenceStrip } from './retatrutide/RetatrutideEvidenceStrip'
 import { RetatrutideQualitySection } from './retatrutide/RetatrutideQualitySection'
 
@@ -122,7 +128,7 @@ function PurchaseConfigurator({ product }: { product: Product }) {
       </div>
       <p className="mt-4 flex gap-2 text-xs leading-5 text-slate-500"><Check size={14} className="mt-0.5 shrink-0 text-teal-700" />{t('researchUseAvailability')}</p>
 
-      <div className="fixed inset-x-3 bottom-3 z-40 flex items-center justify-between gap-3 rounded-full border border-white/70 bg-white/92 p-2 pl-5 shadow-[0_18px_55px_rgba(7,23,36,0.18)] backdrop-blur-xl md:hidden">
+      <div className="fixed bottom-3 left-3 right-20 z-40 flex items-center justify-between gap-3 rounded-full border border-white/70 bg-white/92 p-2 pl-5 shadow-[0_18px_55px_rgba(7,23,36,0.18)] backdrop-blur-xl md:hidden">
         <div><p className="text-[0.6rem] font-bold uppercase tracking-[0.12em] text-slate-500">{variant.label}</p><p className="text-sm font-semibold text-[#071724]">{money(quote.linePrice)}</p></div>
         <button type="button" onClick={addConfiguredOrder} className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#071724] px-5 text-sm font-semibold text-white">{t('addToCart')}</button>
       </div>
@@ -131,9 +137,10 @@ function PurchaseConfigurator({ product }: { product: Product }) {
 }
 
 export function RetatrutideProductPage({ product }: { product: Product }) {
-  const { path } = useLocale()
   const { t } = useTranslation('retatrutide')
   const [openFaq, setOpenFaq] = useState(0)
+  const reducedMotion = useReducedMotion()
+  const lowestPrice = Math.min(...product.variants.map((variant) => variant.price))
 
   const faqs = [
     { question: t('faq1Q'), answer: t('faq1A') },
@@ -148,57 +155,62 @@ export function RetatrutideProductPage({ product }: { product: Product }) {
     <main id="main-content" className="overflow-hidden bg-[#f8faf9] pb-24 text-[#071724] md:pb-0">
       <ProductBreadcrumb product={product} />
 
-      <section className="relative px-5 pb-20 pt-10 sm:px-8 lg:pb-28 lg:pt-16">
-        <div className="pointer-events-none absolute right-[-12rem] top-[-8rem] size-[38rem] rounded-full bg-teal-200/25 blur-[100px]" />
-        <div className="mx-auto max-w-[88rem]">
-          <div className="grid gap-12 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
-            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-teal-700">{t('eyebrow')}</p>
-              <h1 className="mt-5 text-[clamp(3.5rem,7vw,7rem)] font-semibold leading-[0.86] tracking-[-0.075em] text-[#071724]">Retatrutide</h1>
-              <p className="mt-7 max-w-2xl text-xl font-medium leading-8 tracking-[-0.025em] text-slate-800 sm:text-2xl">{t('headline')}</p>
-              <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">{t('intro')}</p>
-              <div className="mt-6 flex flex-wrap gap-2"><span className="rounded-full border border-teal-900/8 bg-white px-3 py-2 text-xs font-semibold text-teal-900">{t('glp1Pathway')}</span><span className="rounded-full border border-teal-900/8 bg-white px-3 py-2 text-xs font-semibold text-teal-900">{t('gipPathway')}</span><span className="rounded-full border border-teal-900/8 bg-white px-3 py-2 text-xs font-semibold text-teal-900">{t('glucagonPathway')}</span></div>
-              <details className="group mt-5 max-w-2xl rounded-2xl bg-white/70 p-4 text-sm text-slate-600 shadow-sm"><summary className="cursor-pointer font-semibold text-slate-800 marker:text-teal-700">{t('aboutTitle')}</summary><p className="mt-3 leading-6">{t('aboutParagraph1')}</p><p className="mt-3 leading-6">{t('aboutParagraph2')}</p></details>
-              <div className="mt-7 flex flex-wrap gap-3"><a href="#retatrutide-purchase" className="retatrutide-primary-cta inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#071724] px-8 text-base font-semibold text-white shadow-[0_18px_48px_rgba(7,23,36,0.2)] transition hover:-translate-y-0.5 hover:bg-teal-800">{t('startYourResearch')} <ArrowRight size={18} /></a><a href="#retatrutide-full-research" className="inline-flex min-h-14 items-center justify-center rounded-full border border-slate-900/10 bg-white px-7 text-sm font-semibold text-slate-800 transition hover:bg-teal-50">{t('reviewTheResearch')}</a></div>
-              <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-xs font-semibold text-slate-500"><span>{t('fromPrice')}</span><span>{t('activeStrengths')}</span><span>{t('documentationByRequest')}</span></div>
-              <p className="mt-4 text-xs leading-5 text-slate-500">{t('fdaDisclaimer')}</p>
-            </motion.div>
+      <section className="relative overflow-hidden bg-[#030b18] px-5 pb-32 pt-10 text-white sm:px-8 sm:pb-36 lg:pb-44 lg:pt-16">
+        <picture>
+          <source type="image/avif" srcSet={`${heroArtworkAvif768} 768w, ${heroArtworkAvif1586} 1586w`} sizes="100vw" />
+          <source type="image/webp" srcSet={`${heroArtworkWebp768} 768w, ${heroArtworkWebp1586} 1586w`} sizes="100vw" />
+          <img src={heroArtworkWebp1586} alt="" width="1586" height="1024" fetchPriority="high" className="absolute inset-0 size-full object-cover object-[68%_center] opacity-55" />
+        </picture>
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,#030b18_0%,rgba(3,11,24,0.98)_36%,rgba(3,11,24,0.62)_68%,rgba(3,11,24,0.26)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_77%_46%,rgba(34,211,238,0.18),transparent_29%)]" />
 
-            <motion.div initial={{ opacity: 0, y: 22, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.7, delay: 0.08 }} className="retatrutide-vial-float relative mx-auto aspect-square w-full max-w-[42rem]">
-              <div className="absolute inset-[10%] rounded-full bg-gradient-to-br from-white via-teal-50 to-emerald-100 shadow-[0_45px_120px_rgba(13,148,136,0.14)]" />
-              <div className="absolute inset-[18%] rounded-full border border-white/90 bg-white/40 backdrop-blur-xl" />
-              <ProductImage
-                product={product}
-                alt={t('imageAlt')}
-                loading="eager"
-                className="relative z-10 size-full object-contain drop-shadow-[0_38px_32px_rgba(7,23,36,0.2)]"
-              />
-            </motion.div>
-          </div>
-          <div className="mt-12 lg:mt-16">
-            <PurchaseConfigurator product={product} />
-            {product.purchaseRules.kitEligible ? (
-              <EncoreCompleteKit
-                variant="reassurance"
-                productName={product.name}
-                bacWaterAmount={product.bacWaterAmount}
-                className="mt-4"
-              />
-            ) : null}
-          </div>
+        <div className="relative mx-auto grid max-w-[88rem] gap-12 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
+          <motion.div initial={reducedMotion ? false : { opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+            <p className="inline-flex rounded-full border border-teal-200/25 bg-teal-200/10 px-4 py-2 text-[0.68rem] font-bold uppercase tracking-[0.2em] text-teal-100">{t('eyebrow')}</p>
+            <h1 className="mt-6 text-[clamp(3.8rem,8vw,7.5rem)] font-semibold leading-[0.84] tracking-[-0.075em] text-white">Retatrutide</h1>
+            <p className="mt-7 max-w-2xl text-xl font-medium leading-8 tracking-[-0.025em] text-white sm:text-2xl">{t('headline')}</p>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">{t('intro')}</p>
+            <div className="mt-6 flex flex-wrap gap-2"><span className="rounded-full border border-teal-200/20 bg-white/8 px-3 py-2 text-xs font-semibold text-teal-100">{t('glp1Pathway')}</span><span className="rounded-full border border-teal-200/20 bg-white/8 px-3 py-2 text-xs font-semibold text-teal-100">{t('gipPathway')}</span><span className="rounded-full border border-teal-200/20 bg-white/8 px-3 py-2 text-xs font-semibold text-teal-100">{t('glucagonPathway')}</span></div>
+
+            <div className="mt-8 flex flex-wrap gap-3 pr-12 sm:pr-0"><a href="#retatrutide-purchase" className="retatrutide-primary-cta inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#28e0c1] px-8 text-base font-bold text-[#071724] shadow-[0_18px_48px_rgba(20,184,166,0.28)] transition hover:-translate-y-0.5 hover:bg-white">{t('chooseStrength')}<ArrowRight size={18} aria-hidden="true" /></a><a href="#retatrutide-full-research" className="inline-flex min-h-14 items-center justify-center rounded-full border border-white/25 bg-white/8 px-7 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/14">{t('reviewTheResearch')}</a></div>
+
+            <div className="mt-7 grid max-w-2xl grid-cols-1 gap-px overflow-hidden border border-white/12 bg-white/12 sm:grid-cols-3">
+              <div className="bg-[#071724]/75 p-4"><p className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-teal-200">{t('heroPriceLabel')}</p><p className="mt-1 text-xl font-semibold text-white">{t('fromPrice', { price: money(lowestPrice) })}</p></div>
+              <div className="bg-[#071724]/75 p-4"><p className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-teal-200">{t('heroFormatsLabel')}</p><p className="mt-1 text-xl font-semibold text-white">{t('activeStrengths', { count: product.variants.length })}</p></div>
+              <div className="bg-[#071724]/75 p-4"><p className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-teal-200">{t('heroDocumentationLabel')}</p><p className="mt-1 text-sm font-semibold leading-6 text-white">{t('documentationByRequest')}</p></div>
+            </div>
+            <p className="mt-5 max-w-2xl border-l-2 border-teal-300/60 pl-4 text-xs font-semibold leading-5 text-slate-300">{t('fdaDisclaimer')}</p>
+          </motion.div>
+
+          <motion.div initial={reducedMotion ? false : { opacity: 0, y: 22, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.7, delay: reducedMotion ? 0 : 0.08 }} className="relative mx-auto w-full max-w-[42rem]">
+            <div className="absolute inset-[9%] rounded-full bg-teal-300/15 blur-3xl" aria-hidden="true" />
+            <div className="retatrutide-vial-float relative aspect-square"><ProductImage product={product} alt={t('imageAlt')} loading="eager" sizes="(min-width: 1024px) 44vw, 90vw" className="size-full object-contain drop-shadow-[0_42px_50px_rgba(0,0,0,0.52)]" /></div>
+            <div className="relative -mt-8 grid grid-cols-5 gap-2 border border-white/15 bg-[#071724]/85 p-3 backdrop-blur-xl sm:p-4">
+              {product.variants.map((variant) => <a key={variant.sku} href="#retatrutide-purchase" className="rounded-xl border border-white/12 bg-white/[0.06] px-2 py-3 text-center transition hover:border-teal-200/50 hover:bg-teal-300/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-300"><span className="block text-xs font-bold text-white sm:text-sm">{variant.label}</span><span className="mt-1 block text-[0.65rem] font-semibold text-teal-200 sm:text-xs">{money(variant.price)}</span></a>)}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="relative z-10 -mt-20 px-5 pb-16 sm:px-8 lg:-mt-28 lg:pb-20">
+        <div className="mx-auto max-w-[88rem]">
+          <PurchaseConfigurator product={product} />
+          {product.purchaseRules.kitEligible ? <EncoreCompleteKit variant="reassurance" productName={product.name} bacWaterAmount={product.bacWaterAmount} className="mt-4" /> : null}
         </div>
       </section>
 
       <RetatrutideEvidenceStrip />
-      <RetatrutideBenefitsSection />
+      <RetatrutidePathways id="retatrutide-full-research" />
+      <RetatrutideResearchContext />
       <RetatrutideQualitySection />
+      <MetabolicPortfolio mode="product" />
 
       <section className="px-5 py-20 sm:px-8 lg:py-28">
         <div className="mx-auto max-w-4xl"><p className="text-center text-xs font-bold uppercase tracking-[0.2em] text-teal-700">{t('faqEyebrow')}</p><h2 className="mt-4 text-center text-4xl font-semibold tracking-[-0.055em] sm:text-5xl">{t('faqTitle')}</h2><div className="mt-10 divide-y divide-slate-900/8 rounded-[2rem] bg-white px-6 shadow-[0_24px_75px_rgba(7,23,36,0.07)] sm:px-8">{faqs.map((faq, index) => { const open = openFaq === index; return <div key={faq.question}><button type="button" aria-expanded={open} onClick={() => setOpenFaq(open ? -1 : index)} className="flex min-h-20 w-full items-center justify-between gap-5 py-5 text-left"><span className="text-lg font-semibold tracking-[-0.02em]">{faq.question}</span><ChevronDown size={20} className={cn('shrink-0 text-teal-700 transition', open && 'rotate-180')} /></button><AnimatePresence initial={false}>{open ? <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden"><p className="max-w-3xl pb-6 text-base leading-7 text-slate-600">{faq.answer}</p></motion.div> : null}</AnimatePresence></div>})}</div></div>
       </section>
 
       <section className="px-5 pb-24 pt-20 sm:px-8 lg:pb-32 lg:pt-28">
-        <div className="mx-auto max-w-[88rem] overflow-hidden rounded-[2.5rem] bg-[#071724] px-6 py-16 text-center text-white shadow-[0_38px_110px_rgba(7,23,36,0.22)] sm:px-10 lg:py-24"><h2 className="text-5xl font-semibold tracking-[-0.06em] sm:text-6xl">{t('beginYourResearch')}</h2><p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-slate-300">{t('finalCtaLine1')}<br />{t('finalCtaLine2')}<br />{t('finalCtaLine3')}</p><a href={path('/intake?product=retatrutide')} className="retatrutide-primary-cta mt-9 inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-teal-500 px-8 text-base font-semibold text-[#071724] shadow-[0_18px_48px_rgba(20,184,166,0.28)] transition hover:-translate-y-1 hover:bg-teal-300">{t('startResearchIntake')} <ArrowRight size={18} /></a></div>
+        <div className="mx-auto max-w-[88rem] overflow-hidden bg-[#071724] px-6 py-16 text-center text-white shadow-[0_38px_110px_rgba(7,23,36,0.22)] sm:px-10 lg:py-24"><h2 className="text-5xl font-semibold tracking-[-0.06em] sm:text-6xl">{t('beginYourResearch')}</h2><p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-slate-300">{t('finalCtaLine1')}<br />{t('finalCtaLine2')}<br />{t('finalCtaLine3')}</p><a href="#retatrutide-purchase" className="retatrutide-primary-cta mt-9 inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-teal-400 px-8 text-base font-bold text-[#071724] shadow-[0_18px_48px_rgba(20,184,166,0.28)] transition hover:-translate-y-1 hover:bg-white">{t('finalConfigureCta')}<ArrowRight size={18} aria-hidden="true" /></a></div>
       </section>
     </main>
   )

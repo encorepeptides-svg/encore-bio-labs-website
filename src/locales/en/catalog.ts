@@ -38,7 +38,7 @@ export const catalog = {
   retaReceptorGlucagon: 'Glucagon',
   retaStrengthsLabel: 'Available strengths',
   retaPrimaryCta: 'Choose a strength',
-  retaSecondaryCta: 'Compare Strengths',
+  retaSecondaryCta: 'Review the Research',
   retaCompliance: 'Investigational compound. For research use only. Not for human or veterinary use.',
   retaVisualAlt: 'Retatrutide investigational research compound vial',
 

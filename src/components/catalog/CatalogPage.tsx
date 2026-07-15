@@ -148,6 +148,12 @@ export function CatalogPage() {
               after a search narrows and then clears the result set. */}
           {productsByCategory.map((group) => {
             const description = getCatalogFilterDescription(group.tab, t)
+            const showRetatrutideFeature = group.tab === 'Metabolic Research'
+              && sortOrder === 'featured'
+              && group.products.some((product) => product.slug === 'retatrutide')
+            const productsForGrid = showRetatrutideFeature
+              ? group.products.filter((product) => product.slug !== 'retatrutide')
+              : group.products
             return (
               <div
                 key={group.tab}
@@ -160,14 +166,17 @@ export function CatalogPage() {
                 {description ? (
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">{description}</p>
                 ) : null}
-                <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3 lg:gap-6">
-                  {group.products.map((product) => (
-                    <ProductCard key={product.slug} product={product} />
-                  ))}
-                </div>
+                {showRetatrutideFeature ? <CatalogRetatrutideFeature /> : null}
+
+                {productsForGrid.length ? (
+                  <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3 lg:gap-6">
+                    {productsForGrid.map((product) => (
+                      <ProductCard key={product.slug} product={product} />
+                    ))}
+                  </div>
+                ) : null}
 
                 {/* Compact in-grid featured treatments, integrated into their category. */}
-                {group.tab === 'Metabolic Research' ? <CatalogRetatrutideFeature /> : null}
                 {group.tab === 'Recovery & Regeneration' ? <CatalogKlowFeature /> : null}
               </div>
             )

@@ -17,25 +17,30 @@ function renderPage(locale: Locale) {
 }
 
 describe('MetabolicWeightManagementCategoryPage', () => {
-  it('renders sourced trial context, disclosures, and no fabricated documents', () => {
+  it('renders a Retatrutide-led portfolio hub without duplicating the product research explorer', () => {
     const html = renderPage('en')
-    expect(html).toContain('What the TRIUMPH-1 Sponsor Reported')
-    expect(html).toContain('2,339')
-    expect(html).toContain('28.3%')
-    expect(html).toContain('They are not Encore customer outcomes')
-    expect(html).toContain('Batch-specific documentation is available')
+    expect(html).toContain('Metabolic research, led by Retatrutide.')
+    expect(html).toContain('One category. Five materially different research approaches.')
+    expect(html).toContain('Tesamorelin')
+    expect(html).toContain('MOTS-C')
+    expect(html).toContain('AOD-9604')
+    expect(html).toContain('CJC-1295 + Ipamorelin')
+    expect(html).toContain('Match the compound to the research pathway')
+    expect(html).toContain('/products/retatrutide#retatrutide-full-research')
+    expect(html).not.toContain('What the TRIUMPH-1 Sponsor Reported')
     expect(html).not.toContain('guaranteed purity')
     expect(html).not.toContain('Before and after')
   })
 
   it('renders the full Spanish decision path without English fallback copy', () => {
     const html = renderPage('es')
-    expect(html).toContain('Retatrutide y la próxima frontera de la investigación metabólica')
+    expect(html).toContain('Investigación metabólica, liderada por Retatrutide.')
     expect(html).toContain('Por qué los investigadores siguen de cerca un agonista triple')
-    expect(html).toContain('Lo que reportó el patrocinador de TRIUMPH-1')
-    expect(html).toContain('Ve más allá del titular')
+    expect(html).toContain('Una categoría. Cinco enfoques de investigación realmente distintos.')
+    expect(html).toContain('Relaciona el compuesto con la vía de investigación')
+    expect(html).toContain('Productos claros. Registros visibles. Límites definidos.')
     expect(html).toContain('/es/products/retatrutide')
-    expect(html).not.toContain('Explore the Research')
-    expect(html).not.toContain('Go Deeper Than the Headline')
+    expect(html).not.toContain('Compare All Compounds')
+    expect(html).not.toContain('View product')
   })
 })

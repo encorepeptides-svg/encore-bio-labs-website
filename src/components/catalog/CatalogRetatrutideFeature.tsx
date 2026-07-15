@@ -49,6 +49,7 @@ export function CatalogRetatrutideFeature() {
   if (!baseProduct) return null
   const product = getLocalizedProduct(baseProduct, locale)
   const purchaseHref = path(`/products/${product.slug}#retatrutide-purchase`)
+  const researchHref = path(`/products/${product.slug}#retatrutide-full-research`)
   const receptors: [string, string, string] = [
     t('retaReceptorGip'),
     t('retaReceptorGlp1'),
@@ -115,7 +116,7 @@ export function CatalogRetatrutideFeature() {
               <ArrowRight size={17} aria-hidden="true" />
             </a>
             <a
-              href={purchaseHref}
+              href={researchHref}
               className="inline-flex min-h-13 items-center justify-center rounded-full border border-white/25 bg-white/[0.06] px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:border-white/45 hover:bg-white/12 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-200"
             >
               {t('retaSecondaryCta')}
