@@ -41,6 +41,7 @@ export function CatalogPage() {
   const { t } = useTranslation('catalog')
   const { locale } = useLocale()
   const [catalogState, setCatalogState] = useState<CatalogSearchState>(() => readCatalogState(typeof window === 'undefined' ? '' : window.location.search))
+  const [sortOrder, setSortOrder] = useState('featured')
   const { search: searchTerm, category: selectedCategory } = catalogState
   const debouncedSearchTerm = useDebouncedValue(searchTerm)
 
@@ -83,8 +84,17 @@ export function CatalogPage() {
   }, [])
 
   const filteredProducts = useMemo(() => {
-    return searchProducts(debouncedSearchTerm, locale, selectedCategory).map((result) => result.product)
-  }, [debouncedSearchTerm, locale, selectedCategory])
+    const matches = searchProducts(debouncedSearchTerm, locale, selectedCategory).map((result) => result.product)
+    if (sortOrder === 'featured') return matches
+
+    return [...matches].sort((a, b) => {
+      const priceA = Math.min(...a.variants.map((variant) => variant.price).filter((price) => price > 0))
+      const priceB = Math.min(...b.variants.map((variant) => variant.price).filter((price) => price > 0))
+      if (sortOrder === 'price-low') return priceA - priceB
+      if (sortOrder === 'price-high') return priceB - priceA
+      return a.name.localeCompare(b.name, locale)
+    })
+  }, [debouncedSearchTerm, locale, selectedCategory, sortOrder])
 
   const productsByCategory = useMemo(() => {
     return gridSections.map((tab) => ({
@@ -108,6 +118,9 @@ export function CatalogPage() {
         onSearchTermChange={setSearchTerm}
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
+        productCount={filteredProducts.length}
+        sortOrder={sortOrder}
+        onSortOrderChange={setSortOrder}
       />
 
       <section id="catalog-products" className="scroll-mt-28 px-5 py-10 sm:px-8 sm:py-12 lg:py-14">

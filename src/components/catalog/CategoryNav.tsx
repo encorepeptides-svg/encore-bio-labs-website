@@ -13,6 +13,9 @@ type CategoryNavProps = {
   onSearchTermChange: (value: string) => void
   selectedCategory: Exclude<CatalogFilter, 'Essentials'>
   onCategoryChange: (value: Exclude<CatalogFilter, 'Essentials'>) => void
+  productCount: number
+  sortOrder: string
+  onSortOrderChange: (value: string) => void
 }
 
 const categoryIcons: Record<(typeof categoryFilters)[number], LucideIcon> = {
@@ -23,12 +26,12 @@ const categoryIcons: Record<(typeof categoryFilters)[number], LucideIcon> = {
   'Cognitive Research': Brain,
 }
 
-export function CategoryNav({ searchTerm, onSearchTermChange, selectedCategory, onCategoryChange }: CategoryNavProps) {
+export function CategoryNav({ searchTerm, onSearchTermChange, selectedCategory, onCategoryChange, productCount, sortOrder, onSortOrderChange }: CategoryNavProps) {
   const { t } = useTranslation('catalog')
 
   return (
-    <div className="sticky top-0 z-30 -mx-5 border-b border-slate-900/8 bg-[#F8FAFC]/92 px-5 py-3 backdrop-blur-xl sm:-mx-8 sm:px-8 lg:top-20">
-      <div className="catalog-controls mx-auto grid max-w-[88rem] gap-3 lg:grid-cols-[minmax(300px,360px)_minmax(0,1fr)] lg:items-start lg:gap-8">
+    <div id="catalog-categories" className="sticky top-0 z-30 scroll-mt-24 border-y border-slate-900/8 bg-[#F8FAFC]/95 px-5 py-3 backdrop-blur-xl sm:px-8 lg:top-20">
+      <div className="catalog-controls mx-auto grid max-w-[88rem] gap-3 lg:grid-cols-[minmax(280px,340px)_minmax(0,1fr)_auto] lg:items-start lg:gap-5">
         <div className="relative w-full">
           <Search size={16} aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <label htmlFor="catalog-search" className="sr-only">{t('searchAriaLabel')}</label>
@@ -107,6 +110,23 @@ export function CategoryNav({ searchTerm, onSearchTermChange, selectedCategory, 
             )
           })}
         </nav>
+        <div className="flex items-center justify-between gap-3 lg:justify-end">
+          <span aria-live="polite" className="shrink-0 text-xs font-semibold text-slate-500">
+            {t(productCount === 1 ? 'productCountOne' : 'productCountOther', { count: productCount })}
+          </span>
+          <label htmlFor="catalog-sort" className="sr-only">{t('sortLabel')}</label>
+          <select
+            id="catalog-sort"
+            value={sortOrder}
+            onChange={(event) => onSortOrderChange(event.target.value)}
+            className="h-10 rounded-full border border-slate-900/10 bg-white px-3 text-xs font-semibold text-[#071724] outline-none transition focus:border-teal-300 focus:ring-4 focus:ring-teal-100"
+          >
+            <option value="featured">{t('sortFeatured')}</option>
+            <option value="price-low">{t('sortPriceLow')}</option>
+            <option value="price-high">{t('sortPriceHigh')}</option>
+            <option value="name">{t('sortName')}</option>
+          </select>
+        </div>
       </div>
     </div>
   )
