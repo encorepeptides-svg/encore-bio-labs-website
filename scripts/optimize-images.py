@@ -30,11 +30,7 @@ def main() -> None:
         str(path.relative_to(root))
         for path in (Path(root) / "src/assets/images/products").glob("*.png")
     )
-    sources = [
-        *product_sources,
-        "src/assets/images/hero/encore-kit-hero.png",
-        "src/assets/images/complete-research-kit-hero.webp",
-    ]
+    sources = [*product_sources]
     report = []
 
     for rel_path in sources:

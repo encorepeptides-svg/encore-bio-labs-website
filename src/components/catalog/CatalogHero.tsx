@@ -1,15 +1,15 @@
 import { ArrowDown, ArrowRight, FlaskConical } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
-import kitHeroVisualEs from '../../assets/images/complete-research-kit-visual-es.png'
-import { useLocale, useTranslation } from '../../i18n/LocaleContext'
-
-const HERO_IMAGE = '/images/catalog/encore-complete-research-kit-hero.png'
+import {
+  ENCORE_COMPLETE_KIT_IMAGE,
+  ENCORE_COMPLETE_KIT_IMAGE_HEIGHT,
+  ENCORE_COMPLETE_KIT_IMAGE_WIDTH,
+} from '../../data/kitMedia'
+import { useTranslation } from '../../i18n/LocaleContext'
 
 export function CatalogHero() {
   const prefersReducedMotion = useReducedMotion()
-  const { locale } = useLocale()
   const { t } = useTranslation('catalog')
-  const heroImage = locale === 'es' ? kitHeroVisualEs : HERO_IMAGE
 
   const enter = (delay: number) =>
     prefersReducedMotion
@@ -74,14 +74,15 @@ export function CatalogHero() {
         <motion.div {...enter(0.14)} className="relative mx-auto w-full max-w-[42rem] md:max-w-none">
           <div className="relative mx-auto aspect-video max-h-[28rem] w-full overflow-hidden rounded-[1.75rem] border border-teal-900/10 bg-white shadow-[0_24px_60px_rgba(7,23,36,0.10)]">
             <img
-              src={heroImage}
+              src={ENCORE_COMPLETE_KIT_IMAGE}
               alt={t('heroVisualAlt')}
-              width="1672"
-              height="941"
+              width={ENCORE_COMPLETE_KIT_IMAGE_WIDTH}
+              height={ENCORE_COMPLETE_KIT_IMAGE_HEIGHT}
               loading="eager"
               fetchPriority="high"
               decoding="async"
-              className={`relative h-full w-full ${locale === 'es' ? 'object-cover object-[72%_center]' : 'object-contain object-center'}`}
+              className="relative h-full w-full object-cover object-center"
+              sizes="(min-width: 1280px) 48rem, (min-width: 768px) 54vw, 100vw"
             />
           </div>
         </motion.div>

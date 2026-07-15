@@ -6,9 +6,12 @@ import {
   getEncoreCompleteKitItems,
   type EncoreCompleteKitItem,
 } from '../data/encoreCompleteKit'
+import {
+  ENCORE_COMPLETE_KIT_IMAGE,
+  ENCORE_COMPLETE_KIT_IMAGE_HEIGHT,
+  ENCORE_COMPLETE_KIT_IMAGE_WIDTH,
+} from '../data/kitMedia'
 import { useLocale, useTranslation } from '../i18n/LocaleContext'
-import kitHeroImage from '../assets/images/complete-research-kit-hero.webp'
-import kitHeroVisualEs from '../assets/images/complete-research-kit-visual-es.png'
 
 const itemIcons: Record<EncoreCompleteKitItem['key'], ComponentType<{ size?: number; 'aria-hidden'?: boolean | 'true' | 'false'; className?: string }>> = {
   peptide: FlaskConical,
@@ -103,15 +106,22 @@ function FullCard({
   className?: string
 }) {
   const { t } = useTranslation('kit')
-  const { locale } = useLocale()
-  const thumbnailImage = locale === 'es' ? kitHeroVisualEs : kitHeroImage
 
   const bacWater = items.find((item) => item.key === 'bac-water')
   const preparation = items.find((item) => item.key === 'syringes')
   const packaging = items.find((item) => item.key === 'packaging')
   return <div className={cn('overflow-hidden rounded-[1.5rem] border border-slate-900/10 bg-white shadow-[0_18px_55px_rgba(7,23,36,.07)]', className)}>
-    <div className="grid items-center gap-5 p-5 sm:p-6 lg:grid-cols-[10rem_1fr]">
-      <img src={thumbnailImage} alt={t('kitThumbnailAlt')} width="240" height="160" loading="lazy" decoding="async" className="h-28 w-full rounded-xl border border-teal-900/10 object-cover object-[72%_center]" />
+    <div className="grid items-center gap-5 p-5 sm:p-6 lg:grid-cols-[minmax(18rem,0.95fr)_1.3fr] lg:gap-7">
+      <img
+        src={ENCORE_COMPLETE_KIT_IMAGE}
+        alt={t('kitThumbnailAlt')}
+        width={ENCORE_COMPLETE_KIT_IMAGE_WIDTH}
+        height={ENCORE_COMPLETE_KIT_IMAGE_HEIGHT}
+        loading="lazy"
+        decoding="async"
+        className="aspect-video w-full rounded-xl border border-teal-900/10 object-cover object-center"
+        sizes="(min-width: 1024px) 34vw, 100vw"
+      />
       <div>
         <p className="text-xs font-bold uppercase tracking-[.16em] text-teal-700">{t('fullEyebrow')}</p>
         <h2 className="mt-2 text-xl font-semibold tracking-[-.03em] text-[#071724] sm:text-2xl">{t('fullHeading')}</h2>
@@ -127,8 +137,7 @@ function FullCard({
   </div>
 }
 
-/** Homepage kit presentation. All meaningful copy is accessible localized HTML;
- *  the image is a text-free supporting product photograph. */
+/** Homepage kit presentation with localized HTML and the canonical kit photograph. */
 function InlineCard({ className }: { className?: string }) {
   const { path } = useLocale()
   const { t } = useTranslation('kit')
@@ -166,19 +175,17 @@ function InlineCard({ className }: { className?: string }) {
           </div>
           <p className="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{t('homeResearchNotice')}</p>
         </div>
-        <div className="relative min-h-[20rem] overflow-hidden bg-white sm:min-h-[26rem] lg:min-h-[34rem]">
+        <div className="relative self-center overflow-hidden bg-white">
           <img
-            src={kitHeroVisualEs}
-            alt=""
-            aria-hidden="true"
-            width="1536"
-            height="1024"
+            src={ENCORE_COMPLETE_KIT_IMAGE}
+            alt={t('homeImageAlt')}
+            width={ENCORE_COMPLETE_KIT_IMAGE_WIDTH}
+            height={ENCORE_COMPLETE_KIT_IMAGE_HEIGHT}
             loading="lazy"
             decoding="async"
-            className="absolute inset-0 h-full w-full object-cover object-[72%_center]"
+            className="aspect-video h-auto w-full object-cover object-center"
             sizes="(min-width: 1024px) 55vw, 100vw"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(248,252,251,0.22),transparent_24%)]" aria-hidden="true" />
         </div>
       </div>
     </section>
@@ -210,20 +217,18 @@ function CompactCard({ syringeCount, className }: { syringeCount?: number; class
 
 function CartReminder({ items, className }: { items: EncoreCompleteKitItem[]; className?: string }) {
   const { t } = useTranslation('kit')
-  const { locale } = useLocale()
-  const thumbnailImage = locale === 'es' ? kitHeroVisualEs : kitHeroImage
 
   return (
     <div className={cn('rounded-lg bg-teal-50/70 px-3 py-2', className)}>
       <div className="flex items-start gap-2.5">
         <img
-          src={thumbnailImage}
+          src={ENCORE_COMPLETE_KIT_IMAGE}
           alt={t('kitThumbnailAlt')}
-          width="96"
-          height="64"
+          width={ENCORE_COMPLETE_KIT_IMAGE_WIDTH}
+          height={ENCORE_COMPLETE_KIT_IMAGE_HEIGHT}
           loading="lazy"
           decoding="async"
-          className="size-12 shrink-0 rounded-lg border border-teal-900/10 object-cover object-[62%_center]"
+          className="aspect-video h-12 w-auto shrink-0 rounded-lg border border-teal-900/10 object-cover object-center"
         />
         <div className="min-w-0">
           <p className="flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.06em] text-teal-800">
@@ -246,20 +251,18 @@ function CartReminder({ items, className }: { items: EncoreCompleteKitItem[]; cl
 
 function CheckoutReminder({ items, className }: { items: EncoreCompleteKitItem[]; className?: string }) {
   const { t } = useTranslation('kit')
-  const { locale } = useLocale()
-  const thumbnailImage = locale === 'es' ? kitHeroVisualEs : kitHeroImage
 
   return (
     <div className={cn('rounded-2xl border border-slate-900/10 bg-[#f8fafc] p-4', className)}>
       <div className="flex items-start gap-3">
         <img
-          src={thumbnailImage}
+          src={ENCORE_COMPLETE_KIT_IMAGE}
           alt={t('kitThumbnailAlt')}
-          width="96"
-          height="64"
+          width={ENCORE_COMPLETE_KIT_IMAGE_WIDTH}
+          height={ENCORE_COMPLETE_KIT_IMAGE_HEIGHT}
           loading="lazy"
           decoding="async"
-          className="size-14 shrink-0 rounded-xl border border-slate-900/10 object-cover object-[62%_center]"
+          className="aspect-video h-14 w-auto shrink-0 rounded-xl border border-slate-900/10 object-cover object-center"
         />
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-2 text-sm font-semibold text-[#071724]">

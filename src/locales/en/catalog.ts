@@ -6,7 +6,7 @@ export const catalog = {
   heroPrimaryCta: 'View All Products',
   heroSecondaryCta: 'Shop by Category',
   heroReassurance: 'Nationwide shipping · Local delivery available · Complete kits on eligible products',
-  heroVisualAlt: 'Encore Bio Labs complete research kit with syringes, BAC water, research vial, and alcohol preparation pads',
+  heroVisualAlt: 'Encore Bio Labs complete research kit with four syringes, BAC water, research vial, and alcohol preparation pads',
 
   // Compact category selector
   selectorLabel: 'Shop by research category',

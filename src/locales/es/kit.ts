@@ -19,7 +19,7 @@ export const kit = {
   reassuranceMicrocopy: 'Incluido en configuraciones elegibles. No es necesario comprar los suministros por separado.',
   cartHeading: 'Kit completo incluido',
   checkoutHeading: 'Qué incluye',
-  kitThumbnailAlt: 'Componentes del kit completo de investigación de Encore Bio Labs',
+  kitThumbnailAlt: 'Kit completo de investigación Encore Bio Labs con cuatro jeringas, agua bacteriostática, vial de investigación y almohadillas con alcohol',
   browseCatalog: 'Explorar el catálogo',
   peptideTitle: 'Péptido de investigación',
   peptideDescriptionWithProduct: 'El vial de {product} incluido en tu pedido.',
@@ -40,6 +40,6 @@ export const kit = {
   homeResearchNotice: 'Solo para investigación',
   homeCta: 'Explorar kits completos',
   homeSecondary: 'Ver qué incluye',
-  homeImageAlt: 'Kit completo de investigación de Encore Bio Labs con vial de péptido, agua bacteriostática premedida, cuatro jeringas estériles y seis toallitas con alcohol.',
+  homeImageAlt: 'Kit completo de investigación Encore Bio Labs con cuatro jeringas, agua bacteriostática, vial de investigación y almohadillas con alcohol',
   homeTrust: 'Sin comprar suministros por separado. Sin adivinar la cantidad de agua bacteriostática. Todo llega junto.',
 } satisfies Record<keyof typeof kitEn, string>

@@ -17,7 +17,7 @@ export const kit = {
   reassuranceMicrocopy: 'Included with eligible configurations. No separate supply purchase required.',
   cartHeading: 'Complete kit included',
   checkoutHeading: 'What’s Included',
-  kitThumbnailAlt: 'Encore Bio Labs complete research kit components',
+  kitThumbnailAlt: 'Encore Bio Labs complete research kit with four syringes, BAC water, research vial, and alcohol preparation pads',
   browseCatalog: 'Browse Catalog',
   peptideTitle: 'Research peptide',
   peptideDescriptionWithProduct: 'The {product} vial included with your order.',
@@ -38,6 +38,6 @@ export const kit = {
   homeResearchNotice: 'Research Use Only',
   homeCta: 'Explore Complete Kits',
   homeSecondary: "See What's Included",
-  homeImageAlt: 'Encore Bio Labs complete research kit with peptide vial, pre-measured bacteriostatic water, four sterile syringes, and six alcohol prep pads.',
+  homeImageAlt: 'Encore Bio Labs complete research kit with four syringes, BAC water, research vial, and alcohol preparation pads',
   homeTrust: 'No separate supply purchases. No BAC-water guesswork. Everything arrives together.',
 } as const
