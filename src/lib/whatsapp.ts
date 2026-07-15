@@ -140,5 +140,12 @@ export function getGeneralInquiryMessage(locale: Locale = 'en') {
     : 'Hello Encore Bio Labs, I have a question about your research catalog.'
 }
 
+/** Prefilled message for the always-on floating WhatsApp support button. */
+export function getSupportInquiryMessage(locale: Locale = 'en') {
+  return locale === 'es'
+    ? 'Hola, necesito ayuda con un producto de investigación.'
+    : 'Hi, I need help with a research product.'
+}
+
 /** @deprecated Use getGeneralInquiryMessage(locale) so the message matches the active language. */
 export const GENERAL_INQUIRY_MESSAGE = getGeneralInquiryMessage('en')

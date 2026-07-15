@@ -67,7 +67,7 @@ export function CategoryNav({ searchTerm, onSearchTermChange, selectedCategory, 
               onCategoryChange('All')
               document.getElementById('catalog-products')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
             }}
-            className={`group flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 ${
+            className={`group flex h-10 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 ${
               selectedCategory === 'All'
                 ? 'border-[#071724] bg-[#071724] text-white shadow-[0_10px_24px_rgba(7,23,36,0.16)]'
                 : 'border-slate-900/10 bg-white text-slate-700 hover:border-teal-300 hover:text-[#071724]'
@@ -91,7 +91,7 @@ export function CategoryNav({ searchTerm, onSearchTermChange, selectedCategory, 
                   onCategoryChange(tab)
                   document.getElementById(catalogSectionId(tab))?.scrollIntoView({ behavior: 'smooth', block: 'start' })
                 }}
-                className={`group flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 ${
+                className={`group flex h-10 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 ${
                   active
                     ? 'border-[#071724] bg-[#071724] text-white shadow-[0_10px_24px_rgba(7,23,36,0.16)]'
                     : 'border-slate-900/10 bg-white text-slate-700 hover:border-teal-300 hover:text-[#071724]'
@@ -119,7 +119,7 @@ export function CategoryNav({ searchTerm, onSearchTermChange, selectedCategory, 
             id="catalog-sort"
             value={sortOrder}
             onChange={(event) => onSortOrderChange(event.target.value)}
-            className="h-10 rounded-full border border-slate-900/10 bg-white px-3 text-xs font-semibold text-[#071724] outline-none transition focus:border-teal-300 focus:ring-4 focus:ring-teal-100"
+            className="h-10 rounded-full border border-slate-900/10 bg-white px-4 text-xs font-semibold text-[#071724] outline-none transition focus:border-teal-300 focus:ring-4 focus:ring-teal-100"
           >
             <option value="featured">{t('sortFeatured')}</option>
             <option value="price-low">{t('sortPriceLow')}</option>

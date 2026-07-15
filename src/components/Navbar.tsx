@@ -128,8 +128,8 @@ export function Navbar() {
 
   return (
     <header className="sticky top-2 z-50 px-3 sm:px-5">
-      <nav className="relative z-50 mx-auto flex max-w-[88rem] items-center justify-between gap-3 rounded-2xl border border-white/75 bg-[#f5f5f2]/88 px-4 py-2.5 shadow-[0_16px_50px_rgba(7,23,36,0.13)] backdrop-blur-2xl sm:px-5 lg:gap-5 lg:px-6">
-        <a href={path('/')} className="flex items-center gap-3" aria-label={t('homeAriaLabel')}>
+      <nav className="relative z-50 mx-auto flex max-w-[88rem] items-center justify-between gap-3 rounded-2xl border border-white/75 bg-[#f5f5f2]/88 px-4 py-2.5 shadow-[0_16px_50px_rgba(7,23,36,0.13)] backdrop-blur-2xl sm:px-5 lg:gap-5 lg:px-6 xl:grid xl:grid-cols-[1fr_auto_1fr]">
+        <a href={path('/')} className="flex items-center gap-3 xl:justify-self-start" aria-label={t('homeAriaLabel')}>
           <img
             src={logo}
             alt="Encore Bio Labs"
@@ -139,21 +139,27 @@ export function Navbar() {
           />
         </a>
 
-        <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-5 xl:flex">
-          {primaryNavItems.map((item) => (
-            <div key={item.key} className="flex items-center gap-2">
+        <div className="hidden items-center gap-8 xl:col-start-2 xl:flex xl:justify-self-center">
+          {primaryNavItems.map((item) => {
+            const active = isActive(item.key)
+            return (
               <a
+                key={item.key}
                 href={path(item.href)}
-                aria-current={isActive(item.key) ? 'page' : undefined}
-                className={`whitespace-nowrap border-b py-1.5 text-sm font-medium transition ${isActive(item.key) ? 'border-teal-700 text-[#071724]' : 'border-transparent text-slate-600 hover:border-teal-700/35 hover:text-[#071724]'}`}
+                aria-current={active ? 'page' : undefined}
+                className={`group relative whitespace-nowrap py-1.5 text-sm font-medium transition-colors ${active ? 'text-[#071724]' : 'text-slate-600 hover:text-[#071724]'}`}
               >
                 {item.label}
+                <span
+                  aria-hidden="true"
+                  className={`pointer-events-none absolute -bottom-0.5 left-1/2 h-[2px] w-5 -translate-x-1/2 rounded-full bg-teal-700 transition-opacity duration-200 ${active ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'}`}
+                />
               </a>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
-        <div className="hidden items-center gap-3 xl:flex">
+        <div className="hidden items-center gap-3 xl:col-start-3 xl:flex xl:justify-self-end">
           <button
             type="button"
             onClick={openSearch}

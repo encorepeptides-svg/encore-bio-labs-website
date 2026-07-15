@@ -17,10 +17,7 @@ import {
   type PurchaseSelection,
 } from '../../lib/purchaseOptions'
 import { cn } from '../../lib/utils'
-
-function track(name: string, detail: Record<string, unknown>) {
-  window.dispatchEvent(new CustomEvent(`encore:${name}`, { detail }))
-}
+import { track } from '../../lib/analytics'
 
 export function PurchaseSelector({ product, compact = false }: { product: Product; compact?: boolean }) {
   const { addToCart } = useCart()
