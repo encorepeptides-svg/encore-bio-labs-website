@@ -363,9 +363,9 @@ export function FAQAccordion({
   return (
     <EditorialShell id="faq" eyebrow={eyebrow} title={title}>
       <div className="grid gap-3">
-        {items.map((item) => (
+        {items.map((item, index) => (
           <details
-            key={item.question}
+            key={`${item.question}-${index}`}
             className="group rounded-[1.25rem] border border-slate-900/10 bg-white p-5 shadow-[0_14px_34px_rgba(7,23,36,0.05)]"
           >
             <summary className="flex cursor-pointer list-none items-center justify-between gap-5 text-base font-semibold text-[#071724]">

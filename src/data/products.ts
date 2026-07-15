@@ -258,11 +258,11 @@ export type CategoryContent = {
 export const categoryContent: Record<string, CategoryContent> = {
   'metabolic-weight-management': {
     eyebrow: 'Metabolic & Weight Management Research',
-    headline: 'Where metabolic signaling meets serious research.',
+    headline: 'Serious Metabolic Research Starts Here.',
     subheadline:
-      'From triple-receptor agonism to growth-hormone-axis signaling, this category covers the compounds most often studied in metabolic and body-composition research.',
+      'From triple-receptor agonists like Retatrutide to growth-hormone-axis compounds — the metabolic and body-composition research catalog, every product shipped as a complete kit.',
     overview:
-      "Metabolic & Weight Management is Encore Bio Labs' research category for compounds studied in relation to energy regulation, metabolic signaling, and body-composition research models. It spans two related but distinct research lines: incretin-receptor research (GLP-1/GIP/glucagon-adjacent signaling) and growth-hormone-axis research (GHRH and ghrelin-receptor secretagogues). Researchers in this category are typically evaluating pathway-level signaling, marker response, or study design questions — not looking for a weight-loss product recommendation, which this page is not positioned to give.",
+      "Encore Bio Labs' metabolic and body-composition research catalog spans two of the most active research lines in the field: incretin-receptor compounds (GLP-1/GIP/glucagon signaling) and growth-hormone-axis compounds (GHRH analogs and ghrelin-receptor secretagogues). Compare pathways, formats, and documentation side by side — and get every compound as a complete, research-ready kit with matched supplies included.",
     whyStudied:
       'Metabolic research has expanded rapidly alongside interest in incretin-receptor biology (the pathway family behind GLP-1, GIP, and glucagon signaling) and its downstream connections to energy balance, appetite-related signaling, and metabolic markers. In parallel, GH-axis research — how growth-hormone-releasing hormone and ghrelin-receptor signaling influence IGF-1 and downstream metabolic markers — remains an active, separate line of inquiry, particularly around visceral-adiposity and body-composition research models. Both lines share a common thread: researchers want cleaner pathway-level data before drawing conclusions about metabolic regulation.',
     themes: [
@@ -291,11 +291,11 @@ export const categoryContent: Record<string, CategoryContent> = {
   },
   'recovery-regeneration': {
     eyebrow: 'Recovery & Regeneration Research',
-    headline: 'Tissue repair, signaling, and structure — studied together.',
+    headline: 'Repair, Regeneration, Recovery — One Catalog.',
     subheadline:
-      'From gastric-derived repair peptides to copper-peptide matrix biology, this category covers the compounds most commonly reviewed in recovery-focused research.',
+      'From the BPC-157 + TB-500 Wolverine Stack to copper-peptide matrix compounds and the four-compound KLOW blend — every recovery compound shipped complete.',
     overview:
-      "Recovery & Regeneration is Encore Bio Labs' research category for peptides studied in connective-tissue, repair-signaling, and matrix-remodeling contexts. It includes a combined research kit pairing BPC-157 and TB-500 research themes (Wolverine Stack — not sold as separate individual peptides), a logistics-focused kit entry (KLOW), and two copper-peptide compounds studied for matrix and skin-adjacent biology (GHK-Cu and AHK-Cu). This category is aimed at researchers evaluating tissue-repair signaling models, not at people looking for injury-treatment guidance.",
+      "Encore Bio Labs' recovery and regeneration catalog brings together the most-studied tissue-repair and matrix-remodeling compounds in one place: the BPC-157 + TB-500 Wolverine Stack, the four-compound KLOW regenerative blend (GHK-Cu, BPC-157, TB-500, KPV), and the copper-peptide compounds GHK-Cu and AHK-Cu. Compare pathways and formats side by side — and get every entry as a complete, research-ready kit.",
     whyStudied:
       "Recovery-focused peptide research sits at the intersection of a few active research lines: angiogenesis and repair-signal biology (commonly discussed through BPC-157), cytoskeletal remodeling and cell migration (TB-500's actin-related research context), and copper-peptide-driven extracellular matrix and collagen research (GHK-Cu and AHK-Cu). Researchers are often trying to understand how these signaling pathways interact — which is why several products in this category are commonly reviewed as pairs or kits rather than in isolation.",
     themes: [
@@ -322,11 +322,11 @@ export const categoryContent: Record<string, CategoryContent> = {
   },
   'longevity-cellular-health': {
     eyebrow: 'Longevity & Cellular Health Research',
-    headline: 'The biology behind cellular resilience and healthy aging.',
+    headline: 'Cellular Health & Longevity Research, All in One Place.',
     subheadline:
-      'From redox metabolism to mitochondria-targeted peptides, this category covers the compounds most often studied in cellular-health and aging-biology research.',
+      'From NAD+ and glutathione to mitochondria-targeted SS-31 and Epithalon — the cellular-resilience and healthy-aging research catalog, shipped as complete kits.',
     overview:
-      "Longevity & Cellular Health is Encore Bio Labs' research category for compounds studied in relation to cellular resilience, mitochondrial function, oxidative balance, and the biology commonly discussed in healthy-aging research. It includes a central metabolic cofactor (NAD+), a core antioxidant (Glutathione), a short synthetic peptide studied in pineal and telomere-associated research contexts (Epithalon), a mitochondria-targeted peptide (SS-31), and an immune-signaling peptide studied for cellular-defense relevance (Thymosin Alpha-1). This page is written for researchers exploring cellular-aging biology, not as an anti-aging product recommendation.",
+      "Encore Bio Labs' longevity and cellular-health catalog covers the compounds at the center of aging-biology research: the metabolic cofactor NAD+, the core antioxidant Glutathione, the mitochondria-targeted peptide SS-31, the telomere-associated peptide Epithalon, and the immune-signaling peptide Thymosin Alpha-1. Compare mechanisms, formats, and documentation — and get every compound as a complete research kit.",
     whyStudied:
       "Aging-biology research increasingly centers on a small number of interconnected systems: mitochondrial energy production and the redox reactions that depend on it, oxidative-stress buffering, and the cellular signaling that changes as organisms age. NAD+ sits at the center of redox metabolism and sirtuin/PARP-linked research; glutathione is the primary intracellular antioxidant buffer; SS-31 is studied specifically for its interaction with cardiolipin in the mitochondrial inner membrane; and epithalon appears in literature connected to telomere-associated and circadian research themes. Thymosin Alpha-1's immune-signaling research overlaps with cellular-defense questions relevant to aging biology more broadly.",
     themes: [
@@ -355,11 +355,11 @@ export const categoryContent: Record<string, CategoryContent> = {
   },
   'cognitive-performance': {
     eyebrow: 'Cognitive & Performance Research',
-    headline: 'Neurobiology, signaling, and human performance research.',
+    headline: 'The Cognitive & Performance Research Catalog.',
     subheadline:
-      'From growth-factor receptor signaling to neurotrophic peptide research, this category covers the compounds most commonly studied in cognitive and performance-focused research.',
+      'From the neurotrophic peptide Cerebrolysin to the Semax + Selank neuropeptide pairing — the cognitive and neuro-signaling research catalog, shipped complete.',
     overview:
-      "Cognitive & Performance is Encore Bio Labs' research category for compounds studied in relation to neurobiology, synaptic signaling, and human-performance research questions. It spans a neurotrophic peptide mixture studied for neuronal-survival and cognitive research (Cerebrolysin) and two structurally distinct neuropeptides studied for neuropeptide signaling and stress-response research (Semax and Selank). This category is written for researchers evaluating cognitive-pathway biology, not as a study-aid or performance-enhancement recommendation.",
+      "Encore Bio Labs' cognitive and performance catalog brings together the most-studied neuro-signaling compounds: Cerebrolysin, a neurotrophic peptide mixture studied for neuronal-survival and synaptic-plasticity research, and Semax and Selank, two structurally distinct neuropeptides studied for BDNF-linked and stress-response signaling. Compare pathways and formats side by side — and get every compound as a complete research kit.",
     whyStudied:
       'Cognitive-performance research draws on several distinct but related biological systems: neurotrophic and neuronal-survival research relevant to synaptic plasticity (Cerebrolysin), and neuropeptide research connected to BDNF-related expression and stress-response biology (Semax and Selank). Researchers in this space are typically trying to map receptor-level or marker-level research questions rather than looking for a cognitive enhancement product.',
     themes: [
@@ -383,11 +383,11 @@ export const categoryContent: Record<string, CategoryContent> = {
   },
   'hormone-wellness': {
     eyebrow: 'Hormone & Wellness Research',
-    headline: 'Endocrine signaling, mapped for serious research.',
+    headline: 'The Hormone & Wellness Research Catalog.',
     subheadline:
-      'From reproductive-axis signaling to sleep-related neuropeptide research, this category covers the compounds most commonly studied in hormonal and wellness-adjacent research.',
+      'From reproductive-axis compounds like Kisspeptin and HCG to GH-axis, sleep, and melanocortin research — the endocrine research catalog, shipped as complete kits.',
     overview:
-      "Hormone & Wellness is Encore Bio Labs' research category for compounds studied in relation to hormonal signaling and endocrine-adjacent research questions. It spans reproductive-axis biology (Kisspeptin, HCG), growth-hormone-axis and growth-factor signaling (HGH 191AA, IGF1-LR3), sleep and neuroendocrine signaling (DSIP), and central melanocortin-receptor research relevant to sexual-wellness research models (PT-141). This category is written for researchers mapping endocrine pathway questions, not as guidance for hormone therapy or sexual-wellness treatment.",
+      "Encore Bio Labs' hormone and wellness catalog spans the full range of endocrine research: reproductive-axis compounds (Kisspeptin, HCG), growth-hormone-axis and growth-factor signaling (HGH 191AA, IGF1-LR3), sleep and neuroendocrine research (DSIP), and central melanocortin-receptor research (PT-141). Compare axes, formats, and documentation side by side — and get every compound as a complete research kit.",
     whyStudied:
       "Endocrine research spans several axes that researchers often study independently: the reproductive (GnRH/kisspeptin/LH-CG) axis, the growth-hormone axis and its IGF-1-linked downstream effects, sleep-related neuroendocrine signaling, and central melanocortin-receptor pathways relevant to autonomic and sexual-wellness research. What connects these compounds in one category isn't a shared mechanism, but a shared research domain — hormonal signaling and the wellness-adjacent questions researchers ask about it.",
     themes: [
