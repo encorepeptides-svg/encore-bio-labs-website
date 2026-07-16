@@ -4,10 +4,8 @@ import {
   FileText,
   FlaskConical,
   PackageCheck,
-  Snowflake,
   Sparkles,
   Star,
-  Timer,
   Truck,
   UserCheck,
 } from 'lucide-react'
@@ -33,7 +31,7 @@ import { ProductImage } from './ProductImage'
 
 const bestSellerSlugs = ['retatrutide', 'ghk-cu', 'nad-plus', 'tesamorelin']
 
-const trustIcons = [FlaskConical, Snowflake, PackageCheck, Timer, FileText]
+const trustIcons = [FlaskConical, Truck, Sparkles, PackageCheck, FileText]
 const processIcons = [FlaskConical, BadgeCheck, PackageCheck, Truck]
 const whyChooseIcons = [FlaskConical, FileText, PackageCheck, UserCheck]
 
