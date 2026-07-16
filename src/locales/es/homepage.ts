@@ -1,9 +1,9 @@
 import type { homepage as homepageEn } from '../en/homepage'
 
 export const homepage = {
-  heroEyebrow: 'Péptidos premium y kits completos',
-  heroTitle: 'Encuentra tu compuesto.\nElige la concentración.\nOrdénalo hoy.',
-  heroSubtitle: 'Ve directo al producto que buscas, compara concentraciones y recibe los suministros esenciales en un solo pedido cuando el producto sea elegible.',
+  heroEyebrow: 'Encore Bio Labs · Plataforma premium de investigación',
+  heroTitle: 'Compuestos premium.\nKits completos.\nSin concesiones.',
+  heroSubtitle: 'Elige el compuesto. Compara cada concentración. Recibe una configuración de investigación completa, con precios claros, documentación disponible y atención humana directa.',
   startYourResearch: 'Encontrar mi producto',
   browseCatalog: 'Ver catálogo',
   scrollToLearnMore: 'Desplázate para conocer más',
@@ -13,8 +13,8 @@ export const homepage = {
   trustPackaging: 'Empaque premium',
   trustFulfillment: 'Kits completos incluidos',
   trustDocumentation: 'Documentación de lote a solicitud',
-  precisionMeetsProgress: 'Precisión que impulsa el progreso',
-  heroVideoCaption: 'Compuestos de investigación avanzados para explorar el bienestar metabólico.',
+  precisionMeetsProgress: 'Producto insignia de Encore',
+  heroVideoCaption: 'Tres vías receptoras. Cinco concentraciones de investigación. Un líder en su categoría.',
   bestSellersEyebrow: 'Más vendidos',
   bestSellersTitle: 'Empieza por lo más solicitado.',
   bestSellersSubtitle: 'Compara concentraciones, precios y opciones de los productos que más piden nuestros clientes.',

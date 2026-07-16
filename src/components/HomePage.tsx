@@ -10,8 +10,10 @@ import {
 } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { lazy, Suspense } from 'react'
-import heroVideoPoster from '../assets/images/hero/hero-video-poster.jpg'
-import heroVideo from '../assets/videos/encore-hero.mp4'
+import heroArtworkAvif1586 from '../assets/images/research/retatrutide-triple-pathway-hero-1586.avif'
+import heroArtworkAvif768 from '../assets/images/research/retatrutide-triple-pathway-hero-768.avif'
+import heroArtworkWebp1586 from '../assets/images/research/retatrutide-triple-pathway-hero-1586.webp'
+import heroArtworkWebp768 from '../assets/images/research/retatrutide-triple-pathway-hero-768.webp'
 import { coaBySlug } from '../data/coa'
 import { products, type Product } from '../data/products'
 import { getLocalizedProduct, localizedCategoryLabel } from '../data/productTranslations'
@@ -202,118 +204,148 @@ export function HomePage() {
     .map((slug) => products.find((product) => product.slug === slug))
     .filter((product): product is Product => Boolean(product))
   const heroProduct = bestSellerProducts.find((product) => product.slug === 'retatrutide')
+  const localizedHeroProduct = heroProduct ? getLocalizedProduct(heroProduct, locale) : undefined
   const supportingProducts = bestSellerProducts.filter((product) => product.slug !== 'retatrutide')
   return (
     <main id="main-content" className="bg-[#f5f5f2]">
-      <section className="relative overflow-hidden bg-[radial-gradient(circle_at_78%_30%,rgba(46,196,165,0.18),transparent_30rem),radial-gradient(circle_at_20%_18%,rgba(255,255,255,0.9),transparent_28rem),linear-gradient(135deg,#f8faf7_0%,#eef5f2_48%,#f5f5f2_100%)] px-5 pb-8 pt-6 sm:px-8 sm:pb-16 sm:pt-10 lg:pb-20 lg:pt-16">
-        <div className="molecule-field opacity-[0.12]" aria-hidden="true" />
-        <div className="pointer-events-none absolute left-[-12rem] top-[-14rem] size-[34rem] rounded-full bg-white/90 blur-3xl" />
-        <div className="pointer-events-none absolute right-[3%] top-[18%] size-[30rem] rounded-full bg-teal-200/28 blur-3xl" />
-        <div className="pointer-events-none absolute bottom-[-14rem] left-[34%] size-[36rem] rounded-full bg-cyan-100/38 blur-3xl" />
-        <span className="hero-particle left-[9%] top-[34%]" aria-hidden="true" />
-        <span className="hero-particle hero-particle-delay right-[48%] top-[18%]" aria-hidden="true" />
-        <span className="hero-particle hero-particle-slow right-[10%] bottom-[24%]" aria-hidden="true" />
+      <section className="relative isolate overflow-hidden bg-[#030b18] px-5 pb-6 pt-6 text-white sm:px-8 sm:pb-8 sm:pt-10 lg:pb-10 lg:pt-12">
+        <picture aria-hidden="true" className="pointer-events-none absolute inset-0 -z-20">
+          <source
+            type="image/avif"
+            srcSet={`${heroArtworkAvif768} 768w, ${heroArtworkAvif1586} 1586w`}
+            sizes="100vw"
+          />
+          <source
+            type="image/webp"
+            srcSet={`${heroArtworkWebp768} 768w, ${heroArtworkWebp1586} 1586w`}
+            sizes="100vw"
+          />
+          <img
+            src={heroArtworkWebp1586}
+            alt=""
+            width="1586"
+            height="1024"
+            fetchPriority="high"
+            className="h-full w-full object-cover object-[66%_center] opacity-90 sm:object-center"
+          />
+        </picture>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(3,11,24,1)_0%,rgba(3,11,24,0.97)_37%,rgba(3,11,24,0.66)_65%,rgba(3,11,24,0.24)_100%)]"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_73%_42%,rgba(40,224,193,0.14),transparent_30rem),linear-gradient(180deg,rgba(3,11,24,0.12)_0%,rgba(3,11,24,0.1)_68%,rgba(3,11,24,0.92)_100%)]"
+        />
+        <div aria-hidden="true" className="absolute inset-0 -z-10 opacity-[0.08] [background-image:linear-gradient(rgba(255,255,255,.14)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.14)_1px,transparent_1px)] [background-size:72px_72px] [mask-image:linear-gradient(to_right,black,transparent_70%)]" />
 
-        <div className="relative mx-auto grid max-w-[88rem] gap-8 sm:gap-12 lg:min-h-[calc(100vh-9rem)] lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-center">
+        <div className="relative mx-auto grid max-w-[88rem] gap-10 md:grid-cols-[minmax(0,1.15fr)_minmax(19rem,0.85fr)] md:items-center lg:min-h-[clamp(35rem,calc(100svh-14rem),47rem)] lg:gap-14">
           <motion.div
             initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
             animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
             transition={{ duration: prefersReducedMotion ? 0.15 : 0.35, ease: 'easeOut' }}
-            className="relative z-10 min-w-0 max-w-[48rem]"
+            className="relative z-10 min-w-0 max-w-[52rem]"
           >
-            <div className="inline-flex items-center gap-2 rounded-full border border-teal-700/15 bg-white/68 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.82),0_12px_34px_rgba(7,23,36,0.05)] backdrop-blur-2xl sm:px-4 sm:py-2 sm:text-sm">
-              <Sparkles size={16} aria-hidden="true" className="text-teal-700" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-teal-200/20 bg-teal-100/10 px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.19em] text-teal-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl sm:px-4 sm:py-2 sm:text-xs">
+              <Sparkles size={15} aria-hidden="true" className="text-[#28e0c1]" />
               {t('heroEyebrow')}
             </div>
             <h1
-              className={`mt-5 max-w-full font-semibold leading-[1.02] tracking-[-0.045em] text-[#071724] sm:mt-8 ${
+              className={`mt-5 max-w-full font-semibold leading-[0.91] tracking-[-0.065em] text-white sm:mt-7 ${
                 locale === 'es'
-                  ? 'text-[clamp(2.25rem,9.2vw,2.625rem)] sm:text-[clamp(2.75rem,6vw,3.125rem)] lg:text-[clamp(3.25rem,4.1vw,4.125rem)]'
-                  : 'text-[clamp(2.375rem,10vw,2.875rem)] sm:text-[clamp(2.875rem,6.5vw,3.375rem)] lg:text-[clamp(3.5rem,4.5vw,4.5rem)]'
+                  ? 'text-[clamp(2.75rem,12.4vw,3.45rem)] sm:text-[clamp(3.35rem,7vw,4.4rem)] lg:text-[clamp(4.4rem,5.8vw,6.2rem)]'
+                  : 'text-[clamp(2.9rem,13vw,3.7rem)] sm:text-[clamp(3.6rem,7.5vw,4.8rem)] lg:text-[clamp(4.75rem,6.1vw,6.6rem)]'
               }`}
             >
               {heroTitleLines.map((line) => (
-                <span key={line} className="block whitespace-nowrap">
+                <span key={line} className="block">
                   {line}
                 </span>
               ))}
             </h1>
-            <p className="mt-5 max-w-[35rem] text-base leading-7 text-slate-600 sm:mt-7 sm:text-xl sm:leading-9">
+            <p className="mt-5 max-w-[42rem] text-base leading-7 text-slate-300 sm:mt-7 sm:text-lg sm:leading-8 lg:text-xl lg:leading-9">
               {t('heroSubtitle')}
             </p>
 
-            <div className="mt-7 grid grid-cols-2 gap-3 sm:mt-10 sm:flex sm:gap-5">
-              <CTA href="/intake" className="min-h-12 w-full px-4 sm:min-h-14 sm:w-auto sm:px-7">
+            <div className="mt-7 grid grid-cols-2 gap-3 sm:mt-9 sm:flex sm:gap-4">
+              <CTA
+                href="/intake"
+                className="min-h-12 w-full bg-[#28e0c1] px-4 text-[#071724] shadow-[0_16px_48px_rgba(40,224,193,0.28)] hover:bg-white sm:min-h-14 sm:w-auto sm:px-7"
+              >
                 {t('startYourResearch')}
               </CTA>
-              <CTA href="/catalog" tone="ghost" className="min-h-12 w-full border-slate-900/15 bg-white/42 px-4 sm:min-h-14 sm:w-auto sm:px-7">
+              <CTA
+                href="/catalog"
+                tone="ghost"
+                className="min-h-12 w-full border-white/20 bg-white/[0.07] px-4 text-white shadow-none backdrop-blur-xl hover:border-white/35 hover:bg-white/[0.13] sm:min-h-14 sm:w-auto sm:px-7"
+              >
                 {t('browseCatalog')}
               </CTA>
             </div>
+
+            <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-semibold text-slate-300 sm:mt-6 sm:text-sm">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-2 backdrop-blur-xl">
+                <FlaskConical size={15} aria-hidden="true" className="text-[#28e0c1]" />
+                {t('trustResearchUseOnly')}
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <FileText size={15} aria-hidden="true" className="text-[#28e0c1]" />
+                {t('trustDocumentation')}
+              </span>
+            </div>
           </motion.div>
 
-          <motion.div
-            initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.97, y: 20 }}
-            animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: prefersReducedMotion ? 0.15 : 0.45, ease: 'easeOut', delay: prefersReducedMotion ? 0 : 0.04 }}
-            className="relative hidden sm:block"
-          >
-            <motion.div
-              animate={prefersReducedMotion ? undefined : { y: [0, -10, 0] }}
-              transition={prefersReducedMotion ? undefined : { duration: 7.5, ease: 'easeInOut', repeat: Infinity }}
-              className="home-hero-video-shell relative overflow-hidden rounded-[2rem] border border-white/55 bg-white/18 p-3 shadow-[0_34px_110px_rgba(7,23,36,0.16)] backdrop-blur-2xl sm:p-4"
+          {localizedHeroProduct ? (
+            <motion.a
+              href={path(`/products/${localizedHeroProduct.slug}`)}
+              aria-label={t('viewProduct', { product: localizedHeroProduct.name })}
+              initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.97, x: 24 }}
+              animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, x: 0 }}
+              transition={{ duration: prefersReducedMotion ? 0.15 : 0.45, ease: 'easeOut', delay: prefersReducedMotion ? 0 : 0.04 }}
+              className="group relative hidden min-h-[32rem] overflow-hidden rounded-[2rem] border border-white/15 bg-[linear-gradient(145deg,rgba(20,184,166,0.15),rgba(3,11,24,0.56)_48%,rgba(255,255,255,0.06))] shadow-[0_38px_120px_rgba(0,0,0,0.42)] backdrop-blur-sm md:block lg:min-h-[39rem]"
             >
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(118,228,211,0.18),transparent_34%),linear-gradient(145deg,rgba(255,255,255,0.12),transparent_42%)]" aria-hidden="true" />
-              <div className="relative overflow-hidden rounded-[1.35rem] border border-white/15 bg-[#0d2231]">
-                <video
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  preload="metadata"
-                  poster={heroVideoPoster}
-                  aria-hidden="true"
-                  className="aspect-square h-full w-full rounded-[inherit] object-cover"
-                  onCanPlay={(event) => {
-                    void event.currentTarget.play().catch(() => undefined)
-                  }}
-                >
-                  <source src={heroVideo} type="video/mp4" />
-                </video>
+              <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(40,224,193,0.2),transparent_19rem),linear-gradient(180deg,transparent_40%,rgba(3,11,24,0.94)_100%)]" />
+              <div className="absolute left-6 top-6 z-10 inline-flex items-center gap-2 rounded-full border border-teal-100/20 bg-teal-100/10 px-3 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-teal-100 backdrop-blur-xl lg:left-8 lg:top-8">
+                <Star size={14} aria-hidden="true" className="fill-[#28e0c1] text-[#28e0c1]" />
+                {t('featuredBestseller')}
               </div>
-              <div className="pointer-events-none absolute inset-0 rounded-[2rem] bg-[linear-gradient(115deg,rgba(255,255,255,0.36)_0%,transparent_28%,transparent_62%,rgba(255,255,255,0.18)_100%)]" aria-hidden="true" />
-              <div className="pointer-events-none absolute inset-0 rounded-[2rem] bg-[linear-gradient(180deg,rgba(7,23,36,0)_45%,rgba(7,23,36,0.42)_100%)]" aria-hidden="true" />
-              <div className="pointer-events-none absolute left-8 top-8 h-px w-1/2 bg-white/58 shadow-[0_0_28px_rgba(255,255,255,0.45)]" aria-hidden="true" />
-              <div className="absolute bottom-4 left-4 right-4 rounded-[1.25rem] border border-white/18 bg-white/14 p-3 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_18px_44px_rgba(7,23,36,0.14)] backdrop-blur-xl sm:bottom-7 sm:left-7 sm:right-7 sm:p-5">
-                <p className="text-[0.66rem] font-semibold uppercase tracking-[0.22em] text-teal-100 sm:text-xs">
-                  {t('precisionMeetsProgress').toUpperCase()}
+              <ProductImage
+                product={localizedHeroProduct}
+                alt={t('productImageAlt', { product: localizedHeroProduct.name })}
+                sizes="(min-width: 1280px) 38vw, 42vw"
+                loading="eager"
+                className="absolute inset-x-[9%] top-[7%] h-[67%] w-[82%] object-contain drop-shadow-[0_34px_58px_rgba(0,0,0,0.48)] transition duration-700 motion-safe:group-hover:scale-[1.035]"
+              />
+              <div className="absolute bottom-5 left-5 right-5 z-10 rounded-[1.4rem] border border-white/15 bg-[#06131f]/78 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl lg:bottom-7 lg:left-7 lg:right-7 lg:p-6">
+                <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-[#71f0db]">
+                  {t('precisionMeetsProgress')}
                 </p>
-                <p className="mt-2 max-w-sm text-sm font-semibold leading-5 tracking-normal sm:text-base sm:leading-6">
-                  {t('heroVideoCaption')}
+                <div className="mt-2 flex items-end justify-between gap-4">
+                  <div>
+                    <p className="text-3xl font-semibold tracking-[-0.05em] text-white lg:text-4xl">
+                      {localizedHeroProduct.name}
+                    </p>
+                    <p className="mt-2 max-w-sm text-sm leading-6 text-slate-300">
+                      {t('heroVideoCaption')}
+                    </p>
+                  </div>
+                  <span className="mb-1 inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-[#28e0c1] text-[#071724] transition group-hover:bg-white">
+                    <ArrowRight size={18} aria-hidden="true" />
+                  </span>
+                </div>
+                <p className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-teal-100">
+                  {getResearchOptionPrice(localizedHeroProduct, t)}
                 </p>
               </div>
-            </motion.div>
-          </motion.div>
+            </motion.a>
+          ) : null}
         </div>
 
-        <a
-          href="#trust-strip"
-          aria-label={t('scrollToLearnMore')}
-          className="home-scroll-cue absolute bottom-5 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-slate-500 transition hover:text-[#071724] lg:flex"
-        >
-          <span>{t('explore')}</span>
-          <span className="relative h-10 w-6 rounded-full border border-slate-900/18 bg-white/34 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-xl">
-            <span className="absolute left-1/2 top-2 size-1.5 -translate-x-1/2 rounded-full bg-teal-700" />
-          </span>
-        </a>
-      </section>
-
-      <section id="trust-strip" className="scroll-mt-20 px-5 pb-10 pt-3 sm:px-8 sm:pb-12 sm:pt-0">
-        <div className="mx-auto grid max-w-[88rem] gap-3 rounded-[1.5rem] border border-white/70 bg-white/72 p-3 shadow-[0_18px_54px_rgba(7,23,36,0.06)] backdrop-blur-2xl sm:grid-cols-2 lg:grid-cols-5">
+        <div id="trust-strip" className="relative mx-auto mt-7 grid max-w-[88rem] scroll-mt-20 gap-2 rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-2 shadow-[0_20px_70px_rgba(0,0,0,0.22)] backdrop-blur-xl sm:grid-cols-2 lg:mt-9 lg:grid-cols-5">
           {trustItems.map((item) => (
-            <div key={item.label} className="flex items-center gap-3 rounded-[1.1rem] bg-[#f5f5f2]/80 px-4 py-3">
-              <item.icon size={17} aria-hidden="true" className="shrink-0 text-teal-700" />
-              <span className="text-sm font-semibold text-slate-700">{item.label}</span>
+            <div key={item.label} className="flex items-center gap-3 rounded-[1.1rem] border border-white/[0.06] bg-black/15 px-4 py-3">
+              <item.icon size={17} aria-hidden="true" className="shrink-0 text-[#28e0c1]" />
+              <span className="text-sm font-semibold text-slate-200">{item.label}</span>
             </div>
           ))}
         </div>
