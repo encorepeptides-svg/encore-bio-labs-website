@@ -1,6 +1,7 @@
 export const assistant = {
   buttonLabel: 'Ask Encore AI',
   whatsappButtonLabel: 'Chat on WhatsApp',
+  whatsappReplyTime: 'Typically replies in minutes',
   dialogLabel: 'Encore AI Assistant',
   close: 'Close assistant',
   title: 'Encore AI Assistant',
