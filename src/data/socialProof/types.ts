@@ -27,15 +27,29 @@ export type TestimonialRecord = {
   category: TestimonialCategory
   quote: string
   displayName: string
+  /** Source-supplied review title. Empty for legacy testimonial records. */
+  reviewTitle: string
+  /** Source-supplied product name. Empty for non-product testimonials. */
+  productName: string
+  /** Source-supplied star rating. Null when the source did not provide one. */
+  rating: number | null
+  /** Distinct from consent verification; this preserves the source purchase flag only. */
+  verifiedPurchase: boolean | null
   /** Public URL of an approved, optimized derivative. Optional. */
   approvedPhoto?: string | null
   submissionDate: string
   consentVerified: boolean
   consentRecordReference: string
   relationshipToBusiness: string
-  incentiveProvided: boolean
+  /** Null means the source did not disclose whether an incentive was provided. */
+  incentiveProvided: boolean | null
   incentiveDisclosure: string
   sourceRecordReference: string
+  /** Source-only fields remain private and are never included in PublishedTestimonial. */
+  sourceReviewId: string
+  sourceUserStyle: string
+  sourceLengthLabel: string
+  importFingerprint: string
   verificationNotes: string
   /** Explicit reviewer attestation that the quote contains no prohibited medical or human-outcome claim. */
   claimReviewPassed: boolean
@@ -52,6 +66,11 @@ export type PublishedTestimonial = {
   category: TestimonialCategory
   quote: string
   displayName: string
+  reviewTitle: string
+  productName: string
+  rating: number | null
+  verifiedPurchase: boolean | null
+  reviewDate: string
   approvedPhoto?: string | null
   altText: string
   /** Shown when there is a material connection or incentive to disclose. */

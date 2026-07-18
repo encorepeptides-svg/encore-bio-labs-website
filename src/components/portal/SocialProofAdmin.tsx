@@ -136,6 +136,15 @@ function TestimonialsPanel() {
             <Field label="Display name">
               <input defaultValue={String(row.display_name ?? '')} onBlur={(e) => void update(row.id, { display_name: e.target.value })} className="h-9 rounded-lg border border-slate-300 px-2 text-sm font-normal text-slate-800" />
             </Field>
+            <Field label="Review title">
+              <input defaultValue={String(row.review_title ?? '')} onBlur={(e) => void update(row.id, { review_title: e.target.value })} className="h-9 rounded-lg border border-slate-300 px-2 text-sm font-normal text-slate-800" />
+            </Field>
+            <Field label="Product name">
+              <input defaultValue={String(row.product_name ?? '')} onBlur={(e) => void update(row.id, { product_name: e.target.value })} className="h-9 rounded-lg border border-slate-300 px-2 text-sm font-normal text-slate-800" />
+            </Field>
+            <Field label="Rating (1–5)">
+              <input type="number" min="1" max="5" defaultValue={String(row.rating ?? '')} onBlur={(e) => void update(row.id, { rating: e.target.value ? Number(e.target.value) : null })} className="h-9 rounded-lg border border-slate-300 px-2 text-sm font-normal text-slate-800" />
+            </Field>
             <Field label="Category">
               <input defaultValue={String(row.category ?? 'service')} onBlur={(e) => void update(row.id, { category: e.target.value })} className="h-9 rounded-lg border border-slate-300 px-2 text-sm font-normal text-slate-800" />
             </Field>
@@ -163,6 +172,9 @@ function TestimonialsPanel() {
             <Field label="Verification notes (private)">
               <textarea defaultValue={String(row.verification_notes ?? '')} onBlur={(e) => void update(row.id, { verification_notes: e.target.value })} className="min-h-16 rounded-lg border border-slate-300 px-2 py-1 text-sm font-normal text-slate-800" />
             </Field>
+            <Field label="Source user style (private)">
+              <input defaultValue={String(row.source_user_style ?? '')} onBlur={(e) => void update(row.id, { source_user_style: e.target.value })} className="h-9 rounded-lg border border-slate-300 px-2 text-sm font-normal text-slate-800" />
+            </Field>
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-600">
             <label className="flex items-center gap-2">
@@ -170,8 +182,28 @@ function TestimonialsPanel() {
               Consent verified
             </label>
             <label className="flex items-center gap-2">
-              <input type="checkbox" defaultChecked={Boolean(row.incentive_provided)} onChange={(e) => void update(row.id, { incentive_provided: e.target.checked })} />
-              Incentive provided
+              Incentive status
+              <select
+                value={row.incentive_provided === true ? 'yes' : row.incentive_provided === false ? 'no' : 'unknown'}
+                onChange={(e) => void update(row.id, { incentive_provided: e.target.value === 'unknown' ? null : e.target.value === 'yes' })}
+                className="h-8 rounded border border-slate-300 px-2"
+              >
+                <option value="unknown">Unknown</option>
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+              </select>
+            </label>
+            <label className="flex items-center gap-2">
+              Verified purchase
+              <select
+                value={row.verified_purchase === true ? 'yes' : row.verified_purchase === false ? 'no' : 'unknown'}
+                onChange={(e) => void update(row.id, { verified_purchase: e.target.value === 'unknown' ? null : e.target.value === 'yes' })}
+                className="h-8 rounded border border-slate-300 px-2"
+              >
+                <option value="unknown">Unknown</option>
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+              </select>
             </label>
             <label className="flex items-center gap-2">
               <input type="checkbox" defaultChecked={Boolean(row.claim_review_passed)} onChange={(e) => void update(row.id, { claim_review_passed: e.target.checked })} />

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { TestimonialRecord } from './types'
-import { isPublishableTestimonial } from './guards'
+import { isPublishableTestimonial, toPublishedTestimonial } from './guards'
 
 const approvedRecord: TestimonialRecord = {
   id: 'verified-service-1',
@@ -8,6 +8,10 @@ const approvedRecord: TestimonialRecord = {
   category: 'documentation',
   quote: 'The batch document was easy to find.',
   displayName: 'J. R.',
+  reviewTitle: 'Clear documentation',
+  productName: 'Example product',
+  rating: 5,
+  verifiedPurchase: true,
   approvedPhoto: null,
   submissionDate: '2026-07-01',
   consentVerified: true,
@@ -16,6 +20,10 @@ const approvedRecord: TestimonialRecord = {
   incentiveProvided: false,
   incentiveDisclosure: '',
   sourceRecordReference: 'submission-1',
+  sourceReviewId: 'source-1',
+  sourceUserStyle: 'verified_buyer',
+  sourceLengthLabel: 'short',
+  importFingerprint: 'fingerprint-1',
   verificationNotes: 'Service-only feedback; no medical or human-outcome claims.',
   claimReviewPassed: true,
   reviewedBy: 'reviewer-1',
@@ -37,5 +45,20 @@ describe('testimonial publication gates', () => {
   it('rejects records without documented provenance or reviewer identity', () => {
     expect(isPublishableTestimonial({ ...approvedRecord, sourceRecordReference: '' })).toBe(false)
     expect(isPublishableTestimonial({ ...approvedRecord, reviewedBy: '' })).toBe(false)
+  })
+
+  it('rejects records when incentive status is unknown', () => {
+    expect(isPublishableTestimonial({ ...approvedRecord, incentiveProvided: null })).toBe(false)
+  })
+
+  it('never includes private compliance or import metadata in the public projection', () => {
+    const published = toPublishedTestimonial(approvedRecord)
+
+    expect(published).not.toHaveProperty('consentRecordReference')
+    expect(published).not.toHaveProperty('sourceRecordReference')
+    expect(published).not.toHaveProperty('sourceUserStyle')
+    expect(published).not.toHaveProperty('importFingerprint')
+    expect(published).not.toHaveProperty('verificationNotes')
+    expect(published).not.toHaveProperty('reviewedBy')
   })
 })

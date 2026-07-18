@@ -28,6 +28,11 @@ type TestimonialRow = {
   category: PublishedTestimonial['category']
   quote: string
   display_name: string
+  review_title: string | null
+  product_name: string | null
+  rating: number | null
+  verified_purchase: boolean | null
+  review_date: string | null
   approved_photo_url: string | null
   alt_text: string | null
   incentive_disclosure: string | null
@@ -57,6 +62,11 @@ function mapTestimonialRow(row: TestimonialRow): PublishedTestimonial {
     category: row.category,
     quote: row.quote,
     displayName: row.display_name,
+    reviewTitle: row.review_title ?? '',
+    productName: row.product_name ?? '',
+    rating: row.rating,
+    verifiedPurchase: row.verified_purchase,
+    reviewDate: row.review_date ?? '',
     approvedPhoto: row.approved_photo_url,
     altText: row.alt_text ?? '',
     incentiveDisclosure: row.incentive_disclosure ?? '',
@@ -87,7 +97,7 @@ export async function getPublishedTestimonials(): Promise<PublishedTestimonial[]
   if (isSupabaseConfigured && supabase) {
     const { data, error } = await supabase
       .from('published_testimonials')
-      .select('id, category, quote, display_name, approved_photo_url, alt_text, incentive_disclosure, relationship_to_business, sort_order')
+      .select('id, category, quote, display_name, review_title, product_name, rating, verified_purchase, review_date, approved_photo_url, alt_text, incentive_disclosure, relationship_to_business, sort_order')
       .order('sort_order', { ascending: true })
     if (error || !data) return []
     return (data as TestimonialRow[]).map(mapTestimonialRow)

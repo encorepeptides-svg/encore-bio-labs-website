@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { PublishedTestimonial } from '../../data/socialProof/types'
 import { socialProof as socialProofEn } from '../../locales/en/socialProof'
 import { socialProof as socialProofEs } from '../../locales/es/socialProof'
-import { filterTestimonials } from './testimonialFilters'
+import { filterTestimonials, getAvailableTestimonialFilters } from './testimonialFilters'
 
 const reviews: PublishedTestimonial[] = [
   {
@@ -10,6 +10,11 @@ const reviews: PublishedTestimonial[] = [
     category: 'service',
     quote: 'Approved service feedback.',
     displayName: 'A. Researcher',
+    reviewTitle: 'Helpful service',
+    productName: 'BPC-157',
+    rating: 5,
+    verifiedPurchase: true,
+    reviewDate: '2026-07-01',
     altText: '',
     incentiveDisclosure: '',
     relationshipToBusiness: '',
@@ -20,6 +25,11 @@ const reviews: PublishedTestimonial[] = [
     category: 'documentation',
     quote: 'Approved documentation feedback.',
     displayName: 'B. Researcher',
+    reviewTitle: 'Clear documentation',
+    productName: 'TB-500',
+    rating: 4,
+    verifiedPurchase: true,
+    reviewDate: '2026-07-02',
     altText: '',
     incentiveDisclosure: '',
     relationshipToBusiness: '',
@@ -37,9 +47,16 @@ describe('TestimonialsSection review toggle', () => {
     expect(filterTestimonials(reviews, 'support')).toEqual([])
   })
 
+  it('only offers toggle filters that contain published reviews', () => {
+    expect(getAvailableTestimonialFilters(reviews)).toEqual(['all', 'service', 'documentation'])
+  })
+
   it('keeps the review controls bilingual', () => {
     expect(Object.keys(socialProofEs)).toEqual(Object.keys(socialProofEn))
     expect(socialProofEn.filterAll).toBe('All reviews')
     expect(socialProofEs.filterAll).toBe('Todas')
+    expect(socialProofEn.verifiedPurchaseLabel).toBe('Verified purchase')
+    expect(socialProofEs.verifiedPurchaseLabel).toBe('Compra verificada')
+    expect(socialProofEn.ratingAriaLabel).not.toBe(socialProofEs.ratingAriaLabel)
   })
 })

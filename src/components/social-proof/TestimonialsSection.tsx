@@ -1,11 +1,13 @@
-import { CircleCheck, Quote } from 'lucide-react'
+import { CircleCheck, Quote, Star } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from '../../i18n/LocaleContext'
 import type { PublishedTestimonial } from '../../data/socialProof/types'
-import { filterTestimonials, type TestimonialFilter } from './testimonialFilters'
+import {
+  filterTestimonials,
+  getAvailableTestimonialFilters,
+  type TestimonialFilter,
+} from './testimonialFilters'
 import { useTestimonials } from './useSocialProof'
-
-const filterOrder: TestimonialFilter[] = ['all', 'service', 'documentation', 'fulfillment', 'support']
 
 const filterLabelKeys: Record<TestimonialFilter, string> = {
   all: 'filterAll',
@@ -15,9 +17,22 @@ const filterLabelKeys: Record<TestimonialFilter, string> = {
   support: 'filterSupport',
 }
 
+function formatReviewDate(value: string, locale: 'en' | 'es') {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
+  if (!match) return value
+  const [, year, month, day] = match
+  return new Intl.DateTimeFormat(locale === 'es' ? 'es-US' : 'en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(Number(year), Number(month) - 1, Number(day))))
+}
+
 function TestimonialCard({ item }: { item: PublishedTestimonial }) {
-  const { t } = useTranslation('socialProof')
+  const { t, locale } = useTranslation('socialProof')
   const disclosure = [item.relationshipToBusiness, item.incentiveDisclosure].filter((value) => value.trim()).join(' · ')
+  const formattedDate = item.reviewDate ? formatReviewDate(item.reviewDate, locale) : ''
 
   return (
     <figure className="group flex h-full flex-col rounded-[1.65rem] border border-slate-900/10 bg-white p-6 shadow-[0_18px_50px_rgba(7,23,36,0.06)] transition duration-300 hover:-translate-y-1 hover:border-teal-700/20 hover:shadow-[0_26px_70px_rgba(20,184,166,0.12)] sm:p-7">
@@ -29,7 +44,41 @@ function TestimonialCard({ item }: { item: PublishedTestimonial }) {
           {t(filterLabelKeys[item.category])}
         </span>
       </div>
+      {item.rating !== null ? (
+        <span
+          className="mt-5 inline-flex w-fit items-center gap-1 text-amber-500"
+          role="img"
+          aria-label={t('ratingAriaLabel', { rating: item.rating })}
+        >
+          {Array.from({ length: 5 }, (_, index) => (
+            <Star
+              key={index}
+              size={17}
+              aria-hidden="true"
+              className={index < item.rating! ? 'fill-current' : 'fill-transparent text-slate-300'}
+            />
+          ))}
+        </span>
+      ) : null}
+      {item.reviewTitle ? (
+        <h3 className="mt-4 text-lg font-semibold tracking-[-0.025em] text-[#071724]">{item.reviewTitle}</h3>
+      ) : null}
       <blockquote className="mt-5 flex-1 text-[1.05rem] leading-8 tracking-[-0.01em] text-[#071724]">{item.quote}</blockquote>
+      {item.productName || formattedDate ? (
+        <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium text-slate-500">
+          {item.productName ? (
+            <span>
+              <span className="sr-only">{t('reviewedProductLabel')}: </span>
+              {item.productName}
+            </span>
+          ) : null}
+          {formattedDate ? (
+            <time dateTime={item.reviewDate} aria-label={`${t('reviewDateLabel')}: ${formattedDate}`}>
+              {formattedDate}
+            </time>
+          ) : null}
+        </div>
+      ) : null}
       <figcaption className="mt-6 flex items-center gap-3 border-t border-slate-900/8 pt-5">
         {item.approvedPhoto ? (
           <img
@@ -47,6 +96,9 @@ function TestimonialCard({ item }: { item: PublishedTestimonial }) {
         <span>
           <span className="block text-sm font-semibold text-[#071724]">{item.displayName}</span>
           <span className="mt-0.5 block text-xs font-medium text-teal-700">{t('verifiedLabel')}</span>
+          {item.verifiedPurchase === true ? (
+            <span className="mt-0.5 block text-xs font-medium text-slate-500">{t('verifiedPurchaseLabel')}</span>
+          ) : null}
         </span>
       </figcaption>
       {disclosure ? (
@@ -63,10 +115,7 @@ export function TestimonialsSection({ minimumItems = 1 }: { minimumItems?: numbe
   const items = useTestimonials()
   const { t } = useTranslation('socialProof')
   const [activeFilter, setActiveFilter] = useState<TestimonialFilter>('all')
-  const availableFilters = useMemo(
-    () => filterOrder.filter((filter) => filter === 'all' || items.some((item) => item.category === filter)),
-    [items],
-  )
+  const availableFilters = useMemo(() => getAvailableTestimonialFilters(items), [items])
   const visibleItems = useMemo(() => filterTestimonials(items, activeFilter), [activeFilter, items])
 
   if (items.length < minimumItems) return null

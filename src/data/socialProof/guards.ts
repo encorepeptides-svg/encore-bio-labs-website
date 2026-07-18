@@ -34,7 +34,8 @@ export function isPublishableTestimonial(record: TestimonialRecord): boolean {
     isNonEmpty(record.reviewedBy) &&
     isNonEmpty(record.reviewedAt) &&
     // Any material connection or incentive must be clearly disclosed.
-    (record.incentiveProvided ? isNonEmpty(record.incentiveDisclosure) : true) &&
+    (record.incentiveProvided === false ||
+      (record.incentiveProvided === true && isNonEmpty(record.incentiveDisclosure))) &&
     // "Approved for public use" is represented by an actual publication stamp.
     isNonEmpty(record.publishedAt)
   )
@@ -47,6 +48,11 @@ export function toPublishedTestimonial(record: TestimonialRecord): PublishedTest
     category: record.category,
     quote: record.quote,
     displayName: record.displayName,
+    reviewTitle: record.reviewTitle,
+    productName: record.productName,
+    rating: record.rating,
+    verifiedPurchase: record.verifiedPurchase,
+    reviewDate: record.submissionDate,
     approvedPhoto: record.approvedPhoto ?? null,
     altText: record.altText,
     incentiveDisclosure: record.incentiveProvided ? record.incentiveDisclosure : '',
