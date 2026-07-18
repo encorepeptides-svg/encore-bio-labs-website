@@ -2,7 +2,17 @@ import type { socialProof as socialProofEn } from '../en/socialProof'
 
 export const socialProof = {
   testimonialsEyebrow: 'Opiniones verificadas',
-  testimonialsTitle: 'Lo que dicen los investigadores sobre trabajar con Encore.',
+  testimonialsTitle: 'Cada detalle de la experiencia, evaluado.',
+  filterPrompt: 'Explora las opiniones por tema',
+  filterAriaLabel: 'Filtrar opiniones verificadas',
+  filterAll: 'Todas',
+  filterService: 'Servicio',
+  filterDocumentation: 'Documentación',
+  filterFulfillment: 'Preparación y envío',
+  filterSupport: 'Atención',
+  verifiedLabel: 'Opinión verificada',
+  verifiedCountOne: '{count} opinión verificada',
+  verifiedCountOther: '{count} opiniones verificadas',
   disclosureLabel: 'Divulgación',
   transformationsEyebrow: 'Resultados documentados',
   transformationsTitle: 'Antes y después: revisados y documentados.',
