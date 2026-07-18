@@ -76,7 +76,7 @@ export function ProductPage({ slug }: { slug: string }) {
 
   return (
     <main id="main-content" className="bg-[#F8FAFC]">
-      <ProductBreadcrumb product={product} />
+      <ProductBreadcrumb product={product} tone="dark" />
       <ProductHero product={product} researchContent={researchContent} />
       {researchContent ? <ProductResearchExperience product={product} content={researchContent} /> : <><ProductBenefits product={product} /><ProductHowItWorksFlow product={product} /></>}
       <ProductDocumentationRow />

@@ -155,7 +155,7 @@ export function RetatrutideProductPage({ product }: { product: Product }) {
 
   return (
     <main id="main-content" className="overflow-hidden bg-[#f8faf9] pb-24 text-[#071724] md:pb-0">
-      <ProductBreadcrumb product={product} />
+      <ProductBreadcrumb product={product} tone="dark" />
 
       <section className="relative overflow-hidden bg-[#030b18] px-5 pb-32 pt-10 text-white sm:px-8 sm:pb-36 lg:pb-44 lg:pt-16">
         <picture>

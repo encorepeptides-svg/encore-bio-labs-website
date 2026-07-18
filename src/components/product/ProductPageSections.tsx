@@ -82,24 +82,25 @@ const categoryTitleKeyBySlug: Record<string, string> = {
   'hormone-wellness': 'hormoneWellnessTitle',
 }
 
-export function ProductBreadcrumb({ product }: { product: Product }) {
+export function ProductBreadcrumb({ product, tone = 'light' }: { product: Product; tone?: 'light' | 'dark' }) {
   const { path } = useLocale()
   const { t } = useTranslation('product')
   const { t: tCategories } = useTranslation('categories')
   const categorySlug = productCategorySlug(product)
   const categoryLabel = categoryTitleKeyBySlug[categorySlug] ? tCategories(categoryTitleKeyBySlug[categorySlug]) : product.category
+  const dark = tone === 'dark'
 
   return (
-    <nav aria-label={t('breadcrumbLabel')} className="px-5 pt-6 sm:px-8">
-      <ol className="mx-auto flex max-w-[88rem] flex-wrap items-center gap-2 text-sm text-slate-500">
+    <nav aria-label={t('breadcrumbLabel')} className={dark ? 'bg-[#030b18] px-5 pt-6 sm:px-8' : 'px-5 pt-6 sm:px-8'}>
+      <ol className={`mx-auto flex max-w-[88rem] flex-wrap items-center gap-2 text-sm ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
         <li>
-          <a href={path('/')} className="font-medium transition hover:text-[#071724]">
+          <a href={path('/')} className={`font-medium transition ${dark ? 'hover:text-white' : 'hover:text-[#071724]'}`}>
             {t('home')}
           </a>
         </li>
         <li aria-hidden="true">/</li>
         <li>
-          <a href={path('/catalog')} className="font-medium transition hover:text-[#071724]">
+          <a href={path('/catalog')} className={`font-medium transition ${dark ? 'hover:text-white' : 'hover:text-[#071724]'}`}>
             {t('catalog')}
           </a>
         </li>
@@ -107,14 +108,14 @@ export function ProductBreadcrumb({ product }: { product: Product }) {
         <li>
           <a
             href={path(`/categories/${categorySlug}`)}
-            className="font-medium transition hover:text-[#071724]"
+            className={`font-medium transition ${dark ? 'hover:text-white' : 'hover:text-[#071724]'}`}
           >
             {categoryLabel}
           </a>
         </li>
         <li aria-hidden="true">/</li>
         <li>
-          <span aria-current="page" className="font-semibold text-[#071724]">
+          <span aria-current="page" className={`font-semibold ${dark ? 'text-teal-100' : 'text-[#071724]'}`}>
             {product.name}
           </span>
         </li>
@@ -157,43 +158,42 @@ export function ProductHero({ product, researchContent }: { product: Product; re
   const priceLabel = getProductPriceLabel(product, t)
 
   return (
-    <section className="relative overflow-hidden bg-[var(--bg)] px-5 pb-14 pt-12 sm:px-8 lg:pb-20 lg:pt-16">
-      <div className="molecule-field opacity-[0.14]" />
-      <div className="pointer-events-none absolute right-0 top-14 size-80 rounded-full bg-[var(--teal)]/14 blur-3xl" />
-      <div className="pointer-events-none absolute left-[8%] bottom-8 size-72 rounded-full bg-white blur-3xl" />
-      <span className="hero-particle left-[10%] top-[34%]" />
-      <span className="hero-particle hero-particle-delay right-[16%] top-[22%]" />
-      <span className="hero-particle hero-particle-slow bottom-[18%] left-[52%]" />
+    <section className="relative isolate overflow-hidden bg-[#030b18] px-5 pb-16 pt-10 text-white sm:px-8 sm:pt-12 lg:pb-24 lg:pt-16">
+      <div className="molecule-field -z-20 opacity-[0.22]" aria-hidden="true" />
+      <div className="pointer-events-none absolute inset-0 -z-20 opacity-[0.08] [background-image:linear-gradient(rgba(255,255,255,.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.16)_1px,transparent_1px)] [background-size:72px_72px] [mask-image:linear-gradient(to_right,black,transparent_72%)]" aria-hidden="true" />
+      <div className="pointer-events-none absolute right-[-10rem] top-[-7rem] -z-10 size-[38rem] rounded-full bg-teal-400/15 blur-3xl" aria-hidden="true" />
+      <div className="pointer-events-none absolute bottom-[-14rem] left-[18%] -z-10 size-[42rem] rounded-full bg-cyan-400/8 blur-3xl" aria-hidden="true" />
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(3,11,24,1)_0%,rgba(3,11,24,.96)_45%,rgba(3,11,24,.72)_70%,rgba(3,11,24,.9)_100%)]" aria-hidden="true" />
 
-      <div className="relative mx-auto grid max-w-[88rem] gap-10 lg:grid-cols-[0.94fr_1.06fr] lg:items-center">
+      <div className="relative mx-auto grid max-w-[88rem] gap-10 lg:grid-cols-[1.03fr_0.97fr] lg:items-start lg:gap-14">
         <motion.div initial={false} animate={{ opacity: 1, y: 0 }} className="max-w-3xl">
           <a
             href={path('/catalog')}
-            className="mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white/80 px-4 py-2 text-sm font-semibold text-[var(--muted)] shadow-sm backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-white hover:text-[var(--navy)]"
+            className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.06] px-4 py-2 text-sm font-semibold text-slate-300 backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/10 hover:text-white"
           >
             {t('backToCatalog')}
           </a>
           <div className="flex flex-wrap items-center gap-3">
-            <p className="inline-flex rounded-full border border-[var(--teal-border)] bg-[var(--teal-light)] px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--teal)]">
+            <p className="inline-flex rounded-full border border-teal-200/20 bg-teal-100/10 px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-teal-100">
               {product.badge}
             </p>
-            <p className="inline-flex rounded-full border border-[var(--border)] bg-white px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--navy)]">
+            <p className="inline-flex rounded-full border border-white/12 bg-white/[0.07] px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white">
               {priceLabel}
             </p>
           </div>
-          <h1 className="mt-6 text-5xl font-semibold leading-[0.96] tracking-[-0.065em] text-[var(--navy)] sm:text-6xl lg:text-7xl">
+          <h1 className="mt-6 text-[clamp(3.35rem,9vw,5.2rem)] font-semibold leading-[0.88] tracking-[-0.075em] text-white lg:text-[clamp(4.4rem,6vw,6.4rem)]">
             {product.name}
           </h1>
-          <p className="mt-5 max-w-2xl text-2xl font-semibold leading-tight tracking-[-0.045em] text-[var(--navy)] sm:text-3xl">
+          <p className="mt-6 max-w-2xl text-2xl font-semibold leading-tight tracking-[-0.045em] text-white sm:text-3xl">
             {product.headline}
           </p>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-[var(--muted)]">
+          <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
             {getPlainProductDescription(product, researchContent, locale)}
           </p>
-          <div className="mt-7 grid gap-3">
+          <div className="mt-7 grid gap-2 sm:grid-cols-3">
             {productFeatureBullets.map((bullet) => (
-              <div key={bullet} className="flex items-start gap-3 text-sm font-semibold leading-6 text-[var(--navy)] sm:text-base">
-                <span className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--teal)] text-[0.7rem] text-white">
+              <div key={bullet} className="flex items-start gap-3 rounded-[1.1rem] border border-white/[0.08] bg-white/[0.055] px-4 py-3 text-sm font-semibold leading-6 text-slate-100 backdrop-blur-xl">
+                <span className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-[#28e0c1] text-[0.7rem] text-[#071724]">
                   ✓
                 </span>
                 <span>{bullet}</span>
@@ -201,7 +201,7 @@ export function ProductHero({ product, researchContent }: { product: Product; re
             ))}
           </div>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <CTA href="#product-specs" tone="ghost" className="border-[var(--border)] bg-white text-[var(--navy)] hover:bg-[var(--teal-light)]">
+            <CTA href="#product-specs" className="bg-[#28e0c1] text-[#071724] shadow-[0_16px_48px_rgba(40,224,193,0.25)] hover:bg-white">
               {t('viewResearchDetails')}
             </CTA>
             <CTA
@@ -209,12 +209,12 @@ export function ProductHero({ product, researchContent }: { product: Product; re
               target="_blank"
               rel="noopener noreferrer"
               tone="ghost"
-              className="border-[var(--border)] bg-white text-[var(--navy)] hover:bg-[var(--teal-light)]"
+              className="border-white/20 bg-white/[0.07] text-white shadow-none backdrop-blur-xl hover:border-white/35 hover:bg-white/[0.13]"
             >
               {t('contactEncoreWhatsapp')}
             </CTA>
           </div>
-          <div className="mt-6 max-w-2xl"><PurchaseSelector product={product} /></div>
+          <div className="mt-7 max-w-2xl"><PurchaseSelector product={product} compact /></div>
           {product.purchaseRules.kitEligible ? (
             <EncoreCompleteKit
               variant="reassurance"
@@ -223,21 +223,21 @@ export function ProductHero({ product, researchContent }: { product: Product; re
               className="mt-4 max-w-2xl"
             />
           ) : null}
-          <p className="mt-5 text-sm leading-6 text-slate-600">{t('researchUseOnlyLine')} · <a href={path('/contact')} className="font-semibold text-teal-800 underline-offset-4 hover:underline">{t('contactQuestion')}</a></p>
+          <p className="mt-5 border-l-2 border-[#28e0c1]/60 pl-4 text-sm leading-6 text-slate-300">{t('researchUseOnlyLine')} · <a href={path('/contact')} className="font-semibold text-teal-200 underline-offset-4 hover:underline">{t('contactQuestion')}</a></p>
         </motion.div>
 
         <motion.div
           initial={false}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          className="group relative mx-auto w-full max-w-2xl transition duration-500 hover:-translate-y-1"
+          className="group relative mx-auto w-full max-w-2xl transition duration-500 hover:-translate-y-1 lg:sticky lg:top-28"
         >
-          <div className="relative min-h-[34rem] overflow-hidden rounded-[2.25rem] border border-white bg-white p-4 shadow-[0_32px_110px_rgba(26,35,64,0.14)] sm:min-h-[40rem] sm:p-5">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(46,196,165,0.2),transparent_35%),linear-gradient(145deg,#ffffff,#eef7f6_48%,#f8f9fb)]" />
-            <div className="absolute inset-5 rounded-[1.7rem] border border-[var(--border)] bg-white/42" />
-            <div className="absolute left-6 top-6 z-10 rounded-full border border-[var(--teal-border)] bg-white/90 px-4 py-2 text-xs font-semibold text-[var(--navy)] shadow-[0_12px_36px_rgba(26,35,64,0.1)] backdrop-blur-xl">
+          <div className="relative min-h-[34rem] overflow-hidden rounded-[2.25rem] border border-white/15 bg-[linear-gradient(145deg,rgba(20,184,166,0.18),rgba(3,11,24,0.58)_48%,rgba(255,255,255,0.07))] p-4 shadow-[0_38px_120px_rgba(0,0,0,0.42)] backdrop-blur-sm sm:min-h-[40rem] sm:p-5">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(40,224,193,0.2),transparent_36%),linear-gradient(180deg,transparent_42%,rgba(3,11,24,0.94)_100%)]" />
+            <div className="absolute inset-5 rounded-[1.7rem] border border-white/10 bg-black/10" />
+            <div className="absolute left-6 top-6 z-10 rounded-full border border-white/15 bg-[#071724]/65 px-4 py-2 text-xs font-semibold text-teal-100 shadow-[0_12px_36px_rgba(0,0,0,0.22)] backdrop-blur-xl">
               {t('documentationByReview')}
             </div>
-            <div className="absolute right-6 top-6 z-10 rounded-full border border-[var(--teal-border)] bg-[var(--teal)] px-4 py-2 text-xs font-semibold text-white shadow-[0_12px_36px_rgba(46,196,165,0.24)]">
+            <div className="absolute right-6 top-6 z-10 rounded-full border border-teal-100/20 bg-[#28e0c1] px-4 py-2 text-xs font-bold text-[#071724] shadow-[0_12px_36px_rgba(40,224,193,0.22)]">
               RUO
             </div>
             <div className="relative min-h-[31rem] overflow-hidden rounded-[1.7rem] sm:min-h-[37rem]">
@@ -248,24 +248,24 @@ export function ProductHero({ product, researchContent }: { product: Product; re
                 loading="eager"
                 width={720}
                 height={720}
-                className="absolute inset-0 h-full w-full object-contain object-center transition duration-500 group-hover:scale-[1.025]"
+                className="absolute inset-[3%] h-[94%] w-[94%] object-contain object-center drop-shadow-[0_34px_54px_rgba(0,0,0,0.44)] transition duration-700 group-hover:scale-[1.035]"
               />
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0)_0_44%,rgba(255,255,255,0.24)_78%,rgba(255,255,255,0.72)_100%)]" />
-              <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white/90 to-transparent" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0)_0_44%,rgba(3,11,24,0.04)_72%,rgba(3,11,24,0.55)_100%)]" />
+              <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#030b18]/95 to-transparent" />
             </div>
-            <div className="absolute bottom-5 left-5 right-5 rounded-[1.4rem] border border-[var(--border)] bg-white/88 p-4 shadow-[0_20px_58px_rgba(26,35,64,0.14)] backdrop-blur-xl sm:bottom-7 sm:left-7 sm:right-auto sm:w-[min(20rem,calc(100%-3.5rem))]">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+            <div className="absolute bottom-5 left-5 right-5 rounded-[1.4rem] border border-white/15 bg-[#06131f]/82 p-4 shadow-[0_20px_58px_rgba(0,0,0,0.25)] backdrop-blur-xl sm:bottom-7 sm:left-7 sm:right-auto sm:w-[min(22rem,calc(100%-3.5rem))]">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#71f0db]">
                 {t('primaryReviewLens')}
               </p>
-              <p className="mt-2 text-xl font-semibold tracking-[-0.04em] text-[var(--navy)]">
+              <p className="mt-2 text-xl font-semibold tracking-[-0.04em] text-white">
                 {product.biologyPoints[0]?.title}
               </p>
               <div className="mt-4 grid gap-2">
                 {product.mechanismSteps.slice(0, 3).map((step, index) => (
                   <div key={step} className="grid grid-cols-[5.5rem_1fr] items-center gap-3">
-                    <p className="text-xs font-semibold text-[var(--navy)]">{t('stage', { number: index + 1 })}</p>
-                    <span className="h-2 overflow-hidden rounded-full bg-[var(--teal-light)]">
-                      <span className="block h-full rounded-full bg-[var(--teal)]" style={{ width: `${92 - index * 14}%` }} />
+                    <p className="text-xs font-semibold text-slate-300">{t('stage', { number: index + 1 })}</p>
+                    <span className="h-2 overflow-hidden rounded-full bg-white/10">
+                      <span className="block h-full rounded-full bg-[#28e0c1]" style={{ width: `${92 - index * 14}%` }} />
                     </span>
                   </div>
                 ))}
