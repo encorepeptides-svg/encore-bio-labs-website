@@ -37,6 +37,10 @@ export const pageMetadata: Record<string, LocalizedPageMeta> = {
     en: { title: 'About Encore Bio Labs', description: 'Learn about Encore Bio Labs, its research catalog, documentation-first approach, and responsible product positioning.' },
     es: { title: 'Sobre Encore Bio Labs', description: 'Conoce a Encore Bio Labs, nuestro catálogo de investigación, nuestro enfoque centrado en la documentación y nuestro compromiso con la transparencia.' },
   },
+  '/review-preview': {
+    en: { title: 'Draft Review Preview | Encore Bio Labs', description: 'Development-only preview of imported review drafts that are not approved or published.' },
+    es: { title: 'Vista previa de reseñas en borrador | Encore Bio Labs', description: 'Vista previa exclusiva para desarrollo de reseñas importadas que no están aprobadas ni publicadas.' },
+  },
   '/intake': {
     en: { title: 'Research Intake | Encore Bio Labs', description: 'Share your research interests for a qualified Encore Bio Labs catalog review.' },
     es: { title: 'Inicia tu proceso de investigación | Encore Bio Labs', description: 'Cuéntanos sobre tus intereses de investigación y recibe una recomendación personalizada de nuestro catálogo.' },

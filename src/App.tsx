@@ -12,6 +12,10 @@ import { LatamSuggestionBanner } from './components/LatamSuggestionBanner'
 import { stripLocalePrefix } from './i18n/config'
 import { applyDocumentMetadata } from './i18n/applyMetadata'
 import { getCategoryMetadata, notFoundMetadata, pageMetadata } from './i18n/metadata'
+import {
+  draftReviewPreviewPath,
+  isDraftReviewPreviewPath,
+} from './components/social-proof/draftReviewPreviewRoute'
 
 // Route pages are code-split so each experience only loads when it renders.
 const AboutPage = lazy(() => import('./components/AboutPage').then((m) => ({ default: m.AboutPage })))
@@ -42,6 +46,9 @@ const PortalAuthPage = lazy(() => import('./components/portal/PortalAuthPages').
 const OnboardingPage = lazy(() => import('./components/portal/OnboardingPage').then((m) => ({ default: m.OnboardingPage })))
 const ClientPortalPage = lazy(() => import('./components/portal/ClientPortalPage').then((m) => ({ default: m.ClientPortalPage })))
 const AdminPortalPage = lazy(() => import('./components/portal/AdminPortalPage').then((m) => ({ default: m.AdminPortalPage })))
+const DraftReviewPreviewPage = import.meta.env.DEV
+  ? lazy(() => import('./components/social-proof/DraftReviewPreviewPage').then((m) => ({ default: m.DraftReviewPreviewPage })))
+  : null
 
 const AssistantWidget = lazy(() =>
   import('./components/assistant/AssistantWidget').then((module) => ({ default: module.AssistantWidget })),
@@ -105,7 +112,9 @@ function App() {
       : undefined
     const isPortalSubRoute = normalizedPath.startsWith('/portal/') || normalizedPath.startsWith('/admin')
     const metadataKey = isPortalSubRoute ? '/portal' : normalizedPath
-    const localizedMeta = pageMetadata[metadataKey] ?? (categoryName ? getCategoryMetadata(categorySlug!, categoryName) : notFoundMetadata)
+    const localizedMeta = metadataKey === draftReviewPreviewPath && !isDraftReviewPreviewPath(normalizedPath, import.meta.env.DEV)
+      ? notFoundMetadata
+      : pageMetadata[metadataKey] ?? (categoryName ? getCategoryMetadata(categorySlug!, categoryName) : notFoundMetadata)
     applyDocumentMetadata(normalizedPath, locale, localizedMeta[locale])
   }, [categorySlug, locale, logicalPath, productSlug])
 
@@ -133,6 +142,10 @@ function App() {
 
     if (logicalPath === '/') {
       return <HomePage />
+    }
+
+    if (DraftReviewPreviewPage && isDraftReviewPreviewPath(logicalPath, import.meta.env.DEV)) {
+      return <DraftReviewPreviewPage />
     }
 
     if (logicalPath === '/catalog' || logicalPath === '/catalog/') {
