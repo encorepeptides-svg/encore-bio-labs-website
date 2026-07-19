@@ -7,6 +7,7 @@ describe('draft review preview route', () => {
     expect(isDraftReviewPreviewPath(draftReviewPreviewPath, true)).toBe(true)
     expect(isDraftReviewPreviewPath(`${draftReviewPreviewPath}/`, true)).toBe(true)
     expect(isDraftReviewPreviewPath(draftReviewPreviewPath, false)).toBe(false)
+    expect(isDraftReviewPreviewPath('/?previewReviews=1', true)).toBe(false)
   })
 
   it('uses the same logical route in English and Spanish', () => {

@@ -106,10 +106,11 @@ export function HomeBelowFold() {
 
       <ResearchProfilePrompt />
       <CompactWhyChooseEncore />
-      <HowItWorks />
 
       {/* Compliance-gated social proof stays hidden while approved records are empty. */}
       <TestimonialsSection />
+
+      <HowItWorks />
       <TransformationSection placement="home" />
 
       <FAQAccordion

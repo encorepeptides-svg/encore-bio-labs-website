@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { TestimonialRecord } from './types'
-import { isPublishableTestimonial, toPublishedTestimonial } from './guards'
+import { isPublishableTestimonial, selectPublishedTestimonials, toPublishedTestimonial } from './guards'
 
 const approvedRecord: TestimonialRecord = {
   id: 'verified-service-1',
@@ -49,6 +49,11 @@ describe('testimonial publication gates', () => {
 
   it('rejects records when incentive status is unknown', () => {
     expect(isPublishableTestimonial({ ...approvedRecord, incentiveProvided: null })).toBe(false)
+  })
+
+  it('keeps drafts out of the production testimonial projection', () => {
+    expect(selectPublishedTestimonials([{ ...approvedRecord, status: 'draft' }])).toEqual([])
+    expect(selectPublishedTestimonials([approvedRecord])).toHaveLength(1)
   })
 
   it('never includes private compliance or import metadata in the public projection', () => {
