@@ -2,7 +2,7 @@ import { CheckCircle2, Eye, EyeOff, LockKeyhole, Sparkles } from 'lucide-react'
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { LanguageSelector } from '../LanguageSelector'
-import { registerPortalAccount, requestPasswordReset, signInPortal, updatePortalPassword } from '../../lib/portal/portalAuth'
+import { isAdminRole, loadPortalIdentity, registerPortalAccount, requestPasswordReset, signInPortal, updatePortalPassword } from '../../lib/portal/portalAuth'
 import { isSupabaseConfigured } from '../../lib/supabaseClient'
 
 type AuthMode = 'login' | 'register' | 'forgot' | 'reset'
@@ -33,13 +33,15 @@ export function PortalAuthPage({ mode }: { mode: AuthMode }) {
       if (mode === 'login') {
         const { error: authError } = await signInPortal(form.email, form.password)
         if (authError) throw authError
-        window.location.assign(path('/portal'))
+        const identity = await loadPortalIdentity()
+        window.location.assign(path(identity && isAdminRole(identity.roles) ? '/admin/content' : '/portal'))
       } else if (mode === 'register') {
         const { error: authError } = await registerPortalAccount({ legalName: form.legalName, email: form.email, mobile: form.mobile, preferredLanguage: form.language, password: form.password })
         if (authError) throw authError
         setStep(3)
       } else if (mode === 'forgot') {
-        await requestPasswordReset(form.email)
+        const { error: authError } = await requestPasswordReset(form.email)
+        if (authError) throw authError
         setSuccess(t('successForgot'))
       } else {
         if (form.password.length < 12 || form.password !== form.confirmPassword) throw new Error('invalid password')

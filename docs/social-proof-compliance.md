@@ -54,6 +54,7 @@ record.
    1. `202607150001_social_proof.sql`
    2. `202607150002_testimonial_publication_gates.sql`
    3. `202607180001_import_research_peptide_reviews.sql`
+   4. `202607190001_fix_portal_user_status_cast.sql`
 2. Confirm the site runtime has `VITE_SUPABASE_URL` and the public
    `VITE_SUPABASE_ANON_KEY`. Never expose the service-role key in Vite or the
    browser.
