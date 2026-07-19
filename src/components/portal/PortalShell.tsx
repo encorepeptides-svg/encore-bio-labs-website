@@ -14,7 +14,7 @@ export function PortalShell({ children, admin = false }: { children: ReactNode; 
     ['/portal/support', t('navSupport'), Headphones], ['/portal/notifications', t('navNotifications'), Bell], ['/portal/profile', t('navProfile'), UserRound], ['/portal/security', t('navSecurity'), ShieldCheck],
   ] as const
   const portalPath = window.location.pathname
-  const adminNav = [['/admin',t('adminNavOverview')],['/admin/applications',t('adminNavApplications')],['/admin/clients',t('adminNavClients')],['/admin/orders',t('adminNavOrders')],['/admin/documents',t('adminNavDocuments')],['/admin/support',t('adminNavSupport')],['/admin/audit-log',t('adminNavAudit')],['/admin/settings',t('adminNavSettings')]] as const
+  const adminNav = [['/admin',t('adminNavOverview')],['/admin/applications',t('adminNavApplications')],['/admin/content',t('adminNavContent')],['/admin/clients',t('adminNavClients')],['/admin/orders',t('adminNavOrders')],['/admin/documents',t('adminNavDocuments')],['/admin/support',t('adminNavSupport')],['/admin/audit-log',t('adminNavAudit')],['/admin/settings',t('adminNavSettings')]] as const
   const nav = admin ? adminNav : clientNav
   const statusKey = identity ? ({
     unverified: 'accountStatusUnverified',

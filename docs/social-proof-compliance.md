@@ -15,7 +15,7 @@ quotes, stock photos, generated before/after images, empty cards, or
 | Provider (seam) | `src/lib/socialProof/provider.ts` | Reads Supabase public views; swap here for any future CMS |
 | Sections | `src/components/social-proof/*` | Presentation only; render `null` when empty |
 | Admin | `src/components/portal/SocialProofAdmin.tsx` | Content-admin CRUD, wired at `/admin/content` |
-| Backend | `supabase/migrations/202607150001_social_proof.sql` | Tables, RLS, public views, storage buckets |
+| Backend | `supabase/migrations/202607150001_social_proof.sql`, `202607150002_testimonial_publication_gates.sql`, `202607180001_import_research_peptide_reviews.sql` | Tables, RLS, publication gates, storage buckets, and draft-only review import |
 
 Content records are kept strictly separate from presentation. Adding future
 content never requires touching the page components.
@@ -49,15 +49,78 @@ record.
 
 ## Deploying the backend
 
-1. Apply `supabase/migrations/202607150001_social_proof.sql`, followed by
-   `202607150002_testimonial_publication_gates.sql`, to the target Supabase
-   project (SQL editor or CLI).
-2. Grant a reviewer the content-admin role **server-side** with the service-role
-   key (never in Vite env). Either:
-   - set `app_metadata.role = 'content_admin'` on the auth user, or
-   - insert `('admin' | 'super_admin')` into `public.user_roles`.
-3. Confirm the two storage buckets exist: `compliance-private` (private) and
+1. Apply the migrations in filename order to the target Supabase project (SQL
+   editor or CLI):
+   1. `202607150001_social_proof.sql`
+   2. `202607150002_testimonial_publication_gates.sql`
+   3. `202607180001_import_research_peptide_reviews.sql`
+2. Confirm the site runtime has `VITE_SUPABASE_URL` and the public
+   `VITE_SUPABASE_ANON_KEY`. Never expose the service-role key in Vite or the
+   browser.
+3. Grant the reviewing user an administrator role **server-side**. In the
+   Supabase SQL editor, replace the UUID below with the reviewer’s Auth user ID:
+
+   ```sql
+   insert into public.user_roles (user_id, role)
+   values ('00000000-0000-0000-0000-000000000000'::uuid, 'admin'::public.portal_role)
+   on conflict (user_id, role) do nothing;
+   ```
+
+   `admin` and `super_admin` can access `/admin/content`; `client` and `support`
+   cannot. An existing `client` role does not need to be removed. Sign out and
+   back in after assigning the role so the portal reloads authorization.
+4. Confirm the two storage buckets exist: `compliance-private` (private) and
    `social-proof-public` (public). The migration creates them.
+
+## Administrator review and publication runbook
+
+The imported file is named `research_peptide_mock_reviews.json`. Its 50 rows are
+inserted with explicit `draft` status and unknown incentive status. The import
+does not provide publication consent, identity/provenance verification,
+relationship or incentive evidence, claim approval, a reviewing administrator,
+or publication stamps. Do not approve an entry merely because it was imported.
+If an entry is synthetic or cannot be tied to a genuine reviewer and original
+submission, leave it in draft or reject/archive it.
+
+For each genuine review:
+
+1. Sign in at `/client-login`, then open **Content** in the administrator
+   navigation (the route is `/admin/content`). Select **Testimonials**.
+2. Compare the displayed title, text, name, rating, date, category, product, and
+   verified-purchase flag with the original source. Do not rewrite or infer
+   missing facts.
+3. Record the submission date, source record reference, and private verification
+   notes that identify what was checked. A filename by itself is not proof that
+   the reviewer or submission is genuine.
+4. Store the permission evidence privately, enter its consent record reference,
+   and check **Consent verified** only after confirming permission to publish the
+   exact review and display name.
+5. Enter the reviewer’s relationship to Encore as a public disclosure. Verify
+   whether any incentive was provided. Choose **No** only with evidence; if
+   **Yes**, enter the required public incentive disclosure. Leave **Unknown**
+   selected until this is established.
+6. Check **Claim review passed** only after a qualified reviewer confirms the
+   quote is eligible service feedback and contains no prohibited or
+   unsubstantiated medical, human-outcome, purity, testing, or product-performance
+   claim. Otherwise leave the review unpublished.
+7. Use the **Publication readiness** checklist to resolve every administrator
+   prerequisite. **Approve & publish** remains disabled until they are complete.
+8. Click **Approve & publish**. Supabase changes the status to `approved`, records
+   the authenticated reviewing administrator and review time, and stores the
+   publication timestamp. The public site still returns the row only if every
+   predicate in `published_testimonials` passes.
+
+To verify publication without exposing private compliance fields, query only the
+public view:
+
+```sql
+select id, display_name, review_title, review_date
+from public.published_testimonials
+order by sort_order;
+```
+
+Use **Unpublish** to clear the publication stamp or **Archive** to remove the
+entry from publication. Neither action deletes the private review record.
 
 ## Image pipeline (originals private, derivatives public)
 

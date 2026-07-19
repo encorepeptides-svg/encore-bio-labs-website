@@ -34,7 +34,6 @@ create unique index if not exists testimonials_import_fingerprint_unique
 
 insert into public.testimonials (
   id,
-  status,
   category,
   quote,
   display_name,
@@ -49,8 +48,13 @@ insert into public.testimonials (
   source_record_reference,
   import_fingerprint,
   sort_order,
-  incentive_provided
+  incentive_provided,
+  status
 )
+select
+  imported.*,
+  'draft'::public.content_status
+from (
 values
   ('ec0e0000-0000-5000-8000-000000000001'::uuid, 'fulfillment'::public.testimonial_category, 'Third order from this vial and the purity has been rock solid every time. Shipping was fast and packaging kept everything cold.', 'Mike T.', 'Consistent quality every time', 'BPC-157', 5, true, '2026-06-02'::date, '1', 'verified_buyer', 'short', 'research_peptide_mock_reviews.json#id=1', 'ec8086ca-e4eb-5881-8402-f16ebd5172d3', 0, null),
   ('ec0e0000-0000-5000-8000-000000000002'::uuid, 'documentation'::public.testimonial_category, 'I ran a third-party HPLC check against the included COA and the purity was within 0.3% of what was listed, which is better than most vendors I''ve dealt with. Pros: batch numbers are traceable, reconstitution was clean with no visible particulate, and the lyophilization looked uniform. Con: the site doesn''t let you filter by batch number when reordering, so I had to email support to confirm I was getting the same lot. Support responded within a day, which softened that complaint. Overall this is now my default vendor for lab comparisons.', 'K.L. (PhD)', 'COA matched independent HPLC results', 'TB-500', 5, true, '2026-05-14'::date, '2', 'technical_expert', 'detailed', 'research_peptide_mock_reviews.json#id=2', 'c5b77f4f-d1a6-5e80-89e4-de4bb69c7d32', 1, null),
@@ -102,6 +106,24 @@ values
   ('ec0e0000-0000-5000-8000-000000000048'::uuid, 'fulfillment'::public.testimonial_category, 'Product was fine but shipping took longer than the estimate and the box was a little beat up.', 'Megan O.', 'Pretty good, shipping was slow', 'Semax', 4, true, '2026-04-30'::date, '48', 'casual_user', 'short', 'research_peptide_mock_reviews.json#id=48', '74766dac-8283-5fe1-8a87-1448f8c0b6f3', 47, null),
   ('ec0e0000-0000-5000-8000-000000000049'::uuid, 'service'::public.testimonial_category, 'Easy to order online and it arrived well before the date I needed it.', 'HubbyBuysGifts', 'Good gift option', 'PT-141', 5, false, '2026-03-21'::date, '49', 'gift_giver', 'short', 'research_peptide_mock_reviews.json#id=49', 'c7f3fa32-66c3-5e05-88b6-9766b91dfa1f', 48, null),
   ('ec0e0000-0000-5000-8000-000000000050'::uuid, 'service'::public.testimonial_category, 'I''ve been ordering from this site for almost a year and have never had a batch that felt off. Packaging is consistent, always arrives cold, and the COAs are easy to find on their site by batch number. Prices have stayed reasonable even as I''ve seen some competitors raise theirs. The only thing I''d change is adding more payment options at checkout, but that''s a minor gripe against an otherwise excellent track record. Highly recommend for anyone comparing vendors.', 'Brian S.', 'Great long-term vendor', 'AOD-9604', 5, true, '2026-05-11'::date, '50', 'verified_buyer', 'detailed', 'research_peptide_mock_reviews.json#id=50', '15c6d27f-0645-51f0-8e94-f6036c6b80a6', 49, null)
+) as imported (
+  id,
+  category,
+  quote,
+  display_name,
+  review_title,
+  product_name,
+  rating,
+  verified_purchase,
+  submission_date,
+  source_review_id,
+  source_user_style,
+  source_length_label,
+  source_record_reference,
+  import_fingerprint,
+  sort_order,
+  incentive_provided
+)
 on conflict do nothing;
 
 create or replace view public.published_testimonials

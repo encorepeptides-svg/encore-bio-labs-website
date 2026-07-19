@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
+import {
+  getTestimonialPublicationReadiness,
+  type TestimonialPublicationReadiness,
+} from '../../data/socialProof/adminReadiness'
 import type { ContentStatus, PagePlacement } from '../../data/socialProof/types'
 
 /**
@@ -79,16 +83,32 @@ async function uploadOriginal(file: File): Promise<string | null> {
   return error ? null : path
 }
 
-function StatusControls({ row, onUpdate }: { row: Row; onUpdate: (patch: Record<string, unknown>) => void }) {
+function StatusControls({
+  row,
+  onUpdate,
+  approvalReadiness,
+}: {
+  row: Row
+  onUpdate: (patch: Record<string, unknown>) => void
+  approvalReadiness?: TestimonialPublicationReadiness
+}) {
+  const approveDisabled = approvalReadiness ? !approvalReadiness.canApproveAndPublish : false
+  const readinessDescriptionId = approvalReadiness ? `testimonial-readiness-${row.id}` : undefined
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       <select
+        aria-label="Content status"
         value={row.status}
         onChange={(event) => onUpdate({ status: event.target.value })}
         className="h-9 rounded-lg border border-slate-300 px-2 text-xs font-semibold"
       >
         {STATUSES.map((status) => (
-          <option key={status} value={status}>
+          <option
+            key={status}
+            value={status}
+            disabled={Boolean(approvalReadiness && status === 'approved' && row.status !== 'approved')}
+          >
             {status}
           </option>
         ))}
@@ -96,9 +116,14 @@ function StatusControls({ row, onUpdate }: { row: Row; onUpdate: (patch: Record<
       <button
         type="button"
         onClick={() => onUpdate({ status: 'approved', published_at: new Date().toISOString() })}
-        className="h-9 rounded-lg bg-[#071724] px-3 text-xs font-semibold text-white"
+        disabled={approveDisabled}
+        aria-describedby={readinessDescriptionId}
+        title={approvalReadiness && approvalReadiness.missingPrerequisites.length > 0
+          ? `Complete first: ${approvalReadiness.missingPrerequisites.join(', ')}`
+          : undefined}
+        className="h-9 rounded-lg bg-[#071724] px-3 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600"
       >
-        Approve &amp; publish
+        {approvalReadiness?.isPublished ? 'Published' : 'Approve & publish'}
       </button>
       <button
         type="button"
@@ -118,6 +143,61 @@ function StatusControls({ row, onUpdate }: { row: Row; onUpdate: (patch: Record<
   )
 }
 
+function PublicationReadiness({ row, readiness }: { row: Row; readiness: TestimonialPublicationReadiness }) {
+  const importedDraft = String(row.source_record_reference ?? '').includes('research_peptide_mock_reviews.json')
+  const summary = readiness.isPublished
+    ? 'Published: every server gate is complete.'
+    : readiness.canApproveAndPublish
+      ? 'Ready for approval. Supabase will add the reviewer and publication stamps.'
+      : `${readiness.missingPrerequisites.length} required ${readiness.missingPrerequisites.length === 1 ? 'field is' : 'fields are'} incomplete.`
+
+  return (
+    <section
+      id={`testimonial-readiness-${row.id}`}
+      aria-label="Publication readiness"
+      className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold text-slate-900">Publication readiness</h3>
+        <span className={`rounded-full px-3 py-1 text-[0.7rem] font-bold ${
+          readiness.isPublished
+            ? 'bg-emerald-100 text-emerald-800'
+            : readiness.canApproveAndPublish
+              ? 'bg-teal-100 text-teal-900'
+              : 'bg-amber-100 text-amber-900'
+        }`}>
+          {readiness.isPublished ? 'Published' : readiness.canApproveAndPublish ? 'Ready to approve' : 'Action required'}
+        </span>
+      </div>
+      <p className="mt-2 text-xs leading-5 text-slate-600">{summary}</p>
+      {importedDraft ? (
+        <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-950">
+          Imported draft from a file labeled “mock reviews.” Do not approve unless the review is genuine and the source, identity, consent, relationship, incentive status, and claims have been independently verified.
+        </p>
+      ) : null}
+      <ul className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+        {readiness.gates.map((gate) => (
+          <li key={gate.id} className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+            <div className="flex items-center gap-2">
+              <span aria-hidden="true" className={`grid size-5 shrink-0 place-items-center rounded-full text-[0.65rem] font-bold ${gate.ready ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'}`}>
+                {gate.ready ? '✓' : '—'}
+              </span>
+              <span className="text-xs font-semibold text-slate-800">{gate.label}</span>
+            </div>
+            <p className={`mt-1 pl-7 text-[0.7rem] leading-4 ${gate.ready ? 'text-slate-500' : 'text-amber-800'}`}>
+              {gate.ready
+                ? gate.readyDetail
+                : gate.administratorSupplied
+                  ? `Missing: ${gate.missing.join(', ')}.`
+                  : 'Completed automatically when approval succeeds.'}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
 function TestimonialsPanel() {
   const { rows, loading, error, update, create } = useCollection('testimonials')
   const fileRefs = useRef<Record<string, HTMLInputElement | null>>({})
@@ -129,9 +209,12 @@ function TestimonialsPanel() {
       </button>
       {loading ? <p className="text-sm text-slate-500">Loading…</p> : null}
       {error ? <p role="alert" className="text-sm text-red-700">{error}</p> : null}
-      {rows.map((row) => (
+      {rows.map((row) => {
+        const readiness = getTestimonialPublicationReadiness(row)
+        return (
         <div key={row.id} className="rounded-2xl border border-slate-900/10 bg-white p-5">
-          <StatusControls row={row} onUpdate={(patch) => void update(row.id, patch)} />
+          <StatusControls row={row} approvalReadiness={readiness} onUpdate={(patch) => void update(row.id, patch)} />
+          <PublicationReadiness row={row} readiness={readiness} />
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <Field label="Display name">
               <input defaultValue={String(row.display_name ?? '')} onBlur={(e) => void update(row.id, { display_name: e.target.value })} className="h-9 rounded-lg border border-slate-300 px-2 text-sm font-normal text-slate-800" />
@@ -220,9 +303,9 @@ function TestimonialsPanel() {
               <button type="button" onClick={() => fileRefs.current[row.id]?.click()} className="rounded border border-slate-300 px-2 py-1">Upload private</button>
             </span>
           </div>
-          <p className="mt-2 text-[0.7rem] text-slate-400">Publishes only when: approved · submission and source verified · consent verified · relationship disclosed · service-only claim review passed · reviewer recorded · incentive disclosed if any · published.</p>
         </div>
-      ))}
+        )
+      })}
     </div>
   )
 }

@@ -171,6 +171,7 @@ export const portal = {
   adminWorkspace: 'Operations workspace',
   adminNavOverview: 'Overview',
   adminNavApplications: 'Applications',
+  adminNavContent: 'Content',
   adminNavClients: 'Clients',
   adminNavOrders: 'Orders',
   adminNavDocuments: 'Documents',

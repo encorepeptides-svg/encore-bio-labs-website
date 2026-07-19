@@ -173,6 +173,7 @@ export const portal = {
   adminWorkspace: 'Espacio de operaciones',
   adminNavOverview: 'Resumen',
   adminNavApplications: 'Solicitudes',
+  adminNavContent: 'Contenido',
   adminNavClients: 'Clientes',
   adminNavOrders: 'Pedidos',
   adminNavDocuments: 'Documentos',
