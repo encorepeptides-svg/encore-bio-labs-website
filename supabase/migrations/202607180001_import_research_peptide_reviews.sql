@@ -52,7 +52,22 @@ insert into public.testimonials (
   status
 )
 select
-  imported.*,
+  imported.id,
+  imported.category,
+  imported.quote,
+  imported.display_name,
+  imported.review_title,
+  imported.product_name,
+  imported.rating,
+  imported.verified_purchase,
+  imported.submission_date,
+  imported.source_review_id,
+  imported.source_user_style,
+  imported.source_length_label,
+  imported.source_record_reference,
+  imported.import_fingerprint,
+  imported.sort_order,
+  imported.incentive_provided::boolean,
   'draft'::public.content_status
 from (
 values

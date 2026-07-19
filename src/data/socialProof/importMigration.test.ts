@@ -23,6 +23,7 @@ describe('research review SQL import migration', () => {
 
     expect(importedRows).toHaveLength(50)
     expect(importedRows.every((row) => /, null\),?$/.test(row))).toBe(true)
+    expect(insertBlock).toContain('imported.incentive_provided::boolean')
   })
 
   it('retains every server-side publication predicate after the import', () => {
