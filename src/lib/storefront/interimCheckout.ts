@@ -6,12 +6,26 @@ import { isSupabaseConfigured, supabase } from '../supabaseClient'
 
 export type HandoffChannel = 'whatsapp' | 'instagram'
 
+export type OrderContact = {
+  name?: string
+  phone?: string
+  email?: string
+  address?: string
+  address2?: string
+  city?: string
+  state?: string
+  zip?: string
+  country?: string
+  preferredContact?: string
+  notes?: string
+}
+
 export type PendingOrderInput = {
   items: CartItem[]
   channel: HandoffChannel
   paymentMethod: InterimPaymentMethodId
   locale: Locale
-  contact?: { name?: string; phone?: string; email?: string }
+  contact?: OrderContact
 }
 
 export type PendingOrder = {
@@ -53,14 +67,34 @@ export function paymentMethodMessageLabel(method: InterimPaymentMethodId, locale
 }
 
 /** The order summary sent through WhatsApp or pasted into the Instagram DM. */
-export function buildHandoffMessage({ reference, items, paymentMethod, locale }: { reference: string; items: CartItem[]; paymentMethod: InterimPaymentMethodId; locale: Locale }) {
+export function buildHandoffMessage({ reference, items, paymentMethod, locale, contact }: { reference: string; items: CartItem[]; paymentMethod: InterimPaymentMethodId; locale: Locale; contact?: OrderContact }) {
   const lines = items.map((item) => `- ${item.quantity}x ${item.productName} ${item.variantLabel} (${formatCartCurrency(item.linePrice * item.quantity)})`)
   const total = formatCartCurrency(calculateSubtotal(items))
+  const shippingAddress = [contact?.address, contact?.address2, contact?.city, contact?.state, contact?.zip, contact?.country]
+    .map((value) => value?.trim())
+    .filter(Boolean)
+    .join(', ')
+  const contactLines = locale === 'es'
+    ? [
+        contact?.name ? `Nombre: ${contact.name}` : '',
+        contact?.phone ? `Teléfono: ${contact.phone}` : '',
+        contact?.email ? `Correo: ${contact.email}` : '',
+        shippingAddress ? `Envío: ${shippingAddress}` : '',
+        contact?.notes?.trim() ? `Notas: ${contact.notes.trim()}` : '',
+      ].filter(Boolean)
+    : [
+        contact?.name ? `Name: ${contact.name}` : '',
+        contact?.phone ? `Phone: ${contact.phone}` : '',
+        contact?.email ? `Email: ${contact.email}` : '',
+        shippingAddress ? `Shipping: ${shippingAddress}` : '',
+        contact?.notes?.trim() ? `Notes: ${contact.notes.trim()}` : '',
+      ].filter(Boolean)
   if (locale === 'es') {
     return [
       `Pedido [${reference}]`,
       ...lines,
       `Total: ${total}`,
+      ...contactLines,
       '',
       `Quiero pagar con: ${paymentMethodMessageLabel(paymentMethod, locale)}`,
     ].join('\n')
@@ -69,6 +103,7 @@ export function buildHandoffMessage({ reference, items, paymentMethod, locale }:
     `Order [${reference}]`,
     ...lines,
     `Total: ${total}`,
+    ...contactLines,
     '',
     `I'd like to pay by: ${paymentMethodMessageLabel(paymentMethod, locale)}`,
   ].join('\n')
@@ -106,6 +141,14 @@ export async function createPendingOrder(input: PendingOrderInput): Promise<Pend
         name: input.contact?.name ?? '',
         phone: input.contact?.phone ?? '',
         email: input.contact?.email ?? '',
+        address: input.contact?.address ?? '',
+        address2: input.contact?.address2 ?? '',
+        city: input.contact?.city ?? '',
+        state: input.contact?.state ?? '',
+        zip: input.contact?.zip ?? '',
+        country: input.contact?.country ?? '',
+        preferredContact: input.contact?.preferredContact ?? '',
+        notes: input.contact?.notes ?? '',
       },
     })
     if (!error) return { reference, subtotalCents, recorded: true }
@@ -125,7 +168,7 @@ export type StorefrontOrderRow = {
   payment_method: string
   items: Array<{ product: string; variant: string; quantity: number; line_total_cents: number }>
   subtotal_cents: number
-  contact: { name?: string; phone?: string; email?: string }
+  contact: OrderContact
   paid_at: string | null
 }
 

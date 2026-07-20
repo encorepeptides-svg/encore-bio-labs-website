@@ -4,6 +4,7 @@ import {
   buildHandoffMessage,
   buildInstagramDmUrl,
   buildWhatsAppHandoffUrl,
+  createPendingOrder,
   generateOrderReference,
   toOrderItemsPayload,
 } from './interimCheckout'
@@ -44,9 +45,18 @@ describe('interim checkout handoff', () => {
   })
 
   it('localizes the handoff message in Spanish with the same reference', () => {
-    const message = buildHandoffMessage({ reference: 'ORD-1000', items: [item()], paymentMethod: 'cash_on_delivery', locale: 'es' })
+    const message = buildHandoffMessage({
+      reference: 'ORD-1000',
+      items: [item()],
+      paymentMethod: 'cash_on_delivery',
+      locale: 'es',
+      contact: { name: 'María Rivera', address: '123 Calle Principal', city: 'Juárez', notes: 'Llame al llegar' },
+    })
     expect(message).toContain('Pedido [ORD-1000]')
     expect(message).toContain('Quiero pagar con: Pago contra entrega / recolección')
+    expect(message).toContain('Nombre: María Rivera')
+    expect(message).toContain('Envío: 123 Calle Principal, Juárez')
+    expect(message).toContain('Notas: Llame al llegar')
     expect(message).not.toContain('Order [')
   })
 
@@ -71,5 +81,19 @@ describe('interim checkout handoff', () => {
       { id: 'cash_on_delivery', enabled: true, details: [] },
     ]
     expect(getEnabledPaymentMethods(methods).map((method) => method.id)).toEqual(['paypal', 'cash_on_delivery'])
+  })
+
+  it('keeps the message handoff available when the order store is not configured', async () => {
+    const order = await createPendingOrder({
+      items: [item()],
+      channel: 'whatsapp',
+      paymentMethod: 'cash_on_delivery',
+      locale: 'en',
+      contact: { name: 'Test Researcher', phone: '5551234567', email: 'researcher@example.test' },
+    })
+
+    expect(order.reference).toMatch(/^ORD-\d{4}$/)
+    expect(order.subtotalCents).toBe(4000)
+    expect(order.recorded).toBe(false)
   })
 })

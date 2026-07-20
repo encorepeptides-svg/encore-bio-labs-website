@@ -5,12 +5,11 @@ import { useCart } from '../../context/useCart'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { purchaseTypeLabel } from '../../i18n/displayLabels'
 import { calculateSubtotal, formatCartCurrency, type CartItem } from '../../lib/cart'
-import { completeOrderRequest, isCheckoutFormValid, isValidEmail } from '../../lib/checkout'
-import { createCRMLeadFromIntake, isCrmUsingSupabase, saveLead } from '../../lib/crmStorage'
+import { isCheckoutFormValid, isValidEmail } from '../../lib/checkout'
 import { cn } from '../../lib/utils'
-import { buildCartOrderMessage, buildWhatsAppUrl } from '../../lib/whatsapp'
 import { EncoreCompleteKit } from '../EncoreCompleteKit'
 import { LanguageSelector } from '../LanguageSelector'
+import { InterimCheckoutHandoff } from '../cart/InterimCheckoutHandoff'
 
 function useCheckoutStages() {
   const { t } = useTranslation('checkout')
@@ -154,30 +153,27 @@ function CheckoutHeader() {
 }
 
 export function CheckoutPage() {
-  const { items, itemCount, updateQuantity, removeFromCart, clearCart } = useCart()
+  const { items, itemCount, updateQuantity, removeFromCart } = useCart()
   const { path, locale } = useLocale()
   const { t } = useTranslation('checkout')
   const { t: tCommon } = useTranslation('common')
   const [formData, setFormData] = useState<ReviewFormData>(() => readStoredForm())
-  const [outcome, setOutcome] = useState<'submitted' | 'support' | null>(null)
+  const [outcome, setOutcome] = useState<'support' | null>(null)
   const [completedSummary, setCompletedSummary] = useState<CheckoutSummary | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState('')
   const [showValidation, setShowValidation] = useState(false)
   const checkoutFormRef = useRef<HTMLDivElement>(null)
   const subtotal = useMemo(() => calculateSubtotal(items), [items])
-  const remoteSubmissionAvailable = isCrmUsingSupabase()
-  const supportUrl = buildWhatsAppUrl(buildCartOrderMessage({
-    items,
-    subtotal: formatCartCurrency(subtotal),
-    locale,
-  }))
 
   useEffect(() => {
     window.sessionStorage.setItem(CHECKOUT_SESSION_KEY, JSON.stringify({
       email: formData.email,
       phone: formData.phone,
       fullName: formData.fullName,
+      address: formData.address,
+      address2: formData.address2,
+      city: formData.city,
+      state: formData.state,
+      zip: formData.zip,
       country: formData.country,
       preferredContact: formData.preferredContact,
       notes: formData.notes,
@@ -190,85 +186,15 @@ export function CheckoutPage() {
     setFormData((current) => ({ ...current, [key]: value }))
   }
 
-  async function submitRequest() {
+  function submitRequest() {
     setShowValidation(true)
-    setSubmitError('')
-    if (!formIsValid || !items.length || isSubmitting) {
+    if (!formIsValid || !items.length) {
       window.requestAnimationFrame(() => checkoutFormRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus())
       return
     }
 
-    if (!remoteSubmissionAvailable) {
-      setOutcome('support')
-      return
-    }
-
-    const nameParts = formData.fullName.trim().split(/\s+/)
-    const firstName = nameParts.shift() || ''
-    const lastName = nameParts.join(' ')
-    const submittedAt = new Date().toISOString()
-
-    setIsSubmitting(true)
-    try {
-      await completeOrderRequest(() => saveLead(
-        createCRMLeadFromIntake({
-          firstName,
-          lastName,
-          email: formData.email.trim(),
-          phone: formData.phone.trim(),
-          city: formData.city.trim(),
-          state: formData.state.trim(),
-          country: formData.country === 'MX' ? 'Mexico' : 'United States',
-          source: 'Cart checkout inquiry',
-          campaignSource: 'Catalog',
-          interestedProducts: items.map((item, index) => ({
-            productName: `${item.productName} — ${item.variantLabel} — ${purchaseTypeLabel(tCommon, item.purchaseType)} (${tCommon('packLabel', { pack: item.packSize })}, ${tCommon('kitLabel', { kit: item.kitIncluded ? tCommon('yes') : tCommon('no') })}) × ${item.quantity}`,
-            priority: index === 0 ? 'primary' : 'secondary',
-          })),
-          primaryGoal: 'Catalog order review',
-          notes: [
-            formData.notes.trim(),
-            `Shipping address: ${[
-              formData.address.trim(),
-              formData.address2.trim(),
-              formData.city.trim(),
-              formData.state.trim(),
-              formData.zip.trim(),
-              formData.country === 'MX' ? 'Mexico' : 'United States',
-            ].filter(Boolean).join(', ')}`,
-            `Cart subtotal: ${formatCartCurrency(subtotal)}. Shipping and final details require review. No payment collected.`,
-          ].filter(Boolean).join('\n'),
-          intakeSubmission: {
-            id: crypto.randomUUID(),
-            submittedAt,
-            age: '',
-            sex: '',
-            weight: '',
-            height: '',
-            mainGoal: 'Catalog order review',
-            currentRoutine: '',
-            sleepQuality: '',
-            appetite: '',
-            energy: '',
-            previousProductsUsed: '',
-            medicalConditions: '',
-            medications: '',
-            budget: formatCartCurrency(subtotal),
-            deliveryCity: formData.city.trim(),
-            preferredContactMethod: formData.preferredContact,
-            consentToContact: true,
-            researchUseAcknowledgment: true,
-          },
-        }),
-      ).then(() => undefined), clearCart)
-      setCompletedSummary({ items, subtotal })
-      window.sessionStorage.removeItem(CHECKOUT_SESSION_KEY)
-      setOutcome('submitted')
-    } catch {
-      setSubmitError(t('submitErrorGeneric'))
-    } finally {
-      setIsSubmitting(false)
-    }
+    setCompletedSummary({ items, subtotal })
+    setOutcome('support')
   }
 
   if (outcome) {
@@ -286,10 +212,10 @@ export function CheckoutPage() {
             <Check size={28} aria-hidden="true" />
           </span>
           <h1 className="mt-6 text-4xl font-semibold tracking-[-0.05em] text-[#071724]">
-            {outcome === 'submitted' ? t('orderSubmittedTitle') : t('supportTitle')}
+            {t('supportTitle')}
           </h1>
           <p className="mt-4 text-base leading-7 text-slate-600">
-            {outcome === 'submitted' ? t('orderSubmittedBody') : t('supportBody')}
+            {t('supportBody')}
           </p>
           <section className="mt-8 w-full rounded-3xl border border-slate-900/10 bg-white p-5 text-left" aria-labelledby="request-summary-heading">
             <h2 id="request-summary-heading" className="text-lg font-semibold text-[#071724]">{t('requestSummary')}</h2>
@@ -306,15 +232,10 @@ export function CheckoutPage() {
               </div>
             </div>
           </section>
-          <a
-            href={outcome === 'submitted' ? path('/catalog') : supportUrl}
-            target={outcome === 'support' ? '_blank' : undefined}
-            rel={outcome === 'support' ? 'noopener noreferrer' : undefined}
-            className="mt-8 inline-flex min-h-12 items-center justify-center rounded-full bg-[#071724] px-7 text-sm font-semibold text-white transition hover:bg-teal-700"
-          >
-            {outcome === 'submitted' ? t('returnToCatalog') : t('continueOnWhatsapp')}
-          </a>
-          {outcome === 'support' ? <a href={path('/cart')} className="mt-3 text-sm font-semibold text-slate-600 hover:text-[#071724]">{t('returnToCart')}</a> : null}
+          <div className="mt-8 w-full text-left">
+            <InterimCheckoutHandoff items={summaryItems} />
+          </div>
+          <a href={path('/cart')} className="mt-3 text-sm font-semibold text-slate-600 hover:text-[#071724]">{t('returnToCart')}</a>
           <div className="mt-10 w-full">
             <EncoreCompleteKit variant="checkout" />
           </div>
@@ -505,18 +426,13 @@ export function CheckoutPage() {
                 {t('validationBanner')}
               </p>
             ) : null}
-            {submitError ? (
-              <p className="mt-5 rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm leading-6 text-rose-800" role="alert">
-                {submitError}
-              </p>
-            ) : null}
             <button
               type="button"
               onClick={submitRequest}
-              disabled={!items.length || isSubmitting}
+              disabled={!items.length}
               className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-45"
             >
-              {isSubmitting ? t('submittingOrder') : remoteSubmissionAvailable ? t('submitOrderRequest') : t('continueWithSupport')}
+              {t('continueWithSupport')}
               <ChevronRight size={16} aria-hidden="true" />
             </button>
 

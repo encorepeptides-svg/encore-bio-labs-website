@@ -23,10 +23,34 @@ const methodLabelKeys: Record<InterimPaymentMethodId, string> = {
 const CHECKOUT_SESSION_KEY = 'encore-checkout-information-v1'
 function readKnownContact() {
   try {
-    const stored = JSON.parse(window.sessionStorage.getItem(CHECKOUT_SESSION_KEY) || '{}') as { fullName?: string; phone?: string; email?: string }
-    return { name: stored.fullName || '', phone: stored.phone || '', email: stored.email || '' }
+    const stored = JSON.parse(window.sessionStorage.getItem(CHECKOUT_SESSION_KEY) || '{}') as {
+      fullName?: string
+      phone?: string
+      email?: string
+      address?: string
+      address2?: string
+      city?: string
+      state?: string
+      zip?: string
+      country?: string
+      preferredContact?: string
+      notes?: string
+    }
+    return {
+      name: stored.fullName || '',
+      phone: stored.phone || '',
+      email: stored.email || '',
+      address: stored.address || '',
+      address2: stored.address2 || '',
+      city: stored.city || '',
+      state: stored.state || '',
+      zip: stored.zip || '',
+      country: stored.country || '',
+      preferredContact: stored.preferredContact || '',
+      notes: stored.notes || '',
+    }
   } catch {
-    return { name: '', phone: '', email: '' }
+    return { name: '', phone: '', email: '', address: '', address2: '', city: '', state: '', zip: '', country: '', preferredContact: '', notes: '' }
   }
 }
 
@@ -84,6 +108,7 @@ export function InterimCheckoutHandoff({ items }: { items: CartItem[] }) {
     if (!chosenMethod) return
     setError(false)
     setCreating(true)
+    const contact = readKnownContact()
     // Pre-open the tab inside the click gesture so popup blockers allow it.
     const handoffWindow = window.open('', '_blank', 'noopener')
     try {
@@ -92,9 +117,9 @@ export function InterimCheckoutHandoff({ items }: { items: CartItem[] }) {
         channel: state.channel,
         paymentMethod: chosenMethod.id,
         locale,
-        contact: readKnownContact(),
+        contact,
       })
-      const message = buildHandoffMessage({ reference: order.reference, items, paymentMethod: chosenMethod.id, locale })
+      const message = buildHandoffMessage({ reference: order.reference, items, paymentMethod: chosenMethod.id, locale, contact })
       let copied = false
       if (state.channel === 'instagram') copied = await copyText(message)
       const url = state.channel === 'whatsapp' ? buildWhatsAppHandoffUrl(message) : buildInstagramDmUrl()
