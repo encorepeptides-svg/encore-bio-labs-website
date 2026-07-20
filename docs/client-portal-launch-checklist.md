@@ -71,6 +71,9 @@ Use a dedicated test-client address, not a real client's identity.
 - [ ] Approve the final Terms, Privacy Notice, research-use acknowledgments, consent
   copy, retention schedule, deletion/export procedure, and incident response plan.
 - [ ] Replace placeholder consent body hashes with hashes of the approved versions.
+      Draft consent documents live in `docs/consents/`; after approving them
+      (`status: approved`), run `node scripts/generate-consent-hashes.mjs` and
+      apply the emitted SQL. See `docs/consents/README.md`.
 - [ ] Review Supabase, SMTP, monitoring, and storage vendors for data handling,
   retention, subprocessors, security terms, and incident notification.
 - [ ] Document how orders and documents are entered and who may assign them.
