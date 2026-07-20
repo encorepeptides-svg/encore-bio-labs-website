@@ -35,7 +35,7 @@ export type ReviewIntakeValidationIssue = {
   code: 'required' | 'consent-reference' | 'incentive-disclosure'
 }
 
-export function createEmptyReviewIntake(): ReviewIntakeFormState {
+export function createEmptyReviewIntake(submissionDate = new Date().toISOString().slice(0, 10)): ReviewIntakeFormState {
   return {
     displayName: '',
     reviewTitle: '',
@@ -43,7 +43,7 @@ export function createEmptyReviewIntake(): ReviewIntakeFormState {
     productName: '',
     rating: '',
     category: 'service',
-    submissionDate: '',
+    submissionDate,
     verifiedPurchase: 'unknown',
     sourceRecordReference: '',
     verificationNotes: '',
@@ -59,12 +59,8 @@ export function createEmptyReviewIntake(): ReviewIntakeFormState {
 export function validateReviewIntake(form: ReviewIntakeFormState): ReviewIntakeValidationIssue[] {
   const requiredFields: ReviewIntakeField[] = [
     'displayName',
-    'reviewTitle',
     'quote',
-    'productName',
     'rating',
-    'submissionDate',
-    'sourceRecordReference',
   ]
   const issues = requiredFields
     .filter((field) => typeof form[field] === 'string' && String(form[field]).trim().length === 0)

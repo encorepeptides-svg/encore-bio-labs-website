@@ -26,18 +26,18 @@ const completeForm: ReviewIntakeFormState = {
 }
 
 describe('review intake', () => {
-  it('requires the review and its source reference before saving', () => {
-    const issues = validateReviewIntake(createEmptyReviewIntake())
+  it('requires only a name, review, and rating for quick entry', () => {
+    const issues = validateReviewIntake(createEmptyReviewIntake('2026-07-19'))
 
     expect(issues.map((issue) => issue.field)).toEqual([
       'displayName',
-      'reviewTitle',
       'quote',
-      'productName',
       'rating',
-      'submissionDate',
-      'sourceRecordReference',
     ])
+  })
+
+  it('defaults the submission date so it does not have to be entered manually', () => {
+    expect(createEmptyReviewIntake('2026-07-20').submissionDate).toBe('2026-07-20')
   })
 
   it('requires supporting text for checked consent and provided incentives', () => {
