@@ -16,6 +16,10 @@ function requireSupabase() {
   return supabase
 }
 
+function localizedAuthPath(path: string) {
+  return `${window.location.origin}${window.location.pathname.startsWith('/es/') ? '/es' : ''}${path}`
+}
+
 export async function loadPortalIdentity(): Promise<PortalIdentity | null> {
   const client = requireSupabase()
   const { data: userData, error: userError } = await client.auth.getUser()
@@ -39,14 +43,14 @@ export async function registerPortalAccount(input: { legalName: string; email: s
     email: input.email,
     password: input.password,
     options: {
-      emailRedirectTo: `${window.location.origin}/client-login?verified=1`,
+      emailRedirectTo: `${localizedAuthPath('/client-login')}?verified=1`,
       data: { legal_name: input.legalName, preferred_name: input.legalName.split(' ')[0] ?? '', mobile: input.mobile, preferred_language: input.preferredLanguage },
     },
   })
 }
 
 export async function requestPasswordReset(email: string) {
-  return requireSupabase().auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/client-reset-password` })
+  return requireSupabase().auth.resetPasswordForEmail(email, { redirectTo: localizedAuthPath('/client-reset-password') })
 }
 
 export async function updatePortalPassword(password: string) {

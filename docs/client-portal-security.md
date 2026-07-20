@@ -21,7 +21,7 @@ Supabase Auth manages passwords, verification, recovery, refresh tokens, and ses
 
 ## Storage model
 
-`client-documents` and `progress-photos` must be private buckets. Access uses authenticated, short-lived signed URLs created by an Edge Function after ownership/role checks. Uploads require type/size validation, randomized paths, quarantine status, and a malware-scanning integration before release.
+`client-documents` is a private bucket. Active assignments authorize authenticated, short-lived signed URLs through storage RLS. `progress-photos` must remain disabled until its private bucket, explicit consent, type/size validation, randomized paths, quarantine status, malware scanning, staff-view authorization, and access logging are implemented together.
 
 ## Logging policy
 
@@ -41,10 +41,11 @@ Review Supabase, email delivery, malware scanning, monitoring, analytics, and an
 
 ## Remaining production work
 
-- Apply and review migrations in a staging Supabase project.
-- Configure redirect allowlists and transactional email templates.
-- Implement Edge Functions for privileged actions, signed URLs, rate limits, role changes, and staff MFA enforcement.
-- Create and policy-test private buckets.
-- Add integration tests against staging, dependency/secret scanning, CSP and secure headers.
+- Apply and review all migrations in production after a staging rehearsal.
+- Configure redirect allowlists, a production SMTP provider, transactional email templates, rate limits, bot protection, and staff MFA enforcement.
+- Add a privileged workflow for role changes and fulfillment/document operations rather than exposing those writes to the browser.
+- Policy-test private assigned-document storage against two-client and revoked-assignment cases.
+- Add full integration tests against staging, dependency/secret scanning, CSP and secure headers.
 - Complete accessibility, legal/privacy, retention, backup, vendor, and incident-response reviews.
-- The Phase 1 UI and RLS foundation are not by themselves a claim of HIPAA compliance or complete production security.
+- Implement progress-photo quarantine and scanning before enabling uploads.
+- This portal is not by itself a claim of HIPAA compliance or complete production security.
