@@ -5,6 +5,7 @@ import {
   type TestimonialPublicationReadiness,
 } from '../../data/socialProof/adminReadiness'
 import type { ContentStatus, PagePlacement } from '../../data/socialProof/types'
+import { ReviewIntakeForm } from './ReviewIntakeForm'
 
 /**
  * Content-admin panel for testimonials and before/after transformation media.
@@ -65,11 +66,22 @@ function useCollection(table: 'testimonials' | 'transformation_media') {
     [reload, table],
   )
 
-  const create = useCallback(async () => {
-    if (!supabase) return
-    const { error: insertError } = await supabase.from(table).insert({ status: 'draft', sort_order: rows.length })
-    if (insertError) setError(insertError.message)
-    else await reload()
+  const create = useCallback(async (payload: Record<string, unknown> = {}) => {
+    if (!supabase) {
+      setError('Supabase is not configured in this environment.')
+      return false
+    }
+    const { error: insertError } = await supabase.from(table).insert({
+      ...payload,
+      status: 'draft',
+      sort_order: rows.length,
+    })
+    if (insertError) {
+      setError(insertError.message)
+      return false
+    }
+    await reload()
+    return true
   }, [reload, rows.length, table])
 
   return { rows, loading, error, reload, update, create }
@@ -204,9 +216,7 @@ function TestimonialsPanel() {
 
   return (
     <div className="space-y-4">
-      <button type="button" onClick={() => void create()} className="rounded-full bg-teal-700 px-4 py-2 text-sm font-semibold text-white">
-        + New testimonial (draft)
-      </button>
+      <ReviewIntakeForm onCreate={create} />
       {loading ? <p className="text-sm text-slate-500">Loading…</p> : null}
       {error ? <p role="alert" className="text-sm text-red-700">{error}</p> : null}
       {rows.map((row) => {
