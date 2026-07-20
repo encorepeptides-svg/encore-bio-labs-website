@@ -1,0 +1,41 @@
+<!-- Supabase Auth template: "Confirm sign up". Paste into
+     Authentication → Emails → Templates → Confirm sign up.
+     Suggested subject: Verify your email | Verifica tu correo — Encore Bio Labs -->
+<div style="margin:0 auto;max-width:560px;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#071724;padding:32px 24px;">
+  <p style="font-size:20px;font-weight:700;margin:0;">encore <span style="color:#0f766e;">bio labs</span></p>
+
+  <h1 style="font-size:22px;margin:28px 0 0;">Verify your email</h1>
+  <p style="font-size:15px;line-height:1.6;color:#334155;margin:12px 0 0;">
+    Thanks for creating your Encore Bio Labs client account. Confirm this email
+    address to continue with onboarding. Full portal access is granted after
+    verification and account review.
+  </p>
+
+  <h2 style="font-size:18px;margin:24px 0 0;">Verifica tu correo electrónico</h2>
+  <p style="font-size:15px;line-height:1.6;color:#334155;margin:12px 0 0;">
+    Gracias por crear tu cuenta de cliente de Encore Bio Labs. Confirma esta
+    dirección de correo para continuar con tu registro. El acceso completo al
+    portal se otorga después de la verificación y la revisión de tu cuenta.
+  </p>
+
+  <p style="margin:28px 0;">
+    <a href="{{ .ConfirmationURL }}"
+       style="display:inline-block;background:#071724;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:14px 28px;border-radius:999px;">
+      Verify email · Verificar correo
+    </a>
+  </p>
+
+  <p style="font-size:13px;line-height:1.6;color:#64748b;margin:0;">
+    If the button does not work, copy this link into your browser · Si el botón
+    no funciona, copia este enlace en tu navegador:<br>
+    <a href="{{ .ConfirmationURL }}" style="color:#0f766e;word-break:break-all;">{{ .ConfirmationURL }}</a>
+  </p>
+
+  <hr style="border:none;border-top:1px solid #e2e8f0;margin:28px 0;">
+  <p style="font-size:12px;line-height:1.6;color:#94a3b8;margin:0;">
+    Questions · Preguntas: <a href="https://encorebiolabs.com/contact" style="color:#0f766e;">encorebiolabs.com/contact</a><br>
+    If you did not create this account, you can ignore this email · Si no
+    creaste esta cuenta, puedes ignorar este correo.<br>
+    For Research Use Only (RUO) · Uso exclusivo para investigación (RUO).
+  </p>
+</div>
