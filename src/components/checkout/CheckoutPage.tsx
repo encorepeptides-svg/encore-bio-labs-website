@@ -10,6 +10,7 @@ import { cn } from '../../lib/utils'
 import { EncoreCompleteKit } from '../EncoreCompleteKit'
 import { LanguageSelector } from '../LanguageSelector'
 import { InterimCheckoutHandoff } from '../cart/InterimCheckoutHandoff'
+import { PaymentRequestMethods } from '../cart/PaymentRequestMethods'
 
 function useCheckoutStages() {
   const { t } = useTranslation('checkout')
@@ -235,6 +236,7 @@ export function CheckoutPage() {
           <div className="mt-8 w-full text-left">
             <InterimCheckoutHandoff items={summaryItems} />
           </div>
+          <PaymentRequestMethods items={summaryItems} />
           <a href={path('/cart')} className="mt-3 text-sm font-semibold text-slate-600 hover:text-[#071724]">{t('returnToCart')}</a>
           <div className="mt-10 w-full">
             <EncoreCompleteKit variant="checkout" />

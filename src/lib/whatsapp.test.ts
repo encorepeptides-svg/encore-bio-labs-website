@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildCartOrderMessage, buildEscalationMessage, buildOrderInquiryMessage, buildWhatsAppUrl, getGeneralInquiryMessage } from './whatsapp'
+import { buildCartOrderMessage, buildCartPaymentRequestMessage, buildEscalationMessage, buildOrderInquiryMessage, buildWhatsAppUrl, getGeneralInquiryMessage } from './whatsapp'
 
 describe('WhatsApp message localization', () => {
   it('builds an English order inquiry message by default', () => {
@@ -33,6 +33,17 @@ describe('WhatsApp message localization', () => {
     expect(en).toContain('× 2')
     expect(es).toContain('× 2')
     expect(en).not.toBe(es)
+  })
+
+  it('requests payment instructions through WhatsApp without claiming that a method is available', () => {
+    const message = buildCartPaymentRequestMessage({
+      items: [{ productName: 'BPC-157', variantLabel: '5mg', quantity: 1 }],
+      subtotal: '$60.00',
+      method: 'Zelle',
+      locale: 'en',
+    })
+    expect(message).toContain('Could you confirm whether Zelle is available')
+    expect(message).toContain('$60.00')
   })
 
   it('returns a locale-matched general inquiry message', () => {

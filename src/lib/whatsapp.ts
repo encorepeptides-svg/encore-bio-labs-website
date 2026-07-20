@@ -134,6 +134,24 @@ export function buildCartOrderMessage({
   ].join('\n')
 }
 
+export function buildCartPaymentRequestMessage({
+  items,
+  subtotal,
+  method,
+  locale = 'en',
+}: {
+  items: Array<{ productName: string; variantLabel: string; quantity: number; purchaseType?: string; packSize?: number; kitIncluded?: boolean }>
+  subtotal: string
+  method: string
+  locale?: Locale
+}) {
+  const request = locale === 'es'
+    ? `¿Podrían confirmar si ${method} está disponible para este pedido y enviarme las instrucciones o la solicitud de pago correcta?`
+    : `Could you confirm whether ${method} is available for this order and send the correct payment instructions or payment request?`
+
+  return `${buildCartOrderMessage({ items, subtotal, locale })}\n\n${request}`
+}
+
 export function getGeneralInquiryMessage(locale: Locale = 'en') {
   return locale === 'es'
     ? 'Hola Encore Bio Labs, tengo una pregunta sobre su catálogo de investigación.'
