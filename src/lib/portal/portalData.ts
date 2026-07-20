@@ -100,18 +100,19 @@ export async function fetchThreadMessages(threadId: string): Promise<SupportMess
   return (data ?? []) as SupportMessage[]
 }
 
-export async function createSupportThread(userId: string, input: { category: string; subject: string; message: string }) {
-  const { data, error } = await db().from('support_threads').insert({ user_id: userId, category: input.category, subject: input.subject }).select('id').single()
+export async function createSupportThread(_userId: string, input: { category: string; subject: string; message: string }) {
+  const { data, error } = await db().rpc('create_portal_support_thread', {
+    thread_subject: input.subject,
+    thread_category: input.category,
+    initial_message: input.message,
+  })
   if (error) throw error
-  const { error: messageError } = await db().from('support_messages').insert({ thread_id: data.id, author_id: userId, message: input.message })
-  if (messageError) throw messageError
-  return data.id as string
+  return data as string
 }
 
 export async function sendSupportMessage(threadId: string, authorId: string, message: string) {
   const { error } = await db().from('support_messages').insert({ thread_id: threadId, author_id: authorId, message })
   if (error) throw error
-  await db().from('support_threads').update({ updated_at: new Date().toISOString() }).eq('id', threadId)
 }
 
 export async function fetchNotifications(): Promise<PortalNotification[]> {
@@ -185,18 +186,19 @@ export async function adminFetchApplications(): Promise<AdminApplicationRow[]> {
   return (data ?? []) as unknown as AdminApplicationRow[]
 }
 
-export async function adminDecideApplication(adminId: string, clientId: string, decision: 'approved' | 'rejected' | 'corrections_requested', notification: { title: string; body: string }) {
-  const client = db()
-  const { error } = await client.from('onboarding_profiles').update({ decision, decision_at: new Date().toISOString(), decision_by: adminId }).eq('user_id', clientId)
+export async function adminDecideApplication(
+  _adminId: string,
+  clientId: string,
+  decision: 'approved' | 'rejected' | 'corrections_requested',
+  _notification: { title: string; body: string },
+  reason = '',
+) {
+  const { error } = await db().rpc('review_portal_application', {
+    target_user_id: clientId,
+    application_result: decision,
+    decision_reason: reason,
+  })
   if (error) throw error
-  const status = decision === 'approved' ? 'active' : decision === 'rejected' ? 'archived' : 'onboarding_incomplete'
-  const { error: statusError } = await client.from('client_statuses').update({ status, updated_at: new Date().toISOString(), updated_by: adminId }).eq('user_id', clientId)
-  if (statusError) throw statusError
-  if (decision === 'corrections_requested') {
-    await client.from('onboarding_profiles').update({ submitted_at: null }).eq('user_id', clientId)
-  }
-  await client.from('notifications').insert({ user_id: clientId, type: 'application', title: notification.title, body: notification.body, action_path: '/portal' })
-  await client.from('audit_logs').insert({ actor_id: adminId, actor_role: 'admin', event_type: `application_${decision}`, resource_type: 'onboarding_profile', resource_id: clientId })
 }
 
 export async function adminSetClientStatus(adminId: string, clientId: string, status: string) {
@@ -265,6 +267,8 @@ export async function adminSaveProtocol(adminId: string, input: { id?: string; u
 
 export async function adminUploadDocument(adminId: string, input: { file: File; title: string; category: string; version: string; userId: string }, notification: { title: string; body: string }) {
   const client = db()
+  if (!input.file.name.toLowerCase().endsWith('.pdf') || (input.file.type && input.file.type !== 'application/pdf')) throw new Error('Only PDF documents are allowed.')
+  if (input.file.size > 10 * 1024 * 1024) throw new Error('The document exceeds the 10 MB limit.')
   const safeName = input.file.name.replaceAll(/[^\w.-]/g, '_')
   const storagePath = `${input.userId}/${Date.now()}-${safeName}`
   const { error: uploadError } = await client.storage.from('portal-documents').upload(storagePath, input.file, { contentType: input.file.type || 'application/octet-stream' })

@@ -16,9 +16,9 @@ describe('client portal launch migration', () => {
   })
 
   it('keeps assigned client documents private', () => {
-    expect(migration).toContain("values('client-documents', 'client-documents', false")
+    expect(migration).toContain("values('portal-documents', 'portal-documents', false")
     expect(migration).toContain('clients read assigned portal documents')
     expect(migration).toContain('a.user_id = auth.uid()')
-    expect(migration).not.toContain("values('client-documents', 'client-documents', true")
+    expect(migration).not.toContain("values('portal-documents', 'portal-documents', true")
   })
 })

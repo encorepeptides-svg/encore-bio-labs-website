@@ -10,7 +10,7 @@ export function SupportSection() {
   const { identity } = usePortalAuth()
   const { data, loading, error, reload } = useAsync(fetchMyThreads)
   const [activeThread, setActiveThread] = useState<SupportThread | null>(null)
-  const [form, setForm] = useState({ category: 'orders', subject: '', message: '' })
+  const [form, setForm] = useState({ category: 'order', subject: '', message: '' })
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
 
@@ -20,7 +20,7 @@ export function SupportSection() {
     setFormError(''); setSaving(true)
     try {
       await createSupportThread(identity.user.id, form)
-      setForm({ category: 'orders', subject: '', message: '' })
+      setForm({ category: 'order', subject: '', message: '' })
       reload()
     } catch { setFormError(t('saveError')) } finally { setSaving(false) }
   }
@@ -34,7 +34,7 @@ export function SupportSection() {
       <h2 className="text-lg font-semibold">{t('supportNewRequest')}</h2>
       <form onSubmit={submit} className="mt-4 grid gap-4">
         <div className="grid gap-4 sm:grid-cols-2">
-          <FieldLabel label={t('supportCategory')}><select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="portal-input"><option value="orders">{t('supportCategoryOrders')}</option><option value="documents">{t('supportCategoryDocuments')}</option><option value="account">{t('supportCategoryAccount')}</option><option value="other">{t('supportCategoryOther')}</option></select></FieldLabel>
+          <FieldLabel label={t('supportCategory')}><select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="portal-input"><option value="order">{t('supportCategoryOrders')}</option><option value="document">{t('supportCategoryDocuments')}</option><option value="account">{t('supportCategoryAccount')}</option><option value="other">{t('supportCategoryOther')}</option></select></FieldLabel>
           <FieldLabel label={t('supportSubject')}><input required value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} className="portal-input" /></FieldLabel>
         </div>
         <FieldLabel label={t('supportMessage')}><textarea required rows={4} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="portal-input" /></FieldLabel>

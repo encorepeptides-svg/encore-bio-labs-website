@@ -21,7 +21,7 @@ Supabase Auth manages passwords, verification, recovery, refresh tokens, and ses
 
 ## Storage model
 
-`client-documents` is a private bucket. Active assignments authorize authenticated, short-lived signed URLs through storage RLS. `progress-photos` must remain disabled until its private bucket, explicit consent, type/size validation, randomized paths, quarantine status, malware scanning, staff-view authorization, and access logging are implemented together.
+`portal-documents` is a private, PDF-only bucket. Active assignments authorize authenticated, short-lived signed URLs through storage RLS. `progress-photos` must remain disabled until its private bucket, explicit consent, type/size validation, randomized paths, quarantine status, malware scanning, staff-view authorization, and access logging are implemented together.
 
 ## Logging policy
 

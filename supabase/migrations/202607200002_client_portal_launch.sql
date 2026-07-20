@@ -56,12 +56,16 @@ declare
   next_status public.client_account_status;
   notification_title text;
   notification_body text;
+  client_language text;
 begin
   if auth.uid() is null or not public.portal_is_admin() then
     raise exception 'administrator authorization required';
   end if;
   if application_result not in ('approved', 'rejected', 'corrections_requested') then
     raise exception 'unsupported application decision';
+  end if;
+  if application_result <> 'approved' and length(btrim(decision_reason)) < 3 then
+    raise exception 'a decision reason is required';
   end if;
   if not exists (
     select 1 from public.onboarding_profiles
@@ -75,16 +79,34 @@ begin
     when 'corrections_requested' then 'onboarding_incomplete'::public.client_account_status
     else 'suspended'::public.client_account_status
   end;
-  notification_title := case application_result
-    when 'approved' then 'Your Encore portal account is active'
-    when 'corrections_requested' then 'Your application needs an update'
-    else 'Application decision available'
-  end;
-  notification_body := case application_result
-    when 'approved' then 'You can now use the authenticated client portal.'
-    when 'corrections_requested' then 'Sign in to review and update your account information.'
-    else 'Contact Encore account support if you have questions about this decision.'
-  end;
+  select lower(coalesce(preferred_language, 'english'))
+    into client_language
+    from public.profiles
+    where id = target_user_id;
+
+  if client_language like 'spanish%' or client_language like 'es%' then
+    notification_title := case application_result
+      when 'approved' then 'Tu cuenta del portal Encore está activa'
+      when 'corrections_requested' then 'Tu solicitud necesita una actualización'
+      else 'Hay una decisión sobre tu solicitud'
+    end;
+    notification_body := case application_result
+      when 'approved' then 'Ya puedes usar el portal autenticado para clientes.'
+      when 'corrections_requested' then 'Inicia sesión para revisar, actualizar y reenviar tu información.'
+      else 'Comunícate con soporte de cuentas de Encore si tienes preguntas sobre esta decisión.'
+    end;
+  else
+    notification_title := case application_result
+      when 'approved' then 'Your Encore portal account is active'
+      when 'corrections_requested' then 'Your application needs an update'
+      else 'Application decision available'
+    end;
+    notification_body := case application_result
+      when 'approved' then 'You can now use the authenticated client portal.'
+      when 'corrections_requested' then 'Sign in to review, update, and resubmit your information.'
+      else 'Contact Encore account support if you have questions about this decision.'
+    end;
+  end if;
 
   update public.onboarding_profiles
     set decision = application_result,
@@ -110,7 +132,11 @@ begin
       'application_decision',
       notification_title,
       notification_body,
-      case when application_result = 'approved' then '/portal' else '/portal/security' end,
+      case application_result
+        when 'approved' then '/portal'
+        when 'corrections_requested' then '/portal/intake'
+        else '/portal/support'
+      end,
       jsonb_build_object('decision', application_result)
     );
 
@@ -227,15 +253,15 @@ create unique index if not exists data_export_requests_one_open_idx
 
 -- Assigned documents stay private. Clients can only create short-lived signed
 -- URLs for active assignments; content administrators manage the objects.
-insert into storage.buckets(id, name, public, file_size_limit)
-  values('client-documents', 'client-documents', false, 26214400)
-  on conflict (id) do update set public = false, file_size_limit = excluded.file_size_limit;
+insert into storage.buckets(id, name, public, file_size_limit, allowed_mime_types)
+  values('portal-documents', 'portal-documents', false, 10485760, array['application/pdf']::text[])
+  on conflict (id) do update set public = false, file_size_limit = excluded.file_size_limit, allowed_mime_types = excluded.allowed_mime_types;
 
 drop policy if exists "clients read assigned portal documents" on storage.objects;
 create policy "clients read assigned portal documents" on storage.objects
   for select to authenticated
   using (
-    bucket_id = 'client-documents'
+    bucket_id = 'portal-documents'
     and (
       public.portal_is_admin()
       or exists (
@@ -253,15 +279,15 @@ create policy "clients read assigned portal documents" on storage.objects
 drop policy if exists "admins insert portal documents" on storage.objects;
 create policy "admins insert portal documents" on storage.objects
   for insert to authenticated
-  with check (bucket_id = 'client-documents' and public.portal_is_admin());
+  with check (bucket_id = 'portal-documents' and public.portal_is_admin());
 
 drop policy if exists "admins update portal documents" on storage.objects;
 create policy "admins update portal documents" on storage.objects
   for update to authenticated
-  using (bucket_id = 'client-documents' and public.portal_is_admin())
-  with check (bucket_id = 'client-documents' and public.portal_is_admin());
+  using (bucket_id = 'portal-documents' and public.portal_is_admin())
+  with check (bucket_id = 'portal-documents' and public.portal_is_admin());
 
 drop policy if exists "admins delete portal documents" on storage.objects;
 create policy "admins delete portal documents" on storage.objects
   for delete to authenticated
-  using (bucket_id = 'client-documents' and public.portal_is_admin());
+  using (bucket_id = 'portal-documents' and public.portal_is_admin());

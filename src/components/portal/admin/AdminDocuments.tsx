@@ -36,7 +36,7 @@ export function AdminDocuments() {
         <FieldLabel label={t('adminDocumentTitle')}><input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="portal-input" /></FieldLabel>
         <FieldLabel label={t('adminDocumentCategory')}><select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="portal-input"><option value="coa">{t('adminDocumentCategoryCoa')}</option><option value="handling">{t('adminDocumentCategoryHandling')}</option><option value="report">{t('adminDocumentCategoryReport')}</option><option value="other">{t('supportCategoryOther')}</option></select></FieldLabel>
         <FieldLabel label={t('adminDocumentVersion')}><input value={form.version} onChange={(e) => setForm({ ...form, version: e.target.value })} className="portal-input" /></FieldLabel>
-        <FieldLabel label={t('adminDocumentFile')}><input required type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="portal-input !py-3" /></FieldLabel>
+        <FieldLabel label={t('adminDocumentFile')}><input required type="file" accept="application/pdf,.pdf" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="portal-input !py-3" /></FieldLabel>
         {message === 'error' ? <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-800 sm:col-span-2">{t('saveError')}</p> : null}
         {message === 'saved' ? <p role="status" className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800 sm:col-span-2">{t('adminDocumentSaved')}</p> : null}
         <div className="sm:col-span-2"><SubmitButton loading={saving} label={t('adminUploadDocument')} loadingLabel={t('submitting')} /></div>
