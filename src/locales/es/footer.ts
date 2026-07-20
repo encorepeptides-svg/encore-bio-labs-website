@@ -12,6 +12,7 @@ export const footer = {
   kits: 'Kits',
   documentation: 'Documentación',
   faq: 'Preguntas frecuentes',
+  clientPortal: 'Portal de clientes',
   website: 'Sitio web: encorebiolabs.com',
   instagram: 'Instagram: @encorebiolabs',
   whatsapp: 'WhatsApp: 9153595448',

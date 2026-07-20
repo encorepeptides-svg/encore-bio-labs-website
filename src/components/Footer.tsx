@@ -17,6 +17,7 @@ export function Footer() {
     { label: t('kits'), href: '/kits' },
     { label: t('documentation'), href: '/quality' },
     { label: t('faq'), href: '/faq' },
+    { label: t('clientPortal'), href: '/client-login' },
   ]
 
   const contactLinks = [

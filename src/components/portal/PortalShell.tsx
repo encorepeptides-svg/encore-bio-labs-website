@@ -1,4 +1,4 @@
-import { Bell, Calculator, ClipboardCheck, FileText, Gauge, Headphones, LogOut, Package, ShieldCheck, TrendingUp, UserRound } from 'lucide-react'
+import { Bell, Calculator, ClipboardCheck, ClipboardList, FileText, FlaskConical, Gauge, Headphones, LogOut, Package, ShieldCheck, TrendingUp, UserRound } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { usePortalAuth } from '../../context/usePortalAuth'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
@@ -9,12 +9,13 @@ export function PortalShell({ children, admin = false }: { children: ReactNode; 
   const { path } = useLocale()
   const { t } = useTranslation('portal')
   const clientNav = [
-    ['/portal', t('navOverview'), Gauge], ['/portal/progress', t('navProgress'), TrendingUp], ['/portal/check-ins', t('navCheckIns'), ClipboardCheck],
-    ['/portal/calculators', t('navCalculators'), Calculator], ['/portal/orders', t('navOrders'), Package], ['/portal/documents', t('navDocuments'), FileText],
+    ['/portal', t('navOverview'), Gauge], ['/portal/orders', t('navOrders'), Package], ['/portal/intake', t('navIntake'), ClipboardList], ['/portal/protocols', t('navProtocols'), FlaskConical],
+    ['/portal/progress', t('navProgress'), TrendingUp], ['/portal/check-ins', t('navCheckIns'), ClipboardCheck],
+    ['/portal/calculators', t('navCalculators'), Calculator], ['/portal/documents', t('navDocuments'), FileText],
     ['/portal/support', t('navSupport'), Headphones], ['/portal/notifications', t('navNotifications'), Bell], ['/portal/profile', t('navProfile'), UserRound], ['/portal/security', t('navSecurity'), ShieldCheck],
   ] as const
   const portalPath = window.location.pathname
-  const adminNav = [['/admin',t('adminNavOverview')],['/admin/applications',t('adminNavApplications')],['/admin/content',t('adminNavContent')],['/admin/clients',t('adminNavClients')],['/admin/orders',t('adminNavOrders')],['/admin/documents',t('adminNavDocuments')],['/admin/support',t('adminNavSupport')],['/admin/audit-log',t('adminNavAudit')],['/admin/settings',t('adminNavSettings')]] as const
+  const adminNav = [['/admin',t('adminNavOverview')],['/admin/applications',t('adminNavApplications')],['/admin/clients',t('adminNavClients')],['/admin/orders',t('adminNavOrders')],['/admin/protocols',t('adminNavProtocols')],['/admin/documents',t('adminNavDocuments')],['/admin/support',t('adminNavSupport')],['/admin/content',t('adminNavContent')],['/admin/audit-log',t('adminNavAudit')],['/admin/settings',t('adminNavSettings')]] as const
   const nav = admin ? adminNav : clientNav
   const statusKey = identity ? ({
     unverified: 'accountStatusUnverified',

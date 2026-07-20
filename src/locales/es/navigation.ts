@@ -15,4 +15,5 @@ export const navigation = {
   homeAriaLabel: 'Ir al inicio de Encore Bio Labs',
   searchProducts: 'Buscar productos',
   closeSearch: 'Cerrar búsqueda de productos',
+  clientLogin: 'Acceso de clientes',
 } satisfies Record<keyof typeof navigationEn, string>

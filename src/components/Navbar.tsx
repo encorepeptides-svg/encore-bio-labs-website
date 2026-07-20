@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { Menu, Search, X } from 'lucide-react'
+import { Menu, Search, UserRound, X } from 'lucide-react'
 import { lazy, Suspense, useEffect, useRef, useState, type MouseEvent } from 'react'
 import logo from '../assets/images/logo/encore-logo.png'
 import { stripLocalePrefix } from '../i18n/config'
@@ -170,6 +170,14 @@ export function Navbar() {
             <Search size={17} aria-hidden="true" />
           </button>
           <LanguageSelector variant="nav" />
+          <a
+            href={path('/client-login')}
+            aria-label={t('clientLogin')}
+            title={t('clientLogin')}
+            className="inline-flex size-9 items-center justify-center rounded-full text-slate-600 transition hover:bg-white hover:text-[#071724] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+          >
+            <UserRound size={17} aria-hidden="true" />
+          </a>
           <CartNavButton />
           <a
             href={path('/intake')}
@@ -242,6 +250,14 @@ export function Navbar() {
                   </a>
                 ))}
               </div>
+              <a
+                href={path('/client-login')}
+                onClick={() => setIsMenuOpen(false)}
+                className="mt-1 flex items-center gap-3 rounded-xl px-4 py-3 text-base font-semibold text-[#071724] transition hover:bg-white"
+              >
+                <UserRound size={18} aria-hidden="true" className="text-teal-700" />
+                {t('clientLogin')}
+              </a>
               <div className="mt-4 flex justify-center">
                 <LanguageSelector variant="mobile" />
               </div>

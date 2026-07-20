@@ -13,4 +13,5 @@ export const navigation = {
   homeAriaLabel: 'Encore Bio Labs home',
   searchProducts: 'Search products',
   closeSearch: 'Close product search',
+  clientLogin: 'Client Login',
 } as const
