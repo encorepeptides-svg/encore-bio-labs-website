@@ -21,7 +21,7 @@ export function AdminStorefront() {
     finally { setBusy('') }
   }
 
-  const rows = (data ?? []).filter((order) => showAll || order.status === 'pending_payment')
+  const rows = (data ?? []).filter((order) => showAll || ['review_required', 'quote_pending', 'pending_payment'].includes(order.status))
 
   return <>
     <p className="mt-4 max-w-2xl leading-7 text-slate-600">{t('adminStorefrontIntro')}</p>
@@ -49,12 +49,13 @@ export function AdminStorefront() {
               <td className="px-5 py-3">
                 <p className="font-mono font-semibold">{order.order_reference}</p>
                 <p className="mt-1 max-w-56 text-xs text-slate-500">{order.items.map((item) => `${item.quantity}x ${item.product} ${item.variant}`).join(', ')}</p>
+                <p className="mt-1 text-xs font-semibold text-teal-800">{order.destination_type.replaceAll('_', ' ')}</p>
               </td>
               <td className="px-5 py-3 text-slate-500">{formatDate(order.created_at, true)}</td>
               <td className="px-5 py-3 capitalize text-slate-600">{order.channel}</td>
               <td className="px-5 py-3 text-slate-600">{order.payment_method.replaceAll('_', ' ')}</td>
               <td className="px-5 py-3 text-slate-600">{contact || '—'}</td>
-              <td className="px-5 py-3 font-semibold">{formatMoney(order.subtotal_cents)}</td>
+              <td className="px-5 py-3 font-semibold">{order.total_cents === null ? `${formatMoney(order.subtotal_cents)} + review` : formatMoney(order.total_cents)}</td>
               <td className="px-5 py-3"><Badge tone={statusTone(order.status === 'pending_payment' ? 'pending' : order.status)}>{order.status.replaceAll('_', ' ')}</Badge></td>
               <td className="px-5 py-3">
                 {order.status === 'pending_payment' ? <div className="flex flex-wrap gap-2">

@@ -5,7 +5,6 @@ import { purchaseTypeLabel } from '../../i18n/displayLabels'
 import { formatCartCurrency } from '../../lib/cart'
 import { EncoreCompleteKit } from '../EncoreCompleteKit'
 import { ProductImage } from '../ProductImage'
-import { InterimCheckoutHandoff } from './InterimCheckoutHandoff'
 
 export function CartPage() {
   const { items, itemCount, subtotal, updateQuantity, removeFromCart, clearCart } = useCart()
@@ -97,7 +96,7 @@ export function CartPage() {
               </div>
               <p className="mt-4 text-sm leading-6 text-slate-500">{t('shippingNote')}</p>
               <a href={path('/checkout')} className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition hover:bg-teal-700">{t('continueToOrder')}</a>
-              <InterimCheckoutHandoff items={items} />
+              <a href={path('/legal/shipping-returns')} className="mt-3 inline-flex min-h-11 w-full items-center justify-center text-sm font-semibold text-teal-800 transition hover:text-[#071724]">{t('reviewShippingDelivery')}</a>
               <a href={path('/catalog')} className="mt-3 inline-flex min-h-11 w-full items-center justify-center text-sm font-semibold text-slate-600 transition hover:text-[#071724]">{t('continueBrowsing')}</a>
               <div className="mt-6 rounded-2xl bg-[#f8fafc] p-4">
                 <p className="flex items-center gap-2 text-sm font-semibold text-[#071724]"><PackageCheck size={16} aria-hidden="true" className="text-teal-700" />{t('kitSelectionsShown')}</p>

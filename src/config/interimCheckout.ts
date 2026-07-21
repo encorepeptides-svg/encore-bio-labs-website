@@ -12,7 +12,7 @@ export const BUSINESS_WHATSAPP_PHONE = (import.meta.env.VITE_WHATSAPP_PHONE as s
 // Instagram business username, no @ (used in https://ig.me/m/<username>).
 export const BUSINESS_INSTAGRAM_USERNAME = (import.meta.env.VITE_INSTAGRAM_USERNAME as string | undefined)?.replace(/^@/, '') || 'encorebiolabs'
 
-export type InterimPaymentMethodId = 'bank_transfer' | 'paypal' | 'venmo' | 'cashapp' | 'cash_on_delivery'
+export type InterimPaymentMethodId = 'bank_transfer' | 'paypal' | 'venmo' | 'cashapp' | 'cash_on_delivery' | 'manual_review'
 
 export type InterimPaymentMethod = {
   id: InterimPaymentMethodId

@@ -6,6 +6,7 @@ export const navigation = {
   about: 'Nosotros',
   faq: 'Preguntas frecuentes',
   contact: 'Contacto',
+  shippingDelivery: 'Envíos y entregas',
   howItWorks: 'Cómo funciona',
   startYourResearch: 'Inicia tu proceso',
   openMenu: 'Abrir menú',

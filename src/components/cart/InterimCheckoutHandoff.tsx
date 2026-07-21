@@ -3,6 +3,8 @@ import { useMemo, useState } from 'react'
 import { getEnabledPaymentMethods, type InterimPaymentMethod, type InterimPaymentMethodId } from '../../config/interimCheckout'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import type { CartItem } from '../../lib/cart'
+import type { ShippingSelection } from '../../lib/shipping'
+import { shippingSelectionAllowsPayment } from '../../lib/shipping'
 import {
   buildHandoffMessage,
   buildInstagramDmUrl,
@@ -17,6 +19,7 @@ const methodLabelKeys: Record<InterimPaymentMethodId, string> = {
   venmo: 'payVenmo',
   cashapp: 'payCashapp',
   cash_on_delivery: 'payCod',
+  manual_review: 'payManualReview',
 }
 
 // Same key the checkout page uses to remember contact info in this session.
@@ -28,6 +31,8 @@ function readKnownContact() {
       phone?: string
       email?: string
       address?: string
+      streetNumber?: string
+      neighborhood?: string
       address2?: string
       city?: string
       state?: string
@@ -40,8 +45,8 @@ function readKnownContact() {
       name: stored.fullName || '',
       phone: stored.phone || '',
       email: stored.email || '',
-      address: stored.address || '',
-      address2: stored.address2 || '',
+      address: [stored.address, stored.streetNumber].filter(Boolean).join(' '),
+      address2: [stored.neighborhood, stored.address2].filter(Boolean).join(', '),
       city: stored.city || '',
       state: stored.state || '',
       zip: stored.zip || '',
@@ -80,14 +85,17 @@ type HandoffState =
   | { step: 'choose'; channel: HandoffChannel }
   | { step: 'done'; channel: HandoffChannel; reference: string; message: string; method: InterimPaymentMethod; recorded: boolean; copied: boolean }
 
-export function InterimCheckoutHandoff({ items }: { items: CartItem[] }) {
+export function InterimCheckoutHandoff({ items, shipping }: { items: CartItem[]; shipping?: ShippingSelection }) {
   const { t } = useTranslation('cart')
   const { locale } = useLocale()
   const [state, setState] = useState<HandoffState | null>(null)
   const [method, setMethod] = useState<InterimPaymentMethodId | ''>('')
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState(false)
-  const enabledMethods = useMemo(() => getEnabledPaymentMethods(), [])
+  const paymentAllowed = shipping ? shippingSelectionAllowsPayment(shipping) : false
+  const enabledMethods = useMemo<InterimPaymentMethod[]>(() => paymentAllowed
+    ? getEnabledPaymentMethods()
+    : [{ id: 'manual_review', enabled: true, details: [] }], [paymentAllowed])
 
   if (!items.length || !enabledMethods.length) return null
 
@@ -118,14 +126,16 @@ export function InterimCheckoutHandoff({ items }: { items: CartItem[] }) {
         paymentMethod: chosenMethod.id,
         locale,
         contact,
+        shipping,
       })
-      const message = buildHandoffMessage({ reference: order.reference, items, paymentMethod: chosenMethod.id, locale, contact })
+      const effectiveMethod: InterimPaymentMethod = order.reviewRequired ? { id: 'manual_review', enabled: true, details: [] } : chosenMethod
+      const message = buildHandoffMessage({ reference: order.reference, items, paymentMethod: effectiveMethod.id, locale, contact, shipping, totalCents: order.totalCents })
       let copied = false
       if (state.channel === 'instagram') copied = await copyText(message)
       const url = state.channel === 'whatsapp' ? buildWhatsAppHandoffUrl(message) : buildInstagramDmUrl()
       if (handoffWindow) handoffWindow.location.href = url
       else window.open(url, '_blank', 'noopener')
-      setState({ step: 'done', channel: state.channel, reference: order.reference, message, method: chosenMethod, recorded: order.recorded, copied })
+      setState({ step: 'done', channel: state.channel, reference: order.reference, message, method: effectiveMethod, recorded: order.recorded, copied })
     } catch {
       handoffWindow?.close()
       setError(true)
@@ -149,7 +159,7 @@ export function InterimCheckoutHandoff({ items }: { items: CartItem[] }) {
           className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#1faa59] px-5 text-sm font-semibold text-white transition hover:bg-[#178a48]"
         >
           <MessageCircle size={16} aria-hidden="true" />
-          {t('orderViaWhatsapp')}
+          {paymentAllowed ? t('orderViaWhatsapp') : t('reviewViaWhatsapp')}
         </button>
         <button
           type="button"
@@ -157,17 +167,17 @@ export function InterimCheckoutHandoff({ items }: { items: CartItem[] }) {
           className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-slate-900/15 bg-white px-5 text-sm font-semibold text-[#071724] transition hover:border-teal-700/40 hover:bg-teal-50"
         >
           <Instagram size={16} aria-hidden="true" />
-          {t('orderViaInstagram')}
+          {paymentAllowed ? t('orderViaInstagram') : t('reviewViaInstagram')}
         </button>
-        <p className="text-xs leading-5 text-slate-500">{t('handoffHint')}</p>
+        <p className="text-xs leading-5 text-slate-500">{t(paymentAllowed ? 'handoffHint' : 'manualReviewHandoffHint')}</p>
       </div>
 
       {state ? (
-        <div className="fixed inset-0 z-[80] grid place-items-center bg-[#071724]/45 px-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={t('handoffModalTitle')}>
+        <div className="fixed inset-0 z-[80] grid place-items-center bg-[#071724]/45 px-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={t(paymentAllowed ? 'handoffModalTitle' : 'handoffReviewModalTitle')}>
           <div className="max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-[1.75rem] bg-white p-6 shadow-[0_35px_110px_rgba(7,23,36,.3)] sm:p-8">
             <div className="flex items-start justify-between gap-4">
               <h2 className="text-2xl font-semibold tracking-[-0.04em] text-[#071724]">
-                {state.step === 'choose' ? t('handoffModalTitle') : t('handoffOrderCreatedTitle')}
+                {state.step === 'choose' ? t(paymentAllowed ? 'handoffModalTitle' : 'handoffReviewModalTitle') : t('handoffOrderCreatedTitle')}
               </h2>
               <button type="button" onClick={close} aria-label={t('handoffClose')} className="grid size-11 shrink-0 place-items-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50">
                 <X size={18} aria-hidden="true" />
@@ -176,8 +186,8 @@ export function InterimCheckoutHandoff({ items }: { items: CartItem[] }) {
 
             {state.step === 'choose' ? (
               <>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{t('handoffChoosePayment')}</p>
-                <div className="mt-5 grid gap-2">
+                <p className="mt-2 text-sm leading-6 text-slate-600">{t(paymentAllowed ? 'handoffChoosePayment' : 'handoffManualReview')}</p>
+                {paymentAllowed ? <div className="mt-5 grid gap-2">
                   {enabledMethods.map((entry) => (
                     <label key={entry.id} className={`flex min-h-12 cursor-pointer items-start gap-3 rounded-2xl border p-4 text-sm font-semibold transition ${method === entry.id ? 'border-teal-700 bg-teal-50' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
                       <input
@@ -194,7 +204,7 @@ export function InterimCheckoutHandoff({ items }: { items: CartItem[] }) {
                       </span>
                     </label>
                   ))}
-                </div>
+                </div> : null}
                 {state.channel === 'instagram' ? (
                   <p className="mt-4 rounded-2xl bg-slate-50 p-3 text-xs leading-5 text-slate-600">{t('handoffInstagramExplainer')}</p>
                 ) : null}
@@ -205,7 +215,7 @@ export function InterimCheckoutHandoff({ items }: { items: CartItem[] }) {
                   onClick={() => void confirm()}
                   className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-45"
                 >
-                  {creating ? t('handoffCreating') : state.channel === 'whatsapp' ? t('handoffContinueWhatsapp') : t('handoffContinueInstagram')}
+                  {creating ? t('handoffCreating') : state.channel === 'whatsapp' ? t(paymentAllowed ? 'handoffContinueWhatsapp' : 'handoffContinueReviewWhatsapp') : t(paymentAllowed ? 'handoffContinueInstagram' : 'handoffContinueReviewInstagram')}
                 </button>
               </>
             ) : (
@@ -223,14 +233,14 @@ export function InterimCheckoutHandoff({ items }: { items: CartItem[] }) {
                 ) : null}
 
                 <div className="mt-4 rounded-2xl border border-slate-200 p-4">
-                  <h3 className="text-sm font-semibold text-[#071724]">{t('handoffInstructionsTitle', { method: t(methodLabelKeys[state.method.id]) })}</h3>
+                  <h3 className="text-sm font-semibold text-[#071724]">{t(state.method.id === 'manual_review' ? 'handoffReviewInstructionsTitle' : 'handoffInstructionsTitle', { method: t(methodLabelKeys[state.method.id]) })}</h3>
                   {state.method.details.length ? (
                     <ul className="mt-2 grid gap-1 text-sm text-slate-700">
                       {state.method.details.map((detail) => <li key={detail} className="font-mono text-[0.8rem]">{detail}</li>)}
                     </ul>
                   ) : null}
                   <p className="mt-3 text-sm leading-6 text-slate-600">
-                    {state.method.id === 'cash_on_delivery' ? t('handoffCodConfirmNote') : t('handoffReferenceNote', { reference: state.reference })}
+                    {state.method.id === 'manual_review' ? t('handoffManualReviewConfirmNote') : state.method.id === 'cash_on_delivery' ? t('handoffCodConfirmNote') : t('handoffReferenceNote', { reference: state.reference })}
                   </p>
                 </div>
 

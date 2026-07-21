@@ -4,6 +4,7 @@ export const navigation = {
   about: 'About',
   faq: 'FAQ',
   contact: 'Contact',
+  shippingDelivery: 'Shipping & Delivery',
   howItWorks: 'How It Works',
   startYourResearch: 'Start Your Research',
   openMenu: 'Open menu',

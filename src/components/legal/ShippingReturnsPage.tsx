@@ -1,9 +1,72 @@
-import { LegalPageLayout, type LegalSection } from './LegalPageLayout'
+import { AlertTriangle, Clock3, Globe2, MapPin, PackageCheck, ShieldCheck } from 'lucide-react'
 import { useLocale } from '../../i18n/LocaleContext'
+import { LegalPageLayout, type LegalSection } from './LegalPageLayout'
 
 const copy = {
-  en: { title: 'Shipping & Returns', intro: 'This page explains how Encore Bio Labs handles shipping, delivery timing, and returns for research catalog orders.', sections: [['1. Shipping areas','Available delivery areas and methods are confirmed during order review. Timing and any shipping charge are confirmed only after product availability and destination are reviewed.'],['2. Processing time','Orders are processed after an inquiry is approved and product availability is confirmed. Processing and delivery timing are confirmed during order review.'],['3. Shipping costs','Shipping costs are provided during the approved inquiry process. Website checkout does not calculate or promise a shipping charge.'],['4. Returns and refunds','Because products are sold for laboratory research use and may have handling and storage requirements, returns are reviewed case by case. Contact Encore Bio Labs before returning any item.'],['5. Damaged, lost, or incorrect shipments','If an order arrives damaged, is lost in transit, or does not match what was ordered, contact us promptly through the research intake process so we can investigate.'],['6. Storage and handling on arrival','Storage requirements vary by product and format. Review product-specific guidance and use qualified laboratory handling practices upon receipt.'],['7. Contact','Shipping or return questions can be sent through the research intake process or WhatsApp 9153595448.']] },
-  es: { title: 'Envíos y devoluciones', intro: 'Esta página explica cómo Encore Bio Labs gestiona los envíos, los plazos de entrega y las devoluciones de pedidos del catálogo de investigación.', sections: [['1. Zonas de envío','Las zonas y métodos de entrega disponibles se confirman durante la revisión del pedido. El plazo y cualquier cargo de envío se confirman después de revisar la disponibilidad y el destino.'],['2. Tiempo de procesamiento','Los pedidos se procesan después de aprobar una consulta y confirmar la disponibilidad. El plazo de procesamiento y entrega se confirma durante la revisión.'],['3. Costos de envío','Los costos de envío se proporcionan durante el proceso de consulta aprobada. El checkout del sitio no calcula ni promete un cargo de envío.'],['4. Devoluciones y reembolsos','Como los productos se venden para investigación de laboratorio y pueden requerir manejo y almacenamiento específicos, las devoluciones se revisan caso por caso. Contacta a Encore Bio Labs antes de devolver cualquier artículo.'],['5. Envíos dañados, perdidos o incorrectos','Si un pedido llega dañado, se pierde en tránsito o no coincide con lo solicitado, contáctanos pronto mediante la admisión de investigación para investigar el caso.'],['6. Almacenamiento y manejo al recibirlo','Los requisitos de almacenamiento varían según el producto y el formato. Revisa la guía específica y utiliza prácticas calificadas de manejo de laboratorio al recibirlo.'],['7. Contacto','Las preguntas sobre envíos o devoluciones pueden enviarse mediante la admisión de investigación o WhatsApp 9153595448.']] },
+  en: {
+    title: 'Shipping & Delivery',
+    intro: 'Review destination rules, Mexico charges, local-delivery coverage, address verification, and the timing information that must be confirmed before payment.',
+    mexicoTitle: '1. Shipping to Mexico',
+    mexicoIntro: 'The import fee is based on the total number of kits in the cart and is recalculated whenever quantity changes.',
+    kits: 'Kits', import: 'Import fee', shipping: 'Shipping', additional: 'Total additional charges',
+    oneFour: '1–4 kits', fivePlus: '5+ kits',
+    timing: 'Estimated total time = up to 48 hours of processing or dispatch + the current carrier transport time.',
+    timingNote: 'The 48 hours refer only to processing or dispatch when inventory is available. They are not a promise that the order will arrive within 48 hours.',
+    internationalTitle: '2. Other international destinations',
+    internationalBody: 'Product availability, carrier service, current international rates, and destination taxes, duties, or customs charges must be reviewed. Checkout requests a shipping quote and does not confirm payment until the cost is approved.',
+    localTitle: '3. Local delivery',
+    localBody: 'Local delivery may be available in El Paso, Ciudad Juárez, and Chihuahua. The exact address must fall inside the configured zone. Until a zone, fee, and time are configured, checkout shows “Availability and cost pending confirmation” and requests manual review.',
+    validationTitle: '4. Address and coverage verification',
+    validationBody: 'Checkout checks country, state, city, neighborhood or colonia, postal code, street, and street number with the carrier service. If a standardized address is returned, you can use it, keep the original, or edit the address. The original and accepted versions are both saved with the verification result.',
+    safeguardsTitle: '5. Payment safeguards',
+    safeguardsBody: 'The server repeats address, coverage, and service validation before creating an order. Payment remains blocked for missing essentials or a carrier-confirmed undeliverable address. If the provider is unavailable, no service, rate, or timing is invented; the request is marked for manual review.',
+    returnsTitle: '6. Returns, damaged, lost, or incorrect shipments',
+    returnsBody: 'Because research products may have specific handling and storage requirements, returns are reviewed case by case. Contact Encore before returning an item. Report damaged, lost, or incorrect shipments promptly so the team can investigate.',
+  },
+  es: {
+    title: 'Envíos y entregas',
+    intro: 'Consulta las reglas por destino, los cargos para México, la cobertura local, la verificación de direcciones y los tiempos que deben confirmarse antes del pago.',
+    mexicoTitle: '1. Envíos a México',
+    mexicoIntro: 'La tarifa de importación depende de la cantidad total de kits del carrito y se vuelve a calcular cada vez que cambia la cantidad.',
+    kits: 'Kits', import: 'Tarifa de importación', shipping: 'Envío', additional: 'Cargos adicionales totales',
+    oneFour: '1–4 kits', fivePlus: '5 kits o más',
+    timing: 'Tiempo estimado total = hasta 48 horas de procesamiento o despacho + el tiempo vigente de transporte.',
+    timingNote: 'Las 48 horas corresponden únicamente al procesamiento o despacho cuando hay inventario. No son una promesa de que el pedido llegará en 48 horas.',
+    internationalTitle: '2. Otros destinos internacionales',
+    internationalBody: 'Se deben revisar la disponibilidad del producto, el servicio del transportista, las tarifas internacionales vigentes y los impuestos, aranceles o cargos aduanales del destino. El checkout solicita una cotización y no confirma el pago hasta que el costo sea aprobado.',
+    localTitle: '3. Entregas locales',
+    localBody: 'La entrega local puede estar disponible en El Paso, Ciudad Juárez y Chihuahua. La dirección exacta debe estar dentro de la zona configurada. Mientras no estén configurados la zona, el costo y el horario, el checkout muestra “Disponibilidad y costo por confirmar” y solicita revisión manual.',
+    validationTitle: '4. Verificación de dirección y cobertura',
+    validationBody: 'El checkout verifica país, estado, ciudad, colonia, código postal, calle y número con el servicio del transportista. Si recibe una dirección estandarizada, puedes usarla, conservar la original o editarla. Se guardan ambas versiones y el resultado de la verificación.',
+    safeguardsTitle: '5. Protecciones antes del pago',
+    safeguardsBody: 'El servidor vuelve a validar la dirección, la cobertura y el servicio antes de crear la orden. El pago permanece bloqueado si faltan datos esenciales o el transportista confirma que la dirección no es entregable. Si el proveedor no está disponible, no se inventan servicios, tarifas ni tiempos; la solicitud se marca para revisión manual.',
+    returnsTitle: '6. Devoluciones y envíos dañados, perdidos o incorrectos',
+    returnsBody: 'Como los productos de investigación pueden requerir manejo y almacenamiento específicos, las devoluciones se revisan caso por caso. Contacta a Encore antes de devolver un artículo. Reporta pronto cualquier envío dañado, perdido o incorrecto para que el equipo pueda investigarlo.',
+  },
 } as const
 
-export function ShippingReturnsPage() { const { locale } = useLocale(); const page = copy[locale]; const sections: LegalSection[] = page.sections.map(([heading, body]) => ({ heading, body: <p>{body}</p> })); return <LegalPageLayout title={page.title} effectiveDate={locale === 'es' ? '7 de julio de 2026' : 'July 7, 2026'} intro={page.intro} sections={sections} /> }
+export function ShippingReturnsPage() {
+  const { locale } = useLocale()
+  const page = copy[locale]
+  const sections: LegalSection[] = [
+    {
+      heading: page.mexicoTitle,
+      body: <>
+        <p>{page.mexicoIntro}</p>
+        <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+          <table className="w-full min-w-[34rem] text-left text-sm">
+            <thead className="bg-[#071724] text-white"><tr><th className="px-4 py-3">{page.kits}</th><th className="px-4 py-3">{page.import}</th><th className="px-4 py-3">{page.shipping}</th><th className="px-4 py-3">{page.additional}</th></tr></thead>
+            <tbody><tr className="border-b border-slate-200"><td className="px-4 py-3 font-semibold">{page.oneFour}</td><td className="px-4 py-3">$25 USD</td><td className="px-4 py-3">$15 USD</td><td className="px-4 py-3 font-semibold">$40 USD</td></tr><tr><td className="px-4 py-3 font-semibold">{page.fivePlus}</td><td className="px-4 py-3">$50 USD</td><td className="px-4 py-3">$15 USD</td><td className="px-4 py-3 font-semibold">$65 USD</td></tr></tbody>
+          </table>
+        </div>
+        <div className="flex items-start gap-3 rounded-2xl border border-teal-200 bg-teal-50 p-4"><Clock3 size={18} className="mt-1 shrink-0 text-teal-800" aria-hidden="true" /><div><p className="font-semibold text-teal-950">{page.timing}</p><p className="mt-1 text-xs leading-5 text-teal-900">{page.timingNote}</p></div></div>
+      </>,
+    },
+    { heading: page.internationalTitle, body: <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-5"><Globe2 size={20} className="mt-1 shrink-0 text-teal-700" aria-hidden="true" /><p>{page.internationalBody}</p></div> },
+    { heading: page.localTitle, body: <><div className="grid gap-3 sm:grid-cols-3">{['El Paso, Texas', 'Ciudad Juárez, Chihuahua', 'Chihuahua, Chihuahua'].map((city) => <div key={city} className="rounded-2xl border border-slate-200 bg-white p-4"><MapPin size={18} className="text-teal-700" aria-hidden="true" /><p className="mt-3 font-semibold text-[#071724]">{city}</p></div>)}</div><p>{page.localBody}</p></> },
+    { heading: page.validationTitle, body: <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-5"><ShieldCheck size={20} className="mt-1 shrink-0 text-teal-700" aria-hidden="true" /><p>{page.validationBody}</p></div> },
+    { heading: page.safeguardsTitle, body: <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5"><AlertTriangle size={20} className="mt-1 shrink-0 text-amber-700" aria-hidden="true" /><p>{page.safeguardsBody}</p></div> },
+    { heading: page.returnsTitle, body: <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-5"><PackageCheck size={20} className="mt-1 shrink-0 text-teal-700" aria-hidden="true" /><p>{page.returnsBody}</p></div> },
+  ]
+  return <LegalPageLayout title={page.title} effectiveDate={locale === 'es' ? '20 de julio de 2026' : 'July 20, 2026'} intro={page.intro} sections={sections} />
+}

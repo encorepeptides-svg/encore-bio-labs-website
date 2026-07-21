@@ -2,6 +2,8 @@ import type { Locale } from '../../i18n/config'
 import { BUSINESS_INSTAGRAM_USERNAME, BUSINESS_WHATSAPP_PHONE, type InterimPaymentMethodId } from '../../config/interimCheckout'
 import type { CartItem } from '../cart'
 import { calculateSubtotal, formatCartCurrency } from '../cart'
+import type { AddressVerificationResult, ShippingRate, ShippingSelection } from '../shipping'
+import { calculateShippingCharges, selectedShippingAddress } from '../shipping'
 import { isSupabaseConfigured, supabase } from '../supabaseClient'
 
 export type HandoffChannel = 'whatsapp' | 'instagram'
@@ -26,6 +28,7 @@ export type PendingOrderInput = {
   paymentMethod: InterimPaymentMethodId
   locale: Locale
   contact?: OrderContact
+  shipping?: ShippingSelection
 }
 
 export type PendingOrder = {
@@ -33,6 +36,10 @@ export type PendingOrder = {
   subtotalCents: number
   /** False when Supabase is unreachable — the handoff message is the only record. */
   recorded: boolean
+  reviewRequired: boolean
+  importFeeCents: number
+  shippingCents: number | null
+  totalCents: number | null
 }
 
 export function generateOrderReference() {
@@ -60,6 +67,7 @@ const paymentMethodMessageLabels: Record<InterimPaymentMethodId, { en: string; e
   venmo: { en: 'Venmo', es: 'Venmo' },
   cashapp: { en: 'Cash App', es: 'Cash App' },
   cash_on_delivery: { en: 'Cash on delivery / pickup', es: 'Pago contra entrega / recolección' },
+  manual_review: { en: 'Manual shipping review', es: 'Revisión manual de envío' },
 }
 
 export function paymentMethodMessageLabel(method: InterimPaymentMethodId, locale: Locale) {
@@ -67,9 +75,15 @@ export function paymentMethodMessageLabel(method: InterimPaymentMethodId, locale
 }
 
 /** The order summary sent through WhatsApp or pasted into the Instagram DM. */
-export function buildHandoffMessage({ reference, items, paymentMethod, locale, contact }: { reference: string; items: CartItem[]; paymentMethod: InterimPaymentMethodId; locale: Locale; contact?: OrderContact }) {
+export function buildHandoffMessage({ reference, items, paymentMethod, locale, contact, shipping, totalCents }: { reference: string; items: CartItem[]; paymentMethod: InterimPaymentMethodId; locale: Locale; contact?: OrderContact; shipping?: ShippingSelection; totalCents?: number | null }) {
   const lines = items.map((item) => `- ${item.quantity}x ${item.productName} ${item.variantLabel} (${formatCartCurrency(item.linePrice * item.quantity)})`)
-  const total = formatCartCurrency(calculateSubtotal(items))
+  const subtotal = calculateSubtotal(items)
+  const selectedRate = shipping?.verification.rates.find((rate) => rate.id === shipping.selectedRateId) ?? null
+  const charges = shipping ? calculateShippingCharges({ destination: shipping.destination, kitCount: shipping.kitCount, subtotalCents: Math.round(subtotal * 100), selectedRate, localDeliveryFeeCents: shipping.verification.localDeliveryFeeCents }) : null
+  const total = totalCents === null ? null : formatCartCurrency((totalCents ?? charges?.totalCents ?? Math.round(subtotal * 100)) / 100)
+  const acceptedAddress = shipping ? selectedShippingAddress(shipping) : null
+  const destinationLine = shipping ? `${shipping.destination} · ${[acceptedAddress?.street, acceptedAddress?.streetNumber, acceptedAddress?.neighborhood, acceptedAddress?.city, acceptedAddress?.state, acceptedAddress?.postalCode, acceptedAddress?.country].filter(Boolean).join(', ')}` : ''
+  const shippingLine = selectedRate ? `${selectedRate.carrier} ${selectedRate.service}` : ''
   const shippingAddress = [contact?.address, contact?.address2, contact?.city, contact?.state, contact?.zip, contact?.country]
     .map((value) => value?.trim())
     .filter(Boolean)
@@ -93,20 +107,30 @@ export function buildHandoffMessage({ reference, items, paymentMethod, locale, c
     return [
       `Pedido [${reference}]`,
       ...lines,
-      `Total: ${total}`,
+      `Subtotal: ${formatCartCurrency(subtotal)}`,
+      charges?.importFeeCents ? `Importación: ${formatCartCurrency(charges.importFeeCents / 100)}` : '',
+      charges?.shippingCents !== null && charges?.shippingCents !== undefined ? `Envío: ${formatCartCurrency(charges.shippingCents / 100)}` : 'Envío: pendiente de revisión',
+      total ? `Total: ${total}` : 'Total: pendiente de revisión',
+      destinationLine ? `Destino validado: ${destinationLine}` : '',
+      shippingLine ? `Servicio: ${shippingLine}` : '',
       ...contactLines,
       '',
       `Quiero pagar con: ${paymentMethodMessageLabel(paymentMethod, locale)}`,
-    ].join('\n')
+    ].filter((line) => line !== '').join('\n')
   }
   return [
     `Order [${reference}]`,
     ...lines,
-    `Total: ${total}`,
+    `Subtotal: ${formatCartCurrency(subtotal)}`,
+    charges?.importFeeCents ? `Import fee: ${formatCartCurrency(charges.importFeeCents / 100)}` : '',
+    charges?.shippingCents !== null && charges?.shippingCents !== undefined ? `Shipping: ${formatCartCurrency(charges.shippingCents / 100)}` : 'Shipping: pending review',
+    total ? `Total: ${total}` : 'Total: pending review',
+    destinationLine ? `Validated destination: ${destinationLine}` : '',
+    shippingLine ? `Service: ${shippingLine}` : '',
     ...contactLines,
     '',
     `I'd like to pay by: ${paymentMethodMessageLabel(paymentMethod, locale)}`,
-  ].join('\n')
+  ].filter((line) => line !== '').join('\n')
 }
 
 export function buildWhatsAppHandoffUrl(message: string) {
@@ -125,17 +149,41 @@ export function buildInstagramDmUrl() {
  */
 export async function createPendingOrder(input: PendingOrderInput): Promise<PendingOrder> {
   const subtotalCents = Math.round(calculateSubtotal(input.items) * 100)
-  let reference = generateOrderReference()
+  const reference = generateOrderReference()
 
-  if (!isSupabaseConfigured || !supabase) return { reference, subtotalCents, recorded: false }
+  const selectedRate: ShippingRate | null = input.shipping?.verification.rates.find((rate) => rate.id === input.shipping?.selectedRateId) ?? null
+  const fallbackCharges = input.shipping ? calculateShippingCharges({ destination: input.shipping.destination, kitCount: input.shipping.kitCount, subtotalCents, selectedRate, localDeliveryFeeCents: input.shipping.verification.localDeliveryFeeCents }) : null
+  if (!isSupabaseConfigured || !supabase || !input.shipping) return {
+    reference,
+    subtotalCents,
+    recorded: false,
+    reviewRequired: true,
+    importFeeCents: fallbackCharges?.importFeeCents ?? 0,
+    shippingCents: fallbackCharges?.shippingCents ?? null,
+    totalCents: fallbackCharges?.totalCents ?? null,
+  }
 
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    const { error } = await supabase.from('storefront_orders').insert({
-      order_reference: reference,
-      channel: input.channel,
-      payment_method: input.paymentMethod,
+  const { data, error } = await supabase.functions.invoke<{
+    reference: string
+    subtotalCents: number
+    importFeeCents: number
+    shippingCents: number | null
+    totalCents: number | null
+    recorded: boolean
+    reviewRequired: boolean
+  }>('shipping-checkout', {
+    body: {
+      action: 'create_order',
+      destination: input.shipping.destination,
+      address: input.shipping.address,
+      addressChoice: input.shipping.addressChoice,
+      selectedRate,
+      manualReviewRequested: input.shipping.manualReviewRequested,
+      destinationAcknowledged: input.shipping.destinationAcknowledged,
+      kitCount: input.shipping.kitCount,
       items: toOrderItemsPayload(input.items),
-      subtotal_cents: subtotalCents,
+      channel: input.channel,
+      paymentMethod: input.paymentMethod,
       locale: input.locale,
       contact: {
         name: input.contact?.name ?? '',
@@ -150,12 +198,10 @@ export async function createPendingOrder(input: PendingOrderInput): Promise<Pend
         preferredContact: input.contact?.preferredContact ?? '',
         notes: input.contact?.notes ?? '',
       },
-    })
-    if (!error) return { reference, subtotalCents, recorded: true }
-    if (error.code !== '23505') return { reference, subtotalCents, recorded: false }
-    reference = generateOrderReference()
-  }
-  return { reference, subtotalCents, recorded: false }
+    },
+  })
+  if (error || !data) throw new Error('shipping_checkout_unavailable')
+  return data
 }
 
 // ---------- Admin reconciliation ----------
@@ -163,11 +209,21 @@ export type StorefrontOrderRow = {
   id: string
   created_at: string
   order_reference: string
-  status: 'pending_payment' | 'paid' | 'cancelled'
+  status: 'review_required' | 'quote_pending' | 'pending_payment' | 'paid' | 'cancelled'
   channel: HandoffChannel
   payment_method: string
   items: Array<{ product: string; variant: string; quantity: number; line_total_cents: number }>
   subtotal_cents: number
+  import_fee_cents: number
+  shipping_cents: number | null
+  total_cents: number | null
+  destination_type: string
+  original_address: Record<string, string>
+  validated_address: Record<string, string>
+  selected_address: Record<string, string>
+  address_verification: AddressVerificationResult
+  shipping_service: ShippingRate | null
+  shipping_review_required: boolean
   contact: OrderContact
   paid_at: string | null
 }
@@ -175,7 +231,7 @@ export type StorefrontOrderRow = {
 export async function adminFetchStorefrontOrders(): Promise<StorefrontOrderRow[]> {
   if (!supabase) throw new Error('not configured')
   const { data, error } = await supabase.from('storefront_orders')
-    .select('id,created_at,order_reference,status,channel,payment_method,items,subtotal_cents,contact,paid_at')
+    .select('id,created_at,order_reference,status,channel,payment_method,items,subtotal_cents,import_fee_cents,shipping_cents,total_cents,destination_type,original_address,validated_address,selected_address,address_verification,shipping_service,shipping_review_required,contact,paid_at')
     .order('created_at', { ascending: false })
     .limit(300)
   if (error) throw error

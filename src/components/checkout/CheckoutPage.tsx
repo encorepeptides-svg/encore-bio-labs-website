@@ -1,16 +1,123 @@
-import { Check, ChevronRight, Minus, MessageCircle, Plus, ShieldCheck, ShoppingCart, Trash2 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  AlertTriangle,
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  Globe2,
+  LoaderCircle,
+  MapPin,
+  MessageCircle,
+  Minus,
+  PackageCheck,
+  Plus,
+  RefreshCw,
+  ShieldCheck,
+  ShoppingCart,
+  Trash2,
+  Truck,
+  type LucideIcon,
+} from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import logo from '../../assets/images/logo/encore-logo.png'
 import { useCart } from '../../context/useCart'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { purchaseTypeLabel } from '../../i18n/displayLabels'
-import { calculateSubtotal, formatCartCurrency, type CartItem } from '../../lib/cart'
+import { calculateItemCount, calculateSubtotal, formatCartCurrency, type CartItem } from '../../lib/cart'
 import { isCheckoutFormValid, isValidEmail } from '../../lib/checkout'
+import {
+  addressEssentialErrors,
+  calculateShippingCharges,
+  expectedCountryForDestination,
+  shippingSelectionAllowsPayment,
+  verifyShippingAddress,
+  type AddressChoice,
+  type AddressVerificationResult,
+  type DeliveryDestination,
+  type ShippingAddress,
+  type ShippingSelection,
+} from '../../lib/shipping'
 import { cn } from '../../lib/utils'
 import { EncoreCompleteKit } from '../EncoreCompleteKit'
 import { LanguageSelector } from '../LanguageSelector'
 import { InterimCheckoutHandoff } from '../cart/InterimCheckoutHandoff'
-import { PaymentRequestMethods } from '../cart/PaymentRequestMethods'
+
+type ReviewFormData = {
+  email: string
+  phone: string
+  fullName: string
+  address: string
+  streetNumber: string
+  neighborhood: string
+  address2: string
+  city: string
+  state: string
+  zip: string
+  country: string
+  destination: DeliveryDestination
+  preferredContact: 'email' | 'phone' | 'whatsapp'
+  notes: string
+  researchUseAcknowledged: boolean
+  destinationAcknowledged: boolean
+}
+
+type CheckoutSummary = {
+  items: CartItem[]
+  subtotal: number
+  shipping: ShippingSelection
+}
+
+const defaultFormData: ReviewFormData = {
+  email: '',
+  phone: '',
+  fullName: '',
+  address: '',
+  streetNumber: '',
+  neighborhood: '',
+  address2: '',
+  city: '',
+  state: '',
+  zip: '',
+  country: 'US',
+  destination: 'us',
+  preferredContact: 'whatsapp',
+  notes: '',
+  researchUseAcknowledged: false,
+  destinationAcknowledged: false,
+}
+
+const destinationOptions: Array<{ id: DeliveryDestination; icon: LucideIcon; titleKey: string; bodyKey: string }> = [
+  { id: 'us', icon: MapPin, titleKey: 'destinationUs', bodyKey: 'destinationUsBody' },
+  { id: 'mexico', icon: MapPin, titleKey: 'destinationMexico', bodyKey: 'destinationMexicoBody' },
+  { id: 'local_el_paso', icon: Truck, titleKey: 'destinationElPaso', bodyKey: 'destinationLocalBody' },
+  { id: 'local_juarez', icon: Truck, titleKey: 'destinationJuarez', bodyKey: 'destinationLocalBody' },
+  { id: 'local_chihuahua', icon: Truck, titleKey: 'destinationChihuahua', bodyKey: 'destinationLocalBody' },
+  { id: 'international', icon: Globe2, titleKey: 'destinationInternational', bodyKey: 'destinationInternationalBody' },
+]
+
+const COUNTRY_CODES = 'AD AE AF AG AI AL AM AO AR AT AU AW AZ BA BB BD BE BF BG BH BI BJ BN BO BR BS BT BW BY BZ CA CD CF CG CH CI CL CM CN CO CR CU CV CY CZ DE DJ DK DM DO DZ EC EE EG ER ES ET FI FJ FM FR GA GB GD GE GH GM GN GQ GR GT GW GY HK HN HR HT HU ID IE IL IN IQ IR IS IT JM JO JP KE KG KH KI KM KN KP KR KW KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MG MH MK ML MM MN MR MT MU MV MW MX MY MZ NA NE NG NI NL NO NP NR NZ OM PA PE PG PH PK PL PS PT PW PY QA RO RS RU RW SA SB SC SD SE SG SI SK SL SM SN SO SR SS ST SV SY SZ TD TG TH TJ TL TM TN TO TR TT TV TW TZ UA UG US UY UZ VA VC VE VN VU WS YE ZA ZM ZW'.split(' ')
+
+export const CHECKOUT_SESSION_KEY = 'encore-checkout-information-v1'
+
+export function readStoredForm(): ReviewFormData {
+  if (typeof window === 'undefined') return defaultFormData
+  try {
+    const stored = JSON.parse(window.sessionStorage.getItem(CHECKOUT_SESSION_KEY) || '{}') as Partial<ReviewFormData>
+    const destination = destinationOptions.some((option) => option.id === stored.destination) ? stored.destination as DeliveryDestination : stored.country === 'MX' ? 'mexico' : 'us'
+    return {
+      ...defaultFormData,
+      email: typeof stored.email === 'string' ? stored.email : '',
+      phone: typeof stored.phone === 'string' ? stored.phone : '',
+      fullName: typeof stored.fullName === 'string' ? stored.fullName : '',
+      country: expectedCountryForDestination(destination) || (typeof stored.country === 'string' ? stored.country : ''),
+      destination,
+      preferredContact: ['email', 'phone', 'whatsapp'].includes(stored.preferredContact || '') ? stored.preferredContact as ReviewFormData['preferredContact'] : 'whatsapp',
+      notes: typeof stored.notes === 'string' ? stored.notes : '',
+    }
+  } catch {
+    return defaultFormData
+  }
+}
 
 function useCheckoutStages() {
   const { t } = useTranslation('checkout')
@@ -23,38 +130,18 @@ function useCheckoutStages() {
 
 function CheckoutProgress({ stage }: { stage: 'review' | 'next' }) {
   const checkoutStages = useCheckoutStages()
-
   return (
     <ol className="mx-auto mb-8 flex max-w-[76rem] flex-wrap items-center gap-2 px-5 sm:px-8">
       {checkoutStages.map((item, index) => {
         const isDone = item.key === 'cart' || (stage === 'next' && item.key === 'review')
         const isCurrent = item.key === stage
-
         return (
           <li key={item.key} className="flex items-center gap-2">
-            <span
-              className={cn(
-                'flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold',
-                isDone
-                  ? 'bg-teal-700 text-white'
-                  : isCurrent
-                    ? 'border border-teal-700 text-teal-700'
-                    : 'border border-slate-300 text-slate-400',
-              )}
-            >
+            <span className={cn('flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold', isDone ? 'bg-teal-700 text-white' : isCurrent ? 'border border-teal-700 text-teal-700' : 'border border-slate-300 text-slate-400')}>
               {isDone ? <Check size={11} aria-hidden="true" /> : index + 1}
             </span>
-            <span
-              className={cn(
-                'text-xs font-semibold uppercase tracking-[0.1em]',
-                isCurrent ? 'text-[#071724]' : 'text-slate-400',
-              )}
-            >
-              {item.label}
-            </span>
-            {index < checkoutStages.length - 1 ? (
-              <span className="mx-1 h-px w-6 bg-slate-200" aria-hidden="true" />
-            ) : null}
+            <span className={cn('text-xs font-semibold uppercase tracking-[0.1em]', isCurrent ? 'text-[#071724]' : 'text-slate-400')}>{item.label}</span>
+            {index < checkoutStages.length - 1 ? <span className="mx-1 h-px w-6 bg-slate-200" aria-hidden="true" /> : null}
           </li>
         )
       })}
@@ -62,94 +149,137 @@ function CheckoutProgress({ stage }: { stage: 'review' | 'next' }) {
   )
 }
 
-type ReviewFormData = {
-  email: string
-  phone: string
-  fullName: string
-  address: string
-  address2: string
-  city: string
-  state: string
-  zip: string
-  country: 'US' | 'MX'
-  preferredContact: 'email' | 'phone' | 'whatsapp'
-  notes: string
-  researchUseAcknowledged: boolean
-}
-
-type CheckoutSummary = {
-  items: CartItem[]
-  subtotal: number
-}
-
-const defaultFormData: ReviewFormData = {
-  email: '',
-  phone: '',
-  fullName: '',
-  address: '',
-  address2: '',
-  city: '',
-  state: '',
-  zip: '',
-  country: 'US',
-  preferredContact: 'whatsapp',
-  notes: '',
-  researchUseAcknowledged: false,
-}
-
-export const CHECKOUT_SESSION_KEY = 'encore-checkout-information-v1'
-
-export function readStoredForm(): ReviewFormData {
-  if (typeof window === 'undefined') return defaultFormData
-  try {
-    const stored = JSON.parse(window.sessionStorage.getItem(CHECKOUT_SESSION_KEY) || '{}') as Partial<ReviewFormData>
-    return {
-      ...defaultFormData,
-      email: typeof stored.email === 'string' ? stored.email : '',
-      phone: typeof stored.phone === 'string' ? stored.phone : '',
-      fullName: typeof stored.fullName === 'string' ? stored.fullName : '',
-      address: '',
-      address2: '',
-      city: '',
-      state: '',
-      zip: '',
-      country: stored.country === 'MX' ? 'MX' : 'US',
-      preferredContact: ['email', 'phone', 'whatsapp'].includes(stored.preferredContact || '')
-        ? stored.preferredContact as ReviewFormData['preferredContact']
-        : 'whatsapp',
-      notes: typeof stored.notes === 'string' ? stored.notes : '',
-      researchUseAcknowledged: false,
-    }
-  } catch {
-    return defaultFormData
-  }
-}
-
 function inputClass() {
-  return 'h-12 w-full rounded-2xl border border-slate-900/10 bg-white px-4 text-sm text-[#071724] outline-none transition placeholder:text-slate-400 focus:border-teal-600/70 focus:ring-4 focus:ring-teal-100'
+  return 'h-12 w-full rounded-2xl border border-slate-900/10 bg-white px-4 text-sm text-[#071724] outline-none transition placeholder:text-slate-400 focus:border-teal-600/70 focus:ring-4 focus:ring-teal-100 disabled:bg-slate-100 disabled:text-slate-500'
 }
 
 function CheckoutHeader() {
   const { path } = useLocale()
   const { t } = useTranslation('checkout')
-
   return (
     <header className="border-b border-slate-900/10 bg-white/80 backdrop-blur-2xl">
-      <div className="mx-auto flex max-w-[76rem] items-center justify-between px-5 py-4 sm:px-8">
-        <a href={path('/')} className="flex items-center gap-3" aria-label="Encore Bio Labs home">
-          <img src={logo} alt="Encore Bio Labs" width="900" height="264" className="h-8 w-auto" />
-        </a>
-        <div className="flex items-center gap-3">
+      <div className="mx-auto flex max-w-[76rem] items-center justify-between gap-3 px-5 py-4 sm:px-8">
+        <a href={path('/')} className="flex items-center gap-3" aria-label="Encore Bio Labs home"><img src={logo} alt="Encore Bio Labs" width="900" height="264" className="h-8 w-auto" /></a>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <a href={path('/legal/shipping-returns')} className="hidden text-xs font-semibold text-teal-800 hover:underline sm:inline">{t('shippingDeliveryLink')}</a>
           <LanguageSelector variant="nav" />
-          <a
-            href={path('/cart')}
-            className="rounded-full border border-slate-900/10 bg-[#f5f5f2] px-4 py-2 text-xs font-semibold text-slate-600 transition hover:bg-white"
-          >
-            {t('returnToCart')}
-          </a>
+          <a href={path('/cart')} className="rounded-full border border-slate-900/10 bg-[#f5f5f2] px-4 py-2 text-xs font-semibold text-slate-600 transition hover:bg-white">{t('returnToCart')}</a>
         </div>
       </div>
     </header>
+  )
+}
+
+function formatAddress(address: ShippingAddress) {
+  return [address.street, address.streetNumber, address.line2, address.neighborhood, address.city, address.state, address.postalCode, address.country].filter(Boolean).join(', ')
+}
+
+function verificationMessage(message: string, locale: 'en' | 'es') {
+  const copy: Record<string, { en: string; es: string }> = {
+    country: { en: 'Choose a country.', es: 'Elige un país.' },
+    country_mismatch: { en: 'The country does not match the selected destination.', es: 'El país no coincide con el destino seleccionado.' },
+    state: { en: 'Enter a state or region.', es: 'Ingresa un estado o región.' },
+    city: { en: 'Enter a city.', es: 'Ingresa una ciudad.' },
+    neighborhood: { en: 'Enter the neighborhood or colonia.', es: 'Ingresa la colonia.' },
+    street: { en: 'Enter the street name.', es: 'Ingresa la calle.' },
+    street_number: { en: 'Enter the street number.', es: 'Ingresa el número exterior.' },
+    postal_code: { en: 'Enter a postal code.', es: 'Ingresa el código postal.' },
+    postal_code_invalid: { en: 'The postal-code format is invalid.', es: 'El formato del código postal no es válido.' },
+    po_box_local: { en: 'Local delivery is not available to a P.O. box.', es: 'La entrega local no está disponible para un apartado postal.' },
+    provider_not_configured: { en: 'The carrier validation service is not configured yet.', es: 'El servicio de validación del transportista aún no está configurado.' },
+    provider_unavailable: { en: 'The carrier validation service is temporarily unavailable.', es: 'El servicio de validación del transportista no está disponible temporalmente.' },
+    provider_timeout: { en: 'The carrier took too long to respond.', es: 'El transportista tardó demasiado en responder.' },
+    live_rates_unavailable: { en: 'No current transport rates are available for this address.', es: 'No hay tarifas vigentes de transporte para esta dirección.' },
+    international_quote_required: { en: 'International shipping requires a reviewed quote.', es: 'El envío internacional requiere una cotización revisada.' },
+    international_verification_inconclusive: { en: 'International verification was inconclusive.', es: 'La verificación internacional no fue concluyente.' },
+    local_coverage_not_configured: { en: 'The local delivery zone still requires business configuration.', es: 'La zona de entrega local aún requiere configuración del negocio.' },
+    local_fee_or_time_not_configured: { en: 'Local cost or timing is still pending confirmation.', es: 'El costo o el horario local aún están por confirmar.' },
+    local_city_mismatch: { en: 'The address is outside the selected local-delivery city.', es: 'La dirección está fuera de la ciudad de entrega local seleccionada.' },
+    local_postal_code_outside_zone: { en: 'The postal code is outside the configured local-delivery area.', es: 'El código postal está fuera de la zona local configurada.' },
+    address_not_deliverable: { en: 'The carrier could not confirm this address as deliverable.', es: 'El transportista no pudo confirmar que esta dirección sea entregable.' },
+    address_not_verified: { en: 'The address could not be verified.', es: 'No se pudo verificar la dirección.' },
+  }
+  return copy[message]?.[locale] || (locale === 'es' ? 'El proveedor reportó un problema con la dirección.' : 'The provider reported an address issue.')
+}
+
+function VerificationPanel({
+  result,
+  validating,
+  addressChoice,
+  selectedRateId,
+  manualReviewRequested,
+  onAddressChoice,
+  onRate,
+  onEdit,
+  onManualReview,
+  onRetry,
+}: {
+  result: AddressVerificationResult | null
+  validating: boolean
+  addressChoice: AddressChoice | null
+  selectedRateId: string | null
+  manualReviewRequested: boolean
+  onAddressChoice: (choice: AddressChoice) => void
+  onRate: (rateId: string) => void
+  onEdit: () => void
+  onManualReview: () => void
+  onRetry: () => void
+}) {
+  const { locale } = useLocale()
+  const { t } = useTranslation('checkout')
+  if (validating) return <div role="status" className="mt-5 flex items-center gap-3 rounded-2xl border border-teal-200 bg-teal-50 p-4 text-sm text-teal-950"><LoaderCircle size={18} className="animate-spin" aria-hidden="true" />{t('validatingAddress')}</div>
+  if (!result) return <button type="button" onClick={onRetry} className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-teal-700/25 bg-teal-50 px-5 text-sm font-semibold text-teal-900"><RefreshCw size={15} aria-hidden="true" />{t('verifyAddress')}</button>
+
+  const issue = ['incomplete', 'invalid', 'undeliverable', 'out_of_coverage', 'provider_unavailable', 'manual_review'].includes(result.status)
+  return (
+    <div className={cn('mt-5 rounded-2xl border p-4', issue ? 'border-amber-200 bg-amber-50' : 'border-emerald-200 bg-emerald-50')} aria-live="polite">
+      <div className="flex items-start gap-3">
+        {issue ? <AlertTriangle size={19} className="mt-0.5 shrink-0 text-amber-700" aria-hidden="true" /> : <CheckCircle2 size={19} className="mt-0.5 shrink-0 text-emerald-700" aria-hidden="true" />}
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold text-[#071724]">{t(result.status === 'corrected' ? 'addressCorrected' : result.status === 'verified' ? 'addressVerified' : result.status === 'out_of_coverage' ? 'outsideCoverage' : result.status === 'undeliverable' ? 'addressUndeliverable' : result.status === 'incomplete' ? 'addressIncomplete' : 'manualReviewNeeded')}</p>
+          {result.messages.length ? <ul className="mt-2 grid gap-1 text-sm leading-6 text-slate-700">{result.messages.map((message) => <li key={message}>• {verificationMessage(message, locale)}</li>)}</ul> : null}
+        </div>
+      </div>
+
+      {result.status === 'corrected' && result.recommendedAddress ? (
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <button type="button" onClick={() => onAddressChoice('recommended')} className={cn('rounded-2xl border p-4 text-left', addressChoice === 'recommended' ? 'border-teal-700 bg-white ring-2 ring-teal-100' : 'border-slate-200 bg-white/70')}>
+            <span className="text-xs font-bold uppercase tracking-[0.12em] text-teal-800">{t('recommendedAddress')}</span>
+            <span className="mt-2 block text-sm leading-6 text-slate-700">{formatAddress(result.recommendedAddress)}</span>
+            <span className="mt-3 block text-sm font-semibold text-[#071724]">{t('useRecommendedAddress')}</span>
+          </button>
+          <button type="button" onClick={() => onAddressChoice('original')} className={cn('rounded-2xl border p-4 text-left', addressChoice === 'original' ? 'border-teal-700 bg-white ring-2 ring-teal-100' : 'border-slate-200 bg-white/70')}>
+            <span className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">{t('originalAddress')}</span>
+            <span className="mt-2 block text-sm leading-6 text-slate-700">{formatAddress(result.originalAddress)}</span>
+            <span className="mt-3 block text-sm font-semibold text-[#071724]">{t('keepOriginalAddress')}</span>
+          </button>
+          <button type="button" onClick={onEdit} className="sm:col-span-2 min-h-11 text-sm font-semibold text-teal-800 hover:underline">{t('editAddress')}</button>
+        </div>
+      ) : null}
+
+      {result.rates.length ? (
+        <fieldset className="mt-4">
+          <legend className="text-sm font-semibold text-[#071724]">{t('availableShippingServices')}</legend>
+          <div className="mt-2 grid gap-2">
+            {result.rates.map((rate) => (
+              <label key={rate.id} className={cn('flex cursor-pointer items-start justify-between gap-3 rounded-xl border bg-white p-3', selectedRateId === rate.id ? 'border-teal-700 ring-2 ring-teal-100' : 'border-slate-200')}>
+                <span className="flex items-start gap-3"><input type="radio" name="shipping-rate" className="mt-1 accent-teal-700" checked={selectedRateId === rate.id} onChange={() => onRate(rate.id)} /><span><span className="block text-sm font-semibold text-[#071724]">{rate.carrier} · {rate.service}</span><span className="mt-1 block text-xs text-slate-500">{rate.deliveryDays !== null ? t('transportDays', { count: rate.deliveryDays }) : t('transportTimeNotProvided')}</span></span></span>
+                <span className="shrink-0 text-sm font-semibold text-[#071724]">{formatCartCurrency(rate.amountCents / 100)}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ) : null}
+
+      {result.localDeliveryFeeCents !== null || result.localDeliveryTime ? <p className="mt-4 text-sm leading-6 text-slate-700">{t('localDeliveryConfirmed', { cost: result.localDeliveryFeeCents === null ? t('pendingConfirmation') : formatCartCurrency(result.localDeliveryFeeCents / 100), time: result.localDeliveryTime || t('pendingConfirmation') })}</p> : null}
+      {issue || result.manualReviewRequired ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button type="button" onClick={onEdit} className="inline-flex min-h-10 items-center rounded-full border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700">{t('editAddress')}</button>
+          <button type="button" onClick={onRetry} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700"><RefreshCw size={14} aria-hidden="true" />{t('retryValidation')}</button>
+          <button type="button" onClick={onManualReview} className={cn('inline-flex min-h-10 items-center rounded-full px-4 text-sm font-semibold', manualReviewRequested ? 'bg-teal-700 text-white' : 'bg-[#071724] text-white')}>{manualReviewRequested ? t('manualReviewSelected') : t('requestManualReview')}</button>
+        </div>
+      ) : null}
+    </div>
   )
 }
 
@@ -159,11 +289,32 @@ export function CheckoutPage() {
   const { t } = useTranslation('checkout')
   const { t: tCommon } = useTranslation('common')
   const [formData, setFormData] = useState<ReviewFormData>(() => readStoredForm())
+  const [verification, setVerification] = useState<AddressVerificationResult | null>(null)
+  const [validating, setValidating] = useState(false)
+  const [addressChoice, setAddressChoice] = useState<AddressChoice | null>(null)
+  const [selectedRateId, setSelectedRateId] = useState<string | null>(null)
+  const [manualReviewRequested, setManualReviewRequested] = useState(false)
   const [outcome, setOutcome] = useState<'support' | null>(null)
   const [completedSummary, setCompletedSummary] = useState<CheckoutSummary | null>(null)
   const [showValidation, setShowValidation] = useState(false)
   const checkoutFormRef = useRef<HTMLDivElement>(null)
+  const validationSequence = useRef(0)
   const subtotal = useMemo(() => calculateSubtotal(items), [items])
+  const kitCount = useMemo(() => calculateItemCount(items), [items])
+  const address = useMemo<ShippingAddress>(() => ({
+    country: formData.country,
+    state: formData.state,
+    city: formData.city,
+    neighborhood: formData.neighborhood,
+    postalCode: formData.zip,
+    street: formData.address,
+    streetNumber: formData.streetNumber,
+    line2: formData.address2,
+  }), [formData.address, formData.address2, formData.city, formData.country, formData.neighborhood, formData.state, formData.streetNumber, formData.zip])
+  const countryNames = useMemo(() => {
+    const display = new Intl.DisplayNames([locale], { type: 'region' })
+    return COUNTRY_CODES.map((code) => ({ code, name: display.of(code) || code })).sort((a, b) => a.name.localeCompare(b.name, locale))
+  }, [locale])
 
   useEffect(() => {
     window.sessionStorage.setItem(CHECKOUT_SESSION_KEY, JSON.stringify({
@@ -171,298 +322,193 @@ export function CheckoutPage() {
       phone: formData.phone,
       fullName: formData.fullName,
       address: formData.address,
+      streetNumber: formData.streetNumber,
+      neighborhood: formData.neighborhood,
       address2: formData.address2,
       city: formData.city,
       state: formData.state,
       zip: formData.zip,
       country: formData.country,
+      destination: formData.destination,
       preferredContact: formData.preferredContact,
       notes: formData.notes,
     }))
   }, [formData])
 
-  const formIsValid = isCheckoutFormValid(formData)
+  const runVerification = useCallback(async () => {
+    const sequence = ++validationSequence.current
+    setValidating(true)
+    const result = await verifyShippingAddress({ destination: formData.destination, address, kitCount })
+    if (sequence !== validationSequence.current) return
+    setVerification(result)
+    setAddressChoice(null)
+    setSelectedRateId(null)
+    setManualReviewRequested(result.manualReviewRequired)
+    setValidating(false)
+  }, [address, formData.destination, kitCount])
+
+  useEffect(() => {
+    validationSequence.current += 1
+    setVerification(null)
+    setAddressChoice(null)
+    setSelectedRateId(null)
+    setManualReviewRequested(false)
+    setValidating(false)
+    if (addressEssentialErrors(address, formData.destination).length || !items.length) return
+    const timer = window.setTimeout(() => void runVerification(), 750)
+    return () => window.clearTimeout(timer)
+  }, [address, formData.destination, items.length, runVerification])
 
   function updateField<K extends keyof ReviewFormData>(key: K, value: ReviewFormData[K]) {
     setFormData((current) => ({ ...current, [key]: value }))
   }
 
+  function chooseDestination(destination: DeliveryDestination) {
+    const country = expectedCountryForDestination(destination)
+    const localDefaults = destination === 'local_el_paso'
+      ? { state: 'TX', city: 'El Paso' }
+      : destination === 'local_juarez'
+        ? { state: 'Chihuahua', city: 'Ciudad Juárez' }
+        : destination === 'local_chihuahua'
+          ? { state: 'Chihuahua', city: 'Chihuahua' }
+          : { state: '', city: '' }
+    setFormData((current) => ({
+      ...current,
+      destination,
+      country: country || (['US', 'MX'].includes(current.country) ? '' : current.country),
+      state: destination.startsWith('local_') ? localDefaults.state : '',
+      city: destination.startsWith('local_') ? localDefaults.city : '',
+      destinationAcknowledged: false,
+    }))
+  }
+
+  const selectedRate = verification?.rates.find((rate) => rate.id === selectedRateId) ?? null
+  const charges = calculateShippingCharges({ destination: formData.destination, kitCount, subtotalCents: Math.round(subtotal * 100), selectedRate, localDeliveryFeeCents: verification?.localDeliveryFeeCents ?? null })
+  const shippingSelection: ShippingSelection | null = verification ? {
+    destination: formData.destination,
+    address,
+    kitCount,
+    verification,
+    addressChoice,
+    selectedRateId,
+    manualReviewRequested,
+    destinationAcknowledged: formData.destinationAcknowledged,
+  } : null
+  const paymentAllowed = shippingSelection ? shippingSelectionAllowsPayment(shippingSelection) : false
+  const correctedChoiceReady = verification?.status !== 'corrected' || Boolean(addressChoice)
+  const reviewPathReady = verification ? verification.deliverable || verification.manualReviewRequired || manualReviewRequested : false
+  const baseFormValid = isCheckoutFormValid({ ...formData, neighborhoodRequired: formData.country === 'MX' })
+  const formIsValid = baseFormValid && Boolean(verification) && !validating && correctedChoiceReady && reviewPathReady && formData.destinationAcknowledged
+
   function submitRequest() {
     setShowValidation(true)
-    if (!formIsValid || !items.length) {
+    if (!formIsValid || !items.length || !shippingSelection) {
       window.requestAnimationFrame(() => checkoutFormRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus())
       return
     }
-
-    setCompletedSummary({ items, subtotal })
+    setCompletedSummary({ items, subtotal, shipping: shippingSelection })
     setOutcome('support')
   }
 
-  if (outcome) {
-    const summaryItems = completedSummary?.items ?? items
-    const summarySubtotal = completedSummary?.subtotal ?? subtotal
-
+  if (outcome && completedSummary) {
+    const summaryRate = completedSummary.shipping.verification.rates.find((rate) => rate.id === completedSummary.shipping.selectedRateId) ?? null
+    const summaryCharges = calculateShippingCharges({ destination: completedSummary.shipping.destination, kitCount: completedSummary.shipping.kitCount, subtotalCents: Math.round(completedSummary.subtotal * 100), selectedRate: summaryRate, localDeliveryFeeCents: completedSummary.shipping.verification.localDeliveryFeeCents })
+    const summaryPaymentAllowed = shippingSelectionAllowsPayment(completedSummary.shipping)
     return (
       <main id="main-content" className="min-h-screen bg-[#f5f5f2]">
         <CheckoutHeader />
-        <div className="pt-8">
-          <CheckoutProgress stage="next" />
-        </div>
-        <div className="mx-auto flex max-w-xl flex-col items-center px-5 py-16 text-center sm:px-8">
-          <span className="flex size-16 items-center justify-center rounded-full bg-teal-50 text-teal-700">
-            <Check size={28} aria-hidden="true" />
-          </span>
-          <h1 className="mt-6 text-4xl font-semibold tracking-[-0.05em] text-[#071724]">
-            {t('supportTitle')}
-          </h1>
-          <p className="mt-4 text-base leading-7 text-slate-600">
-            {t('supportBody')}
-          </p>
+        <div className="pt-8"><CheckoutProgress stage="next" /></div>
+        <div className="mx-auto flex max-w-xl flex-col items-center px-5 py-12 text-center sm:px-8">
+          <span className={cn('flex size-16 items-center justify-center rounded-full', summaryPaymentAllowed ? 'bg-teal-50 text-teal-700' : 'bg-amber-50 text-amber-700')}>{summaryPaymentAllowed ? <Check size={28} aria-hidden="true" /> : <AlertTriangle size={28} aria-hidden="true" />}</span>
+          <h1 className="mt-6 text-4xl font-semibold tracking-[-0.05em] text-[#071724]">{t(summaryPaymentAllowed ? 'supportTitle' : 'manualReviewOutcomeTitle')}</h1>
+          <p className="mt-4 text-base leading-7 text-slate-600">{t(summaryPaymentAllowed ? 'supportBody' : 'manualReviewOutcomeBody')}</p>
           <section className="mt-8 w-full rounded-3xl border border-slate-900/10 bg-white p-5 text-left" aria-labelledby="request-summary-heading">
             <h2 id="request-summary-heading" className="text-lg font-semibold text-[#071724]">{t('requestSummary')}</h2>
             <div className="mt-4 grid gap-3">
-              {summaryItems.map((item) => (
-                <div key={item.id} className="flex items-start justify-between gap-4 text-sm">
-                  <span className="text-slate-600">{item.productName} · {item.variantLabel} · {purchaseTypeLabel(tCommon, item.purchaseType)} · {tCommon('packLabel', { pack: item.packSize })} · {tCommon('kitLabel', { kit: item.kitIncluded ? tCommon('yes') : tCommon('no') })} × {item.quantity}</span>
-                  <span className="shrink-0 font-semibold text-[#071724]">{formatCartCurrency(item.linePrice * item.quantity)}</span>
-                </div>
-              ))}
-              <div className="flex items-center justify-between border-t border-slate-900/10 pt-3 text-sm font-semibold text-[#071724]">
-                <span>{t('subtotal')}</span>
-                <span>{formatCartCurrency(summarySubtotal)}</span>
+              {completedSummary.items.map((item) => <div key={item.id} className="flex items-start justify-between gap-4 text-sm"><span className="text-slate-600">{item.productName} · {item.variantLabel} · {purchaseTypeLabel(tCommon, item.purchaseType)} · {tCommon('packLabel', { pack: item.packSize })} × {item.quantity}</span><span className="shrink-0 font-semibold text-[#071724]">{formatCartCurrency(item.linePrice * item.quantity)}</span></div>)}
+              <div className="grid gap-2 border-t border-slate-900/10 pt-3 text-sm">
+                <div className="flex justify-between"><span>{t('subtotal')}</span><span className="font-semibold">{formatCartCurrency(completedSummary.subtotal)}</span></div>
+                {summaryCharges.importFeeCents ? <div className="flex justify-between"><span>{t('importFee')}</span><span className="font-semibold">{formatCartCurrency(summaryCharges.importFeeCents / 100)}</span></div> : null}
+                <div className="flex justify-between"><span>{t('shipping')}</span><span className="font-semibold">{summaryCharges.shippingCents === null ? t('pendingConfirmation') : formatCartCurrency(summaryCharges.shippingCents / 100)}</span></div>
+                <div className="flex justify-between text-base font-semibold"><span>{t('total')}</span><span>{summaryCharges.totalCents === null ? t('pendingConfirmation') : formatCartCurrency(summaryCharges.totalCents / 100)}</span></div>
               </div>
             </div>
           </section>
-          <div className="mt-8 w-full text-left">
-            <InterimCheckoutHandoff items={summaryItems} />
-          </div>
-          <PaymentRequestMethods items={summaryItems} />
-          <a href={path('/cart')} className="mt-3 text-sm font-semibold text-slate-600 hover:text-[#071724]">{t('returnToCart')}</a>
-          <div className="mt-10 w-full">
-            <EncoreCompleteKit variant="checkout" />
-          </div>
-          <p className="mt-6 flex items-center justify-center gap-1.5 text-xs font-medium text-slate-500">
-            <MessageCircle size={13} aria-hidden="true" className="shrink-0 text-teal-700" />
-            {t('needHelp')} <a href="https://wa.me/19153595448" className="font-semibold text-teal-800 hover:underline">{t('contactEncoreWhatsapp')}</a>
-          </p>
+          <div className="mt-8 w-full text-left"><InterimCheckoutHandoff items={completedSummary.items} shipping={completedSummary.shipping} /></div>
+          <a href={path('/cart')} className="mt-5 text-sm font-semibold text-slate-600 hover:text-[#071724]">{t('returnToCart')}</a>
+          <div className="mt-10 w-full"><EncoreCompleteKit variant="checkout" /></div>
         </div>
       </main>
     )
   }
 
   if (!items.length) {
-    return (
-      <main id="main-content" className="min-h-screen bg-[#f5f5f2]">
-        <CheckoutHeader />
-        <div className="mx-auto flex max-w-xl flex-col items-center px-5 py-24 text-center sm:px-8">
-          <ShoppingCart size={32} aria-hidden="true" className="text-teal-700" />
-          <h1 className="mt-6 text-4xl font-semibold tracking-[-0.05em] text-[#071724]">{t('emptyCartTitle')}</h1>
-          <p className="mt-4 text-base leading-7 text-slate-600">{t('emptyCartBody')}</p>
-          <a href={path('/catalog')} className="mt-8 inline-flex min-h-12 items-center justify-center rounded-full bg-[#071724] px-7 text-sm font-semibold text-white">{t('browseProducts')}</a>
-        </div>
-      </main>
-    )
+    return <main id="main-content" className="min-h-screen bg-[#f5f5f2]"><CheckoutHeader /><div className="mx-auto flex max-w-xl flex-col items-center px-5 py-24 text-center sm:px-8"><ShoppingCart size={32} aria-hidden="true" className="text-teal-700" /><h1 className="mt-6 text-4xl font-semibold tracking-[-0.05em] text-[#071724]">{t('emptyCartTitle')}</h1><p className="mt-4 text-base leading-7 text-slate-600">{t('emptyCartBody')}</p><a href={path('/catalog')} className="mt-8 inline-flex min-h-12 items-center justify-center rounded-full bg-[#071724] px-7 text-sm font-semibold text-white">{t('browseProducts')}</a></div></main>
   }
 
+  const countryLocked = Boolean(expectedCountryForDestination(formData.destination))
+  const localDestination = formData.destination.startsWith('local_')
   return (
     <main id="main-content" className="min-h-screen bg-[#f5f5f2]">
       <CheckoutHeader />
-      <div className="pt-8">
-        <CheckoutProgress stage="review" />
-      </div>
+      <div className="pt-8"><CheckoutProgress stage="review" /></div>
       <div className="mx-auto max-w-[76rem] px-5 pb-20 sm:px-8">
-        <div className="mb-8 max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">{t('cartReviewEyebrow')}</p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-[#071724] sm:text-5xl">
-            {t('reviewInquiryTitle')}
-          </h1>
-          <p className="mt-4 text-base leading-7 text-slate-600">
-            {t('reviewInquiryBody')}
-          </p>
-        </div>
+        <div className="mb-8 max-w-3xl"><p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">{t('cartReviewEyebrow')}</p><h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-[#071724] sm:text-5xl">{t('reviewInquiryTitle')}</h1><p className="mt-4 text-base leading-7 text-slate-600">{t('reviewInquiryBody')}</p></div>
 
         <div ref={checkoutFormRef} className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
-          <section className="rounded-[1.75rem] border border-white/70 bg-white/75 p-6 shadow-[0_24px_70px_rgba(7,23,36,0.06)] backdrop-blur-xl sm:p-8">
-            <h2 className="text-2xl font-semibold tracking-[-0.04em] text-[#071724]">{t('contactAndShipping')}</h2>
-            <div className="mt-6 grid gap-5 sm:grid-cols-2">
-              <label className="grid gap-2 text-sm font-semibold text-[#071724]">
-                {t('email')}
-                <input className={inputClass()} type="email" autoComplete="email" required aria-invalid={showValidation && !isValidEmail(formData.email)} aria-describedby={showValidation && !isValidEmail(formData.email) ? 'email-error' : undefined} value={formData.email} onChange={(event) => updateField('email', event.target.value)} />
-                {showValidation && !isValidEmail(formData.email) ? <span id="email-error" className="text-xs font-medium text-rose-700">{t('emailError')}</span> : null}
-              </label>
-              <label className="grid gap-2 text-sm font-semibold text-[#071724]">
-                {t('phone')}
-                <input className={inputClass()} type="tel" inputMode="tel" autoComplete="tel" required aria-invalid={showValidation && formData.phone.trim().length < 7} aria-describedby={showValidation && formData.phone.trim().length < 7 ? 'phone-error' : undefined} value={formData.phone} onChange={(event) => updateField('phone', event.target.value)} />
-                {showValidation && formData.phone.trim().length < 7 ? <span id="phone-error" className="text-xs font-medium text-rose-700">{t('phoneError')}</span> : null}
-              </label>
-              <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">
-                {t('fullName')}
-                <input className={inputClass()} autoComplete="name" required aria-invalid={showValidation && !formData.fullName.trim()} aria-describedby={showValidation && !formData.fullName.trim() ? 'full-name-error' : undefined} value={formData.fullName} onChange={(event) => updateField('fullName', event.target.value)} />
-                {showValidation && !formData.fullName.trim() ? <span id="full-name-error" className="text-xs font-medium text-rose-700">{t('fullNameError')}</span> : null}
-              </label>
-              <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">
-                {t('address')}
-                <input className={inputClass()} autoComplete="street-address" required aria-invalid={showValidation && !formData.address.trim()} aria-describedby={showValidation && !formData.address.trim() ? 'address-error' : undefined} value={formData.address} onChange={(event) => updateField('address', event.target.value)} />
-                {showValidation && !formData.address.trim() ? <span id="address-error" className="text-xs font-medium text-rose-700">{t('addressError')}</span> : null}
-              </label>
-              <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">
-                {t('addressLine2')} <span className="font-normal text-slate-400">{t('optional')}</span>
-                <input className={inputClass()} autoComplete="address-line2" value={formData.address2} onChange={(event) => updateField('address2', event.target.value)} />
-              </label>
-              <label className="grid gap-2 text-sm font-semibold text-[#071724]">
-                {t('city')}
-                <input className={inputClass()} autoComplete="address-level2" required aria-invalid={showValidation && !formData.city.trim()} aria-describedby={showValidation && !formData.city.trim() ? 'city-error' : undefined} value={formData.city} onChange={(event) => updateField('city', event.target.value)} />
-                {showValidation && !formData.city.trim() ? <span id="city-error" className="text-xs font-medium text-rose-700">{t('cityError')}</span> : null}
-              </label>
-              <label className="grid gap-2 text-sm font-semibold text-[#071724]">
-                {t('state')}
-                <input className={inputClass()} autoComplete="address-level1" required aria-invalid={showValidation && !formData.state.trim()} aria-describedby={showValidation && !formData.state.trim() ? 'state-error' : undefined} value={formData.state} onChange={(event) => updateField('state', event.target.value)} />
-                {showValidation && !formData.state.trim() ? <span id="state-error" className="text-xs font-medium text-rose-700">{t('stateError')}</span> : null}
-              </label>
-              <label className="grid gap-2 text-sm font-semibold text-[#071724]">
-                {t('zip')}
-                <input className={inputClass()} inputMode="numeric" autoComplete="postal-code" required aria-invalid={showValidation && !formData.zip.trim()} aria-describedby={showValidation && !formData.zip.trim() ? 'zip-error' : undefined} value={formData.zip} onChange={(event) => updateField('zip', event.target.value)} />
-                {showValidation && !formData.zip.trim() ? <span id="zip-error" className="text-xs font-medium text-rose-700">{t('zipError')}</span> : null}
-              </label>
-              <label className="grid gap-2 text-sm font-semibold text-[#071724]">
-                {t('country')}
-                <select className={inputClass()} value={formData.country} onChange={(event) => updateField('country', event.target.value as ReviewFormData['country'])}>
-                  <option value="US">{t('unitedStates')}</option>
-                  <option value="MX">{t('mexico')}</option>
-                </select>
-              </label>
-              <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">
-                {t('preferredContactMethod')}
-                <select className={inputClass()} value={formData.preferredContact} onChange={(event) => updateField('preferredContact', event.target.value as ReviewFormData['preferredContact'])}>
-                  <option value="whatsapp">{t('whatsapp')}</option>
-                  <option value="email">{t('emailOption')}</option>
-                  <option value="phone">{t('phoneOption')}</option>
-                </select>
-              </label>
-              <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">
-                {t('notes')}
-                <textarea
-                  rows={4}
-                  className="w-full resize-none rounded-2xl border border-slate-900/10 bg-white p-4 text-sm text-[#071724] outline-none transition placeholder:text-slate-400 focus:border-teal-600/70 focus:ring-4 focus:ring-teal-100"
-                  value={formData.notes}
-                  onChange={(event) => updateField('notes', event.target.value)}
-                />
-              </label>
-              <div className="grid gap-2 sm:col-span-2">
-                <label className="flex items-start gap-3 rounded-2xl border border-slate-900/10 bg-[#f8fafc] p-4 text-sm leading-6 text-slate-600">
-                  <input type="checkbox" checked={formData.researchUseAcknowledged} onChange={(event) => updateField('researchUseAcknowledged', event.target.checked)} aria-invalid={showValidation && !formData.researchUseAcknowledged} aria-describedby={showValidation && !formData.researchUseAcknowledged ? 'research-use-error' : undefined} className="mt-1 size-4 accent-teal-700" />
-                  <span>{t('researchUseAcknowledgment')}</span>
-                </label>
-                {showValidation && !formData.researchUseAcknowledged ? <span id="research-use-error" className="text-xs font-medium text-rose-700">{t('researchUseError')}</span> : null}
+          <div className="grid gap-6">
+            <section className="rounded-[1.75rem] border border-white/70 bg-white/75 p-6 shadow-[0_24px_70px_rgba(7,23,36,0.06)] backdrop-blur-xl sm:p-8">
+              <h2 className="text-2xl font-semibold tracking-[-0.04em] text-[#071724]">{t('shippingDestinationTitle')}</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">{t('shippingDestinationBody')}</p>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                {destinationOptions.map(({ id, icon: Icon, titleKey, bodyKey }) => <button key={id} type="button" onClick={() => chooseDestination(id)} aria-pressed={formData.destination === id} className={cn('flex min-h-28 items-start gap-3 rounded-2xl border p-4 text-left transition', formData.destination === id ? 'border-teal-700 bg-teal-50 ring-2 ring-teal-100' : 'border-slate-200 bg-white hover:border-teal-500/50')}><span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white text-teal-800"><Icon size={18} aria-hidden="true" /></span><span><span className="block text-sm font-semibold text-[#071724]">{t(titleKey)}</span><span className="mt-1 block text-xs leading-5 text-slate-500">{t(bodyKey)}</span></span></button>)}
               </div>
-            </div>
-          </section>
+            </section>
 
-          <aside className="order-first rounded-[1.75rem] border border-white/70 bg-white/85 p-6 shadow-[0_28px_80px_rgba(7,23,36,0.09)] backdrop-blur-2xl sm:p-7 lg:sticky lg:top-8 lg:order-none lg:self-start">
-            <div className="flex items-center justify-between gap-4">
-              <h2 className="text-2xl font-semibold tracking-[-0.04em] text-[#071724]">{t('cart')}</h2>
-              <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800">
-                {t(itemCount === 1 ? 'itemCountOne' : 'itemCountOther', { count: itemCount })}
-              </span>
-            </div>
-
-            {items.length ? (
-              <div className="mt-5 grid gap-4">
-                {items.map((item) => (
-                  <article key={item.id} className="rounded-2xl border border-slate-900/10 bg-white p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h3 className="text-sm font-semibold text-[#071724]">{item.productName}</h3>
-                        <p className="mt-1 text-xs text-slate-500">{item.variantLabel} · {purchaseTypeLabel(tCommon, item.purchaseType)} · {tCommon('packLabel', { pack: item.packSize })} · {tCommon('kitLabel', { kit: item.kitIncluded ? tCommon('yes') : tCommon('no') })}</p>
-                        <p className="mt-2 text-xs text-slate-500">{formatCartCurrency(item.unitPrice)} {t('each')}</p>
-                        <p className="mt-1 text-sm font-semibold text-[#071724]">{formatCartCurrency(item.linePrice * item.quantity)}</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeFromCart(item.id)}
-                        aria-label={t('removeFromOrder', { product: item.productName, variant: item.variantLabel })}
-                        className="text-slate-400 transition hover:text-rose-700"
-                      >
-                        <Trash2 size={16} aria-hidden="true" />
-                      </button>
-                    </div>
-                    <div className="mt-4 inline-flex items-center rounded-full border border-slate-900/10 bg-[#f8fafc]">
-                      <button type="button" aria-label={t('decreaseQuantity', { product: item.productName, variant: item.variantLabel })} onClick={() => updateQuantity(item.id, item.quantity - 1)} className="flex size-9 items-center justify-center text-slate-600">
-                        <Minus size={14} aria-hidden="true" />
-                      </button>
-                      <span className="min-w-8 text-center text-sm font-semibold text-[#071724]">{item.quantity}</span>
-                      <button type="button" aria-label={t('increaseQuantity', { product: item.productName, variant: item.variantLabel })} onClick={() => updateQuantity(item.id, item.quantity + 1)} className="flex size-9 items-center justify-center text-slate-600">
-                        <Plus size={14} aria-hidden="true" />
-                      </button>
-                    </div>
-                  </article>
-                ))}
+            <section className="rounded-[1.75rem] border border-white/70 bg-white/75 p-6 shadow-[0_24px_70px_rgba(7,23,36,0.06)] backdrop-blur-xl sm:p-8">
+              <h2 className="text-2xl font-semibold tracking-[-0.04em] text-[#071724]">{t('contactAndShipping')}</h2>
+              <div className="mt-6 grid gap-5 sm:grid-cols-2">
+                <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('email')}<input className={inputClass()} type="email" autoComplete="email" required aria-invalid={showValidation && !isValidEmail(formData.email)} value={formData.email} onChange={(event) => updateField('email', event.target.value)} />{showValidation && !isValidEmail(formData.email) ? <span className="text-xs font-medium text-rose-700">{t('emailError')}</span> : null}</label>
+                <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('phone')}<input className={inputClass()} type="tel" autoComplete="tel" required aria-invalid={showValidation && formData.phone.replace(/\D/g, '').length < 7} value={formData.phone} onChange={(event) => updateField('phone', event.target.value)} />{showValidation && formData.phone.replace(/\D/g, '').length < 7 ? <span className="text-xs font-medium text-rose-700">{t('phoneError')}</span> : null}</label>
+                <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">{t('fullName')}<input className={inputClass()} autoComplete="name" required aria-invalid={showValidation && !formData.fullName.trim()} value={formData.fullName} onChange={(event) => updateField('fullName', event.target.value)} />{showValidation && !formData.fullName.trim() ? <span className="text-xs font-medium text-rose-700">{t('fullNameError')}</span> : null}</label>
+                <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('country')}<select className={inputClass()} disabled={countryLocked} value={formData.country} onChange={(event) => updateField('country', event.target.value)}><option value="">{t('selectCountry')}</option>{countryNames.map((country) => <option key={country.code} value={country.code}>{country.name}</option>)}</select></label>
+                <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('state')}<input className={inputClass()} autoComplete="address-level1" disabled={localDestination} required aria-invalid={showValidation && !formData.state.trim()} value={formData.state} onChange={(event) => updateField('state', event.target.value)} /></label>
+                <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('city')}<input className={inputClass()} autoComplete="address-level2" disabled={localDestination} required aria-invalid={showValidation && !formData.city.trim()} value={formData.city} onChange={(event) => updateField('city', event.target.value)} /></label>
+                <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('zip')}<input className={inputClass()} autoComplete="postal-code" required aria-invalid={showValidation && addressEssentialErrors(address, formData.destination).some((error) => error.startsWith('postal_code'))} value={formData.zip} onChange={(event) => updateField('zip', event.target.value)} /></label>
+                <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">{t('neighborhood')} {formData.country !== 'MX' ? <span className="font-normal text-slate-400">{t('optional')}</span> : null}<input className={inputClass()} autoComplete="address-level3" required={formData.country === 'MX'} aria-invalid={showValidation && formData.country === 'MX' && !formData.neighborhood.trim()} value={formData.neighborhood} onChange={(event) => updateField('neighborhood', event.target.value)} /></label>
+                <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('street')}<input className={inputClass()} autoComplete="address-line1" required aria-invalid={showValidation && !formData.address.trim()} value={formData.address} onChange={(event) => updateField('address', event.target.value)} /></label>
+                <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('streetNumber')}<input className={inputClass()} required aria-invalid={showValidation && !formData.streetNumber.trim()} value={formData.streetNumber} onChange={(event) => updateField('streetNumber', event.target.value)} /></label>
+                <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">{t('addressLine2')} <span className="font-normal text-slate-400">{t('optional')}</span><input className={inputClass()} autoComplete="address-line2" value={formData.address2} onChange={(event) => updateField('address2', event.target.value)} /></label>
               </div>
-            ) : (
-              <div className="mt-5 rounded-2xl border border-dashed border-slate-900/15 bg-[#f8fafc] p-8 text-center">
-                <ShoppingCart className="mx-auto text-teal-700" size={26} aria-hidden="true" />
-                <p className="mt-3 text-sm font-semibold text-[#071724]">{t('cartEmptyShort')}</p>
-                <a href={path('/catalog')} className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full bg-[#071724] px-5 text-sm font-semibold text-white">
-                  {t('browseCatalog')}
-                </a>
+              <VerificationPanel result={verification} validating={validating} addressChoice={addressChoice} selectedRateId={selectedRateId} manualReviewRequested={manualReviewRequested} onAddressChoice={setAddressChoice} onRate={setSelectedRateId} onEdit={() => { setVerification(null); setManualReviewRequested(false); checkoutFormRef.current?.querySelector<HTMLInputElement>('input[autocomplete="address-line1"]')?.focus() }} onManualReview={() => setManualReviewRequested(true)} onRetry={() => void runVerification()} />
+              <div className="mt-6 grid gap-5 sm:grid-cols-2">
+                <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('preferredContactMethod')}<select className={inputClass()} value={formData.preferredContact} onChange={(event) => updateField('preferredContact', event.target.value as ReviewFormData['preferredContact'])}><option value="whatsapp">{t('whatsapp')}</option><option value="email">{t('emailOption')}</option><option value="phone">{t('phoneOption')}</option></select></label>
+                <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">{t('notes')}<textarea rows={4} className="w-full resize-none rounded-2xl border border-slate-900/10 bg-white p-4 text-sm text-[#071724] outline-none transition focus:border-teal-600/70 focus:ring-4 focus:ring-teal-100" value={formData.notes} onChange={(event) => updateField('notes', event.target.value)} /></label>
+                <div className="grid gap-3 sm:col-span-2">
+                  <label className="flex items-start gap-3 rounded-2xl border border-slate-900/10 bg-[#f8fafc] p-4 text-sm leading-6 text-slate-600"><input type="checkbox" checked={formData.destinationAcknowledged} onChange={(event) => updateField('destinationAcknowledged', event.target.checked)} aria-invalid={showValidation && !formData.destinationAcknowledged} className="mt-1 size-4 accent-teal-700" /><span>{t('destinationAcknowledgment')}</span></label>
+                  <label className="flex items-start gap-3 rounded-2xl border border-slate-900/10 bg-[#f8fafc] p-4 text-sm leading-6 text-slate-600"><input type="checkbox" checked={formData.researchUseAcknowledged} onChange={(event) => updateField('researchUseAcknowledged', event.target.checked)} aria-invalid={showValidation && !formData.researchUseAcknowledged} className="mt-1 size-4 accent-teal-700" /><span>{t('researchUseAcknowledgment')}</span></label>
+                </div>
               </div>
-            )}
+            </section>
+          </div>
 
+          <aside className="order-first rounded-[1.75rem] border border-white/70 bg-white/85 p-6 shadow-[0_28px_80px_rgba(7,23,36,0.09)] backdrop-blur-2xl sm:p-7 lg:sticky lg:top-8 lg:order-none">
+            <details open className="group"><summary className="flex cursor-pointer list-none items-center justify-between gap-4"><span className="text-2xl font-semibold tracking-[-0.04em] text-[#071724]">{t('cart')}</span><span className="flex items-center gap-2"><span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800">{t(itemCount === 1 ? 'itemCountOne' : 'itemCountOther', { count: itemCount })}</span><ChevronDown size={16} className="transition group-open:rotate-180" aria-hidden="true" /></span></summary>
+              <div className="mt-5 grid gap-4">{items.map((item) => <article key={item.id} className="rounded-2xl border border-slate-900/10 bg-white p-4"><div className="flex items-start justify-between gap-4"><div><h3 className="text-sm font-semibold text-[#071724]">{item.productName}</h3><p className="mt-1 text-xs text-slate-500">{item.variantLabel} · {purchaseTypeLabel(tCommon, item.purchaseType)} · {tCommon('packLabel', { pack: item.packSize })}</p><p className="mt-2 text-sm font-semibold text-[#071724]">{formatCartCurrency(item.linePrice * item.quantity)}</p></div><button type="button" onClick={() => removeFromCart(item.id)} aria-label={t('removeFromOrder', { product: item.productName, variant: item.variantLabel })} className="text-slate-400 hover:text-rose-700"><Trash2 size={16} aria-hidden="true" /></button></div><div className="mt-4 inline-flex items-center rounded-full border border-slate-900/10 bg-[#f8fafc]"><button type="button" aria-label={t('decreaseQuantity', { product: item.productName, variant: item.variantLabel })} onClick={() => updateQuantity(item.id, item.quantity - 1)} className="flex size-9 items-center justify-center"><Minus size={14} aria-hidden="true" /></button><span className="min-w-8 text-center text-sm font-semibold">{item.quantity}</span><button type="button" aria-label={t('increaseQuantity', { product: item.productName, variant: item.variantLabel })} onClick={() => updateQuantity(item.id, item.quantity + 1)} className="flex size-9 items-center justify-center"><Plus size={14} aria-hidden="true" /></button></div></article>)}</div>
+            </details>
             <div className="mt-6 grid gap-2 border-t border-slate-900/10 pt-5 text-sm">
-              <div className="flex items-center justify-between text-slate-600">
-                <span>{t('subtotal')}</span>
-                <span className="font-semibold text-[#071724]">{formatCartCurrency(subtotal)}</span>
-              </div>
-              <p className="mt-2 text-xs leading-5 text-slate-500">{t('shippingTaxesNote')}</p>
+              <div className="flex justify-between text-slate-600"><span>{t('subtotal')}</span><span className="font-semibold text-[#071724]">{formatCartCurrency(subtotal)}</span></div>
+              {charges.importFeeCents ? <div className="flex justify-between text-slate-600"><span>{t('importFee')}</span><span className="font-semibold text-[#071724]">{formatCartCurrency(charges.importFeeCents / 100)}</span></div> : null}
+              <div className="flex justify-between text-slate-600"><span>{t('shipping')}</span><span className="font-semibold text-[#071724]">{charges.shippingCents === null ? t('pendingConfirmation') : formatCartCurrency(charges.shippingCents / 100)}</span></div>
+              <div className="mt-2 flex justify-between border-t border-slate-900/10 pt-3 text-base font-semibold text-[#071724]"><span>{t('total')}</span><span>{charges.totalCents === null ? t('pendingConfirmation') : formatCartCurrency(charges.totalCents / 100)}</span></div>
+              {formData.destination === 'mexico' ? <p className="mt-2 rounded-xl bg-teal-50 p-3 text-xs leading-5 text-teal-950">{t('mexicoProcessingNote')}</p> : null}
+              {!paymentAllowed && verification ? <p className="mt-2 rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-950">{t('paymentBlockedPendingReview')}</p> : null}
+              <a href={path('/legal/shipping-returns')} className="mt-2 text-xs font-semibold text-teal-800 hover:underline">{t('shippingDeliveryLink')}</a>
             </div>
-
-            {items.length ? (
-              <div className="mt-6">
-                <EncoreCompleteKit variant="checkout" />
-                <p className="mt-2 text-xs leading-5 text-slate-500">{t('kitPerLineNote')}</p>
-              </div>
-            ) : null}
-
-            {showValidation && !formIsValid && items.length ? (
-              <p className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900" role="alert">
-                {t('validationBanner')}
-              </p>
-            ) : null}
-            <button
-              type="button"
-              onClick={submitRequest}
-              disabled={!items.length}
-              className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-45"
-            >
-              {t('continueWithSupport')}
-              <ChevronRight size={16} aria-hidden="true" />
-            </button>
-
-            <div className="mt-4 grid gap-1.5">
-              <p className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
-                <ShieldCheck size={13} aria-hidden="true" className="shrink-0 text-teal-700" />
-                {t('contactStaysNote')}
-              </p>
-              <p className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
-                <Check size={13} aria-hidden="true" className="shrink-0 text-teal-700" />
-                {t('orderReviewedNote')}
-              </p>
-              <p className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
-                <MessageCircle size={13} aria-hidden="true" className="shrink-0 text-teal-700" />
-                {t('supportAvailable')}{' '}
-                <a href="https://wa.me/19153595448" className="font-semibold text-teal-800 hover:underline">
-                  {t('contactEncoreWhatsapp')}
-                </a>
-              </p>
-            </div>
-            <p className="mt-4 text-xs leading-5 text-slate-500">
-              {t('reviewOurPrefix')}{' '}
-              <a href={path('/legal/terms')} className="font-semibold text-teal-800 hover:underline">{t('terms')}</a>
-              {', '}
-              <a href={path('/legal/privacy')} className="font-semibold text-teal-800 hover:underline">{t('privacyPolicy')}</a>
-              {locale === 'es' ? ' y ' : ', and '}
-              <a href={path('/legal/shipping-returns')} className="font-semibold text-teal-800 hover:underline">{t('shippingReturns')}</a>.
-            </p>
+            <div className="mt-6"><EncoreCompleteKit variant="checkout" /></div>
+            {showValidation && !formIsValid ? <p className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900" role="alert">{t('validationBannerShipping')}</p> : null}
+            <button type="button" onClick={submitRequest} className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition hover:bg-teal-700">{t(paymentAllowed ? 'continueWithSupport' : 'continueToManualReview')}<ChevronRight size={16} aria-hidden="true" /></button>
+            <div className="mt-4 grid gap-1.5"><p className="flex items-center gap-1.5 text-xs font-medium text-slate-500"><ShieldCheck size={13} className="text-teal-700" aria-hidden="true" />{t('serverValidationNote')}</p><p className="flex items-center gap-1.5 text-xs font-medium text-slate-500"><PackageCheck size={13} className="text-teal-700" aria-hidden="true" />{t('inventoryReviewNote')}</p><p className="flex items-center gap-1.5 text-xs font-medium text-slate-500"><MessageCircle size={13} className="text-teal-700" aria-hidden="true" />{t('supportAvailable')} <a href="https://wa.me/19153595448" className="font-semibold text-teal-800 hover:underline">{t('contactEncoreWhatsapp')}</a></p></div>
           </aside>
         </div>
       </div>

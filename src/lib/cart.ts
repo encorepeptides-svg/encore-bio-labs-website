@@ -161,7 +161,7 @@ export function calculateItemCount(items: CartItem[]) {
 
 export function calculateShipping(input: ShippingCalculationInput) {
   if (!input.itemCount || input.subtotal <= 0) return 0
-  if (input.destinationCountry === 'MX') return 20
+  if (input.destinationCountry === 'MX') return 15
   return 0
 }
 

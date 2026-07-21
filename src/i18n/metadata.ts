@@ -70,8 +70,8 @@ export const pageMetadata: Record<string, LocalizedPageMeta> = {
     es: { title: 'Política de privacidad | Encore Bio Labs', description: 'Conoce cómo Encore Bio Labs maneja la información que envías a través del sitio web.' },
   },
   '/legal/shipping-returns': {
-    en: { title: 'Shipping and Returns | Encore Bio Labs', description: 'Review Encore Bio Labs shipping, delivery, return, and support policies.' },
-    es: { title: 'Envíos y devoluciones | Encore Bio Labs', description: 'Conoce las políticas de envío, entrega, devoluciones y soporte de Encore Bio Labs.' },
+    en: { title: 'Shipping & Delivery | Encore Bio Labs', description: 'Review destination coverage, Mexico charges, live carrier validation, delivery timing, and return support.' },
+    es: { title: 'Envíos y entregas | Encore Bio Labs', description: 'Consulta la cobertura, los cargos para México, la validación del transportista, los tiempos y el soporte de devoluciones.' },
   },
   '/client-login': {
     en: { title: 'Sign In | Encore Bio Labs Client Portal', description: 'Sign in to the Encore Bio Labs private client portal to review your progress, orders, and documents.' },

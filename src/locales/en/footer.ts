@@ -18,7 +18,7 @@ export const footer = {
   contactLink: 'Contact',
   terms: 'Terms',
   privacyPolicy: 'Privacy Policy',
-  shippingReturns: 'Shipping & Returns',
+  shippingReturns: 'Shipping & Delivery',
   copyright: '© 2026 Encore Bio Labs. All rights reserved.',
   language: 'Language',
 } as const

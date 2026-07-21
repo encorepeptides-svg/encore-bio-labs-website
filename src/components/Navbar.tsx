@@ -24,6 +24,7 @@ export function Navbar() {
   const primaryNavItems = [
     { key: 'Home', label: t('home'), href: '/' },
     { key: 'Catalog', label: t('catalog'), href: '/catalog' },
+    { key: 'Shipping', label: t('shippingDelivery'), href: '/legal/shipping-returns' },
     { key: 'About', label: t('about'), href: '/about' },
     { key: 'Contact', label: t('contact'), href: '/contact' },
   ]
@@ -123,6 +124,7 @@ export function Navbar() {
     if (key === 'About') return logicalPathname === '/about' || logicalPathname === '/about/'
     if (key === 'FAQ') return logicalPathname === '/faq' || logicalPathname === '/faq/'
     if (key === 'Contact') return logicalPathname === '/contact' || logicalPathname === '/contact/'
+    if (key === 'Shipping') return logicalPathname === '/legal/shipping-returns' || logicalPathname === '/legal/shipping-returns/'
     if (key === 'ClientPortal') return logicalPathname === '/client-login' || logicalPathname.startsWith('/portal')
     return false
   }
