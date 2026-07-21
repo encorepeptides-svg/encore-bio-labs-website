@@ -95,6 +95,10 @@ export function destinationIsLocal(destination: DeliveryDestination) {
   return destination.startsWith('local_')
 }
 
+export function destinationUsesMexicoImportFee(destination: DeliveryDestination) {
+  return destination === 'mexico' || destination === 'local_juarez' || destination === 'local_chihuahua'
+}
+
 export function localDestinationIdentityMatches(address: Pick<ShippingAddress, 'country' | 'state' | 'city'>, destination: DeliveryDestination) {
   const city = comparable(address.city)
   const state = comparable(address.state)
@@ -175,7 +179,7 @@ export function calculateShippingCharges({
   selectedRate: ShippingRate | null
   localDeliveryFeeCents: number | null
 }): ShippingCharges {
-  const importFeeCents = destination === 'mexico' ? calculateMexicoImportFeeCents(kitCount) : 0
+  const importFeeCents = destinationUsesMexicoImportFee(destination) ? calculateMexicoImportFeeCents(kitCount) : 0
   let shippingCents: number | null = null
   if (destination === 'mexico') shippingCents = 1_500
   else if (destinationIsLocal(destination)) shippingCents = localDeliveryFeeCents

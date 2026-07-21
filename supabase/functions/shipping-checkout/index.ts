@@ -56,6 +56,10 @@ function isLocal(destination: Destination) {
   return destination.startsWith('local_')
 }
 
+function usesMexicoImportFee(destination: Destination) {
+  return destination === 'mexico' || destination === 'local_juarez' || destination === 'local_chihuahua'
+}
+
 function localIdentityMatches(address: Address, destination: Destination) {
   const rule = localRule(destination)
   if (!rule) return true
@@ -440,7 +444,7 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
   })
   if (!safeItems.length) return response({ code: 'invalid_order_items' }, 400, origin)
   const subtotalCents = safeItems.reduce((sum, item) => sum + Number(item.line_total_cents), 0)
-  const importFeeCents = destination === 'mexico' ? (kitCount >= 5 ? 5_000 : 2_500) : 0
+  const importFeeCents = usesMexicoImportFee(destination) ? (kitCount >= 5 ? 5_000 : 2_500) : 0
   const shippingCents = destination === 'mexico' ? 1_500 : isLocal(destination) ? verification.localDeliveryFeeCents : matchedRate?.amountCents ?? null
   const totalCents = shippingCents === null ? null : subtotalCents + importFeeCents + shippingCents
   const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''

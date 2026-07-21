@@ -4,6 +4,7 @@ import {
   addressesDiffer,
   calculateMexicoImportFeeCents,
   calculateShippingCharges,
+  destinationUsesMexicoImportFee,
   emptyShippingAddress,
   isPoBoxAddress,
   localDestinationIdentityMatches,
@@ -87,6 +88,14 @@ describe('server-mirrored charges and payment gates', () => {
     expect(calculateMexicoImportFeeCents(kits)).toBe(expected)
   })
 
+  it('applies the Mexico import fee to shipped and local Mexico destinations only', () => {
+    expect(destinationUsesMexicoImportFee('mexico')).toBe(true)
+    expect(destinationUsesMexicoImportFee('local_juarez')).toBe(true)
+    expect(destinationUsesMexicoImportFee('local_chihuahua')).toBe(true)
+    expect(destinationUsesMexicoImportFee('local_el_paso')).toBe(false)
+    expect(destinationUsesMexicoImportFee('us')).toBe(false)
+  })
+
   it('applies the supplied Mexico shipping rule and recomputes the final total', () => {
     expect(calculateShippingCharges({ destination: 'mexico', kitCount: 4, subtotalCents: 20_000, selectedRate: verified.rates[0], localDeliveryFeeCents: null })).toEqual({ importFeeCents: 2500, shippingCents: 1500, totalCents: 24_000 })
     expect(calculateShippingCharges({ destination: 'mexico', kitCount: 5, subtotalCents: 20_000, selectedRate: verified.rates[0], localDeliveryFeeCents: null }).totalCents).toBe(26_500)
@@ -94,6 +103,11 @@ describe('server-mirrored charges and payment gates', () => {
 
   it('does not invent local charges when the zone fee is not configured', () => {
     expect(calculateShippingCharges({ destination: 'local_el_paso', kitCount: 1, subtotalCents: 10_000, selectedRate: null, localDeliveryFeeCents: null })).toEqual({ importFeeCents: 0, shippingCents: null, totalCents: null })
+    expect(calculateShippingCharges({ destination: 'local_juarez', kitCount: 4, subtotalCents: 10_000, selectedRate: null, localDeliveryFeeCents: null })).toEqual({ importFeeCents: 2500, shippingCents: null, totalCents: null })
+  })
+
+  it('combines the import fee with a configured local Mexico delivery charge', () => {
+    expect(calculateShippingCharges({ destination: 'local_chihuahua', kitCount: 5, subtotalCents: 20_000, selectedRate: null, localDeliveryFeeCents: 1000 })).toEqual({ importFeeCents: 5000, shippingCents: 1000, totalCents: 26_000 })
   })
 
   it('blocks payment for provider downtime, manual review, and unaccepted destination details', () => {

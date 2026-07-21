@@ -4,6 +4,8 @@ The storefront checkout calls the `shipping-checkout` Supabase Edge Function. Th
 
 Orders retain three distinct address records: the customer's original entry, the provider-standardized address, and the address the customer selected after reviewing any correction.
 
+The Mexico import fee is server-authoritative for shipped Mexico orders and local delivery in Ciudad Juárez or Chihuahua: $25 for 1–4 kits and $50 for 5 or more. Local Mexico delivery uses its configured local-delivery cost instead of the $15 carrier-shipping charge.
+
 ## Required operator configuration
 
 1. Copy the variable names from `supabase/functions/.env.example` into a private Edge Function secrets file or the Supabase secrets dashboard.

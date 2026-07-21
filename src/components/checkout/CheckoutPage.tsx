@@ -28,6 +28,7 @@ import { isCheckoutFormValid, isValidEmail } from '../../lib/checkout'
 import {
   addressEssentialErrors,
   calculateShippingCharges,
+  destinationUsesMexicoImportFee,
   expectedCountryForDestination,
   shippingSelectionAllowsPayment,
   verifyShippingAddress,
@@ -90,8 +91,8 @@ const destinationOptions: Array<{ id: DeliveryDestination; icon: LucideIcon; tit
   { id: 'us', icon: MapPin, titleKey: 'destinationUs', bodyKey: 'destinationUsBody' },
   { id: 'mexico', icon: MapPin, titleKey: 'destinationMexico', bodyKey: 'destinationMexicoBody' },
   { id: 'local_el_paso', icon: Truck, titleKey: 'destinationElPaso', bodyKey: 'destinationLocalBody' },
-  { id: 'local_juarez', icon: Truck, titleKey: 'destinationJuarez', bodyKey: 'destinationLocalBody' },
-  { id: 'local_chihuahua', icon: Truck, titleKey: 'destinationChihuahua', bodyKey: 'destinationLocalBody' },
+  { id: 'local_juarez', icon: Truck, titleKey: 'destinationJuarez', bodyKey: 'destinationLocalMexicoBody' },
+  { id: 'local_chihuahua', icon: Truck, titleKey: 'destinationChihuahua', bodyKey: 'destinationLocalMexicoBody' },
   { id: 'international', icon: Globe2, titleKey: 'destinationInternational', bodyKey: 'destinationInternationalBody' },
 ]
 
@@ -501,7 +502,7 @@ export function CheckoutPage() {
               {charges.importFeeCents ? <div className="flex justify-between text-slate-600"><span>{t('importFee')}</span><span className="font-semibold text-[#071724]">{formatCartCurrency(charges.importFeeCents / 100)}</span></div> : null}
               <div className="flex justify-between text-slate-600"><span>{t('shipping')}</span><span className="font-semibold text-[#071724]">{charges.shippingCents === null ? t('pendingConfirmation') : formatCartCurrency(charges.shippingCents / 100)}</span></div>
               <div className="mt-2 flex justify-between border-t border-slate-900/10 pt-3 text-base font-semibold text-[#071724]"><span>{t('total')}</span><span>{charges.totalCents === null ? t('pendingConfirmation') : formatCartCurrency(charges.totalCents / 100)}</span></div>
-              {formData.destination === 'mexico' ? <p className="mt-2 rounded-xl bg-teal-50 p-3 text-xs leading-5 text-teal-950">{t('mexicoProcessingNote')}</p> : null}
+              {destinationUsesMexicoImportFee(formData.destination) ? <p className="mt-2 rounded-xl bg-teal-50 p-3 text-xs leading-5 text-teal-950">{t('mexicoProcessingNote')}</p> : null}
               {!paymentAllowed && verification ? <p className="mt-2 rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-950">{t('paymentBlockedPendingReview')}</p> : null}
               <a href={path('/legal/shipping-returns')} className="mt-2 text-xs font-semibold text-teal-800 hover:underline">{t('shippingDeliveryLink')}</a>
             </div>
