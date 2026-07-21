@@ -66,6 +66,8 @@ const paymentMethodMessageLabels: Record<InterimPaymentMethodId, { en: string; e
   paypal: { en: 'PayPal', es: 'PayPal' },
   venmo: { en: 'Venmo', es: 'Venmo' },
   cashapp: { en: 'Cash App', es: 'Cash App' },
+  zelle: { en: 'Zelle', es: 'Zelle' },
+  apple_pay: { en: 'Apple Pay', es: 'Apple Pay' },
   cash_on_delivery: { en: 'Cash on delivery / pickup', es: 'Pago contra entrega / recolección' },
   manual_review: { en: 'Manual shipping review', es: 'Revisión manual de envío' },
 }

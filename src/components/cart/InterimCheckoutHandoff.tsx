@@ -18,6 +18,8 @@ const methodLabelKeys: Record<InterimPaymentMethodId, string> = {
   paypal: 'payPaypal',
   venmo: 'payVenmo',
   cashapp: 'payCashapp',
+  zelle: 'payZelle',
+  apple_pay: 'payApplePay',
   cash_on_delivery: 'payCod',
   manual_review: 'payManualReview',
 }
