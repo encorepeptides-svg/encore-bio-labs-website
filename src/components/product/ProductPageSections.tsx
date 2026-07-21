@@ -35,12 +35,28 @@ import { buildOrderInquiryMessage, buildWhatsAppUrl } from '../../lib/whatsapp'
 import { getDefaultPurchaseSelection, type PurchaseSelection } from '../../lib/purchaseOptions'
 import { ProductImage } from '../ProductImage'
 
-// Products shipping the concise Clean Lab (light) hero: everything — what it is
-// and how to buy — in one tight view. Scoped intentionally small so it can be
-// reviewed live on one page before any wider rollout.
-const LAB_HERO = new Set(['ghk-cu'])
 import { PurchaseSelector } from './PurchaseSelector'
 import { ProductConfigurationVisual } from './ProductConfigurationVisual'
+import { ProductHero as ProductHeroEnvironment } from './ProductHero'
+
+// The Clean Lab (light) hero applies to every product whose full-res transparent
+// cutout has been promoted to production (src/assets/images/products/cutouts/).
+// Web-optimized WebP derivatives are resolved by the product's hero image name;
+// a product without a ready cutout falls back to the default hero automatically,
+// so a placeholder image is never shipped.
+const cutoutUrls = import.meta.glob('../../assets/images/products/cutouts/*.webp', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}) as Record<string, string>
+
+function getProductCutout(product: Product): string | undefined {
+  const src = getProductMedia(product.slug)?.hero.src
+  if (!src) return undefined
+  const stem = src.replace(/\.[a-z0-9]+$/i, '')
+  const key = Object.keys(cutoutUrls).find((assetPath) => assetPath.endsWith(`/cutouts/${stem}.webp`))
+  return key ? cutoutUrls[key] : undefined
+}
 import { CTA } from '../CTA'
 import { EncoreCompleteKit } from '../EncoreCompleteKit'
 import {
@@ -166,8 +182,8 @@ export function ProductHero({ product, researchContent }: { product: Product; re
   const [variant, setVariant] = useState<ProductVariant>(product.variants[0])
   const [selection, setSelection] = useState<PurchaseSelection>(() => getDefaultPurchaseSelection(product))
 
-  const usesLabHero = LAB_HERO.has(product.slug)
-  if (usesLabHero) {
+  const labCutout = getProductCutout(product)
+  if (labCutout) {
     return (
       <section className="relative overflow-hidden bg-gradient-to-b from-[#f3f6f5] to-[#e7edea] px-5 py-8 sm:px-8 lg:py-12">
         <div className="mx-auto grid max-w-[82rem] items-center gap-6 lg:grid-cols-[1fr_1.12fr]">
@@ -188,9 +204,7 @@ export function ProductHero({ product, researchContent }: { product: Product; re
           </div>
           {/* RIGHT: the vial, clean light scene */}
           <div className="relative mx-auto w-full max-w-2xl lg:sticky lg:top-16">
-            <div className="rounded-[2.25rem] border border-slate-900/10 bg-[radial-gradient(circle_at_50%_32%,rgba(23,168,148,0.18),transparent_38%),linear-gradient(145deg,rgba(255,255,255,0.94),rgba(231,237,234,0.86))] shadow-[0_32px_90px_rgba(7,23,36,0.12)]">
-              <ProductConfigurationVisual product={product} variant={variant} selection={selection} theme="light" />
-            </div>
+            <ProductHeroEnvironment imageSrc={labCutout} imageAlt={t('productImageAlt', { product: product.name })} accent="#17a894" theme="lab" bare density="low" priority imageWidth={1000} imageHeight={1000} />
             <span className="absolute left-6 top-8 z-10 rounded-full border border-slate-900/10 bg-white/80 px-3 py-2 text-[0.62rem] font-semibold text-slate-700 backdrop-blur">{t('documentationByReview')}</span>
             <span className="absolute right-6 top-8 z-10 rounded-full bg-teal-700 px-3 py-2 text-[0.62rem] font-bold uppercase tracking-[0.08em] text-white">RUO</span>
           </div>
