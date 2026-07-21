@@ -116,8 +116,4 @@ export const product = {
   notFoundTitle: 'Esta página de producto no está disponible.',
   notFoundBody: 'Vuelve al catálogo de Encore Bio Labs para seguir explorando productos de uso exclusivo para investigación.',
   notFoundCta: 'Volver al catálogo',
-  heroStatFrom: 'Desde',
-  heroStatStrengths: 'Concentraciones',
-  heroStatDocs: 'Documentos',
-  heroStatDocsValue: 'A solicitud',
 } satisfies Record<keyof typeof productEn, string>
