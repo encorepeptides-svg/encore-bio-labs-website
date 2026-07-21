@@ -50,6 +50,7 @@ export function AdminStorefront() {
                 <p className="font-mono font-semibold">{order.order_reference}</p>
                 <p className="mt-1 max-w-56 text-xs text-slate-500">{order.items.map((item) => `${item.quantity}x ${item.product} ${item.variant}`).join(', ')}</p>
                 <p className="mt-1 text-xs font-semibold text-teal-800">{order.destination_type.replaceAll('_', ' ')}</p>
+                {order.local_fulfillment_method ? <p className="mt-1 text-xs text-slate-500">{order.local_fulfillment_method.replaceAll('_', ' ')}{order.delivery_distance_miles !== null ? ` · ${order.delivery_distance_miles.toFixed(1)} mi` : ''}</p> : null}
               </td>
               <td className="px-5 py-3 text-slate-500">{formatDate(order.created_at, true)}</td>
               <td className="px-5 py-3 capitalize text-slate-600">{order.channel}</td>

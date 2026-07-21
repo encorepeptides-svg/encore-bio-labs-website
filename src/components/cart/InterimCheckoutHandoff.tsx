@@ -118,7 +118,16 @@ export function InterimCheckoutHandoff({ items, shipping }: { items: CartItem[];
     if (!chosenMethod) return
     setError(false)
     setCreating(true)
-    const contact = readKnownContact()
+    const knownContact = readKnownContact()
+    const contact = shipping?.localFulfillment === 'pickup' ? {
+      ...knownContact,
+      address: '',
+      address2: '',
+      city: shipping.address.city,
+      state: shipping.address.state,
+      zip: '',
+      country: shipping.address.country,
+    } : knownContact
     // Pre-open the tab inside the click gesture so popup blockers allow it.
     const handoffWindow = window.open('', '_blank', 'noopener')
     try {

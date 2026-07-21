@@ -37,6 +37,7 @@ import {
   type AddressChoice,
   type AddressVerificationResult,
   type DeliveryDestination,
+  type LocalFulfillmentMethod,
   type ShippingAddress,
   type ShippingSelection,
 } from '../../lib/shipping'
@@ -58,6 +59,7 @@ type ReviewFormData = {
   zip: string
   country: string
   destination: DeliveryDestination
+  localFulfillment: LocalFulfillmentMethod | null
   preferredContact: 'email' | 'phone' | 'whatsapp'
   notes: string
   researchUseAcknowledged: boolean
@@ -83,6 +85,7 @@ const defaultFormData: ReviewFormData = {
   zip: '',
   country: 'US',
   destination: 'us',
+  localFulfillment: null,
   preferredContact: 'whatsapp',
   notes: '',
   researchUseAcknowledged: false,
@@ -97,6 +100,13 @@ const destinationOptions: Array<{ id: DeliveryDestination; icon: LucideIcon; tit
   { id: 'local_chihuahua', icon: Truck, titleKey: 'destinationChihuahua', bodyKey: 'destinationLocalMexicoBody' },
   { id: 'international', icon: Globe2, titleKey: 'destinationInternational', bodyKey: 'destinationInternationalBody' },
 ]
+
+function localDestinationDefaults(destination: DeliveryDestination) {
+  if (destination === 'local_el_paso') return { state: 'TX', city: 'El Paso' }
+  if (destination === 'local_juarez') return { state: 'Chihuahua', city: 'Ciudad Juárez' }
+  if (destination === 'local_chihuahua') return { state: 'Chihuahua', city: 'Chihuahua' }
+  return null
+}
 
 const COUNTRY_CODES = 'AD AE AF AG AI AL AM AO AR AT AU AW AZ BA BB BD BE BF BG BH BI BJ BN BO BR BS BT BW BY BZ CA CD CF CG CH CI CL CM CN CO CR CU CV CY CZ DE DJ DK DM DO DZ EC EE EG ER ES ET FI FJ FM FR GA GB GD GE GH GM GN GQ GR GT GW GY HK HN HR HT HU ID IE IL IN IQ IR IS IT JM JO JP KE KG KH KI KM KN KP KR KW KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MG MH MK ML MM MN MR MT MU MV MW MX MY MZ NA NE NG NI NL NO NP NR NZ OM PA PE PG PH PK PL PS PT PW PY QA RO RS RU RW SA SB SC SD SE SG SI SK SL SM SN SO SR SS ST SV SY SZ TD TG TH TJ TL TM TN TO TR TT TV TW TZ UA UG US UY UZ VA VC VE VN VU WS YE ZA ZM ZW'.split(' ')
 
@@ -116,6 +126,7 @@ export function readStoredForm(): ReviewFormData {
     const stored = JSON.parse(window.sessionStorage.getItem(CHECKOUT_SESSION_KEY) || '{}') as Partial<ReviewFormData>
     const destination = destinationOptions.some((option) => option.id === stored.destination) ? stored.destination as DeliveryDestination : stored.country === 'MX' ? 'mexico' : 'us'
     const country = expectedCountryForDestination(destination) || (typeof stored.country === 'string' ? stored.country : '')
+    const localDefaults = localDestinationDefaults(destination)
     const storedStreet = typeof stored.address === 'string' ? stored.address : ''
     const storedStreetNumber = typeof stored.streetNumber === 'string' ? stored.streetNumber : ''
     return {
@@ -127,11 +138,12 @@ export function readStoredForm(): ReviewFormData {
       streetNumber: country === 'US' ? '' : storedStreetNumber,
       neighborhood: typeof stored.neighborhood === 'string' ? stored.neighborhood : '',
       address2: typeof stored.address2 === 'string' ? stored.address2 : '',
-      city: typeof stored.city === 'string' ? stored.city : '',
-      state: typeof stored.state === 'string' ? stored.state : '',
+      city: localDefaults?.city || (typeof stored.city === 'string' ? stored.city : ''),
+      state: localDefaults?.state || (typeof stored.state === 'string' ? stored.state : ''),
       zip: typeof stored.zip === 'string' ? stored.zip : '',
       country,
       destination,
+      localFulfillment: destination.startsWith('local_') && (stored.localFulfillment === 'pickup' || stored.localFulfillment === 'home_delivery') ? stored.localFulfillment : null,
       preferredContact: ['email', 'phone', 'whatsapp'].includes(stored.preferredContact || '') ? stored.preferredContact as ReviewFormData['preferredContact'] : 'whatsapp',
       notes: typeof stored.notes === 'string' ? stored.notes : '',
     }
@@ -216,10 +228,12 @@ function verificationMessage(message: string, locale: 'en' | 'es') {
     live_rates_unavailable: { en: 'No current transport rates are available for this address.', es: 'No hay tarifas vigentes de transporte para esta dirección.' },
     international_quote_required: { en: 'International shipping requires a reviewed quote.', es: 'El envío internacional requiere una cotización revisada.' },
     international_verification_inconclusive: { en: 'International verification was inconclusive.', es: 'La verificación internacional no fue concluyente.' },
-    local_coverage_not_configured: { en: 'The local delivery zone still requires business configuration.', es: 'La zona de entrega local aún requiere configuración del negocio.' },
-    local_fee_or_time_not_configured: { en: 'Local cost or timing is still pending confirmation.', es: 'El costo o el horario local aún están por confirmar.' },
     local_city_mismatch: { en: 'The address is outside the selected local-delivery city.', es: 'La dirección está fuera de la ciudad de entrega local seleccionada.' },
-    local_postal_code_outside_zone: { en: 'The postal code is outside the configured local-delivery area.', es: 'El código postal está fuera de la zona local configurada.' },
+    local_fulfillment_required: { en: 'Choose distribution-point pickup or home delivery.', es: 'Elige recolección en punto de distribución o entrega a domicilio.' },
+    pickup_details_not_configured: { en: 'The pickup point or schedule still requires confirmation.', es: 'El punto de recolección o el horario aún requiere confirmación.' },
+    local_radius_unavailable: { en: 'The 10-mile radius could not be confirmed automatically.', es: 'No se pudo confirmar automáticamente el radio de 10 millas.' },
+    local_outside_ten_miles: { en: 'The address is more than 10 miles from the distribution point.', es: 'La dirección está a más de 10 millas del punto de distribución.' },
+    local_delivery_time_not_configured: { en: 'The local-delivery schedule still requires confirmation.', es: 'El horario de entrega local aún requiere confirmación.' },
     address_not_deliverable: { en: 'The carrier could not confirm this address as deliverable.', es: 'El transportista no pudo confirmar que esta dirección sea entregable.' },
     address_not_verified: { en: 'The address could not be verified.', es: 'No se pudo verificar la dirección.' },
   }
@@ -296,6 +310,8 @@ function VerificationPanel({
       ) : null}
 
       {result.localDeliveryFeeCents !== null || result.localDeliveryTime ? <p className="mt-4 text-sm leading-6 text-slate-700">{t('localDeliveryConfirmed', { cost: result.localDeliveryFeeCents === null ? t('pendingConfirmation') : formatCartCurrency(result.localDeliveryFeeCents / 100), time: result.localDeliveryTime || t('pendingConfirmation') })}</p> : null}
+      {result.pickupPointName || result.pickupPointAddress ? <div className="mt-4 rounded-xl border border-teal-200 bg-white p-3 text-sm leading-6 text-slate-700"><p className="font-semibold text-[#071724]">{result.pickupPointName || t('distributionPoint')}</p>{result.pickupPointAddress ? <p>{result.pickupPointAddress}</p> : null}</div> : null}
+      {result.distanceMiles !== null ? <p className="mt-3 text-sm leading-6 text-slate-700">{t('verifiedLocalDistance', { distance: result.distanceMiles.toFixed(1) })}</p> : null}
       {issue || result.manualReviewRequired ? (
         <div className="mt-4 flex flex-wrap gap-2">
           <button type="button" onClick={onEdit} className="inline-flex min-h-10 items-center rounded-full border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700">{t('editAddress')}</button>
@@ -336,6 +352,15 @@ export function CheckoutPage() {
     streetNumber: formData.country === 'US' ? usStreetAddress.streetNumber : formData.streetNumber,
     line2: formData.address2,
   }), [formData.address, formData.address2, formData.city, formData.country, formData.neighborhood, formData.state, formData.streetNumber, formData.zip, usStreetAddress.street, usStreetAddress.streetNumber])
+  const pickupSelected = formData.destination.startsWith('local_') && formData.localFulfillment === 'pickup'
+  const verificationAddress = useMemo<ShippingAddress>(() => pickupSelected ? {
+    ...address,
+    neighborhood: '',
+    postalCode: '',
+    street: '',
+    streetNumber: '',
+    line2: '',
+  } : address, [address, pickupSelected])
   const countryNames = useMemo(() => {
     const display = new Intl.DisplayNames([locale], { type: 'region' })
     return COUNTRY_CODES.map((code) => ({ code, name: display.of(code) || code })).sort((a, b) => a.name.localeCompare(b.name, locale))
@@ -355,6 +380,7 @@ export function CheckoutPage() {
       zip: formData.zip,
       country: formData.country,
       destination: formData.destination,
+      localFulfillment: formData.localFulfillment,
       preferredContact: formData.preferredContact,
       notes: formData.notes,
     }))
@@ -363,14 +389,14 @@ export function CheckoutPage() {
   const runVerification = useCallback(async () => {
     const sequence = ++validationSequence.current
     setValidating(true)
-    const result = await verifyShippingAddress({ destination: formData.destination, address, kitCount })
+    const result = await verifyShippingAddress({ destination: formData.destination, address: verificationAddress, kitCount, localFulfillment: formData.localFulfillment })
     if (sequence !== validationSequence.current) return
     setVerification(result)
     setAddressChoice(null)
     setSelectedRateId(null)
     setManualReviewRequested(result.manualReviewRequired)
     setValidating(false)
-  }, [address, formData.destination, kitCount])
+  }, [formData.destination, formData.localFulfillment, kitCount, verificationAddress])
 
   useEffect(() => {
     validationSequence.current += 1
@@ -379,10 +405,12 @@ export function CheckoutPage() {
     setSelectedRateId(null)
     setManualReviewRequested(false)
     setValidating(false)
-    if (addressEssentialErrors(address, formData.destination).length || !items.length) return
+    const local = formData.destination.startsWith('local_')
+    const addressRequired = !local || formData.localFulfillment === 'home_delivery'
+    if ((local && !formData.localFulfillment) || (addressRequired && addressEssentialErrors(address, formData.destination).length) || !items.length) return
     const timer = window.setTimeout(() => void runVerification(), 750)
     return () => window.clearTimeout(timer)
-  }, [address, formData.destination, items.length, runVerification])
+  }, [address, formData.destination, formData.localFulfillment, items.length, runVerification])
 
   function updateField<K extends keyof ReviewFormData>(key: K, value: ReviewFormData[K]) {
     setFormData((current) => ({ ...current, [key]: value }))
@@ -390,38 +418,38 @@ export function CheckoutPage() {
 
   function chooseDestination(destination: DeliveryDestination) {
     const country = expectedCountryForDestination(destination)
-    const localDefaults = destination === 'local_el_paso'
-      ? { state: 'TX', city: 'El Paso' }
-      : destination === 'local_juarez'
-        ? { state: 'Chihuahua', city: 'Ciudad Juárez' }
-        : destination === 'local_chihuahua'
-          ? { state: 'Chihuahua', city: 'Chihuahua' }
-          : { state: '', city: '' }
+    const localDefaults = localDestinationDefaults(destination)
     setFormData((current) => {
       const nextCountry = country || (['US', 'MX'].includes(current.country) ? '' : current.country)
       const countryChanged = current.country !== nextCountry
       return {
         ...current,
         destination,
+        localFulfillment: destination.startsWith('local_') && current.destination === destination ? current.localFulfillment : null,
         country: nextCountry,
         address: countryChanged ? '' : current.address,
         streetNumber: countryChanged ? '' : current.streetNumber,
         neighborhood: countryChanged ? '' : current.neighborhood,
         address2: countryChanged ? '' : current.address2,
         zip: countryChanged ? '' : current.zip,
-        state: destination.startsWith('local_') ? localDefaults.state : countryChanged ? '' : current.state,
-        city: destination.startsWith('local_') ? localDefaults.city : countryChanged ? '' : current.city,
+        state: localDefaults?.state || (countryChanged ? '' : current.state),
+        city: localDefaults?.city || (countryChanged ? '' : current.city),
         destinationAcknowledged: false,
       }
     })
+  }
+
+  function chooseLocalFulfillment(localFulfillment: LocalFulfillmentMethod) {
+    setFormData((current) => ({ ...current, localFulfillment, destinationAcknowledged: false }))
   }
 
   const selectedRate = verification?.rates.find((rate) => rate.id === selectedRateId) ?? null
   const charges = calculateShippingCharges({ destination: formData.destination, kitCount, subtotalCents: Math.round(subtotal * 100), selectedRate, localDeliveryFeeCents: verification?.localDeliveryFeeCents ?? null })
   const shippingSelection: ShippingSelection | null = verification ? {
     destination: formData.destination,
-    address,
+    address: verificationAddress,
     kitCount,
+    localFulfillment: formData.localFulfillment,
     verification,
     addressChoice,
     selectedRateId,
@@ -432,11 +460,13 @@ export function CheckoutPage() {
   const correctedChoiceReady = verification?.status !== 'corrected' || Boolean(addressChoice)
   const reviewPathReady = verification ? verification.deliverable || verification.manualReviewRequired || manualReviewRequested : false
   const poBoxAllowed = isPoBoxAddress(address) && !formData.destination.startsWith('local_')
-  const baseFormValid = isCheckoutFormValid({
-    ...formData,
-    streetNumber: poBoxAllowed ? undefined : address.streetNumber,
-    neighborhoodRequired: formData.country === 'MX',
-  })
+  const baseFormValid = pickupSelected
+    ? isValidEmail(formData.email) && formData.phone.replace(/\D/g, '').length >= 7 && Boolean(formData.fullName.trim()) && formData.researchUseAcknowledged
+    : isCheckoutFormValid({
+        ...formData,
+        streetNumber: poBoxAllowed ? undefined : address.streetNumber,
+        neighborhoodRequired: formData.country === 'MX',
+      })
   const formIsValid = baseFormValid && Boolean(verification) && !validating && correctedChoiceReady && reviewPathReady && formData.destinationAcknowledged
 
   function submitRequest() {
@@ -468,7 +498,7 @@ export function CheckoutPage() {
               <div className="grid gap-2 border-t border-slate-900/10 pt-3 text-sm">
                 <div className="flex justify-between"><span>{t('subtotal')}</span><span className="font-semibold">{formatCartCurrency(completedSummary.subtotal)}</span></div>
                 {summaryCharges.importFeeCents ? <div className="flex justify-between"><span>{t('importFee')}</span><span className="font-semibold">{formatCartCurrency(summaryCharges.importFeeCents / 100)}</span></div> : null}
-                <div className="flex justify-between"><span>{t('shipping')}</span><span className="font-semibold">{summaryCharges.shippingCents === null ? t('pendingConfirmation') : formatCartCurrency(summaryCharges.shippingCents / 100)}</span></div>
+                <div className="flex justify-between"><span>{t(completedSummary.shipping.localFulfillment === 'pickup' ? 'pickupCharge' : completedSummary.shipping.localFulfillment === 'home_delivery' ? 'localDeliveryCharge' : 'shipping')}</span><span className="font-semibold">{summaryCharges.shippingCents === null ? t('pendingConfirmation') : formatCartCurrency(summaryCharges.shippingCents / 100)}</span></div>
                 <div className="flex justify-between text-base font-semibold"><span>{t('total')}</span><span>{summaryCharges.totalCents === null ? t('pendingConfirmation') : formatCartCurrency(summaryCharges.totalCents / 100)}</span></div>
               </div>
             </div>
@@ -513,6 +543,24 @@ export function CheckoutPage() {
                 <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('email')}<input className={inputClass()} type="email" autoComplete="email" required aria-invalid={showValidation && !isValidEmail(formData.email)} value={formData.email} onChange={(event) => updateField('email', event.target.value)} />{showValidation && !isValidEmail(formData.email) ? <span className="text-xs font-medium text-rose-700">{t('emailError')}</span> : null}</label>
                 <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('phone')}<input className={inputClass()} type="tel" autoComplete="tel" required aria-invalid={showValidation && formData.phone.replace(/\D/g, '').length < 7} value={formData.phone} onChange={(event) => updateField('phone', event.target.value)} />{showValidation && formData.phone.replace(/\D/g, '').length < 7 ? <span className="text-xs font-medium text-rose-700">{t('phoneError')}</span> : null}</label>
                 <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">{t('fullName')}<input className={inputClass()} autoComplete="name" required aria-invalid={showValidation && !formData.fullName.trim()} value={formData.fullName} onChange={(event) => updateField('fullName', event.target.value)} />{showValidation && !formData.fullName.trim() ? <span className="text-xs font-medium text-rose-700">{t('fullNameError')}</span> : null}</label>
+                {localDestination ? <fieldset className="sm:col-span-2">
+                  <legend className="text-sm font-semibold text-[#071724]">{t('localFulfillmentTitle')}</legend>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">{t('localFulfillmentBody')}</p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <label className={cn('flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition', formData.localFulfillment === 'pickup' ? 'border-teal-700 bg-teal-50 ring-2 ring-teal-100' : 'border-slate-200 bg-white hover:border-teal-500/50')}>
+                      <input type="radio" name="local-fulfillment" value="pickup" checked={formData.localFulfillment === 'pickup'} onChange={() => chooseLocalFulfillment('pickup')} className="mt-1 accent-teal-700" />
+                      <PackageCheck size={18} className="mt-0.5 shrink-0 text-teal-800" aria-hidden="true" />
+                      <span><span className="flex items-center justify-between gap-3 font-semibold text-[#071724]"><span>{t('pickupAtDistributionPoint')}</span><span>{t('free')}</span></span><span className="mt-1 block text-xs font-normal leading-5 text-slate-500">{t('pickupAtDistributionPointBody')}</span></span>
+                    </label>
+                    <label className={cn('flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition', formData.localFulfillment === 'home_delivery' ? 'border-teal-700 bg-teal-50 ring-2 ring-teal-100' : 'border-slate-200 bg-white hover:border-teal-500/50')}>
+                      <input type="radio" name="local-fulfillment" value="home_delivery" checked={formData.localFulfillment === 'home_delivery'} onChange={() => chooseLocalFulfillment('home_delivery')} className="mt-1 accent-teal-700" />
+                      <Truck size={18} className="mt-0.5 shrink-0 text-teal-800" aria-hidden="true" />
+                      <span><span className="flex items-center justify-between gap-3 font-semibold text-[#071724]"><span>{t('homeDelivery')}</span><span>$10</span></span><span className="mt-1 block text-xs font-normal leading-5 text-slate-500">{t('homeDeliveryBody')}</span></span>
+                    </label>
+                  </div>
+                  {showValidation && !formData.localFulfillment ? <p className="mt-2 text-xs font-medium text-rose-700">{t('localFulfillmentError')}</p> : null}
+                </fieldset> : null}
+                {localDestination && !formData.localFulfillment ? <div className="sm:col-span-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">{t('chooseLocalFulfillmentFirst')}</div> : pickupSelected ? <div className="sm:col-span-2 rounded-2xl border border-teal-200 bg-teal-50 p-4 text-sm leading-6 text-teal-950"><p className="font-semibold">{t('pickupCitySummary', { city: formData.city })}</p><p className="mt-1 text-xs leading-5 text-teal-900">{t('pickupDetailsPending')}</p></div> : <>
                 <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">{t('country')}<select className={inputClass()} disabled={countryLocked} value={formData.country} onChange={(event) => updateField('country', event.target.value)}><option value="">{t('selectCountry')}</option>{countryNames.map((country) => <option key={country.code} value={country.code}>{country.name}</option>)}</select></label>
                 {usAddress ? <>
                   <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">{t('usStreetAddress')}<input className={inputClass()} autoComplete="address-line1" placeholder={t('usStreetPlaceholder')} required aria-invalid={showValidation && currentAddressErrors.some((error) => error === 'street' || error === 'street_number')} value={formData.address} onChange={(event) => updateField('address', event.target.value)} />{showValidation && currentAddressErrors.includes('street_number') ? <span className="text-xs font-medium text-rose-700">{t('usStreetNumberError')}</span> : null}</label>
@@ -536,6 +584,7 @@ export function CheckoutPage() {
                   <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('streetNumber')}<input className={inputClass()} required aria-invalid={showValidation && !formData.streetNumber.trim()} value={formData.streetNumber} onChange={(event) => updateField('streetNumber', event.target.value)} /></label>
                   <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">{t('addressLine2')} <span className="font-normal text-slate-400">{t('optional')}</span><input className={inputClass()} autoComplete="address-line2" value={formData.address2} onChange={(event) => updateField('address2', event.target.value)} /></label>
                 </>}
+                </>}
               </div>
               <VerificationPanel result={verification} validating={validating} addressChoice={addressChoice} selectedRateId={selectedRateId} manualReviewRequested={manualReviewRequested} onAddressChoice={setAddressChoice} onRate={setSelectedRateId} onEdit={() => { setVerification(null); setManualReviewRequested(false); checkoutFormRef.current?.querySelector<HTMLInputElement>('input[autocomplete="address-line1"]')?.focus() }} onManualReview={() => setManualReviewRequested(true)} onRetry={() => void runVerification()} />
               <div className="mt-6 grid gap-5 sm:grid-cols-2">
@@ -556,7 +605,7 @@ export function CheckoutPage() {
             <div className="mt-6 grid gap-2 border-t border-slate-900/10 pt-5 text-sm">
               <div className="flex justify-between text-slate-600"><span>{t('subtotal')}</span><span className="font-semibold text-[#071724]">{formatCartCurrency(subtotal)}</span></div>
               {charges.importFeeCents ? <div className="flex justify-between text-slate-600"><span>{t('importFee')}</span><span className="font-semibold text-[#071724]">{formatCartCurrency(charges.importFeeCents / 100)}</span></div> : null}
-              <div className="flex justify-between text-slate-600"><span>{t('shipping')}</span><span className="font-semibold text-[#071724]">{charges.shippingCents === null ? t('pendingConfirmation') : formatCartCurrency(charges.shippingCents / 100)}</span></div>
+              <div className="flex justify-between text-slate-600"><span>{t(formData.localFulfillment === 'pickup' ? 'pickupCharge' : formData.localFulfillment === 'home_delivery' ? 'localDeliveryCharge' : 'shipping')}</span><span className="font-semibold text-[#071724]">{charges.shippingCents === null ? t('pendingConfirmation') : formatCartCurrency(charges.shippingCents / 100)}</span></div>
               <div className="mt-2 flex justify-between border-t border-slate-900/10 pt-3 text-base font-semibold text-[#071724]"><span>{t('total')}</span><span>{charges.totalCents === null ? t('pendingConfirmation') : formatCartCurrency(charges.totalCents / 100)}</span></div>
               {destinationUsesMexicoImportFee(formData.destination) ? <p className="mt-2 rounded-xl bg-teal-50 p-3 text-xs leading-5 text-teal-950">{t('mexicoProcessingNote')}</p> : null}
               {!paymentAllowed && verification ? <p className="mt-2 rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-950">{t('paymentBlockedPendingReview')}</p> : null}

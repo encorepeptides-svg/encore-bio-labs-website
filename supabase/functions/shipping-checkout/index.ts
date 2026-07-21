@@ -1,6 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.110.1'
 
 type Destination = 'us' | 'mexico' | 'local_el_paso' | 'local_juarez' | 'local_chihuahua' | 'international'
+type LocalFulfillment = 'pickup' | 'home_delivery'
 type Address = { country: string; state: string; city: string; neighborhood: string; postalCode: string; street: string; streetNumber: string; line2: string }
 type Rate = { id: string; carrier: string; service: string; amountCents: number; currency: string; deliveryDays: number | null; deliveryDate: string | null }
 type Verification = {
@@ -12,6 +13,9 @@ type Verification = {
   rates: Rate[]
   localDeliveryFeeCents: number | null
   localDeliveryTime: string | null
+  distanceMiles: number | null
+  pickupPointName: string | null
+  pickupPointAddress: string | null
   verificationId: string | null
   checkedAt: string
   manualReviewRequired: boolean
@@ -114,6 +118,9 @@ function baseVerification(address: Address, overrides: Partial<Verification>): V
     rates: [],
     localDeliveryFeeCents: null,
     localDeliveryTime: null,
+    distanceMiles: null,
+    pickupPointName: null,
+    pickupPointAddress: null,
     verificationId: null,
     checkedAt: new Date().toISOString(),
     manualReviewRequired: true,
@@ -252,37 +259,93 @@ function localRule(destination: Destination) {
   return null
 }
 
-function applyLocalCoverage(result: Verification, destination: Destination) {
+function distanceMilesBetween(latitudeA: number, longitudeA: number, latitudeB: number, longitudeB: number) {
+  const radians = (degrees: number) => degrees * Math.PI / 180
+  const earthRadiusMiles = 3958.7613
+  const latitudeDelta = radians(latitudeB - latitudeA)
+  const longitudeDelta = radians(longitudeB - longitudeA)
+  const a = Math.sin(latitudeDelta / 2) ** 2 + Math.cos(radians(latitudeA)) * Math.cos(radians(latitudeB)) * Math.sin(longitudeDelta / 2) ** 2
+  return earthRadiusMiles * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+function verifiedCoordinates(delivery: Record<string, unknown> | null) {
+  const details = delivery?.details && typeof delivery.details === 'object' ? delivery.details as Record<string, unknown> : null
+  const latitudeValue = details?.latitude
+  const longitudeValue = details?.longitude
+  if (latitudeValue === null || latitudeValue === undefined || longitudeValue === null || longitudeValue === undefined || !String(latitudeValue).trim() || !String(longitudeValue).trim()) return null
+  const latitude = Number(latitudeValue)
+  const longitude = Number(longitudeValue)
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || Math.abs(latitude) > 90 || Math.abs(longitude) > 180) return null
+  return { latitude, longitude }
+}
+
+function localConfiguration(key: string) {
+  const latitudeValue = Deno.env.get(`LOCAL_DELIVERY_${key}_CENTER_LATITUDE`) || ''
+  const longitudeValue = Deno.env.get(`LOCAL_DELIVERY_${key}_CENTER_LONGITUDE`) || ''
+  const latitude = Number(latitudeValue)
+  const longitude = Number(longitudeValue)
+  return {
+    center: latitudeValue && longitudeValue && Number.isFinite(latitude) && Number.isFinite(longitude) && Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180 ? { latitude, longitude } : null,
+    homeDeliveryTime: Deno.env.get(`LOCAL_DELIVERY_${key}_HOME_DELIVERY_TIME`) || '',
+    pickupName: Deno.env.get(`LOCAL_DELIVERY_${key}_PICKUP_NAME`) || '',
+    pickupAddress: Deno.env.get(`LOCAL_DELIVERY_${key}_PICKUP_ADDRESS`) || '',
+    pickupTime: Deno.env.get(`LOCAL_DELIVERY_${key}_PICKUP_TIME`) || '',
+  }
+}
+
+function validatePickup(destination: Destination, address: Address) {
+  const rule = localRule(destination)
+  if (!rule || address.country !== expectedCountry(destination) || !localIdentityMatches(address, destination)) {
+    return baseVerification(address, { status: 'out_of_coverage', provider: 'local_rules', messages: ['local_city_mismatch'], manualReviewRequired: false })
+  }
+  const configuration = localConfiguration(rule.key)
+  const configured = Boolean(configuration.pickupName && configuration.pickupAddress && configuration.pickupTime)
+  return baseVerification(address, {
+    status: configured ? 'verified' : 'manual_review',
+    provider: 'local_rules',
+    messages: configured ? [] : ['pickup_details_not_configured'],
+    localDeliveryFeeCents: 0,
+    localDeliveryTime: configuration.pickupTime || null,
+    pickupPointName: configuration.pickupName || null,
+    pickupPointAddress: configuration.pickupAddress || null,
+    manualReviewRequired: !configured,
+    deliverable: true,
+  })
+}
+
+function applyLocalCoverage(result: Verification, destination: Destination, coordinates: { latitude: number; longitude: number } | null) {
   const rule = localRule(destination)
   if (!rule) return result
   if (!rule.city.includes(normalize(result.recommendedAddress?.city || result.originalAddress.city)) || !rule.state.includes(normalize(result.recommendedAddress?.state || result.originalAddress.state))) {
-    return { ...result, status: 'out_of_coverage' as const, provider: 'local_rules' as const, messages: [...result.messages, 'local_city_mismatch'], rates: [], deliverable: false, manualReviewRequired: false }
+    return { ...result, status: 'out_of_coverage' as const, provider: 'local_rules' as const, messages: [...result.messages, 'local_city_mismatch'], rates: [], localDeliveryFeeCents: null, localDeliveryTime: null, deliverable: false, manualReviewRequired: false }
   }
 
-  const configuredPostalCodes = (Deno.env.get(`LOCAL_DELIVERY_${rule.key}_POSTAL_CODES`) || '').split(',').map((value) => value.trim().toUpperCase()).filter(Boolean)
-  if (!configuredPostalCodes.length) {
-    return { ...result, status: 'manual_review' as const, provider: 'local_rules' as const, messages: [...result.messages, 'local_coverage_not_configured'], rates: [], manualReviewRequired: true }
-  }
-  const postalCode = (result.recommendedAddress?.postalCode || result.originalAddress.postalCode).toUpperCase()
-  if (!configuredPostalCodes.includes(postalCode)) {
-    return { ...result, status: 'out_of_coverage' as const, provider: 'local_rules' as const, messages: [...result.messages, 'local_postal_code_outside_zone'], rates: [], deliverable: false, manualReviewRequired: false }
+  const configuration = localConfiguration(rule.key)
+  if (!coordinates || !configuration.center) {
+    return { ...result, status: 'manual_review' as const, provider: 'local_rules' as const, messages: [...result.messages, 'local_radius_unavailable'], rates: [], localDeliveryFeeCents: null, localDeliveryTime: null, manualReviewRequired: true }
   }
 
-  const fee = Number(Deno.env.get(`LOCAL_DELIVERY_${rule.key}_FEE_CENTS`) || '')
-  const deliveryTime = Deno.env.get(`LOCAL_DELIVERY_${rule.key}_TIME`) || ''
-  const configured = Number.isInteger(fee) && fee >= 0 && Boolean(deliveryTime)
+  const distanceMiles = distanceMilesBetween(configuration.center.latitude, configuration.center.longitude, coordinates.latitude, coordinates.longitude)
+  if (distanceMiles > 10) {
+    return { ...result, status: 'out_of_coverage' as const, provider: 'local_rules' as const, messages: [...result.messages, 'local_outside_ten_miles'], rates: [], localDeliveryFeeCents: null, localDeliveryTime: null, distanceMiles, deliverable: false, manualReviewRequired: false }
+  }
+
+  const timingConfigured = Boolean(configuration.homeDeliveryTime)
   return {
     ...result,
     provider: 'local_rules' as const,
     rates: [],
-    localDeliveryFeeCents: Number.isInteger(fee) && fee >= 0 ? fee : null,
-    localDeliveryTime: deliveryTime || null,
-    manualReviewRequired: result.manualReviewRequired || !configured,
-    messages: configured ? result.messages : [...result.messages, 'local_fee_or_time_not_configured'],
+    localDeliveryFeeCents: 1_000,
+    localDeliveryTime: configuration.homeDeliveryTime || null,
+    distanceMiles,
+    manualReviewRequired: result.manualReviewRequired || !timingConfigured,
+    messages: timingConfigured ? result.messages : [...result.messages, 'local_delivery_time_not_configured'],
   }
 }
 
-async function validateAddress(destination: Destination, address: Address, kitCount: number): Promise<Verification> {
+async function validateAddress(destination: Destination, address: Address, kitCount: number, localFulfillment: LocalFulfillment | null): Promise<Verification> {
+  if (isLocal(destination) && !localFulfillment) return baseVerification(address, { status: 'incomplete', provider: 'local_rules', messages: ['local_fulfillment_required'], manualReviewRequired: false })
+  if (isLocal(destination) && localFulfillment === 'pickup') return validatePickup(destination, address)
   const errors = essentialErrors(address, destination)
   if (errors.length) {
     const outsideLocalCity = errors.includes('local_city_mismatch')
@@ -347,7 +410,7 @@ async function validateAddress(destination: Destination, address: Address, kitCo
     })
   }
 
-  const rateResult = await fetchRates(apiKey, providerResult.payload, kitCount, destination)
+  const rateResult = isLocal(destination) ? { rates: [] as Rate[], configured: true } : await fetchRates(apiKey, providerResult.payload, kitCount, destination)
   const corrected = addressesDiffer(address, recommended)
   let result: Verification = baseVerification(address, {
     status: corrected ? 'corrected' : 'verified',
@@ -356,11 +419,11 @@ async function validateAddress(destination: Destination, address: Address, kitCo
     messages: [],
     rates: rateResult.rates,
     verificationId: text(providerResult.payload.id) || null,
-    manualReviewRequired: destination === 'international' || !rateResult.configured || !rateResult.rates.length,
+    manualReviewRequired: destination === 'international' || (!isLocal(destination) && (!rateResult.configured || !rateResult.rates.length)),
     deliverable: true,
   })
   if (result.manualReviewRequired) result.messages.push(destination === 'international' ? 'international_quote_required' : 'live_rates_unavailable')
-  if (isLocal(destination)) result = applyLocalCoverage(result, destination)
+  if (isLocal(destination)) result = applyLocalCoverage(result, destination, verifiedCoordinates(delivery))
   return result
 }
 
@@ -405,6 +468,7 @@ function packSizeFromSku(value: unknown) {
 
 async function createOrder(body: Record<string, unknown>, origin: string | null) {
   const destination = text(body.destination) as Destination
+  const localFulfillment = ['pickup', 'home_delivery'].includes(text(body.localFulfillment)) ? text(body.localFulfillment) as LocalFulfillment : null
   const address = sanitizeAddress(body.address)
   const items = Array.isArray(body.items) ? body.items : []
   const kitCount = Math.min(999, items.reduce((count, value) => {
@@ -423,7 +487,7 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
     return response({ code: 'contact_information_incomplete' }, 422, origin)
   }
 
-  const verification = await validateAddress(destination, address, kitCount)
+  const verification = await validateAddress(destination, address, kitCount, localFulfillment)
   const manualRequested = body.manualReviewRequested === true
   const canRequestManualReview = ['provider_unavailable', 'manual_review', 'undeliverable', 'out_of_coverage'].includes(verification.status)
   if (!verification.deliverable && !(manualRequested && canRequestManualReview) && !verification.manualReviewRequired) {
@@ -474,12 +538,14 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
       locale: text(body.locale) === 'es' ? 'es' : 'en',
       contact,
       destination_type: destination,
+      local_fulfillment_method: isLocal(destination) ? localFulfillment : null,
+      delivery_distance_miles: verification.distanceMiles,
       original_address: address,
       validated_address: verification.recommendedAddress || verification.originalAddress,
       selected_address: selectedAddress(body, verification),
       address_choice: text(body.addressChoice) || null,
       address_verification: { ...verification, pricing_revalidation: 'manual_catalog_review_required' },
-      shipping_service: matchedRate || (localReady ? { carrier: 'Encore Local Delivery', service: verification.localDeliveryTime, amountCents: verification.localDeliveryFeeCents, currency: 'USD' } : null),
+      shipping_service: matchedRate || (localReady ? { carrier: localFulfillment === 'pickup' ? 'Encore Distribution Point' : 'Encore Local Delivery', service: verification.localDeliveryTime, amountCents: verification.localDeliveryFeeCents, currency: 'USD' } : null),
       shipping_review_required: reviewRequired,
       destination_acknowledged: body.destinationAcknowledged === true,
     })
@@ -511,5 +577,6 @@ Deno.serve(async (request) => {
 
   const address = sanitizeAddress(body.address)
   const kitCount = Math.max(0, Math.min(999, Math.floor(Number(body.kitCount) || 0)))
-  return response(await validateAddress(destination, address, kitCount), 200, origin)
+  const localFulfillment = ['pickup', 'home_delivery'].includes(text(body.localFulfillment)) ? text(body.localFulfillment) as LocalFulfillment : null
+  return response(await validateAddress(destination, address, kitCount, localFulfillment), 200, origin)
 })

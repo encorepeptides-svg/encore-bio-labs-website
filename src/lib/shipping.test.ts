@@ -4,11 +4,12 @@ import {
   addressesDiffer,
   calculateMexicoImportFeeCents,
   calculateShippingCharges,
+  distanceMilesBetween,
   destinationUsesMexicoImportFee,
   emptyShippingAddress,
   isPoBoxAddress,
   localDestinationIdentityMatches,
-  localPostalCodeCovered,
+  localFulfillmentRequiresAddress,
   shippingSelectionAllowsPayment,
   splitUsStreetAddress,
   verifyShippingAddress,
@@ -24,11 +25,12 @@ const elPaso: ShippingAddress = {
 const verified: AddressVerificationResult = {
   status: 'verified', provider: 'easypost', originalAddress: elPaso, recommendedAddress: elPaso, messages: [],
   rates: [{ id: 'rate_1', carrier: 'USPS', service: 'Priority', amountCents: 1299, currency: 'USD', deliveryDays: 2, deliveryDate: null }],
-  localDeliveryFeeCents: null, localDeliveryTime: null, verificationId: 'adr_1', checkedAt: '2026-07-20T00:00:00.000Z', manualReviewRequired: false, deliverable: true,
+  localDeliveryFeeCents: null, localDeliveryTime: null, distanceMiles: null, pickupPointName: null, pickupPointAddress: null,
+  verificationId: 'adr_1', checkedAt: '2026-07-20T00:00:00.000Z', manualReviewRequired: false, deliverable: true,
 }
 
 function selection(overrides: Partial<ShippingSelection> = {}): ShippingSelection {
-  return { destination: 'us', address: elPaso, kitCount: 1, verification: verified, addressChoice: null, selectedRateId: 'rate_1', manualReviewRequested: false, destinationAcknowledged: true, ...overrides }
+  return { destination: 'us', address: elPaso, kitCount: 1, localFulfillment: null, verification: verified, addressChoice: null, selectedRateId: 'rate_1', manualReviewRequested: false, destinationAcknowledged: true, ...overrides }
 }
 
 describe('shipping address validation and coverage', () => {
@@ -75,13 +77,20 @@ describe('shipping address validation and coverage', () => {
 
   it('classifies a nearby local address as outside coverage before calling the carrier', async () => {
     const sunlandPark = { ...elPaso, city: 'Sunland Park', state: 'NM', postalCode: '88063' }
-    const result = await verifyShippingAddress({ destination: 'local_el_paso', address: sunlandPark, kitCount: 1 })
+    const result = await verifyShippingAddress({ destination: 'local_el_paso', address: sunlandPark, kitCount: 1, localFulfillment: 'home_delivery' })
     expect(result).toMatchObject({ status: 'out_of_coverage', provider: 'local_rules', deliverable: false })
   })
 
-  it('rejects a nearby postal code that is outside the configured local zone', () => {
-    expect(localPostalCodeCovered('79901', ['79901', '79902'])).toBe(true)
-    expect(localPostalCodeCovered('79936', ['79901', '79902'])).toBe(false)
+  it('uses a 10-mile radial distance instead of postal-code membership for local delivery', () => {
+    expect(distanceMilesBetween(31.7619, -106.485, 31.7619, -106.485)).toBe(0)
+    expect(distanceMilesBetween(31.7619, -106.485, 31.7619, -106.63)).toBeLessThan(10)
+    expect(distanceMilesBetween(31.7619, -106.485, 31.7619, -106.69)).toBeGreaterThan(10)
+  })
+
+  it('requires a street address for home delivery but not distribution-point pickup', () => {
+    expect(localFulfillmentRequiresAddress('home_delivery')).toBe(true)
+    expect(localFulfillmentRequiresAddress('pickup')).toBe(false)
+    expect(localFulfillmentRequiresAddress(null)).toBe(true)
   })
 
   it('requires a colonia for Mexico while keeping it optional in the United States', () => {
@@ -114,8 +123,31 @@ describe('server-mirrored charges and payment gates', () => {
     expect(calculateShippingCharges({ destination: 'local_juarez', kitCount: 4, subtotalCents: 10_000, selectedRate: null, localDeliveryFeeCents: null })).toEqual({ importFeeCents: 2500, shippingCents: null, totalCents: null })
   })
 
-  it('combines the import fee with a configured local Mexico delivery charge', () => {
+  it('keeps distribution-point pickup free while preserving Mexico import fees', () => {
+    expect(calculateShippingCharges({ destination: 'local_el_paso', kitCount: 1, subtotalCents: 10_000, selectedRate: null, localDeliveryFeeCents: 0 })).toEqual({ importFeeCents: 0, shippingCents: 0, totalCents: 10_000 })
+    expect(calculateShippingCharges({ destination: 'local_juarez', kitCount: 4, subtotalCents: 10_000, selectedRate: null, localDeliveryFeeCents: 0 })).toEqual({ importFeeCents: 2500, shippingCents: 0, totalCents: 12_500 })
+  })
+
+  it('combines the import fee with the $10 local Mexico home-delivery charge', () => {
     expect(calculateShippingCharges({ destination: 'local_chihuahua', kitCount: 5, subtotalCents: 20_000, selectedRate: null, localDeliveryFeeCents: 1000 })).toEqual({ importFeeCents: 5000, shippingCents: 1000, totalCents: 26_000 })
+  })
+
+  it('allows a confirmed free pickup without requiring a carrier rate', () => {
+    const pickupVerification: AddressVerificationResult = {
+      ...verified,
+      provider: 'local_rules',
+      rates: [],
+      localDeliveryFeeCents: 0,
+      localDeliveryTime: 'Ready within 48 hours',
+      pickupPointName: 'Encore Distribution Point',
+      pickupPointAddress: '500 N Oregon St, El Paso, TX',
+    }
+    expect(shippingSelectionAllowsPayment(selection({
+      destination: 'local_el_paso',
+      localFulfillment: 'pickup',
+      selectedRateId: null,
+      verification: pickupVerification,
+    }))).toBe(true)
   })
 
   it('blocks payment for provider downtime, manual review, and unaccepted destination details', () => {

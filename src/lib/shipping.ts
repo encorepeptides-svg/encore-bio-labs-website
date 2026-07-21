@@ -9,6 +9,7 @@ export type DeliveryDestination =
   | 'international'
 
 export type AddressChoice = 'recommended' | 'original'
+export type LocalFulfillmentMethod = 'pickup' | 'home_delivery'
 
 export type ShippingAddress = {
   country: string
@@ -50,6 +51,9 @@ export type AddressVerificationResult = {
   rates: ShippingRate[]
   localDeliveryFeeCents: number | null
   localDeliveryTime: string | null
+  distanceMiles: number | null
+  pickupPointName: string | null
+  pickupPointAddress: string | null
   verificationId: string | null
   checkedAt: string
   manualReviewRequired: boolean
@@ -60,6 +64,7 @@ export type ShippingVerificationRequest = {
   destination: DeliveryDestination
   address: ShippingAddress
   kitCount: number
+  localFulfillment: LocalFulfillmentMethod | null
 }
 
 export type ShippingSelection = ShippingVerificationRequest & {
@@ -109,6 +114,19 @@ export function destinationUsesMexicoImportFee(destination: DeliveryDestination)
   return destination === 'mexico' || destination === 'local_juarez' || destination === 'local_chihuahua'
 }
 
+export function localFulfillmentRequiresAddress(method: LocalFulfillmentMethod | null) {
+  return method !== 'pickup'
+}
+
+export function distanceMilesBetween(latitudeA: number, longitudeA: number, latitudeB: number, longitudeB: number) {
+  const radians = (degrees: number) => degrees * Math.PI / 180
+  const earthRadiusMiles = 3958.7613
+  const latitudeDelta = radians(latitudeB - latitudeA)
+  const longitudeDelta = radians(longitudeB - longitudeA)
+  const a = Math.sin(latitudeDelta / 2) ** 2 + Math.cos(radians(latitudeA)) * Math.cos(radians(latitudeB)) * Math.sin(longitudeDelta / 2) ** 2
+  return earthRadiusMiles * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
 export function localDestinationIdentityMatches(address: Pick<ShippingAddress, 'country' | 'state' | 'city'>, destination: DeliveryDestination) {
   const city = comparable(address.city)
   const state = comparable(address.state)
@@ -117,11 +135,6 @@ export function localDestinationIdentityMatches(address: Pick<ShippingAddress, '
   if (destination === 'local_juarez') return country === 'MX' && ['ciudadjuarez', 'juarez'].includes(city) && ['chihuahua', 'chih'].includes(state)
   if (destination === 'local_chihuahua') return country === 'MX' && ['chihuahua', 'chihuahuacity'].includes(city) && ['chihuahua', 'chih'].includes(state)
   return true
-}
-
-export function localPostalCodeCovered(postalCode: string, configuredPostalCodes: string[]) {
-  const normalizedPostalCode = postalCode.trim().toUpperCase()
-  return configuredPostalCodes.map((value) => value.trim().toUpperCase()).filter(Boolean).includes(normalizedPostalCode)
 }
 
 export function addressEssentialErrors(address: ShippingAddress, destination: DeliveryDestination) {
@@ -208,6 +221,7 @@ export function shippingSelectionAllowsPayment(selection: ShippingSelection) {
   if (selection.verification.status === 'corrected' && !selection.addressChoice) return false
   if (selection.destination === 'international') return false
   if (destinationIsLocal(selection.destination)) {
+    if (!selection.localFulfillment) return false
     return selection.verification.localDeliveryFeeCents !== null && Boolean(selection.verification.localDeliveryTime)
   }
   if (selection.destination === 'mexico') return selection.verification.rates.length > 0 && Boolean(selection.selectedRateId)
@@ -215,7 +229,18 @@ export function shippingSelectionAllowsPayment(selection: ShippingSelection) {
 }
 
 export async function verifyShippingAddress(input: ShippingVerificationRequest): Promise<AddressVerificationResult> {
-  const localErrors = addressEssentialErrors(input.address, input.destination)
+  if (destinationIsLocal(input.destination) && !input.localFulfillment) {
+    return {
+      status: 'incomplete', provider: 'local_rules', originalAddress: input.address, recommendedAddress: null,
+      messages: ['local_fulfillment_required'], rates: [], localDeliveryFeeCents: null, localDeliveryTime: null,
+      distanceMiles: null, pickupPointName: null, pickupPointAddress: null,
+      verificationId: null, checkedAt: new Date().toISOString(), manualReviewRequired: false, deliverable: false,
+    }
+  }
+  const pickup = destinationIsLocal(input.destination) && input.localFulfillment === 'pickup'
+  const localErrors = pickup
+    ? (localDestinationIdentityMatches(input.address, input.destination) ? [] : ['local_city_mismatch'])
+    : addressEssentialErrors(input.address, input.destination)
   if (localErrors.length) {
     const outsideLocalCity = localErrors.includes('local_city_mismatch')
     return {
@@ -227,6 +252,9 @@ export async function verifyShippingAddress(input: ShippingVerificationRequest):
       rates: [],
       localDeliveryFeeCents: null,
       localDeliveryTime: null,
+      distanceMiles: null,
+      pickupPointName: null,
+      pickupPointAddress: null,
       verificationId: null,
       checkedAt: new Date().toISOString(),
       manualReviewRequired: false,
@@ -242,8 +270,11 @@ export async function verifyShippingAddress(input: ShippingVerificationRequest):
       recommendedAddress: null,
       messages: ['provider_unavailable'],
       rates: [],
-      localDeliveryFeeCents: null,
+      localDeliveryFeeCents: pickup ? 0 : null,
       localDeliveryTime: null,
+      distanceMiles: null,
+      pickupPointName: null,
+      pickupPointAddress: null,
       verificationId: null,
       checkedAt: new Date().toISOString(),
       manualReviewRequired: true,
@@ -262,8 +293,11 @@ export async function verifyShippingAddress(input: ShippingVerificationRequest):
       recommendedAddress: null,
       messages: ['provider_unavailable'],
       rates: [],
-      localDeliveryFeeCents: null,
+      localDeliveryFeeCents: pickup ? 0 : null,
       localDeliveryTime: null,
+      distanceMiles: null,
+      pickupPointName: null,
+      pickupPointAddress: null,
       verificationId: null,
       checkedAt: new Date().toISOString(),
       manualReviewRequired: true,

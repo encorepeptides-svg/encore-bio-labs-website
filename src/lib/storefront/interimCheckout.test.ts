@@ -9,6 +9,7 @@ import {
   toOrderItemsPayload,
 } from './interimCheckout'
 import { getEnabledPaymentMethods, type InterimPaymentMethod } from '../../config/interimCheckout'
+import type { ShippingSelection } from '../shipping'
 
 const item = (overrides: Partial<CartItem> = {}): CartItem => ({
   id: 'retatrutide__10mg',
@@ -28,6 +29,34 @@ const item = (overrides: Partial<CartItem> = {}): CartItem => ({
   quantity: 2,
   ...overrides,
 })
+
+const pickupShipping: ShippingSelection = {
+  destination: 'local_juarez',
+  localFulfillment: 'pickup',
+  kitCount: 4,
+  address: { country: 'MX', state: 'Chihuahua', city: 'Ciudad Juárez', neighborhood: '', postalCode: '', street: '', streetNumber: '', line2: '' },
+  verification: {
+    status: 'verified',
+    provider: 'local_rules',
+    originalAddress: { country: 'MX', state: 'Chihuahua', city: 'Ciudad Juárez', neighborhood: '', postalCode: '', street: '', streetNumber: '', line2: '' },
+    recommendedAddress: null,
+    messages: [],
+    rates: [],
+    localDeliveryFeeCents: 0,
+    localDeliveryTime: 'Monday–Friday, 9am–5pm',
+    distanceMiles: null,
+    pickupPointName: 'Encore Juárez',
+    pickupPointAddress: 'Zona Pronaf, Ciudad Juárez, Chihuahua',
+    verificationId: null,
+    checkedAt: '2026-07-20T00:00:00.000Z',
+    manualReviewRequired: false,
+    deliverable: true,
+  },
+  addressChoice: null,
+  selectedRateId: null,
+  manualReviewRequested: false,
+  destinationAcknowledged: true,
+}
 
 describe('interim checkout handoff', () => {
   it('builds the WhatsApp message with reference, line items, total, and payment method', () => {
@@ -58,6 +87,20 @@ describe('interim checkout handoff', () => {
     expect(message).toContain('Envío: 123 Calle Principal, Juárez')
     expect(message).toContain('Notas: Llame al llegar')
     expect(message).not.toContain('Order [')
+  })
+
+  it('identifies free local pickup and retains the Mexico import fee in the handoff', () => {
+    const message = buildHandoffMessage({
+      reference: 'ORD-2026',
+      items: [item()],
+      paymentMethod: 'cash_on_delivery',
+      locale: 'es',
+      shipping: pickupShipping,
+    })
+    expect(message).toContain('Importación: $25')
+    expect(message).toContain('Envío: $0')
+    expect(message).toContain('Recepción local: recoger en punto de distribución')
+    expect(message).toContain('Punto de distribución: Encore Juárez · Zona Pronaf, Ciudad Juárez, Chihuahua')
   })
 
   it('generates short human-readable references and url-encodes the wa.me link', () => {

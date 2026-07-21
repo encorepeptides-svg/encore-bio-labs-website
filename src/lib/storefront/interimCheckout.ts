@@ -85,6 +85,14 @@ export function buildHandoffMessage({ reference, items, paymentMethod, locale, c
   const total = totalCents === null ? null : formatCartCurrency((totalCents ?? charges?.totalCents ?? Math.round(subtotal * 100)) / 100)
   const acceptedAddress = shipping ? selectedShippingAddress(shipping) : null
   const destinationLine = shipping ? `${shipping.destination} · ${[acceptedAddress?.street, acceptedAddress?.streetNumber, acceptedAddress?.neighborhood, acceptedAddress?.city, acceptedAddress?.state, acceptedAddress?.postalCode, acceptedAddress?.country].filter(Boolean).join(', ')}` : ''
+  const fulfillmentLine = shipping?.localFulfillment === 'pickup'
+    ? (locale === 'es' ? 'Recepción local: recoger en punto de distribución' : 'Local fulfillment: distribution-point pickup')
+    : shipping?.localFulfillment === 'home_delivery'
+      ? (locale === 'es' ? 'Recepción local: entrega a domicilio dentro de 10 millas' : 'Local fulfillment: home delivery within 10 miles')
+      : ''
+  const pickupPointLine = shipping?.localFulfillment === 'pickup' && (shipping.verification.pickupPointName || shipping.verification.pickupPointAddress)
+    ? `${locale === 'es' ? 'Punto de distribución' : 'Distribution point'}: ${[shipping.verification.pickupPointName, shipping.verification.pickupPointAddress, shipping.verification.localDeliveryTime].filter(Boolean).join(' · ')}`
+    : ''
   const shippingLine = selectedRate ? `${selectedRate.carrier} ${selectedRate.service}` : ''
   const shippingAddress = [contact?.address, contact?.address2, contact?.city, contact?.state, contact?.zip, contact?.country]
     .map((value) => value?.trim())
@@ -114,6 +122,8 @@ export function buildHandoffMessage({ reference, items, paymentMethod, locale, c
       charges?.shippingCents !== null && charges?.shippingCents !== undefined ? `Envío: ${formatCartCurrency(charges.shippingCents / 100)}` : 'Envío: pendiente de revisión',
       total ? `Total: ${total}` : 'Total: pendiente de revisión',
       destinationLine ? `Destino validado: ${destinationLine}` : '',
+      fulfillmentLine,
+      pickupPointLine,
       shippingLine ? `Servicio: ${shippingLine}` : '',
       ...contactLines,
       '',
@@ -128,6 +138,8 @@ export function buildHandoffMessage({ reference, items, paymentMethod, locale, c
     charges?.shippingCents !== null && charges?.shippingCents !== undefined ? `Shipping: ${formatCartCurrency(charges.shippingCents / 100)}` : 'Shipping: pending review',
     total ? `Total: ${total}` : 'Total: pending review',
     destinationLine ? `Validated destination: ${destinationLine}` : '',
+    fulfillmentLine,
+    pickupPointLine,
     shippingLine ? `Service: ${shippingLine}` : '',
     ...contactLines,
     '',
@@ -177,6 +189,7 @@ export async function createPendingOrder(input: PendingOrderInput): Promise<Pend
     body: {
       action: 'create_order',
       destination: input.shipping.destination,
+      localFulfillment: input.shipping.localFulfillment,
       address: input.shipping.address,
       addressChoice: input.shipping.addressChoice,
       selectedRate,
@@ -220,6 +233,8 @@ export type StorefrontOrderRow = {
   shipping_cents: number | null
   total_cents: number | null
   destination_type: string
+  local_fulfillment_method: 'pickup' | 'home_delivery' | null
+  delivery_distance_miles: number | null
   original_address: Record<string, string>
   validated_address: Record<string, string>
   selected_address: Record<string, string>
@@ -233,7 +248,7 @@ export type StorefrontOrderRow = {
 export async function adminFetchStorefrontOrders(): Promise<StorefrontOrderRow[]> {
   if (!supabase) throw new Error('not configured')
   const { data, error } = await supabase.from('storefront_orders')
-    .select('id,created_at,order_reference,status,channel,payment_method,items,subtotal_cents,import_fee_cents,shipping_cents,total_cents,destination_type,original_address,validated_address,selected_address,address_verification,shipping_service,shipping_review_required,contact,paid_at')
+    .select('id,created_at,order_reference,status,channel,payment_method,items,subtotal_cents,import_fee_cents,shipping_cents,total_cents,destination_type,local_fulfillment_method,delivery_distance_miles,original_address,validated_address,selected_address,address_verification,shipping_service,shipping_review_required,contact,paid_at')
     .order('created_at', { ascending: false })
     .limit(300)
   if (error) throw error
