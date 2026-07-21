@@ -3,12 +3,16 @@ import './ProductHero.css'
 
 export type ProductHeroDensity = 'low' | 'medium' | 'high'
 
+export type ProductHeroTheme = 'dark' | 'lab'
+
 export type ProductHeroProps = {
   /** Transparent product cutout (no baked background or shadow). */
   imageSrc: string
   imageAlt: string
   /** Brand/product accent used for every generated light layer. */
   accent?: string
+  /** 'dark' = the atmospheric night scene; 'lab' = the light clinical scene. */
+  theme?: ProductHeroTheme
   density?: ProductHeroDensity
   /** True only for the first, above-the-fold hero — drives LCP treatment. */
   priority?: boolean
@@ -46,6 +50,7 @@ export function ProductHero({
   imageSrc,
   imageAlt,
   accent = '#28e0c1',
+  theme = 'dark',
   density = 'medium',
   priority = false,
   imageWidth = 1254,
@@ -88,25 +93,37 @@ export function ProductHero({
 
   const particleCount = FOREGROUND_PARTICLES[density]
 
-  return (
-    <div ref={rootRef} className={`product-hero ${className}`} style={{ ['--ph-accent' as string]: accent }}>
-      {/* Background plane (layers 1–3) */}
-      <div className="ph-plane ph-plane--back" aria-hidden="true">
-        <div className="ph-gradient" />
-        <div className="ph-texture" />
-        <MolecularField />
-      </div>
+  const isLab = theme === 'lab'
 
-      {/* Midground plane (layers 4–6) */}
-      <div className="ph-plane ph-plane--mid" aria-hidden="true">
-        <div className="ph-ambient"><span /><span /><span /><span /></div>
-        <div className="ph-radiallight" />
-        <div className="ph-haze"><span /><span /></div>
-      </div>
+  return (
+    <div ref={rootRef} className={`product-hero ${className}`} data-theme={theme} style={{ ['--ph-accent' as string]: accent }}>
+      {isLab ? (
+        // Clean Lab: restrained clinical scene — base grid + white key + contact shadow.
+        <div className="ph-plane ph-plane--back" aria-hidden="true">
+          <div className="ph-lab-grid" />
+          <div className="ph-lab-key" />
+        </div>
+      ) : (
+        <>
+          {/* Background plane (layers 1–3) */}
+          <div className="ph-plane ph-plane--back" aria-hidden="true">
+            <div className="ph-gradient" />
+            <div className="ph-texture" />
+            <MolecularField />
+          </div>
+
+          {/* Midground plane (layers 4–6) */}
+          <div className="ph-plane ph-plane--mid" aria-hidden="true">
+            <div className="ph-ambient"><span /><span /><span /><span /></div>
+            <div className="ph-radiallight" />
+            <div className="ph-haze"><span /><span /></div>
+          </div>
+        </>
+      )}
 
       {/* Product stage (layer 7) */}
       <div className="ph-stage">
-        <div className="ph-glow" aria-hidden="true" />
+        {isLab ? <div className="ph-lab-shadow" aria-hidden="true" /> : <div className="ph-glow" aria-hidden="true" />}
         <img
           className="ph-product"
           src={imageSrc}
@@ -122,10 +139,10 @@ export function ProductHero({
         />
       </div>
 
-      {/* Foreground light particles (layer 8) */}
+      {/* Foreground light particles (layer 8) — omitted in the restrained lab scene */}
       <div className="ph-plane ph-plane--front" aria-hidden="true">
         <div className="ph-particles">
-          {Array.from({ length: particleCount }, (_, index) => (
+          {(isLab ? [] : Array.from({ length: particleCount })).map((_, index) => (
             <span
               key={index}
               style={{
