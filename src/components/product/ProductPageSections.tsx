@@ -33,6 +33,15 @@ import { contentTypeLabels, researchArticles } from '../../data/research'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { buildOrderInquiryMessage, buildWhatsAppUrl } from '../../lib/whatsapp'
 import { ProductImage } from '../ProductImage'
+import { ProductHero as ProductHeroEnvironment } from './ProductHero'
+import ghkCuCutout from '../../assets/images/products/hero-demo/ghk-cu-demo.webp'
+
+// Products shipping the Clean Lab (light) hero treatment. Scoped intentionally
+// small so it can be reviewed live on one page before any wider rollout. Each
+// entry needs a transparent hero cutout + an accent.
+const CLEAN_LAB_HERO: Record<string, { cutout: string; accent: string }> = {
+  'ghk-cu': { cutout: ghkCuCutout, accent: '#17a894' },
+}
 import { PurchaseSelector } from './PurchaseSelector'
 import { CTA } from '../CTA'
 import { EncoreCompleteKit } from '../EncoreCompleteKit'
@@ -156,6 +165,46 @@ export function ProductHero({ product, researchContent }: { product: Product; re
     ? product.keyHighlights.slice(0, 3)
     : [t('featureBullet1'), t('featureBullet2'), t('featureBullet3')]
   const priceLabel = getProductPriceLabel(product, t)
+
+  const cleanLab = CLEAN_LAB_HERO[product.slug]
+  if (cleanLab) {
+    return (
+      <section className="relative isolate overflow-hidden bg-gradient-to-b from-[#f3f6f5] to-[#e6ece9] px-5 pb-16 pt-8 sm:px-8 lg:pb-20 lg:pt-12">
+        <div className="mx-auto grid max-w-[88rem] items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+          <div>
+            <a href={path('/catalog')} className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-900/10 bg-white/70 px-4 py-2 text-sm font-semibold text-slate-600 backdrop-blur transition hover:-translate-y-0.5 hover:border-slate-900/20 hover:text-[#08131a]">
+              {t('backToCatalog')}
+            </a>
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="inline-flex rounded-full border border-teal-700/20 bg-teal-700/10 px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-teal-800">{product.badge}</p>
+              <p className="inline-flex rounded-full border border-slate-900/10 bg-white px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-700">{priceLabel}</p>
+            </div>
+            <h1 className="mt-6 text-[clamp(3rem,8vw,4.8rem)] font-semibold leading-[0.9] tracking-[-0.06em] text-[#08131a]">{product.name}</h1>
+            <p className="mt-5 max-w-2xl text-2xl font-semibold leading-tight tracking-[-0.04em] text-[#08131a] sm:text-3xl">{product.headline}</p>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">{getPlainProductDescription(product, researchContent, locale)}</p>
+            <div className="mt-7 grid gap-2 sm:grid-cols-3">
+              {productFeatureBullets.map((bullet) => (
+                <div key={bullet} className="flex items-start gap-3 rounded-[1.1rem] border border-slate-900/8 bg-white px-4 py-3 text-sm font-semibold leading-6 text-[#08131a] shadow-[0_10px_30px_rgba(20,50,55,0.05)]">
+                  <span className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-teal-700 text-[0.7rem] text-white">✓</span>
+                  <span>{bullet}</span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <CTA href="#product-specs" className="bg-teal-700 text-white shadow-[0_16px_44px_rgba(23,168,148,0.28)] hover:bg-teal-800">{t('viewResearchDetails')}</CTA>
+              <CTA href="https://wa.me/19153595448" target="_blank" rel="noopener noreferrer" tone="ghost" className="border-slate-900/15 bg-white text-[#08131a] shadow-none hover:border-slate-900/30 hover:bg-slate-50">{t('contactEncoreWhatsapp')}</CTA>
+            </div>
+            <div className="mt-7 max-w-2xl"><PurchaseSelector product={product} compact /></div>
+            {product.purchaseRules.kitEligible ? <EncoreCompleteKit variant="reassurance" productName={product.name} bacWaterAmount={product.bacWaterAmount} className="mt-4 max-w-2xl" /> : null}
+            <p className="mt-5 border-l-2 border-teal-700/60 pl-4 text-sm leading-6 text-slate-600">{t('researchUseOnlyLine')} · <a href={path('/contact')} className="font-semibold text-teal-800 underline-offset-4 hover:underline">{t('contactQuestion')}</a></p>
+          </div>
+          <div className="mx-auto w-full max-w-xl lg:sticky lg:top-24">
+            <ProductHeroEnvironment imageSrc={cleanLab.cutout} imageAlt={t('productImageAlt', { product: product.name })} accent={cleanLab.accent} theme="lab" priority imageWidth={1000} imageHeight={1000} />
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="relative isolate overflow-hidden bg-[#030b18] px-5 pb-16 pt-10 text-white sm:px-8 sm:pt-12 lg:pb-24 lg:pt-16">

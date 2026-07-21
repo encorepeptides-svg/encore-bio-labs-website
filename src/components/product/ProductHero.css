@@ -193,6 +193,49 @@
   .ph-glow { opacity: 0.75; }
 }
 
+/* ===== Clean Lab (light clinical) theme ===== */
+.product-hero[data-theme="lab"] {
+  /* soft pharmaceutical grey-green, deliberately off pure white */
+  background: linear-gradient(180deg, #f3f6f5 0%, #e4ebe9 100%);
+  color: #08131a;
+}
+.ph-lab-key {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(46% 50% at 52% 40%,
+    rgba(255, 255, 255, 0.95),
+    rgba(214, 228, 225, 0.35) 46%,
+    transparent 72%);
+}
+.ph-lab-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.55;
+  background-image:
+    linear-gradient(rgba(30, 90, 90, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 90, 90, 0.08) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to top, #000, transparent 46%);
+  -webkit-mask-image: linear-gradient(to top, #000, transparent 46%);
+}
+/* soft contact shadow so the vial sits on the surface, not floats */
+.ph-lab-shadow {
+  position: absolute;
+  bottom: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 52%;
+  height: 8%;
+  background: radial-gradient(ellipse at center, rgba(30, 60, 66, 0.34), transparent 70%);
+  filter: blur(13px);
+}
+.product-hero[data-theme="lab"] .ph-product {
+  width: 66%;
+  height: 82%;
+  /* on light ground: no accent rim, just a soft grounded drop shadow */
+  filter: drop-shadow(0 30px 34px rgba(30, 60, 66, 0.26));
+}
+
 /* Mobile: simplify particle density before touching the product/lighting. */
 @media (max-width: 640px) {
   .ph-particles span:nth-child(n + 4),
