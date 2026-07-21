@@ -159,6 +159,38 @@ export const defaultIntakeFormData: IntakeFormData = {
   consentInternalReview: false,
 }
 
+export function isIntakeStepComplete(step: number, data: IntakeFormData) {
+  const requiredFields: Array<Array<keyof IntakeFormData>> = [
+    ['mainGoal'],
+    [],
+    ['firstName', 'lastName', 'preferredContactMethod'],
+  ]
+
+  if (step < 0 || step >= requiredFields.length) return false
+
+  const fieldsComplete = requiredFields[step].every((field) => {
+    const value = data[field]
+    return typeof value === 'string' && value.trim().length > 0
+  })
+
+  if (step === 2) {
+    const hasRequiredContact =
+      data.preferredContactMethod === 'Email'
+        ? data.email.trim().length > 0
+        : data.phone.trim().length > 0
+    const hasConsent =
+      data.consentResearchUseOnly &&
+      data.consentNoMedicalAdvice &&
+      data.consentAccuracy &&
+      data.consentContact &&
+      data.consentInternalReview
+
+    return fieldsComplete && hasRequiredContact && hasConsent
+  }
+
+  return fieldsComplete
+}
+
 const recommendationMap: Record<
   MainGoal,
   {

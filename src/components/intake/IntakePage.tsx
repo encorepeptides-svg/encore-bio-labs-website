@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
-  ClipboardCheck,
   FileCheck2,
   FlaskConical,
   LoaderCircle,
@@ -20,6 +19,7 @@ import {
   defaultIntakeFormData,
   generateRecommendation,
   getStoredLeads,
+  isIntakeStepComplete,
   mainGoalOptions,
   saveStoredLeads,
   type CustomerLead,
@@ -27,7 +27,7 @@ import {
 } from '../../data/intake'
 import { createCRMLeadFromIntake, saveLead } from '../../lib/crmStorage'
 
-const stepKeys = ['stepGoal', 'stepBiometrics', 'stepLifestyle', 'stepExperience', 'stepReview'] as const
+const stepKeys = ['stepGoal', 'stepDetails', 'stepReview'] as const
 const sexOptions = ['Female', 'Male', 'Intersex', 'Prefer not to say']
 const activityOptions = ['Sedentary', 'Light', 'Moderate', 'Very active', 'Athletic']
 const lifestyleOptions = ['Mostly seated', 'Mixed movement', 'Physically demanding', 'Training-focused']
@@ -210,19 +210,21 @@ function SelectField({
   onChange,
   options,
   placeholder,
+  required = true,
 }: {
   name: keyof IntakeFormData
   value: string
   onChange: (name: keyof IntakeFormData, value: string) => void
   options: string[]
   placeholder?: string
+  required?: boolean
 }) {
   const { t } = useTranslation('intake')
   return (
     <select
       name={name}
       value={value}
-      required
+      required={required}
       onChange={(event) => onChange(name, event.target.value)}
       className={inputClass()}
     >
@@ -241,11 +243,13 @@ function ChoiceGrid({
   value,
   options,
   onChange,
+  required = true,
 }: {
   name: keyof IntakeFormData
   value: string
   options: string[]
   onChange: (name: keyof IntakeFormData, value: string) => void
+  required?: boolean
 }) {
   const { t } = useTranslation('intake')
   return (
@@ -264,7 +268,7 @@ function ChoiceGrid({
             name={name}
             value={option}
             checked={value === option}
-            required
+            required={required}
             onChange={(event) => onChange(name, event.target.value)}
             className="sr-only"
           />
@@ -278,15 +282,15 @@ function ChoiceGrid({
 function ProductChoiceGrid({
   selected,
   onToggle,
+  items = products.slice(0, 18),
 }: {
   selected: string[]
   onToggle: (productName: string) => void
+  items?: typeof products
 }) {
-  const visibleProducts = products.slice(0, 18)
-
   return (
     <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-      {visibleProducts.map((product) => {
+      {items.map((product) => {
         const isSelected = selected.includes(product.name)
 
         return (
@@ -308,60 +312,6 @@ function ProductChoiceGrid({
   )
 }
 
-function isStepComplete(step: number, data: IntakeFormData) {
-  const requiredFields: Array<Array<keyof IntakeFormData>> = [
-    ['mainGoal'],
-    [
-      'age',
-      'sex',
-      'height',
-      'currentWeight',
-      'goalWeight',
-      'bodyFat',
-      'activityLevel',
-      'waist',
-      'medicationsOrCompounds',
-      'sensitivities',
-    ],
-    [
-      'lifestyleActivity',
-      'exerciseDays',
-      'sleepQuality',
-      'energyLevels',
-      'nutritionConsistency',
-      'mainObstacle',
-    ],
-    ['peptideExperience', 'glpExperience', 'desiredResearchResult'],
-    ['firstName', 'lastName', 'city', 'preferredContactMethod'],
-  ]
-
-  const fieldsComplete = requiredFields[step].every((field) => {
-    const value = data[field]
-    return typeof value === 'string' && value.trim().length > 0
-  })
-
-  if (step === 3) {
-    return fieldsComplete && data.interestedProducts.length > 0
-  }
-
-  if (step === 4) {
-    const hasRequiredContact =
-      data.preferredContactMethod === 'Email'
-        ? data.email.trim().length > 0
-        : data.phone.trim().length > 0
-    const hasConsent =
-      data.consentResearchUseOnly &&
-      data.consentNoMedicalAdvice &&
-      data.consentAccuracy &&
-      data.consentContact &&
-      data.consentInternalReview
-
-    return fieldsComplete && hasRequiredContact && hasConsent
-  }
-
-  return fieldsComplete
-}
-
 export function IntakePage() {
   const { path } = useLocale()
   const { t } = useTranslation('intake')
@@ -371,7 +321,33 @@ export function IntakePage() {
   const [phase, setPhase] = useState<'form' | 'loading' | 'results'>(initialDraft.phase)
   const [lead, setLead] = useState<CustomerLead | null>(initialDraft.lead)
   const recommendation = useMemo(() => generateRecommendation(formData), [formData])
-  const canContinue = isStepComplete(step, formData)
+  const hasOptionalDetails = Boolean(
+    formData.desiredResearchResult.trim() ||
+    formData.interestedProducts.length ||
+    formData.peptideExperience ||
+    formData.glpExperience ||
+    formData.age ||
+    formData.sex ||
+    formData.height ||
+    formData.currentWeight ||
+    formData.goalWeight ||
+    formData.bodyFat ||
+    formData.activityLevel ||
+    formData.waist ||
+    formData.medicationsOrCompounds.trim() ||
+    formData.sensitivities.trim() ||
+    formData.lifestyleActivity ||
+    formData.exerciseDays ||
+    formData.sleepQuality ||
+    formData.energyLevels ||
+    formData.nutritionConsistency ||
+    formData.mainObstacle.trim()
+  )
+  const additionalProducts = useMemo(() => {
+    const recommendedSlugs = new Set(recommendation.recommendedProducts.map((product) => product.slug))
+    return products.filter((product) => !recommendedSlugs.has(product.slug)).slice(0, 14)
+  }, [recommendation.recommendedProducts])
+  const canContinue = isIntakeStepComplete(step, formData)
   const progress = Math.round(((step + 1) / stepKeys.length) * 100)
 
   useEffect(() => {
@@ -538,7 +514,7 @@ export function IntakePage() {
           {phase === 'results' && lead ? <ResultsPage lead={lead} /> : null}
           {phase === 'form' ? (
             <form onSubmit={submitIntake} className="grid gap-6">
-              <div className="grid gap-3 rounded-2xl border border-slate-900/10 bg-[#f5f5f2] p-4">
+              <div className="grid gap-3 rounded-2xl border border-slate-900/10 bg-[#f5f5f2] p-4" aria-live="polite">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">
@@ -554,13 +530,18 @@ export function IntakePage() {
                 </div>
                 <div className="h-2 overflow-hidden rounded-full bg-slate-900/10">
                   <div
+                    role="progressbar"
+                    aria-label={t('stepOf', { current: step + 1, total: stepKeys.length })}
+                    aria-valuemin={1}
+                    aria-valuemax={stepKeys.length}
+                    aria-valuenow={step + 1}
                     className="h-full rounded-full bg-teal-500 transition-all duration-500"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
               </div>
 
-              <div className="min-h-[32rem]">
+              <div>
                 {step === 0 ? (
                   <div className="grid gap-5">
                     <TrustCard
@@ -578,101 +559,123 @@ export function IntakePage() {
 
                 {step === 1 ? (
                   <div className="grid gap-5">
-                    <ReviewProcessCard />
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <Field label={t('age')}>
-                        <TextInput name="age" value={formData.age} type="number" onChange={updateField} />
-                      </Field>
-                      <Field label={t('biologicalSex')}>
-                        <SelectField name="sex" value={formData.sex} options={sexOptions} onChange={updateField} />
-                      </Field>
-                      <Field label={t('height')}>
-                        <TextInput name="height" value={formData.height} onChange={updateField} placeholder={'5\'10"'} />
-                      </Field>
-                      <Field label={t('currentWeight')}>
-                        <TextInput name="currentWeight" value={formData.currentWeight} type="number" onChange={updateField} />
-                      </Field>
-                      <Field label={t('goalWeight')}>
-                        <TextInput name="goalWeight" value={formData.goalWeight} type="number" onChange={updateField} />
-                      </Field>
-                      <Field label={t('bodyFatEstimate')}>
-                        <TextInput name="bodyFat" value={formData.bodyFat} onChange={updateField} placeholder={t('bodyFatPlaceholder')} />
-                      </Field>
-                      <Field label={t('activityLevel')}>
-                        <SelectField name="activityLevel" value={formData.activityLevel} options={activityOptions} onChange={updateField} />
-                      </Field>
-                      <Field label={t('waistMeasurement')}>
-                        <TextInput name="waist" value={formData.waist} onChange={updateField} placeholder={t('waistPlaceholder')} />
-                      </Field>
-                      <div className="md:col-span-2">
-                        <Field label={t('currentCompounds')}>
-                          <TextArea name="medicationsOrCompounds" value={formData.medicationsOrCompounds} onChange={updateField} placeholder={t('noneUnknownPlaceholder')} />
-                        </Field>
-                      </div>
-                      <div className="md:col-span-2">
-                        <Field label={t('sensitivities')}>
-                          <TextArea name="sensitivities" value={formData.sensitivities} onChange={updateField} placeholder={t('noneUnknownPlaceholder')} />
-                        </Field>
-                      </div>
+                    <div className="rounded-2xl border border-teal-700/20 bg-teal-50 p-4 text-sm leading-6 text-teal-950">
+                      <p className="font-semibold">{t('optionalStepTitle')}</p>
+                      <p className="mt-1">{t('optionalStepBody')}</p>
                     </div>
+                    <Field label={`${t('desiredResultQuestion')} (${t('optional')})`}>
+                      <TextArea name="desiredResearchResult" value={formData.desiredResearchResult} onChange={updateField} required={false} placeholder={t('desiredResultPlaceholder')} />
+                    </Field>
+                    <div className="grid gap-2">
+                      <p className="text-sm font-semibold text-[#071724]">{t('interestedProductsQuestion')} <span className="font-normal text-slate-500">({t('optional')})</span></p>
+                      <p className="text-xs leading-5 text-slate-500">{t('recommendedProductsHelp')}</p>
+                      <ProductChoiceGrid selected={formData.interestedProducts} onToggle={toggleProduct} items={recommendation.recommendedProducts} />
+                    </div>
+
+                    <details className="rounded-2xl border border-slate-900/10 bg-white/82 p-4">
+                      <summary className="cursor-pointer text-sm font-semibold text-[#071724] marker:text-teal-600">
+                        {t('showAllProducts')}
+                      </summary>
+                      <div className="mt-4">
+                        <ProductChoiceGrid selected={formData.interestedProducts} onToggle={toggleProduct} items={additionalProducts} />
+                      </div>
+                    </details>
+
+                    <details className="rounded-[1.5rem] border border-slate-900/10 bg-[#f5f5f2]/70 p-4 sm:p-5">
+                      <summary className="cursor-pointer text-sm font-semibold text-[#071724] marker:text-teal-600">
+                        {t('addOptionalContext')}
+                      </summary>
+                      <p className="mt-3 text-sm leading-6 text-slate-600">{t('optionalContextHelp')}</p>
+
+                      <div className="mt-5 grid gap-6">
+                        <Field label={`${t('peptideExperienceQuestion')} (${t('optional')})`}>
+                          <ChoiceGrid name="peptideExperience" value={formData.peptideExperience} options={peptideExperienceOptions} onChange={updateField} required={false} />
+                        </Field>
+                        <Field label={`${t('glpExperienceQuestion')} (${t('optional')})`}>
+                          <ChoiceGrid name="glpExperience" value={formData.glpExperience} options={glpExperienceOptions} onChange={updateField} required={false} />
+                        </Field>
+
+                        <div>
+                          <h3 className="text-base font-semibold text-[#071724]">{t('optionalBiometricsTitle')}</h3>
+                          <p className="mt-1 text-sm leading-6 text-slate-600">{t('optionalBiometricsBody')}</p>
+                        </div>
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <Field label={`${t('age')} (${t('optional')})`}>
+                            <TextInput name="age" value={formData.age} type="number" onChange={updateField} required={false} />
+                          </Field>
+                          <Field label={`${t('biologicalSex')} (${t('optional')})`}>
+                            <SelectField name="sex" value={formData.sex} options={sexOptions} onChange={updateField} required={false} placeholder={t('preferNotToAnswer')} />
+                          </Field>
+                          <Field label={`${t('height')} (${t('optional')})`}>
+                            <TextInput name="height" value={formData.height} onChange={updateField} required={false} placeholder={t('heightPlaceholder')} />
+                          </Field>
+                          <Field label={`${t('currentWeight')} (${t('optional')})`}>
+                            <TextInput name="currentWeight" value={formData.currentWeight} onChange={updateField} required={false} placeholder={t('weightPlaceholder')} />
+                          </Field>
+                          <Field label={`${t('goalWeight')} (${t('optional')})`}>
+                            <TextInput name="goalWeight" value={formData.goalWeight} onChange={updateField} required={false} placeholder={t('weightPlaceholder')} />
+                          </Field>
+                          <Field label={`${t('bodyFatEstimate')} (${t('optional')})`}>
+                            <TextInput name="bodyFat" value={formData.bodyFat} onChange={updateField} required={false} placeholder={t('bodyFatPlaceholder')} />
+                          </Field>
+                          <Field label={`${t('activityLevel')} (${t('optional')})`}>
+                            <SelectField name="activityLevel" value={formData.activityLevel} options={activityOptions} onChange={updateField} required={false} />
+                          </Field>
+                          <Field label={`${t('waistMeasurement')} (${t('optional')})`}>
+                            <TextInput name="waist" value={formData.waist} onChange={updateField} required={false} placeholder={t('waistPlaceholder')} />
+                          </Field>
+                          <div className="md:col-span-2">
+                            <Field label={`${t('currentCompounds')} (${t('optional')})`}>
+                              <TextArea name="medicationsOrCompounds" value={formData.medicationsOrCompounds} onChange={updateField} required={false} placeholder={t('noneUnknownPlaceholder')} />
+                            </Field>
+                          </div>
+                          <div className="md:col-span-2">
+                            <Field label={`${t('sensitivities')} (${t('optional')})`}>
+                              <TextArea name="sensitivities" value={formData.sensitivities} onChange={updateField} required={false} placeholder={t('noneUnknownPlaceholder')} />
+                            </Field>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h3 className="text-base font-semibold text-[#071724]">{t('optionalLifestyleTitle')}</h3>
+                        </div>
+                        <Field label={`${t('lifestyleQuestion')} (${t('optional')})`}>
+                          <ChoiceGrid name="lifestyleActivity" value={formData.lifestyleActivity} options={lifestyleOptions} onChange={updateField} required={false} />
+                        </Field>
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <Field label={`${t('exerciseDaysQuestion')} (${t('optional')})`}>
+                            <TextInput name="exerciseDays" value={formData.exerciseDays} type="number" onChange={updateField} required={false} placeholder={t('exerciseDaysPlaceholder')} />
+                          </Field>
+                          <Field label={`${t('sleepQualityQuestion')} (${t('optional')})`}>
+                            <SelectField name="sleepQuality" value={formData.sleepQuality} options={sleepOptions} onChange={updateField} required={false} />
+                          </Field>
+                          <Field label={`${t('energyLevelsQuestion')} (${t('optional')})`}>
+                            <SelectField name="energyLevels" value={formData.energyLevels} options={energyOptions} onChange={updateField} required={false} />
+                          </Field>
+                          <Field label={`${t('nutritionQuestion')} (${t('optional')})`}>
+                            <SelectField name="nutritionConsistency" value={formData.nutritionConsistency} options={nutritionOptions} onChange={updateField} required={false} />
+                          </Field>
+                        </div>
+                        <Field label={`${t('mainObstacle')} (${t('optional')})`}>
+                          <TextArea name="mainObstacle" value={formData.mainObstacle} onChange={updateField} required={false} />
+                        </Field>
+                      </div>
+                    </details>
                   </div>
                 ) : null}
 
                 {step === 2 ? (
                   <div className="grid gap-5">
-                    <Field label={t('lifestyleQuestion')}>
-                      <ChoiceGrid name="lifestyleActivity" value={formData.lifestyleActivity} options={lifestyleOptions} onChange={updateField} />
-                    </Field>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <Field label={t('exerciseDaysQuestion')}>
-                        <TextInput name="exerciseDays" value={formData.exerciseDays} type="number" onChange={updateField} placeholder={t('exerciseDaysPlaceholder')} />
-                      </Field>
-                      <Field label={t('sleepQualityQuestion')}>
-                        <SelectField name="sleepQuality" value={formData.sleepQuality} options={sleepOptions} onChange={updateField} />
-                      </Field>
-                      <Field label={t('energyLevelsQuestion')}>
-                        <SelectField name="energyLevels" value={formData.energyLevels} options={energyOptions} onChange={updateField} />
-                      </Field>
-                      <Field label={t('nutritionQuestion')}>
-                        <SelectField name="nutritionConsistency" value={formData.nutritionConsistency} options={nutritionOptions} onChange={updateField} />
-                      </Field>
-                    </div>
-                    <Field label={t('mainObstacle')}>
-                      <TextArea name="mainObstacle" value={formData.mainObstacle} onChange={updateField} />
-                    </Field>
-                  </div>
-                ) : null}
-
-                {step === 3 ? (
-                  <div className="grid gap-5">
-                    <Field label={t('peptideExperienceQuestion')}>
-                      <ChoiceGrid name="peptideExperience" value={formData.peptideExperience} options={peptideExperienceOptions} onChange={updateField} />
-                    </Field>
-                    <Field label={t('glpExperienceQuestion')}>
-                      <ChoiceGrid name="glpExperience" value={formData.glpExperience} options={glpExperienceOptions} onChange={updateField} />
-                    </Field>
-                    <div className="grid gap-2">
-                      <p className="text-sm font-semibold text-[#071724]">{t('interestedProductsQuestion')}</p>
-                      <ProductChoiceGrid selected={formData.interestedProducts} onToggle={toggleProduct} />
-                    </div>
-                    <Field label={t('desiredResultQuestion')}>
-                      <TextArea name="desiredResearchResult" value={formData.desiredResearchResult} onChange={updateField} />
-                    </Field>
-                  </div>
-                ) : null}
-
-                {step === 4 ? (
-                  <div className="grid gap-5">
                     <NextStepsCard />
                     <NotMedicalAdviceCard />
                     <div className="grid gap-4 md:grid-cols-2">
-                      <Field label={t('firstName')}>
+                      <Field label={`${t('firstName')} (${t('required')})`}>
                         <TextInput name="firstName" value={formData.firstName} onChange={updateField} autoComplete="given-name" />
                       </Field>
-                      <Field label={t('lastName')}>
+                      <Field label={`${t('lastName')} (${t('required')})`}>
                         <TextInput name="lastName" value={formData.lastName} onChange={updateField} autoComplete="family-name" />
                       </Field>
-                      <Field label={t('email')}>
+                      <Field label={`${t('email')} (${formData.preferredContactMethod === 'Email' ? t('required') : t('optional')})`}>
                         <TextInput
                           name="email"
                           value={formData.email}
@@ -682,7 +685,7 @@ export function IntakePage() {
                           required={formData.preferredContactMethod === 'Email'}
                         />
                       </Field>
-                      <Field label={t('phoneNumber')}>
+                      <Field label={`${t('phoneNumber')} (${formData.preferredContactMethod === 'SMS' || formData.preferredContactMethod === 'WhatsApp' ? t('required') : t('optional')})`}>
                         <TextInput
                           name="phone"
                           value={formData.phone}
@@ -692,10 +695,10 @@ export function IntakePage() {
                           required={formData.preferredContactMethod === 'SMS' || formData.preferredContactMethod === 'WhatsApp'}
                         />
                       </Field>
-                      <Field label={t('city')}>
-                        <TextInput name="city" value={formData.city} onChange={updateField} autoComplete="address-level2" />
+                      <Field label={`${t('city')} (${t('optional')})`}>
+                        <TextInput name="city" value={formData.city} onChange={updateField} autoComplete="address-level2" required={false} />
                       </Field>
-                      <Field label={t('preferredContactMethod')}>
+                      <Field label={`${t('preferredContactMethod')} (${t('required')})`}>
                         <SelectField name="preferredContactMethod" value={formData.preferredContactMethod} options={contactOptions} onChange={updateField} />
                       </Field>
                     </div>
@@ -735,7 +738,7 @@ export function IntakePage() {
                     onClick={() => setStep((current) => Math.min(current + 1, stepKeys.length - 1))}
                     className="inline-flex h-12 items-center justify-center gap-3 rounded-full bg-[#071724] px-6 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(7,23,36,0.18)] transition hover:bg-[#102a3d] disabled:cursor-not-allowed disabled:opacity-45"
                   >
-                    {t('continue')}
+                    {step === 1 && !hasOptionalDetails ? t('skipForNow') : t('continue')}
                     <ArrowRight size={16} aria-hidden="true" />
                   </button>
                 )}
@@ -798,37 +801,6 @@ function TrustCard({
           <div key={bullet} className="flex items-start gap-2 text-sm font-semibold text-slate-600">
             <CheckCircle2 size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-teal-600" />
             <span>{bullet}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function ReviewProcessCard() {
-  const { t } = useTranslation('intake')
-  const steps = [t('reviewStep1'), t('reviewStep2'), t('reviewStep3')]
-
-  return (
-    <div className="rounded-[1.5rem] border border-slate-900/10 bg-white/82 p-5 shadow-[0_18px_50px_rgba(7,23,36,0.06)]">
-      <div className="flex items-start gap-4">
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-teal-50 text-teal-700">
-          <ClipboardCheck size={18} aria-hidden="true" />
-        </span>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">{t('reviewProcessEyebrow')}</p>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
-            {t('reviewProcessBody')}
-          </p>
-        </div>
-      </div>
-      <div className="mt-5 grid gap-3 md:grid-cols-3">
-        {steps.map((item, index) => (
-          <div key={item} className="rounded-2xl border border-slate-900/10 bg-[#f5f5f2]/70 p-4">
-            <div className="flex size-8 items-center justify-center rounded-full bg-[#071724] text-sm font-semibold text-white">
-              {index + 1}
-            </div>
-            <p className="mt-3 text-sm font-semibold leading-6 text-[#071724]">{item}</p>
           </div>
         ))}
       </div>
