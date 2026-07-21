@@ -45,6 +45,7 @@ const pickupShipping: ShippingSelection = {
     localDeliveryFeeCents: 0,
     localDeliveryTime: 'Monday–Friday, 9am–5pm',
     distanceMiles: null,
+    coverageCenterPostalCode: '32510',
     pickupPointName: 'Encore Juárez',
     pickupPointAddress: 'Zona Pronaf, Ciudad Juárez, Chihuahua',
     verificationId: null,
@@ -100,6 +101,7 @@ describe('interim checkout handoff', () => {
     expect(message).toContain('Importación: $25')
     expect(message).toContain('Envío: $0')
     expect(message).toContain('Recepción local: recoger en punto de distribución')
+    expect(message).toContain('Centro de cobertura: 32510')
     expect(message).toContain('Punto de distribución: Encore Juárez · Zona Pronaf, Ciudad Juárez, Chihuahua')
   })
 

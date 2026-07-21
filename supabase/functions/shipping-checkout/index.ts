@@ -14,6 +14,7 @@ type Verification = {
   localDeliveryFeeCents: number | null
   localDeliveryTime: string | null
   distanceMiles: number | null
+  coverageCenterPostalCode: string | null
   pickupPointName: string | null
   pickupPointAddress: string | null
   verificationId: string | null
@@ -119,6 +120,7 @@ function baseVerification(address: Address, overrides: Partial<Verification>): V
     localDeliveryFeeCents: null,
     localDeliveryTime: null,
     distanceMiles: null,
+    coverageCenterPostalCode: null,
     pickupPointName: null,
     pickupPointAddress: null,
     verificationId: null,
@@ -253,9 +255,11 @@ async function fetchRates(apiKey: string, toAddress: Record<string, unknown>, ki
 }
 
 function localRule(destination: Destination) {
-  if (destination === 'local_el_paso') return { city: ['elpaso'], state: ['tx', 'texas'], key: 'EL_PASO' }
-  if (destination === 'local_juarez') return { city: ['ciudadjuarez', 'juarez'], state: ['chihuahua', 'chih'], key: 'JUAREZ' }
-  if (destination === 'local_chihuahua') return { city: ['chihuahua', 'chihuahuacity'], state: ['chihuahua', 'chih'], key: 'CHIHUAHUA' }
+  // Fixed WGS84 postal-code centroids are the business-approved centers for
+  // the 10-mile radius. Customer coordinates still come from EasyPost.
+  if (destination === 'local_el_paso') return { city: ['elpaso'], state: ['tx', 'texas'], key: 'EL_PASO', postalCode: '79912', center: { latitude: 31.8383, longitude: -106.5364 } }
+  if (destination === 'local_juarez') return { city: ['ciudadjuarez', 'juarez'], state: ['chihuahua', 'chih'], key: 'JUAREZ', postalCode: '32510', center: { latitude: 31.7228, longitude: -106.4304 } }
+  if (destination === 'local_chihuahua') return { city: ['chihuahua', 'chihuahuacity'], state: ['chihuahua', 'chih'], key: 'CHIHUAHUA', postalCode: '31200', center: { latitude: 28.6550704, longitude: -106.0812946 } }
   return null
 }
 
@@ -280,12 +284,7 @@ function verifiedCoordinates(delivery: Record<string, unknown> | null) {
 }
 
 function localConfiguration(key: string) {
-  const latitudeValue = Deno.env.get(`LOCAL_DELIVERY_${key}_CENTER_LATITUDE`) || ''
-  const longitudeValue = Deno.env.get(`LOCAL_DELIVERY_${key}_CENTER_LONGITUDE`) || ''
-  const latitude = Number(latitudeValue)
-  const longitude = Number(longitudeValue)
   return {
-    center: latitudeValue && longitudeValue && Number.isFinite(latitude) && Number.isFinite(longitude) && Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180 ? { latitude, longitude } : null,
     homeDeliveryTime: Deno.env.get(`LOCAL_DELIVERY_${key}_HOME_DELIVERY_TIME`) || '',
     pickupName: Deno.env.get(`LOCAL_DELIVERY_${key}_PICKUP_NAME`) || '',
     pickupAddress: Deno.env.get(`LOCAL_DELIVERY_${key}_PICKUP_ADDRESS`) || '',
@@ -306,6 +305,7 @@ function validatePickup(destination: Destination, address: Address) {
     messages: configured ? [] : ['pickup_details_not_configured'],
     localDeliveryFeeCents: 0,
     localDeliveryTime: configuration.pickupTime || null,
+    coverageCenterPostalCode: rule.postalCode,
     pickupPointName: configuration.pickupName || null,
     pickupPointAddress: configuration.pickupAddress || null,
     manualReviewRequired: !configured,
@@ -317,17 +317,17 @@ function applyLocalCoverage(result: Verification, destination: Destination, coor
   const rule = localRule(destination)
   if (!rule) return result
   if (!rule.city.includes(normalize(result.recommendedAddress?.city || result.originalAddress.city)) || !rule.state.includes(normalize(result.recommendedAddress?.state || result.originalAddress.state))) {
-    return { ...result, status: 'out_of_coverage' as const, provider: 'local_rules' as const, messages: [...result.messages, 'local_city_mismatch'], rates: [], localDeliveryFeeCents: null, localDeliveryTime: null, deliverable: false, manualReviewRequired: false }
+    return { ...result, status: 'out_of_coverage' as const, provider: 'local_rules' as const, messages: [...result.messages, 'local_city_mismatch'], rates: [], localDeliveryFeeCents: null, localDeliveryTime: null, coverageCenterPostalCode: rule.postalCode, deliverable: false, manualReviewRequired: false }
   }
 
   const configuration = localConfiguration(rule.key)
-  if (!coordinates || !configuration.center) {
-    return { ...result, status: 'manual_review' as const, provider: 'local_rules' as const, messages: [...result.messages, 'local_radius_unavailable'], rates: [], localDeliveryFeeCents: null, localDeliveryTime: null, manualReviewRequired: true }
+  if (!coordinates) {
+    return { ...result, status: 'manual_review' as const, provider: 'local_rules' as const, messages: [...result.messages, 'local_radius_unavailable'], rates: [], localDeliveryFeeCents: null, localDeliveryTime: null, coverageCenterPostalCode: rule.postalCode, manualReviewRequired: true }
   }
 
-  const distanceMiles = distanceMilesBetween(configuration.center.latitude, configuration.center.longitude, coordinates.latitude, coordinates.longitude)
+  const distanceMiles = distanceMilesBetween(rule.center.latitude, rule.center.longitude, coordinates.latitude, coordinates.longitude)
   if (distanceMiles > 10) {
-    return { ...result, status: 'out_of_coverage' as const, provider: 'local_rules' as const, messages: [...result.messages, 'local_outside_ten_miles'], rates: [], localDeliveryFeeCents: null, localDeliveryTime: null, distanceMiles, deliverable: false, manualReviewRequired: false }
+    return { ...result, status: 'out_of_coverage' as const, provider: 'local_rules' as const, messages: [...result.messages, 'local_outside_ten_miles'], rates: [], localDeliveryFeeCents: null, localDeliveryTime: null, distanceMiles, coverageCenterPostalCode: rule.postalCode, deliverable: false, manualReviewRequired: false }
   }
 
   const timingConfigured = Boolean(configuration.homeDeliveryTime)
@@ -338,27 +338,32 @@ function applyLocalCoverage(result: Verification, destination: Destination, coor
     localDeliveryFeeCents: 1_000,
     localDeliveryTime: configuration.homeDeliveryTime || null,
     distanceMiles,
+    coverageCenterPostalCode: rule.postalCode,
     manualReviewRequired: result.manualReviewRequired || !timingConfigured,
     messages: timingConfigured ? result.messages : [...result.messages, 'local_delivery_time_not_configured'],
   }
 }
 
 async function validateAddress(destination: Destination, address: Address, kitCount: number, localFulfillment: LocalFulfillment | null): Promise<Verification> {
-  if (isLocal(destination) && !localFulfillment) return baseVerification(address, { status: 'incomplete', provider: 'local_rules', messages: ['local_fulfillment_required'], manualReviewRequired: false })
+  const coverageRule = localRule(destination)
+  const finish = (verification: Verification): Verification => coverageRule
+    ? { ...verification, coverageCenterPostalCode: coverageRule.postalCode }
+    : verification
+  if (isLocal(destination) && !localFulfillment) return finish(baseVerification(address, { status: 'incomplete', provider: 'local_rules', messages: ['local_fulfillment_required'], manualReviewRequired: false }))
   if (isLocal(destination) && localFulfillment === 'pickup') return validatePickup(destination, address)
   const errors = essentialErrors(address, destination)
   if (errors.length) {
     const outsideLocalCity = errors.includes('local_city_mismatch')
-    return baseVerification(address, {
+    return finish(baseVerification(address, {
       status: outsideLocalCity ? 'out_of_coverage' : 'incomplete',
       provider: outsideLocalCity ? 'local_rules' : 'unavailable',
       messages: errors,
       manualReviewRequired: false,
-    })
+    }))
   }
 
   const apiKey = Deno.env.get('EASYPOST_API_KEY') || ''
-  if (!apiKey) return baseVerification(address, { status: 'provider_unavailable', messages: ['provider_not_configured'] })
+  if (!apiKey) return finish(baseVerification(address, { status: 'provider_unavailable', messages: ['provider_not_configured'] }))
 
   const street2 = [address.neighborhood ? `Col. ${address.neighborhood}` : '', address.line2].filter(Boolean).join(', ')
   let providerResult: Awaited<ReturnType<typeof easyPostRequest>>
@@ -375,17 +380,17 @@ async function validateAddress(destination: Destination, address: Address, kitCo
       verify: true,
     })
   } catch {
-    return baseVerification(address, { status: 'provider_unavailable', messages: ['provider_timeout'] })
+    return finish(baseVerification(address, { status: 'provider_unavailable', messages: ['provider_timeout'] }))
   }
 
   if (!providerResult.ok) {
     const messages = providerErrorMessages(providerResult.payload)
-    return baseVerification(address, {
+    return finish(baseVerification(address, {
       status: providerIsUnavailable(messages) ? 'provider_unavailable' : 'undeliverable',
       provider: 'easypost',
       messages: messages.length ? messages : ['address_not_verified'],
       manualReviewRequired: providerIsUnavailable(messages),
-    })
+    }))
   }
 
   const recommended = providerAddressToAddress(providerResult.payload, address)
@@ -400,14 +405,14 @@ async function validateAddress(destination: Destination, address: Address, kitCo
 
   if (!verified) {
     const internationalNeedsReview = address.country !== 'US' && !delivery
-    return baseVerification(address, {
+    return finish(baseVerification(address, {
       status: internationalNeedsReview ? 'manual_review' : 'undeliverable',
       provider: 'easypost',
       recommendedAddress: recommended,
       messages: verificationErrors.length ? verificationErrors : [internationalNeedsReview ? 'international_verification_inconclusive' : 'address_not_deliverable'],
       verificationId: text(providerResult.payload.id) || null,
       manualReviewRequired: internationalNeedsReview,
-    })
+    }))
   }
 
   const rateResult = isLocal(destination) ? { rates: [] as Rate[], configured: true } : await fetchRates(apiKey, providerResult.payload, kitCount, destination)
@@ -424,7 +429,7 @@ async function validateAddress(destination: Destination, address: Address, kitCo
   })
   if (result.manualReviewRequired) result.messages.push(destination === 'international' ? 'international_quote_required' : 'live_rates_unavailable')
   if (isLocal(destination)) result = applyLocalCoverage(result, destination, verifiedCoordinates(delivery))
-  return result
+  return finish(result)
 }
 
 function getSecretKey() {

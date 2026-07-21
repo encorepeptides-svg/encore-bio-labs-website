@@ -93,6 +93,9 @@ export function buildHandoffMessage({ reference, items, paymentMethod, locale, c
   const pickupPointLine = shipping?.localFulfillment === 'pickup' && (shipping.verification.pickupPointName || shipping.verification.pickupPointAddress)
     ? `${locale === 'es' ? 'Punto de distribución' : 'Distribution point'}: ${[shipping.verification.pickupPointName, shipping.verification.pickupPointAddress, shipping.verification.localDeliveryTime].filter(Boolean).join(' · ')}`
     : ''
+  const coverageCenterLine = shipping?.verification.coverageCenterPostalCode
+    ? `${locale === 'es' ? 'Centro de cobertura' : 'Coverage center'}: ${shipping.verification.coverageCenterPostalCode}`
+    : ''
   const shippingLine = selectedRate ? `${selectedRate.carrier} ${selectedRate.service}` : ''
   const shippingAddress = [contact?.address, contact?.address2, contact?.city, contact?.state, contact?.zip, contact?.country]
     .map((value) => value?.trim())
@@ -123,6 +126,7 @@ export function buildHandoffMessage({ reference, items, paymentMethod, locale, c
       total ? `Total: ${total}` : 'Total: pendiente de revisión',
       destinationLine ? `Destino validado: ${destinationLine}` : '',
       fulfillmentLine,
+      coverageCenterLine,
       pickupPointLine,
       shippingLine ? `Servicio: ${shippingLine}` : '',
       ...contactLines,
@@ -139,6 +143,7 @@ export function buildHandoffMessage({ reference, items, paymentMethod, locale, c
     total ? `Total: ${total}` : 'Total: pending review',
     destinationLine ? `Validated destination: ${destinationLine}` : '',
     fulfillmentLine,
+    coverageCenterLine,
     pickupPointLine,
     shippingLine ? `Service: ${shippingLine}` : '',
     ...contactLines,

@@ -31,6 +31,7 @@ import {
   destinationUsesMexicoImportFee,
   expectedCountryForDestination,
   isPoBoxAddress,
+  localDistributionPostalCode,
   shippingSelectionAllowsPayment,
   splitUsStreetAddress,
   verifyShippingAddress,
@@ -310,6 +311,7 @@ function VerificationPanel({
       ) : null}
 
       {result.localDeliveryFeeCents !== null || result.localDeliveryTime ? <p className="mt-4 text-sm leading-6 text-slate-700">{t('localDeliveryConfirmed', { cost: result.localDeliveryFeeCents === null ? t('pendingConfirmation') : formatCartCurrency(result.localDeliveryFeeCents / 100), time: result.localDeliveryTime || t('pendingConfirmation') })}</p> : null}
+      {result.coverageCenterPostalCode ? <p className="mt-3 text-sm leading-6 text-slate-700">{t('localCoverageCenter', { postalCode: result.coverageCenterPostalCode })}</p> : null}
       {result.pickupPointName || result.pickupPointAddress ? <div className="mt-4 rounded-xl border border-teal-200 bg-white p-3 text-sm leading-6 text-slate-700"><p className="font-semibold text-[#071724]">{result.pickupPointName || t('distributionPoint')}</p>{result.pickupPointAddress ? <p>{result.pickupPointAddress}</p> : null}</div> : null}
       {result.distanceMiles !== null ? <p className="mt-3 text-sm leading-6 text-slate-700">{t('verifiedLocalDistance', { distance: result.distanceMiles.toFixed(1) })}</p> : null}
       {issue || result.manualReviewRequired ? (
@@ -517,6 +519,7 @@ export function CheckoutPage() {
 
   const countryLocked = Boolean(expectedCountryForDestination(formData.destination))
   const localDestination = formData.destination.startsWith('local_')
+  const localPostalCode = localDistributionPostalCode(formData.destination)
   const usAddress = formData.country === 'US'
   const mexicoAddress = formData.country === 'MX'
   const currentAddressErrors = addressEssentialErrors(address, formData.destination)
@@ -550,12 +553,12 @@ export function CheckoutPage() {
                     <label className={cn('flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition', formData.localFulfillment === 'pickup' ? 'border-teal-700 bg-teal-50 ring-2 ring-teal-100' : 'border-slate-200 bg-white hover:border-teal-500/50')}>
                       <input type="radio" name="local-fulfillment" value="pickup" checked={formData.localFulfillment === 'pickup'} onChange={() => chooseLocalFulfillment('pickup')} className="mt-1 accent-teal-700" />
                       <PackageCheck size={18} className="mt-0.5 shrink-0 text-teal-800" aria-hidden="true" />
-                      <span><span className="flex items-center justify-between gap-3 font-semibold text-[#071724]"><span>{t('pickupAtDistributionPoint')}</span><span>{t('free')}</span></span><span className="mt-1 block text-xs font-normal leading-5 text-slate-500">{t('pickupAtDistributionPointBody')}</span></span>
+                      <span><span className="flex items-center justify-between gap-3 font-semibold text-[#071724]"><span>{t('pickupAtDistributionPoint')}</span><span>{t('free')}</span></span><span className="mt-1 block text-xs font-normal leading-5 text-slate-500">{t('pickupAtDistributionPointBody', { postalCode: localPostalCode || '' })}</span></span>
                     </label>
                     <label className={cn('flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition', formData.localFulfillment === 'home_delivery' ? 'border-teal-700 bg-teal-50 ring-2 ring-teal-100' : 'border-slate-200 bg-white hover:border-teal-500/50')}>
                       <input type="radio" name="local-fulfillment" value="home_delivery" checked={formData.localFulfillment === 'home_delivery'} onChange={() => chooseLocalFulfillment('home_delivery')} className="mt-1 accent-teal-700" />
                       <Truck size={18} className="mt-0.5 shrink-0 text-teal-800" aria-hidden="true" />
-                      <span><span className="flex items-center justify-between gap-3 font-semibold text-[#071724]"><span>{t('homeDelivery')}</span><span>$10</span></span><span className="mt-1 block text-xs font-normal leading-5 text-slate-500">{t('homeDeliveryBody')}</span></span>
+                      <span><span className="flex items-center justify-between gap-3 font-semibold text-[#071724]"><span>{t('homeDelivery')}</span><span>$10</span></span><span className="mt-1 block text-xs font-normal leading-5 text-slate-500">{t('homeDeliveryBody', { postalCode: localPostalCode || '' })}</span></span>
                     </label>
                   </div>
                   {showValidation && !formData.localFulfillment ? <p className="mt-2 text-xs font-medium text-rose-700">{t('localFulfillmentError')}</p> : null}

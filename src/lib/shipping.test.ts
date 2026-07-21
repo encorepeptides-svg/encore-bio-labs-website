@@ -8,6 +8,7 @@ import {
   destinationUsesMexicoImportFee,
   emptyShippingAddress,
   isPoBoxAddress,
+  localDistributionPostalCode,
   localDestinationIdentityMatches,
   localFulfillmentRequiresAddress,
   shippingSelectionAllowsPayment,
@@ -25,7 +26,7 @@ const elPaso: ShippingAddress = {
 const verified: AddressVerificationResult = {
   status: 'verified', provider: 'easypost', originalAddress: elPaso, recommendedAddress: elPaso, messages: [],
   rates: [{ id: 'rate_1', carrier: 'USPS', service: 'Priority', amountCents: 1299, currency: 'USD', deliveryDays: 2, deliveryDate: null }],
-  localDeliveryFeeCents: null, localDeliveryTime: null, distanceMiles: null, pickupPointName: null, pickupPointAddress: null,
+  localDeliveryFeeCents: null, localDeliveryTime: null, distanceMiles: null, coverageCenterPostalCode: null, pickupPointName: null, pickupPointAddress: null,
   verificationId: 'adr_1', checkedAt: '2026-07-20T00:00:00.000Z', manualReviewRequired: false, deliverable: true,
 }
 
@@ -85,6 +86,13 @@ describe('shipping address validation and coverage', () => {
     expect(distanceMilesBetween(31.7619, -106.485, 31.7619, -106.485)).toBe(0)
     expect(distanceMilesBetween(31.7619, -106.485, 31.7619, -106.63)).toBeLessThan(10)
     expect(distanceMilesBetween(31.7619, -106.485, 31.7619, -106.69)).toBeGreaterThan(10)
+  })
+
+  it('uses the approved distribution postal code for each local radius', () => {
+    expect(localDistributionPostalCode('local_el_paso')).toBe('79912')
+    expect(localDistributionPostalCode('local_chihuahua')).toBe('31200')
+    expect(localDistributionPostalCode('local_juarez')).toBe('32510')
+    expect(localDistributionPostalCode('mexico')).toBeNull()
   })
 
   it('requires a street address for home delivery but not distribution-point pickup', () => {

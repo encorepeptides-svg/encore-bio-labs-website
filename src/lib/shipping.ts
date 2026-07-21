@@ -52,6 +52,7 @@ export type AddressVerificationResult = {
   localDeliveryFeeCents: number | null
   localDeliveryTime: string | null
   distanceMiles: number | null
+  coverageCenterPostalCode: string | null
   pickupPointName: string | null
   pickupPointAddress: string | null
   verificationId: string | null
@@ -112,6 +113,13 @@ export function destinationIsLocal(destination: DeliveryDestination) {
 
 export function destinationUsesMexicoImportFee(destination: DeliveryDestination) {
   return destination === 'mexico' || destination === 'local_juarez' || destination === 'local_chihuahua'
+}
+
+export function localDistributionPostalCode(destination: DeliveryDestination) {
+  if (destination === 'local_el_paso') return '79912'
+  if (destination === 'local_chihuahua') return '31200'
+  if (destination === 'local_juarez') return '32510'
+  return null
 }
 
 export function localFulfillmentRequiresAddress(method: LocalFulfillmentMethod | null) {
@@ -233,7 +241,7 @@ export async function verifyShippingAddress(input: ShippingVerificationRequest):
     return {
       status: 'incomplete', provider: 'local_rules', originalAddress: input.address, recommendedAddress: null,
       messages: ['local_fulfillment_required'], rates: [], localDeliveryFeeCents: null, localDeliveryTime: null,
-      distanceMiles: null, pickupPointName: null, pickupPointAddress: null,
+      distanceMiles: null, coverageCenterPostalCode: localDistributionPostalCode(input.destination), pickupPointName: null, pickupPointAddress: null,
       verificationId: null, checkedAt: new Date().toISOString(), manualReviewRequired: false, deliverable: false,
     }
   }
@@ -253,6 +261,7 @@ export async function verifyShippingAddress(input: ShippingVerificationRequest):
       localDeliveryFeeCents: null,
       localDeliveryTime: null,
       distanceMiles: null,
+      coverageCenterPostalCode: localDistributionPostalCode(input.destination),
       pickupPointName: null,
       pickupPointAddress: null,
       verificationId: null,
@@ -273,6 +282,7 @@ export async function verifyShippingAddress(input: ShippingVerificationRequest):
       localDeliveryFeeCents: pickup ? 0 : null,
       localDeliveryTime: null,
       distanceMiles: null,
+      coverageCenterPostalCode: localDistributionPostalCode(input.destination),
       pickupPointName: null,
       pickupPointAddress: null,
       verificationId: null,
@@ -296,6 +306,7 @@ export async function verifyShippingAddress(input: ShippingVerificationRequest):
       localDeliveryFeeCents: pickup ? 0 : null,
       localDeliveryTime: null,
       distanceMiles: null,
+      coverageCenterPostalCode: localDistributionPostalCode(input.destination),
       pickupPointName: null,
       pickupPointAddress: null,
       verificationId: null,
