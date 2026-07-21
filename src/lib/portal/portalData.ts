@@ -222,6 +222,8 @@ export async function adminCreateOrder(adminId: string, input: { userId: string;
   if (error) throw error
   const { error: itemsError } = await client.from('portal_order_items').insert(input.items.map((item) => ({ order_id: data.id, product_slug: item.sku.toLowerCase(), variant_sku: item.sku, quantity: item.quantity, unit_amount_cents: item.unitAmountCents, metadata: { name: item.name } })))
   if (itemsError) throw itemsError
+  const { error: inventoryError } = await client.rpc('inventory_apply_portal_order_status', { p_order_id: data.id, p_target_status: 'processing' })
+  if (inventoryError) throw inventoryError
   await client.from('notifications').insert({ user_id: input.userId, type: 'order', title: input.notification.title, body: `${input.notification.body} ${orderNumber}`.trim(), action_path: '/portal/orders' })
   await client.from('audit_logs').insert({ actor_id: adminId, actor_role: 'admin', event_type: 'order_created', resource_type: 'portal_order', resource_id: data.id })
   return orderNumber
@@ -229,7 +231,15 @@ export async function adminCreateOrder(adminId: string, input: { userId: string;
 
 export async function adminUpdateOrderStatus(adminId: string, order: PortalOrder, updates: { payment_status?: string; fulfillment_status?: string }, notification: { title: string; body: string }) {
   const client = db()
-  const { error } = await client.from('portal_orders').update({ ...updates, updated_at: new Date().toISOString() }).eq('id', order.id)
+  let error = null
+  if (updates.fulfillment_status) {
+    const result = await client.rpc('inventory_apply_portal_order_status', { p_order_id: order.id, p_target_status: updates.fulfillment_status })
+    error = result.error
+  }
+  if (!error && updates.payment_status) {
+    const result = await client.from('portal_orders').update({ payment_status: updates.payment_status, updated_at: new Date().toISOString() }).eq('id', order.id)
+    error = result.error
+  }
   if (error) throw error
   await client.from('notifications').insert({ user_id: order.user_id, type: 'order', title: notification.title, body: `${notification.body} ${order.order_number}`.trim(), action_path: '/portal/orders' })
   await client.from('audit_logs').insert({ actor_id: adminId, actor_role: 'admin', event_type: 'order_status_changed', resource_type: 'portal_order', resource_id: order.id, metadata: updates })
@@ -237,9 +247,10 @@ export async function adminUpdateOrderStatus(adminId: string, order: PortalOrder
 
 export async function adminAddShipment(adminId: string, order: PortalOrder, shipment: { carrier: string; tracking_number: string }, notification: { title: string; body: string }) {
   const client = db()
+  const { error: inventoryError } = await client.rpc('inventory_apply_portal_order_status', { p_order_id: order.id, p_target_status: 'shipped' })
+  if (inventoryError) throw inventoryError
   const { error } = await client.from('shipments').insert({ order_id: order.id, status: 'shipped', carrier: shipment.carrier, tracking_number: shipment.tracking_number, shipped_at: new Date().toISOString() })
   if (error) throw error
-  await client.from('portal_orders').update({ fulfillment_status: 'shipped', updated_at: new Date().toISOString() }).eq('id', order.id)
   await client.from('notifications').insert({ user_id: order.user_id, type: 'order', title: notification.title, body: `${notification.body} ${order.order_number} · ${shipment.carrier} ${shipment.tracking_number}`.trim(), action_path: '/portal/orders' })
   await client.from('audit_logs').insert({ actor_id: adminId, actor_role: 'admin', event_type: 'shipment_created', resource_type: 'portal_order', resource_id: order.id })
 }

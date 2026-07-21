@@ -17,6 +17,7 @@ import { hormoneWellness } from './hormoneWellness'
 import { intake } from './intake'
 import { kit } from './kit'
 import { languageSwitcher } from './languageSwitcher'
+import { inventory } from './inventory'
 import { legal } from './legal'
 import { navigation } from './navigation'
 import { notFound } from './notFound'
@@ -38,6 +39,7 @@ export const en = {
   footer,
   announcement,
   languageSwitcher,
+  inventory,
   cart,
   homepage,
   hormoneWellness,

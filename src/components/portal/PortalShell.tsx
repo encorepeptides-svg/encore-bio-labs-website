@@ -8,6 +8,7 @@ export function PortalShell({ children, admin = false }: { children: ReactNode; 
   const { identity, logout } = usePortalAuth()
   const { path } = useLocale()
   const { t } = useTranslation('portal')
+  const { t: tInventory } = useTranslation('inventory')
   const clientNav = [
     ['/portal', t('navOverview'), Gauge], ['/portal/orders', t('navOrders'), Package], ['/portal/intake', t('navIntake'), ClipboardList], ['/portal/protocols', t('navProtocols'), FlaskConical],
     ['/portal/progress', t('navProgress'), TrendingUp], ['/portal/check-ins', t('navCheckIns'), ClipboardCheck],
@@ -15,7 +16,7 @@ export function PortalShell({ children, admin = false }: { children: ReactNode; 
     ['/portal/support', t('navSupport'), Headphones], ['/portal/notifications', t('navNotifications'), Bell], ['/portal/profile', t('navProfile'), UserRound], ['/portal/security', t('navSecurity'), ShieldCheck],
   ] as const
   const portalPath = window.location.pathname
-  const adminNav = [['/admin',t('adminNavOverview')],['/admin/applications',t('adminNavApplications')],['/admin/clients',t('adminNavClients')],['/admin/orders',t('adminNavOrders')],['/admin/storefront',t('adminNavStorefront')],['/admin/protocols',t('adminNavProtocols')],['/admin/documents',t('adminNavDocuments')],['/admin/support',t('adminNavSupport')],['/admin/content',t('adminNavContent')],['/admin/audit-log',t('adminNavAudit')],['/admin/settings',t('adminNavSettings')]] as const
+  const adminNav = [['/admin',t('adminNavOverview')],['/admin/applications',t('adminNavApplications')],['/admin/clients',t('adminNavClients')],['/admin/orders',t('adminNavOrders')],['/admin/inventory',tInventory('nav')],['/admin/storefront',t('adminNavStorefront')],['/admin/protocols',t('adminNavProtocols')],['/admin/documents',t('adminNavDocuments')],['/admin/support',t('adminNavSupport')],['/admin/content',t('adminNavContent')],['/admin/audit-log',t('adminNavAudit')],['/admin/settings',t('adminNavSettings')]] as const
   const nav = admin ? adminNav : clientNav
   const statusKey = identity ? ({
     unverified: 'accountStatusUnverified',

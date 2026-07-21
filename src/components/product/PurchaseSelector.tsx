@@ -18,6 +18,8 @@ import {
 } from '../../lib/purchaseOptions'
 import { cn } from '../../lib/utils'
 import { track } from '../../lib/analytics'
+import { usePublicInventory } from '../../hooks/usePublicInventory'
+import { publicStatusLabel } from '../../lib/inventory'
 
 export function PurchaseSelector({ product, compact = false }: { product: Product; compact?: boolean }) {
   const { addToCart } = useCart()
@@ -26,6 +28,9 @@ export function PurchaseSelector({ product, compact = false }: { product: Produc
   const { t: tCommon } = useTranslation('common')
   const [variant, setVariant] = useState<ProductVariant>(product.variants[0])
   const [selection, setSelection] = useState<PurchaseSelection>(() => getDefaultPurchaseSelection(product))
+  const { statuses: inventoryStatuses, loading: inventoryLoading } = usePublicInventory(product.variants.map((entry) => entry.sku!))
+  const inventoryStatus = inventoryStatuses[variant.sku!]
+  const inventoryUnavailable = inventoryStatus === 'out_of_stock' || inventoryStatus === 'inactive'
   const quote = useMemo(() => quotePurchase(product, variant, selection), [product, selection, variant])
   const smallestMultipackQuote = useMemo(() => {
     if (!product.purchaseRules.multipackEligible || !product.purchaseRules.multipackQuantities.length) return undefined
@@ -73,7 +78,9 @@ export function PurchaseSelector({ product, compact = false }: { product: Produc
         <p className="mt-4 text-sm font-semibold text-[#071724]">{t('formatLabel', { label: variant.label, format: formatLabel(tCommon, variant.format) })}</p>
       )}
 
-      {!isProductPurchasable(product) || variant.price <= 0 ? (
+      {inventoryStatus ? <p aria-live="polite" className={`mt-4 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${inventoryUnavailable ? 'bg-red-50 text-red-900' : inventoryStatus === 'limited' ? 'bg-amber-50 text-amber-950' : 'bg-emerald-50 text-emerald-900'}`}>{publicStatusLabel(inventoryStatus, locale)}</p> : null}
+
+      {!isProductPurchasable(product) || variant.price <= 0 || inventoryUnavailable ? (
         <div className="mt-5 rounded-2xl border border-slate-200 bg-[#f8fafc] p-5">
           <p className="text-sm font-semibold text-[#071724]">{t('unavailableTitle')}</p>
           <p className="mt-2 text-xs leading-5 text-slate-500">{t('unavailableBody')}</p>
@@ -119,7 +126,7 @@ export function PurchaseSelector({ product, compact = false }: { product: Produc
         <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t('orderTotal')}</p><p className="mt-1 text-3xl font-semibold tracking-[-0.04em] text-[#071724]">{money(quote.linePrice)}</p></div><div className="text-right text-xs leading-5 text-slate-500">{quote.packSize > 1 ? <><p>{t('effectivePerVial', { price: money(quote.unitPrice) })}</p><p className="font-semibold text-emerald-700">{t('save', { amount: money(quote.savings), percent: quote.savingsPercent })}</p></> : null}{quote.pricePerMeasure && variant.unitType ? <p>{t('perUnit', { price: unitMoney(quote.pricePerMeasure), unit: variant.unitType })}</p> : null}</div></div>
       </div>
 
-      {variant.price > 0 ? <button type="button" onClick={() => { addToCart(product, variant, 1, selection); track('add_to_cart', { productId: product.slug, sku: quote.sku, optionId: selection.optionId, packSize: selection.packSize, kitIncluded: quote.kitIncluded }) }} className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition hover:bg-teal-700 focus:outline-none focus:ring-4 focus:ring-teal-200"><ShoppingCart size={16} />{t('addConfiguredOrder')}</button> : <a href={path(`/intake?product=${encodeURIComponent(product.slug)}`)} className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-full border border-slate-200 text-sm font-semibold text-[#071724]">{t('requestAvailability')}</a>}
+      {variant.price > 0 ? <button type="button" disabled={inventoryLoading || inventoryUnavailable} onClick={() => { addToCart(product, variant, 1, selection); track('add_to_cart', { productId: product.slug, sku: quote.sku, optionId: selection.optionId, packSize: selection.packSize, kitIncluded: quote.kitIncluded }) }} className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition hover:bg-teal-700 focus:outline-none focus:ring-4 focus:ring-teal-200 disabled:cursor-not-allowed disabled:opacity-45"><ShoppingCart size={16} />{t('addConfiguredOrder')}</button> : <a href={path(`/intake?product=${encodeURIComponent(product.slug)}`)} className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-full border border-slate-200 text-sm font-semibold text-[#071724]">{t('requestAvailability')}</a>}
       <p className="mt-3 flex items-start gap-2 text-xs leading-5 text-slate-500"><Check size={14} className="mt-0.5 shrink-0 text-teal-700" />{t('researchUsePaymentNote')}</p>
       </>
       )}

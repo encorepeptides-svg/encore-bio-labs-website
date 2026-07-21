@@ -5,6 +5,7 @@ import { AdminApplications } from './admin/AdminApplications'
 import { AdminClients } from './admin/AdminClients'
 import { AdminDocuments } from './admin/AdminDocuments'
 import { AdminOrders } from './admin/AdminOrders'
+import { AdminInventory } from './admin/AdminInventory'
 import { AdminProtocols } from './admin/AdminProtocols'
 import { AdminStorefront } from './admin/AdminStorefront'
 import { AdminSupport } from './admin/AdminSupport'
@@ -13,9 +14,10 @@ import { EmptyCard, LoadState, useAsync, useDateFormatter } from './sections/sha
 
 export function AdminPortalPage({ section = 'overview' }: { section?: string }) {
   const { t } = useTranslation('portal')
+  const { t: tInventory } = useTranslation('inventory')
   const titles: Record<string, string> = {
     overview: t('adminOperationsTitle'), applications: t('adminApplicationsTitle'), clients: t('adminNavClients'),
-    orders: t('adminNavOrders'), storefront: t('adminNavStorefront'), protocols: t('adminNavProtocols'), documents: t('adminNavDocuments'),
+    orders: t('adminNavOrders'), inventory: tInventory('title'), storefront: t('adminNavStorefront'), protocols: t('adminNavProtocols'), documents: t('adminNavDocuments'),
     support: t('adminNavSupport'), 'audit-log': t('adminNavAudit'), settings: t('adminNavSettings'), content: t('adminNavContent'),
   }
   const content = (() => {
@@ -24,6 +26,7 @@ export function AdminPortalPage({ section = 'overview' }: { section?: string }) 
       case 'applications': return <AdminApplications />
       case 'clients': return <AdminClients />
       case 'orders': return <AdminOrders />
+      case 'inventory': return <AdminInventory />
       case 'storefront': return <AdminStorefront />
       case 'protocols': return <AdminProtocols />
       case 'documents': return <AdminDocuments />

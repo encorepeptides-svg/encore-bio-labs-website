@@ -5,6 +5,7 @@ import { calculateSubtotal, formatCartCurrency } from '../cart'
 import type { AddressVerificationResult, ShippingRate, ShippingSelection } from '../shipping'
 import { calculateShippingCharges, selectedShippingAddress } from '../shipping'
 import { isSupabaseConfigured, supabase } from '../supabaseClient'
+import { fetchPublicInventoryStatuses } from '../inventory'
 
 export type HandoffChannel = 'whatsapp' | 'instagram'
 
@@ -167,6 +168,9 @@ export function buildInstagramDmUrl() {
  * hand off — the reference in the message becomes the reconciliation record.
  */
 export async function createPendingOrder(input: PendingOrderInput): Promise<PendingOrder> {
+  const baseSkus = input.items.map((item) => item.sku.split(/-(?:VIAL-ONLY|COMPLETE-KIT|MULTIPACK)-/)[0])
+  const inventoryStatuses = await fetchPublicInventoryStatuses(baseSkus)
+  if (baseSkus.some((sku) => inventoryStatuses[sku] === 'out_of_stock' || inventoryStatuses[sku] === 'inactive')) throw new Error('inventory_unavailable')
   const subtotalCents = Math.round(calculateSubtotal(input.items) * 100)
   const reference = generateOrderReference()
 

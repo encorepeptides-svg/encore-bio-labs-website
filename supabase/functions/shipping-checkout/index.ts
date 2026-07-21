@@ -471,6 +471,10 @@ function packSizeFromSku(value: unknown) {
   return size === 1 ? 1 : 0
 }
 
+function inventorySkuFromQuoteSku(value: unknown) {
+  return text(value).toUpperCase().replace(/-(VIAL-ONLY|COMPLETE-KIT|MULTIPACK)-\d+(?:-KIT)?$/, '')
+}
+
 async function createOrder(body: Record<string, unknown>, origin: string | null) {
   const destination = text(body.destination) as Destination
   const localFulfillment = ['pickup', 'home_delivery'].includes(text(body.localFulfillment)) ? text(body.localFulfillment) as LocalFulfillment : null
@@ -527,6 +531,28 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
   const secretKey = getSecretKey()
   if (!supabaseUrl || !secretKey) return response({ code: 'order_store_unavailable' }, 503, origin)
   const client = createClient(supabaseUrl, secretKey, { auth: { persistSession: false } })
+
+  // Repeat availability validation on the trusted server. Exact balances never
+  // leave this function, and forged client requests cannot order inactive or
+  // insufficient SKUs. Confirmed-order reservations remain atomic in Postgres.
+  const requiredBySku = new Map<string, number>()
+  for (const item of safeItems) {
+    const sku = inventorySkuFromQuoteSku(item.sku)
+    const units = packSizeFromSku(item.sku) * Number(item.quantity)
+    requiredBySku.set(sku, (requiredBySku.get(sku) || 0) + units)
+  }
+  const { data: inventoryRows, error: inventoryError } = await client.from('inventory_variants')
+    .select('sku,on_hand,reserved,allow_backorder,active,inventory_products!inner(active)')
+    .in('sku', [...requiredBySku.keys()])
+  if (inventoryError) return response({ code: 'inventory_check_unavailable' }, 503, origin)
+  const inventoryBySku = new Map((inventoryRows || []).map((row) => [row.sku, row]))
+  for (const [sku, required] of requiredBySku) {
+    const row = inventoryBySku.get(sku) as { on_hand: number; reserved: number; allow_backorder: boolean; active: boolean; inventory_products: { active: boolean } | { active: boolean }[] } | undefined
+    const productActive = Array.isArray(row?.inventory_products) ? row?.inventory_products[0]?.active : row?.inventory_products?.active
+    if (!row || !row.active || !productActive || (!row.allow_backorder && row.on_hand - row.reserved < required)) {
+      return response({ code: 'inventory_unavailable', sku }, 409, origin)
+    }
+  }
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const reference = generateReference()
