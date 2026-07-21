@@ -30,7 +30,9 @@ import {
   calculateShippingCharges,
   destinationUsesMexicoImportFee,
   expectedCountryForDestination,
+  isPoBoxAddress,
   shippingSelectionAllowsPayment,
+  splitUsStreetAddress,
   verifyShippingAddress,
   type AddressChoice,
   type AddressVerificationResult,
@@ -98,6 +100,14 @@ const destinationOptions: Array<{ id: DeliveryDestination; icon: LucideIcon; tit
 
 const COUNTRY_CODES = 'AD AE AF AG AI AL AM AO AR AT AU AW AZ BA BB BD BE BF BG BH BI BJ BN BO BR BS BT BW BY BZ CA CD CF CG CH CI CL CM CN CO CR CU CV CY CZ DE DJ DK DM DO DZ EC EE EG ER ES ET FI FJ FM FR GA GB GD GE GH GM GN GQ GR GT GW GY HK HN HR HT HU ID IE IL IN IQ IR IS IT JM JO JP KE KG KH KI KM KN KP KR KW KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MG MH MK ML MM MN MR MT MU MV MW MX MY MZ NA NE NG NI NL NO NP NR NZ OM PA PE PG PH PK PL PS PT PW PY QA RO RS RU RW SA SB SC SD SE SG SI SK SL SM SN SO SR SS ST SV SY SZ TD TG TH TJ TL TM TN TO TR TT TV TW TZ UA UG US UY UZ VA VC VE VN VU WS YE ZA ZM ZW'.split(' ')
 
+const US_STATES = [
+  ['AL', 'Alabama'], ['AK', 'Alaska'], ['AZ', 'Arizona'], ['AR', 'Arkansas'], ['CA', 'California'], ['CO', 'Colorado'], ['CT', 'Connecticut'], ['DE', 'Delaware'], ['FL', 'Florida'], ['GA', 'Georgia'], ['HI', 'Hawaii'], ['ID', 'Idaho'], ['IL', 'Illinois'], ['IN', 'Indiana'], ['IA', 'Iowa'], ['KS', 'Kansas'], ['KY', 'Kentucky'], ['LA', 'Louisiana'], ['ME', 'Maine'], ['MD', 'Maryland'], ['MA', 'Massachusetts'], ['MI', 'Michigan'], ['MN', 'Minnesota'], ['MS', 'Mississippi'], ['MO', 'Missouri'], ['MT', 'Montana'], ['NE', 'Nebraska'], ['NV', 'Nevada'], ['NH', 'New Hampshire'], ['NJ', 'New Jersey'], ['NM', 'New Mexico'], ['NY', 'New York'], ['NC', 'North Carolina'], ['ND', 'North Dakota'], ['OH', 'Ohio'], ['OK', 'Oklahoma'], ['OR', 'Oregon'], ['PA', 'Pennsylvania'], ['RI', 'Rhode Island'], ['SC', 'South Carolina'], ['SD', 'South Dakota'], ['TN', 'Tennessee'], ['TX', 'Texas'], ['UT', 'Utah'], ['VT', 'Vermont'], ['VA', 'Virginia'], ['WA', 'Washington'], ['WV', 'West Virginia'], ['WI', 'Wisconsin'], ['WY', 'Wyoming'], ['DC', 'District of Columbia'], ['PR', 'Puerto Rico'], ['GU', 'Guam'], ['VI', 'U.S. Virgin Islands'], ['AS', 'American Samoa'], ['MP', 'Northern Mariana Islands'],
+] as const
+
+const MEXICO_STATES = [
+  'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas', 'Chihuahua', 'Ciudad de México', 'Coahuila', 'Colima', 'Durango', 'Estado de México', 'Guanajuato', 'Guerrero', 'Hidalgo', 'Jalisco', 'Michoacán', 'Morelos', 'Nayarit', 'Nuevo León', 'Oaxaca', 'Puebla', 'Querétaro', 'Quintana Roo', 'San Luis Potosí', 'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas', 'Tlaxcala', 'Veracruz', 'Yucatán', 'Zacatecas',
+] as const
+
 export const CHECKOUT_SESSION_KEY = 'encore-checkout-information-v1'
 
 export function readStoredForm(): ReviewFormData {
@@ -105,12 +115,22 @@ export function readStoredForm(): ReviewFormData {
   try {
     const stored = JSON.parse(window.sessionStorage.getItem(CHECKOUT_SESSION_KEY) || '{}') as Partial<ReviewFormData>
     const destination = destinationOptions.some((option) => option.id === stored.destination) ? stored.destination as DeliveryDestination : stored.country === 'MX' ? 'mexico' : 'us'
+    const country = expectedCountryForDestination(destination) || (typeof stored.country === 'string' ? stored.country : '')
+    const storedStreet = typeof stored.address === 'string' ? stored.address : ''
+    const storedStreetNumber = typeof stored.streetNumber === 'string' ? stored.streetNumber : ''
     return {
       ...defaultFormData,
       email: typeof stored.email === 'string' ? stored.email : '',
       phone: typeof stored.phone === 'string' ? stored.phone : '',
       fullName: typeof stored.fullName === 'string' ? stored.fullName : '',
-      country: expectedCountryForDestination(destination) || (typeof stored.country === 'string' ? stored.country : ''),
+      address: country === 'US' && storedStreetNumber ? `${storedStreetNumber} ${storedStreet}`.trim() : storedStreet,
+      streetNumber: country === 'US' ? '' : storedStreetNumber,
+      neighborhood: typeof stored.neighborhood === 'string' ? stored.neighborhood : '',
+      address2: typeof stored.address2 === 'string' ? stored.address2 : '',
+      city: typeof stored.city === 'string' ? stored.city : '',
+      state: typeof stored.state === 'string' ? stored.state : '',
+      zip: typeof stored.zip === 'string' ? stored.zip : '',
+      country,
       destination,
       preferredContact: ['email', 'phone', 'whatsapp'].includes(stored.preferredContact || '') ? stored.preferredContact as ReviewFormData['preferredContact'] : 'whatsapp',
       notes: typeof stored.notes === 'string' ? stored.notes : '',
@@ -172,7 +192,10 @@ function CheckoutHeader() {
 }
 
 function formatAddress(address: ShippingAddress) {
-  return [address.street, address.streetNumber, address.line2, address.neighborhood, address.city, address.state, address.postalCode, address.country].filter(Boolean).join(', ')
+  const streetLine = address.country === 'US'
+    ? [address.streetNumber, address.street].filter(Boolean).join(' ')
+    : [address.street, address.streetNumber].filter(Boolean).join(' ')
+  return [streetLine, address.line2, address.neighborhood, address.city, address.state, address.postalCode, address.country].filter(Boolean).join(', ')
 }
 
 function verificationMessage(message: string, locale: 'en' | 'es') {
@@ -302,16 +325,17 @@ export function CheckoutPage() {
   const validationSequence = useRef(0)
   const subtotal = useMemo(() => calculateSubtotal(items), [items])
   const kitCount = useMemo(() => calculateItemCount(items), [items])
+  const usStreetAddress = useMemo(() => splitUsStreetAddress(formData.address), [formData.address])
   const address = useMemo<ShippingAddress>(() => ({
     country: formData.country,
     state: formData.state,
     city: formData.city,
-    neighborhood: formData.neighborhood,
+    neighborhood: formData.country === 'MX' ? formData.neighborhood : '',
     postalCode: formData.zip,
-    street: formData.address,
-    streetNumber: formData.streetNumber,
+    street: formData.country === 'US' ? usStreetAddress.street : formData.address,
+    streetNumber: formData.country === 'US' ? usStreetAddress.streetNumber : formData.streetNumber,
     line2: formData.address2,
-  }), [formData.address, formData.address2, formData.city, formData.country, formData.neighborhood, formData.state, formData.streetNumber, formData.zip])
+  }), [formData.address, formData.address2, formData.city, formData.country, formData.neighborhood, formData.state, formData.streetNumber, formData.zip, usStreetAddress.street, usStreetAddress.streetNumber])
   const countryNames = useMemo(() => {
     const display = new Intl.DisplayNames([locale], { type: 'region' })
     return COUNTRY_CODES.map((code) => ({ code, name: display.of(code) || code })).sort((a, b) => a.name.localeCompare(b.name, locale))
@@ -373,14 +397,23 @@ export function CheckoutPage() {
         : destination === 'local_chihuahua'
           ? { state: 'Chihuahua', city: 'Chihuahua' }
           : { state: '', city: '' }
-    setFormData((current) => ({
-      ...current,
-      destination,
-      country: country || (['US', 'MX'].includes(current.country) ? '' : current.country),
-      state: destination.startsWith('local_') ? localDefaults.state : '',
-      city: destination.startsWith('local_') ? localDefaults.city : '',
-      destinationAcknowledged: false,
-    }))
+    setFormData((current) => {
+      const nextCountry = country || (['US', 'MX'].includes(current.country) ? '' : current.country)
+      const countryChanged = current.country !== nextCountry
+      return {
+        ...current,
+        destination,
+        country: nextCountry,
+        address: countryChanged ? '' : current.address,
+        streetNumber: countryChanged ? '' : current.streetNumber,
+        neighborhood: countryChanged ? '' : current.neighborhood,
+        address2: countryChanged ? '' : current.address2,
+        zip: countryChanged ? '' : current.zip,
+        state: destination.startsWith('local_') ? localDefaults.state : countryChanged ? '' : current.state,
+        city: destination.startsWith('local_') ? localDefaults.city : countryChanged ? '' : current.city,
+        destinationAcknowledged: false,
+      }
+    })
   }
 
   const selectedRate = verification?.rates.find((rate) => rate.id === selectedRateId) ?? null
@@ -398,7 +431,12 @@ export function CheckoutPage() {
   const paymentAllowed = shippingSelection ? shippingSelectionAllowsPayment(shippingSelection) : false
   const correctedChoiceReady = verification?.status !== 'corrected' || Boolean(addressChoice)
   const reviewPathReady = verification ? verification.deliverable || verification.manualReviewRequired || manualReviewRequested : false
-  const baseFormValid = isCheckoutFormValid({ ...formData, neighborhoodRequired: formData.country === 'MX' })
+  const poBoxAllowed = isPoBoxAddress(address) && !formData.destination.startsWith('local_')
+  const baseFormValid = isCheckoutFormValid({
+    ...formData,
+    streetNumber: poBoxAllowed ? undefined : address.streetNumber,
+    neighborhoodRequired: formData.country === 'MX',
+  })
   const formIsValid = baseFormValid && Boolean(verification) && !validating && correctedChoiceReady && reviewPathReady && formData.destinationAcknowledged
 
   function submitRequest() {
@@ -449,6 +487,9 @@ export function CheckoutPage() {
 
   const countryLocked = Boolean(expectedCountryForDestination(formData.destination))
   const localDestination = formData.destination.startsWith('local_')
+  const usAddress = formData.country === 'US'
+  const mexicoAddress = formData.country === 'MX'
+  const currentAddressErrors = addressEssentialErrors(address, formData.destination)
   return (
     <main id="main-content" className="min-h-screen bg-[#f5f5f2]">
       <CheckoutHeader />
@@ -472,14 +513,29 @@ export function CheckoutPage() {
                 <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('email')}<input className={inputClass()} type="email" autoComplete="email" required aria-invalid={showValidation && !isValidEmail(formData.email)} value={formData.email} onChange={(event) => updateField('email', event.target.value)} />{showValidation && !isValidEmail(formData.email) ? <span className="text-xs font-medium text-rose-700">{t('emailError')}</span> : null}</label>
                 <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('phone')}<input className={inputClass()} type="tel" autoComplete="tel" required aria-invalid={showValidation && formData.phone.replace(/\D/g, '').length < 7} value={formData.phone} onChange={(event) => updateField('phone', event.target.value)} />{showValidation && formData.phone.replace(/\D/g, '').length < 7 ? <span className="text-xs font-medium text-rose-700">{t('phoneError')}</span> : null}</label>
                 <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">{t('fullName')}<input className={inputClass()} autoComplete="name" required aria-invalid={showValidation && !formData.fullName.trim()} value={formData.fullName} onChange={(event) => updateField('fullName', event.target.value)} />{showValidation && !formData.fullName.trim() ? <span className="text-xs font-medium text-rose-700">{t('fullNameError')}</span> : null}</label>
-                <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('country')}<select className={inputClass()} disabled={countryLocked} value={formData.country} onChange={(event) => updateField('country', event.target.value)}><option value="">{t('selectCountry')}</option>{countryNames.map((country) => <option key={country.code} value={country.code}>{country.name}</option>)}</select></label>
-                <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('state')}<input className={inputClass()} autoComplete="address-level1" disabled={localDestination} required aria-invalid={showValidation && !formData.state.trim()} value={formData.state} onChange={(event) => updateField('state', event.target.value)} /></label>
-                <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('city')}<input className={inputClass()} autoComplete="address-level2" disabled={localDestination} required aria-invalid={showValidation && !formData.city.trim()} value={formData.city} onChange={(event) => updateField('city', event.target.value)} /></label>
-                <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('zip')}<input className={inputClass()} autoComplete="postal-code" required aria-invalid={showValidation && addressEssentialErrors(address, formData.destination).some((error) => error.startsWith('postal_code'))} value={formData.zip} onChange={(event) => updateField('zip', event.target.value)} /></label>
-                <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">{t('neighborhood')} {formData.country !== 'MX' ? <span className="font-normal text-slate-400">{t('optional')}</span> : null}<input className={inputClass()} autoComplete="address-level3" required={formData.country === 'MX'} aria-invalid={showValidation && formData.country === 'MX' && !formData.neighborhood.trim()} value={formData.neighborhood} onChange={(event) => updateField('neighborhood', event.target.value)} /></label>
-                <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('street')}<input className={inputClass()} autoComplete="address-line1" required aria-invalid={showValidation && !formData.address.trim()} value={formData.address} onChange={(event) => updateField('address', event.target.value)} /></label>
-                <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('streetNumber')}<input className={inputClass()} required aria-invalid={showValidation && !formData.streetNumber.trim()} value={formData.streetNumber} onChange={(event) => updateField('streetNumber', event.target.value)} /></label>
-                <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">{t('addressLine2')} <span className="font-normal text-slate-400">{t('optional')}</span><input className={inputClass()} autoComplete="address-line2" value={formData.address2} onChange={(event) => updateField('address2', event.target.value)} /></label>
+                <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">{t('country')}<select className={inputClass()} disabled={countryLocked} value={formData.country} onChange={(event) => updateField('country', event.target.value)}><option value="">{t('selectCountry')}</option>{countryNames.map((country) => <option key={country.code} value={country.code}>{country.name}</option>)}</select></label>
+                {usAddress ? <>
+                  <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">{t('usStreetAddress')}<input className={inputClass()} autoComplete="address-line1" placeholder={t('usStreetPlaceholder')} required aria-invalid={showValidation && currentAddressErrors.some((error) => error === 'street' || error === 'street_number')} value={formData.address} onChange={(event) => updateField('address', event.target.value)} />{showValidation && currentAddressErrors.includes('street_number') ? <span className="text-xs font-medium text-rose-700">{t('usStreetNumberError')}</span> : null}</label>
+                  <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">{t('usUnit')} <span className="font-normal text-slate-400">{t('optional')}</span><input className={inputClass()} autoComplete="address-line2" placeholder={t('usUnitPlaceholder')} value={formData.address2} onChange={(event) => updateField('address2', event.target.value)} /></label>
+                  <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('usCity')}<input className={inputClass()} autoComplete="address-level2" disabled={localDestination} placeholder={t('usCityPlaceholder')} required aria-invalid={showValidation && !formData.city.trim()} value={formData.city} onChange={(event) => updateField('city', event.target.value)} /></label>
+                  <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('usState')}<select className={inputClass()} autoComplete="address-level1" disabled={localDestination} required aria-invalid={showValidation && !formData.state.trim()} value={formData.state} onChange={(event) => updateField('state', event.target.value)}><option value="">{t('selectState')}</option>{US_STATES.map(([code, name]) => <option key={code} value={code}>{name} ({code})</option>)}</select></label>
+                  <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('usZip')}<input className={inputClass()} inputMode="numeric" autoComplete="postal-code" placeholder="79901" required aria-invalid={showValidation && currentAddressErrors.some((error) => error.startsWith('postal_code'))} value={formData.zip} onChange={(event) => updateField('zip', event.target.value)} /></label>
+                </> : mexicoAddress ? <>
+                  <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('mexicoState')}<select className={inputClass()} autoComplete="address-level1" disabled={localDestination} required aria-invalid={showValidation && !formData.state.trim()} value={formData.state} onChange={(event) => updateField('state', event.target.value)}><option value="">{t('selectState')}</option>{MEXICO_STATES.map((state) => <option key={state} value={state}>{state}</option>)}</select></label>
+                  <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('mexicoCityMunicipality')}<input className={inputClass()} autoComplete="address-level2" disabled={localDestination} placeholder={t('mexicoCityPlaceholder')} required aria-invalid={showValidation && !formData.city.trim()} value={formData.city} onChange={(event) => updateField('city', event.target.value)} /></label>
+                  <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('mexicoPostalCode')}<input className={inputClass()} inputMode="numeric" autoComplete="postal-code" placeholder="32000" maxLength={5} required aria-invalid={showValidation && currentAddressErrors.some((error) => error.startsWith('postal_code'))} value={formData.zip} onChange={(event) => updateField('zip', event.target.value)} /></label>
+                  <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">{t('mexicoNeighborhood')}<input className={inputClass()} autoComplete="address-level3" placeholder={t('mexicoNeighborhoodPlaceholder')} required aria-invalid={showValidation && !formData.neighborhood.trim()} value={formData.neighborhood} onChange={(event) => updateField('neighborhood', event.target.value)} /></label>
+                  <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('mexicoStreet')}<input className={inputClass()} autoComplete="address-line1" placeholder={t('mexicoStreetPlaceholder')} required aria-invalid={showValidation && !formData.address.trim()} value={formData.address} onChange={(event) => updateField('address', event.target.value)} /></label>
+                  <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('mexicoExteriorNumber')}<input className={inputClass()} placeholder="100" required aria-invalid={showValidation && !formData.streetNumber.trim()} value={formData.streetNumber} onChange={(event) => updateField('streetNumber', event.target.value)} /></label>
+                  <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">{t('mexicoInteriorNumber')} <span className="font-normal text-slate-400">{t('optional')}</span><input className={inputClass()} autoComplete="address-line2" placeholder={t('mexicoInteriorPlaceholder')} value={formData.address2} onChange={(event) => updateField('address2', event.target.value)} /></label>
+                </> : <>
+                  <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('state')}<input className={inputClass()} autoComplete="address-level1" required aria-invalid={showValidation && !formData.state.trim()} value={formData.state} onChange={(event) => updateField('state', event.target.value)} /></label>
+                  <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('city')}<input className={inputClass()} autoComplete="address-level2" required aria-invalid={showValidation && !formData.city.trim()} value={formData.city} onChange={(event) => updateField('city', event.target.value)} /></label>
+                  <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('zip')}<input className={inputClass()} autoComplete="postal-code" required aria-invalid={showValidation && currentAddressErrors.some((error) => error.startsWith('postal_code'))} value={formData.zip} onChange={(event) => updateField('zip', event.target.value)} /></label>
+                  <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('street')}<input className={inputClass()} autoComplete="address-line1" required aria-invalid={showValidation && !formData.address.trim()} value={formData.address} onChange={(event) => updateField('address', event.target.value)} /></label>
+                  <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('streetNumber')}<input className={inputClass()} required aria-invalid={showValidation && !formData.streetNumber.trim()} value={formData.streetNumber} onChange={(event) => updateField('streetNumber', event.target.value)} /></label>
+                  <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">{t('addressLine2')} <span className="font-normal text-slate-400">{t('optional')}</span><input className={inputClass()} autoComplete="address-line2" value={formData.address2} onChange={(event) => updateField('address2', event.target.value)} /></label>
+                </>}
               </div>
               <VerificationPanel result={verification} validating={validating} addressChoice={addressChoice} selectedRateId={selectedRateId} manualReviewRequested={manualReviewRequested} onAddressChoice={setAddressChoice} onRate={setSelectedRateId} onEdit={() => { setVerification(null); setManualReviewRequested(false); checkoutFormRef.current?.querySelector<HTMLInputElement>('input[autocomplete="address-line1"]')?.focus() }} onManualReview={() => setManualReviewRequested(true)} onRetry={() => void runVerification()} />
               <div className="mt-6 grid gap-5 sm:grid-cols-2">

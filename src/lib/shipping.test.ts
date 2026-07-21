@@ -10,6 +10,7 @@ import {
   localDestinationIdentityMatches,
   localPostalCodeCovered,
   shippingSelectionAllowsPayment,
+  splitUsStreetAddress,
   verifyShippingAddress,
   type AddressVerificationResult,
   type ShippingAddress,
@@ -31,6 +32,11 @@ function selection(overrides: Partial<ShippingSelection> = {}): ShippingSelectio
 }
 
 describe('shipping address validation and coverage', () => {
+  it('normalizes a standard U.S. street line into house number and street', () => {
+    expect(splitUsStreetAddress('500 N Oregon St')).toEqual({ streetNumber: '500', street: 'N Oregon St' })
+    expect(splitUsStreetAddress('1200-A Mesa St')).toEqual({ streetNumber: '1200-A', street: 'Mesa St' })
+  })
+
   it('accepts a complete U.S. address and rejects incomplete essentials', () => {
     expect(addressEssentialErrors(elPaso, 'us')).toEqual([])
     expect(addressEssentialErrors({ ...elPaso, streetNumber: '', state: '' }, 'us')).toEqual(expect.arrayContaining(['street_number', 'state']))
@@ -52,6 +58,8 @@ describe('shipping address validation and coverage', () => {
     const poBox = { ...elPaso, street: 'P.O. Box', streetNumber: '210' }
     expect(isPoBoxAddress(poBox)).toBe(true)
     expect(addressEssentialErrors(poBox, 'local_el_paso')).toContain('po_box_local')
+    const shippedPoBox = { ...elPaso, ...splitUsStreetAddress('P.O. Box 210') }
+    expect(addressEssentialErrors(shippedPoBox, 'us')).not.toContain('street_number')
   })
 
   it('confirms exact local-city identity and rejects nearby addresses outside the selected city', () => {

@@ -94,7 +94,7 @@ function essentialErrors(address: Address, destination: Destination) {
   if (!address.city) errors.push('city')
   if (address.country === 'MX' && !address.neighborhood) errors.push('neighborhood')
   if (!address.street) errors.push('street')
-  if (!address.streetNumber) errors.push('street_number')
+  if (!address.streetNumber && !isPoBox(address)) errors.push('street_number')
   if (!address.postalCode) errors.push('postal_code')
   else if (address.country === 'US' && !US_ZIP.test(address.postalCode)) errors.push('postal_code_invalid')
   else if (address.country === 'MX' && !MX_POSTAL_CODE.test(address.postalCode)) errors.push('postal_code_invalid')
@@ -152,6 +152,13 @@ function addressesDiffer(a: Address, b: Address) {
 
 function easyPostAuth(apiKey: string) {
   return `Basic ${btoa(`${apiKey}:`)}`
+}
+
+function providerStreet1(address: Address) {
+  if (!address.streetNumber) return address.street
+  return address.country === 'US'
+    ? `${address.streetNumber} ${address.street}`.trim()
+    : `${address.street} ${address.streetNumber}`.trim()
 }
 
 async function easyPostRequest(path: string, apiKey: string, body: unknown) {
@@ -295,7 +302,7 @@ async function validateAddress(destination: Destination, address: Address, kitCo
   try {
     providerResult = await easyPostRequest('addresses', apiKey, {
       address: {
-        street1: `${address.street} ${address.streetNumber}`.trim(),
+        street1: providerStreet1(address),
         street2,
         city: address.city,
         state: address.state,

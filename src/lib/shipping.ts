@@ -85,6 +85,16 @@ export function emptyShippingAddress(country = 'US'): ShippingAddress {
   return { country, state: '', city: '', neighborhood: '', postalCode: '', street: '', streetNumber: '', line2: '' }
 }
 
+export function splitUsStreetAddress(value: string) {
+  const trimmed = value.trim()
+  if (!trimmed) return { street: '', streetNumber: '' }
+  if (/^(?:p\.?\s*o\.?\s*box|post(?:al)?\s+office\s+box)\b/i.test(trimmed)) {
+    return { street: trimmed, streetNumber: '' }
+  }
+  const match = trimmed.match(/^(\d[\dA-Za-z/-]*(?:\s+1\/2)?)\s+(.+)$/)
+  return match ? { street: match[2], streetNumber: match[1] } : { street: trimmed, streetNumber: '' }
+}
+
 export function expectedCountryForDestination(destination: DeliveryDestination) {
   if (destination === 'us' || destination === 'local_el_paso') return 'US'
   if (destination === 'mexico' || destination === 'local_juarez' || destination === 'local_chihuahua') return 'MX'
@@ -126,7 +136,7 @@ export function addressEssentialErrors(address: ShippingAddress, destination: De
   if (!address.city.trim()) errors.push('city')
   if (country === 'MX' && !address.neighborhood.trim()) errors.push('neighborhood')
   if (!address.street.trim()) errors.push('street')
-  if (!address.streetNumber.trim()) errors.push('street_number')
+  if (!address.streetNumber.trim() && !isPoBoxAddress(address)) errors.push('street_number')
   if (!address.postalCode.trim()) errors.push('postal_code')
   else if (country === 'US' && !US_ZIP.test(address.postalCode.trim())) errors.push('postal_code_invalid')
   else if (country === 'MX' && !MX_POSTAL_CODE.test(address.postalCode.trim())) errors.push('postal_code_invalid')
