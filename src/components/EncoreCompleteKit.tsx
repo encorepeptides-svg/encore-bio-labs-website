@@ -12,6 +12,7 @@ import {
   ENCORE_COMPLETE_KIT_IMAGE_WIDTH,
 } from '../data/kitMedia'
 import { useLocale, useTranslation } from '../i18n/LocaleContext'
+import { BacWaterHeroImage } from './BacWaterHeroImage'
 
 const itemIcons: Record<EncoreCompleteKitItem['key'], ComponentType<{ size?: number; 'aria-hidden'?: boolean | 'true' | 'false'; className?: string }>> = {
   peptide: FlaskConical,
@@ -112,16 +113,21 @@ function FullCard({
   const packaging = items.find((item) => item.key === 'packaging')
   return <div className={cn('overflow-hidden rounded-[1.5rem] border border-slate-900/10 bg-white shadow-[0_18px_55px_rgba(7,23,36,.07)]', className)}>
     <div className="grid items-center gap-5 p-5 sm:p-6 lg:grid-cols-[minmax(18rem,0.95fr)_1.3fr] lg:gap-7">
-      <img
-        src={ENCORE_COMPLETE_KIT_IMAGE}
-        alt={t('kitThumbnailAlt')}
-        width={ENCORE_COMPLETE_KIT_IMAGE_WIDTH}
-        height={ENCORE_COMPLETE_KIT_IMAGE_HEIGHT}
-        loading="lazy"
-        decoding="async"
-        className="aspect-video w-full rounded-xl border border-teal-900/10 object-cover object-center"
-        sizes="(min-width: 1024px) 34vw, 100vw"
-      />
+      <div className="relative">
+        <img
+          src={ENCORE_COMPLETE_KIT_IMAGE}
+          alt={t('kitThumbnailAlt')}
+          width={ENCORE_COMPLETE_KIT_IMAGE_WIDTH}
+          height={ENCORE_COMPLETE_KIT_IMAGE_HEIGHT}
+          loading="lazy"
+          decoding="async"
+          className="aspect-video w-full rounded-xl border border-teal-900/10 object-cover object-center"
+          sizes="(min-width: 1024px) 34vw, 100vw"
+        />
+        <div className="absolute -bottom-2 right-3 aspect-square w-[28%] min-w-20 overflow-hidden rounded-xl border-2 border-white bg-white shadow-[0_14px_34px_rgba(7,23,36,0.2)] sm:right-5">
+          <BacWaterHeroImage alt={t('bacWaterHeroAlt')} sizes="(min-width: 1024px) 10vw, 28vw" className="size-full object-cover object-center" />
+        </div>
+      </div>
       <div>
         <p className="text-xs font-bold uppercase tracking-[.16em] text-teal-700">{t('fullEyebrow')}</p>
         <h2 className="mt-2 text-xl font-semibold tracking-[-.03em] text-[#071724] sm:text-2xl">{t('fullHeading')}</h2>
@@ -175,17 +181,24 @@ function InlineCard({ className }: { className?: string }) {
           </div>
           <p className="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{t('homeResearchNotice')}</p>
         </div>
-        <div className="relative self-center overflow-hidden bg-white">
-          <img
-            src={ENCORE_COMPLETE_KIT_IMAGE}
-            alt={t('homeImageAlt')}
-            width={ENCORE_COMPLETE_KIT_IMAGE_WIDTH}
-            height={ENCORE_COMPLETE_KIT_IMAGE_HEIGHT}
-            loading="lazy"
-            decoding="async"
-            className="aspect-video h-auto w-full object-cover object-center"
-            sizes="(min-width: 1024px) 55vw, 100vw"
-          />
+        <div className="relative self-center overflow-hidden bg-white p-2 sm:p-3">
+          <div className="grid grid-cols-[minmax(0,1.55fr)_minmax(7rem,0.75fr)] items-center gap-2 sm:gap-3">
+            <img
+              src={ENCORE_COMPLETE_KIT_IMAGE}
+              alt={t('homeImageAlt')}
+              width={ENCORE_COMPLETE_KIT_IMAGE_WIDTH}
+              height={ENCORE_COMPLETE_KIT_IMAGE_HEIGHT}
+              loading="lazy"
+              decoding="async"
+              className="aspect-video h-auto w-full rounded-xl object-cover object-center"
+              sizes="(min-width: 1024px) 38vw, 65vw"
+            />
+            <BacWaterHeroImage
+              alt={t('bacWaterHeroAlt')}
+              sizes="(min-width: 1024px) 17vw, 35vw"
+              className="aspect-square size-full rounded-xl object-cover object-center"
+            />
+          </div>
         </div>
       </div>
     </section>

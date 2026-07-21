@@ -39,5 +39,6 @@ export const kit = {
   homeCta: 'Explore Complete Kits',
   homeSecondary: "See What's Included",
   homeImageAlt: 'Encore Bio Labs complete research kit with four syringes, BAC water, research vial, and alcohol preparation pads',
+  bacWaterHeroAlt: 'Encore Bio Labs 1 mL BAC Water vial shown as the pre-measured component of an eligible Complete Kit',
   homeTrust: 'No separate supply purchases. No BAC-water guesswork. Everything arrives together.',
 } as const

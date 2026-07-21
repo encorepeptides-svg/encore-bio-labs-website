@@ -41,5 +41,6 @@ export const kit = {
   homeCta: 'Explorar kits completos',
   homeSecondary: 'Ver qué incluye',
   homeImageAlt: 'Kit completo de investigación Encore Bio Labs con cuatro jeringas, agua bacteriostática, vial de investigación y almohadillas con alcohol',
+  bacWaterHeroAlt: 'Vial de agua BAC Encore Bio Labs de 1 mL mostrado como el componente premedido de un kit completo elegible',
   homeTrust: 'Sin comprar suministros por separado. Sin adivinar la cantidad de agua bacteriostática. Todo llega junto.',
 } satisfies Record<keyof typeof kitEn, string>

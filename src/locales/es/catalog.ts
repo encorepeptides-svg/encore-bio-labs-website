@@ -9,6 +9,7 @@ export const catalog = {
   heroSecondaryCta: 'Comprar por categoría',
   heroReassurance: 'Envío nacional · Entrega local disponible · Kits completos en productos elegibles',
   heroVisualAlt: 'Kit completo de investigación Encore Bio Labs con cuatro jeringas, agua bacteriostática, vial de investigación y almohadillas con alcohol',
+  bacWaterVisualAlt: 'Vial de agua BAC Encore Bio Labs de 1 mL incluido como componente correspondiente del kit completo',
 
   // Compact category selector
   selectorLabel: 'Compra por categoría de investigación',

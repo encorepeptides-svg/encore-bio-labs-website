@@ -6,6 +6,7 @@ import {
   ENCORE_COMPLETE_KIT_IMAGE_WIDTH,
 } from '../../data/kitMedia'
 import { useTranslation } from '../../i18n/LocaleContext'
+import { BacWaterHeroImage } from '../BacWaterHeroImage'
 
 export function CatalogHero() {
   const prefersReducedMotion = useReducedMotion()
@@ -84,6 +85,14 @@ export function CatalogHero() {
               className="relative h-full w-full object-cover object-center"
               sizes="(min-width: 1280px) 48rem, (min-width: 768px) 54vw, 100vw"
             />
+            <div className="absolute bottom-3 right-3 aspect-square w-[29%] min-w-24 overflow-hidden rounded-[1.1rem] border border-white/80 bg-white shadow-[0_18px_42px_rgba(7,23,36,0.2)] sm:bottom-5 sm:right-5">
+              <BacWaterHeroImage
+                alt={t('bacWaterVisualAlt')}
+                sizes="(min-width: 768px) 14vw, 30vw"
+                className="size-full object-cover object-center"
+              />
+              <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-slate-900/5" aria-hidden="true" />
+            </div>
           </div>
         </motion.div>
       </div>

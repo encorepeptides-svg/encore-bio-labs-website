@@ -20,6 +20,7 @@ import { getLocalizedProduct, localizedCategoryLabel } from '../data/productTran
 import { cn } from '../lib/utils'
 import { useLocale, useTranslation } from '../i18n/LocaleContext'
 import { AddToCartButton } from './cart/AddToCartButton'
+import { BacWaterHeroImage } from './BacWaterHeroImage'
 import { CTA } from './CTA'
 import { ProductImage } from './ProductImage'
 
@@ -204,7 +205,6 @@ export function HomePage() {
     .map((slug) => products.find((product) => product.slug === slug))
     .filter((product): product is Product => Boolean(product))
   const heroProduct = bestSellerProducts.find((product) => product.slug === 'retatrutide')
-  const localizedHeroProduct = heroProduct ? getLocalizedProduct(heroProduct, locale) : undefined
   const supportingProducts = bestSellerProducts.filter((product) => product.slug !== 'retatrutide')
   return (
     <main id="main-content" className="bg-[#f5f5f2]">
@@ -295,38 +295,36 @@ export function HomePage() {
             </div>
           </motion.div>
 
-          {localizedHeroProduct ? (
-            <motion.a
-              href={path(`/products/${localizedHeroProduct.slug}`)}
-              aria-label={t('viewProduct', { product: localizedHeroProduct.name })}
+          <motion.a
+              href={path('/kits')}
+              aria-label={t('bacHeroCta')}
               initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.97, x: 24 }}
               animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, x: 0 }}
               transition={{ duration: prefersReducedMotion ? 0.15 : 0.45, ease: 'easeOut', delay: prefersReducedMotion ? 0 : 0.04 }}
-              className="group relative hidden min-h-[32rem] overflow-hidden rounded-[2rem] border border-white/15 bg-[linear-gradient(145deg,rgba(20,184,166,0.15),rgba(3,11,24,0.56)_48%,rgba(255,255,255,0.06))] shadow-[0_38px_120px_rgba(0,0,0,0.42)] backdrop-blur-sm md:block lg:min-h-[39rem]"
+              className="group relative block min-h-[27rem] overflow-hidden rounded-[2rem] border border-white/15 bg-[linear-gradient(145deg,rgba(20,184,166,0.15),rgba(3,11,24,0.56)_48%,rgba(255,255,255,0.06))] shadow-[0_38px_120px_rgba(0,0,0,0.42)] backdrop-blur-sm md:min-h-[32rem] lg:min-h-[39rem]"
             >
-              <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(40,224,193,0.2),transparent_19rem),linear-gradient(180deg,transparent_40%,rgba(3,11,24,0.94)_100%)]" />
-              <div className="absolute left-6 top-6 z-10 inline-flex items-center gap-2 rounded-full border border-teal-100/20 bg-teal-100/10 px-3 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-teal-100 backdrop-blur-xl lg:left-8 lg:top-8">
-                <Star size={14} aria-hidden="true" className="fill-[#28e0c1] text-[#28e0c1]" />
-                {t('featuredBestseller')}
-              </div>
-              <ProductImage
-                product={localizedHeroProduct}
-                alt={t('productImageAlt', { product: localizedHeroProduct.name })}
+              <BacWaterHeroImage
+                alt={t('bacHeroAlt')}
+                priority
                 sizes="(min-width: 1280px) 38vw, 42vw"
-                loading="eager"
-                className="absolute inset-x-[9%] top-[7%] h-[67%] w-[82%] object-contain drop-shadow-[0_34px_58px_rgba(0,0,0,0.48)] transition duration-700 motion-safe:group-hover:scale-[1.035]"
+                className="absolute inset-x-0 top-0 h-[76%] w-full object-cover object-center transition duration-700 motion-safe:group-hover:scale-[1.025]"
               />
+              <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,11,24,0.02)_0%,rgba(3,11,24,0.08)_44%,rgba(3,11,24,0.98)_76%)]" />
+              <div className="absolute left-6 top-6 z-10 inline-flex items-center gap-2 rounded-full border border-teal-100/20 bg-teal-100/10 px-3 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-teal-100 backdrop-blur-xl lg:left-8 lg:top-8">
+                <PackageCheck size={14} aria-hidden="true" className="text-[#28e0c1]" />
+                {t('bacHeroEyebrow')}
+              </div>
               <div className="absolute bottom-5 left-5 right-5 z-10 rounded-[1.4rem] border border-white/15 bg-[#06131f]/78 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl lg:bottom-7 lg:left-7 lg:right-7 lg:p-6">
                 <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-[#71f0db]">
-                  {t('precisionMeetsProgress')}
+                  {t('bacHeroEyebrow')}
                 </p>
                 <div className="mt-2 flex items-end justify-between gap-4">
                   <div>
                     <p className="text-3xl font-semibold tracking-[-0.05em] text-white lg:text-4xl">
-                      {localizedHeroProduct.name}
+                      {t('bacHeroTitle')}
                     </p>
                     <p className="mt-2 max-w-sm text-sm leading-6 text-slate-300">
-                      {t('heroVideoCaption')}
+                      {t('bacHeroCaption')}
                     </p>
                   </div>
                   <span className="mb-1 inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-[#28e0c1] text-[#071724] transition group-hover:bg-white">
@@ -334,11 +332,10 @@ export function HomePage() {
                   </span>
                 </div>
                 <p className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-teal-100">
-                  {getResearchOptionPrice(localizedHeroProduct, t)}
+                  {t('bacHeroCta')}
                 </p>
               </div>
             </motion.a>
-          ) : null}
         </div>
 
         <div id="trust-strip" className="relative mx-auto mt-7 grid max-w-[88rem] scroll-mt-20 gap-2 rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-2 shadow-[0_20px_70px_rgba(0,0,0,0.22)] backdrop-blur-xl sm:grid-cols-2 lg:mt-9 lg:grid-cols-5">
