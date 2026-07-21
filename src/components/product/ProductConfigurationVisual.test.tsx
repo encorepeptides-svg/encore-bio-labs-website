@@ -32,6 +32,7 @@ describe('ProductConfigurationVisual', () => {
     expect(getPurchaseVisualDetails(selection)).toEqual({ vialCount: packSize, includesKit: false })
     const html = renderVisual('en', selection, '1000 mg')
     expect(html).toContain(`NAD+ 1000 mg, ${packSize}-vial pack: ${packSize} product vials with no accessories.`)
+    expect(html).not.toContain('complete-kit-product-hero')
     expect(html).not.toContain('Protective packaging')
   })
 
@@ -39,10 +40,15 @@ describe('ProductConfigurationVisual', () => {
     const selection: PurchaseSelection = { optionId: 'complete-kit', packSize: 1, includeKit: true }
     expect(getPurchaseVisualDetails(selection)).toEqual({ vialCount: 1, includesKit: true })
     const html = renderVisual('en', selection)
+    expect(html).toContain('complete-kit-product-hero')
     expect(html).toContain('NAD+ 500 mg Complete Kit: one product vial')
     expect(html).toContain('4 sterile 30G syringes')
     expect(html).toContain('6 alcohol prep pads')
-    expect(html).toContain('Protective packaging')
+    expect(html).toContain('protective packaging')
+
+    const thousandMgHtml = renderVisual('en', selection, '1000 mg')
+    expect(thousandMgHtml).toContain('NAD+ · 1000 mg · 1 × vial')
+    expect(thousandMgHtml).toContain('complete-kit-product-hero')
   })
 
   it('provides an accurate Spanish accessible description', () => {
@@ -50,6 +56,6 @@ describe('ProductConfigurationVisual', () => {
     expect(html).toContain('NAD+ 500 mg, paquete de 3 viales más un kit completo')
     expect(html).toContain('4 jeringas estériles 30G')
     expect(html).toContain('6 toallitas con alcohol')
-    expect(html).toContain('Empaque protector')
+    expect(html).toContain('empaque protector')
   })
 })
