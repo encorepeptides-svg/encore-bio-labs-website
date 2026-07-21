@@ -49,6 +49,9 @@ const AdminPortalPage = lazy(() => import('./components/portal/AdminPortalPage')
 const DraftReviewPreviewPage = import.meta.env.DEV
   ? lazy(() => import('./components/social-proof/DraftReviewPreviewPage').then((m) => ({ default: m.DraftReviewPreviewPage })))
   : null
+const ProductHeroPreviewPage = import.meta.env.DEV
+  ? lazy(() => import('./components/product/ProductHeroPreviewPage').then((m) => ({ default: m.ProductHeroPreviewPage })))
+  : null
 
 const AssistantWidget = lazy(() =>
   import('./components/assistant/AssistantWidget').then((module) => ({ default: module.AssistantWidget })),
@@ -144,6 +147,9 @@ function App() {
       return <HomePage />
     }
 
+    if (ProductHeroPreviewPage && import.meta.env.DEV && (logicalPath === '/product-hero-preview' || logicalPath === '/product-hero-preview/')) {
+      return <ProductHeroPreviewPage />
+    }
     if (DraftReviewPreviewPage && isDraftReviewPreviewPath(logicalPath, import.meta.env.DEV)) {
       return <DraftReviewPreviewPage />
     }

@@ -1,0 +1,201 @@
+/* Reusable product hero environment.
+   One seamless lit scene, not "image in a box". All lighting is CSS-generated
+   so it stays swappable; the product image must be a transparent cutout with no
+   baked background or shadow. Animations touch only transform/opacity. */
+
+.product-hero {
+  --ph-accent: #28e0c1;
+  --ph-scroll: 0px;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100%;
+  /* Reserve space so there is no layout shift before the image paints. */
+  aspect-ratio: 5 / 6;
+  border-radius: 2rem;
+  background:
+    radial-gradient(120% 90% at 50% 8%, rgba(14, 40, 54, 0.6), transparent 60%),
+    linear-gradient(160deg, #06131f 0%, #071c28 46%, #04101a 100%);
+  color: #fff;
+  contain: layout paint;
+}
+
+@media (min-width: 1024px) {
+  .product-hero { aspect-ratio: 4 / 5; }
+}
+
+.product-hero > * { position: absolute; inset: 0; }
+
+/* Depth planes differ by blur, opacity and parallax factor. */
+.ph-plane { pointer-events: none; }
+.ph-plane--back { transform: translate3d(0, calc(var(--ph-scroll) * 0.04), 0); filter: blur(1px); opacity: 0.9; }
+.ph-plane--mid { transform: translate3d(0, calc(var(--ph-scroll) * 0.09), 0); }
+.ph-plane--front { transform: translate3d(0, calc(var(--ph-scroll) * -0.16), 0); }
+
+/* 1 — animated base gradient (oversized, transform-drifted = GPU friendly) */
+.ph-gradient {
+  position: absolute;
+  inset: -30%;
+  background:
+    radial-gradient(40% 40% at 30% 30%, color-mix(in srgb, var(--ph-accent) 22%, transparent), transparent 70%),
+    radial-gradient(45% 45% at 72% 62%, rgba(56, 120, 190, 0.22), transparent 72%),
+    linear-gradient(120deg, #06131f, #0a2130 55%, #05121c);
+  animation: ph-gradient-drift 26s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+/* 2 — scientific texture (grid + hex hint), very low opacity */
+.ph-texture {
+  position: absolute;
+  inset: 0;
+  opacity: 0.14;
+  background-image:
+    linear-gradient(rgba(120, 210, 220, 0.5) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 210, 220, 0.5) 1px, transparent 1px);
+  background-size: 46px 46px, 46px 46px;
+  mask-image: radial-gradient(circle at 50% 42%, black, transparent 78%);
+  -webkit-mask-image: radial-gradient(circle at 50% 42%, black, transparent 78%);
+}
+
+/* 3 — molecular SVG graphic */
+.ph-molecular { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.16; }
+
+/* 4 — blurred ambient lab particles */
+.ph-ambient span {
+  position: absolute;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ph-accent) 45%, transparent);
+  filter: blur(24px);
+  opacity: 0.5;
+}
+.ph-ambient span:nth-child(1) { width: 42%; height: 42%; left: 6%;  top: 20%; }
+.ph-ambient span:nth-child(2) { width: 34%; height: 34%; right: 4%; top: 44%; background: rgba(70, 130, 200, 0.5); }
+.ph-ambient span:nth-child(3) { width: 26%; height: 26%; left: 30%; bottom: 6%; }
+.ph-ambient span:nth-child(4) { width: 20%; height: 20%; right: 24%; top: 10%; }
+
+/* 5 — large radial light source behind product */
+.ph-radiallight {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(38% 42% at 50% 40%,
+    color-mix(in srgb, var(--ph-accent) 34%, #fff 10%) 0%,
+    color-mix(in srgb, var(--ph-accent) 16%, transparent) 40%,
+    transparent 72%);
+  mix-blend-mode: screen;
+  opacity: 0.85;
+}
+
+/* 6 — floating atmospheric haze */
+.ph-haze span {
+  position: absolute;
+  border-radius: 46% 54% 60% 40% / 50% 40% 60% 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--ph-accent) 30%, transparent), transparent 70%);
+  filter: blur(38px);
+  opacity: 0.4;
+  will-change: transform;
+}
+.ph-haze span:nth-child(1) { width: 60%; height: 55%; left: -8%;  top: 24%; animation: ph-haze-a 22s ease-in-out infinite alternate; }
+.ph-haze span:nth-child(2) { width: 52%; height: 50%; right: -10%; bottom: 6%; background: radial-gradient(circle, rgba(60,120,190,0.3), transparent 70%); animation: ph-haze-b 28s ease-in-out infinite alternate; }
+
+/* Product stage (layer 7) */
+.ph-stage { position: absolute; inset: 0; display: grid; place-items: center; z-index: 2; }
+
+/* glow/bloom behind product, color-matched, spills into scene */
+.ph-glow {
+  position: absolute;
+  width: 78%;
+  height: 78%;
+  border-radius: 999px;
+  background: radial-gradient(circle,
+    color-mix(in srgb, var(--ph-accent) 60%, #fff 20%) 0%,
+    color-mix(in srgb, var(--ph-accent) 30%, transparent) 38%,
+    transparent 68%);
+  filter: blur(30px);
+  mix-blend-mode: screen;
+  opacity: 0.75;
+  will-change: transform;
+  animation: ph-glow-pulse 9s ease-in-out infinite;
+}
+
+.ph-product {
+  position: relative;
+  width: 74%;
+  height: 88%;
+  object-fit: contain;
+  /* feather extreme edges + ground the bottom into the haze, no hard box */
+  -webkit-mask-image:
+    radial-gradient(128% 118% at 50% 44%, #000 72%, transparent 100%),
+    linear-gradient(to bottom, #000 82%, transparent 99%);
+  mask-image:
+    radial-gradient(128% 118% at 50% 44%, #000 72%, transparent 100%),
+    linear-gradient(to bottom, #000 82%, transparent 99%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+  /* rim light following the alpha silhouette, from the top-left key light */
+  filter:
+    drop-shadow(-5px -7px 9px color-mix(in srgb, var(--ph-accent) 55%, transparent))
+    drop-shadow(0 30px 42px rgba(0, 0, 0, 0.5));
+  animation: ph-float 10s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* 8 — foreground light particles */
+.ph-particles span {
+  position: absolute;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ph-accent) 90%, #fff);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--ph-accent) 80%, transparent);
+  opacity: 0.55;
+  animation: ph-particle 9s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* Hero copy overlay slot, kept above the scene with a readable scrim. */
+.ph-copy {
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 3;
+  padding: 1.5rem;
+  background: linear-gradient(to top, rgba(4, 12, 22, 0.92), transparent);
+}
+
+@keyframes ph-gradient-drift {
+  0%   { transform: translate3d(-2%, -1%, 0) scale(1.05); }
+  100% { transform: translate3d(2%, 2%, 0) scale(1.12); }
+}
+@keyframes ph-haze-a {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(6%, -4%, 0); }
+}
+@keyframes ph-haze-b {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-5%, 3%, 0); }
+}
+@keyframes ph-glow-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50%      { transform: scale(1.06); opacity: 0.82; }
+}
+@keyframes ph-float {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, -6px, 0); }
+}
+@keyframes ph-particle {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.35; }
+  45%      { transform: translate3d(10px, -22px, 0) scale(1.35); opacity: 0.9; }
+}
+
+/* Respect reduced motion: freeze all motion, keep an intentional static scene. */
+@media (prefers-reduced-motion: reduce) {
+  .product-hero * { animation: none !important; }
+  .ph-plane { transform: none !important; }
+  .ph-glow { opacity: 0.75; }
+}
+
+/* Mobile: simplify particle density before touching the product/lighting. */
+@media (max-width: 640px) {
+  .ph-particles span:nth-child(n + 4),
+  .ph-ambient span:nth-child(n + 3) { display: none; }
+  .ph-texture { background-size: 34px 34px, 34px 34px; }
+}
