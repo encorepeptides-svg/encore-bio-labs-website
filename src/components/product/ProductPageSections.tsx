@@ -29,6 +29,7 @@ import { products, type Product, type ProductVariant } from '../../data/products
 import { getLocalizedProduct, localizedCategoryLabel } from '../../data/productTranslations'
 import type { ProductResearchContent } from '../../data/productResearchContent'
 import { getProductMedia } from '../../data/productMedia'
+import { getProductCutout } from '../../data/productCutouts'
 import { contentTypeLabels, researchArticles } from '../../data/research'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { buildOrderInquiryMessage, buildWhatsAppUrl } from '../../lib/whatsapp'
@@ -40,23 +41,8 @@ import { ProductConfigurationVisual } from './ProductConfigurationVisual'
 import { ProductHero as ProductHeroEnvironment } from './ProductHero'
 
 // The Clean Lab (light) hero applies to every product whose full-res transparent
-// cutout has been promoted to production (src/assets/images/products/cutouts/).
-// Web-optimized WebP derivatives are resolved by the product's hero image name;
-// a product without a ready cutout falls back to the default hero automatically,
-// so a placeholder image is never shipped.
-const cutoutUrls = import.meta.glob('../../assets/images/products/cutouts/*.webp', {
-  eager: true,
-  query: '?url',
-  import: 'default',
-}) as Record<string, string>
-
-function getProductCutout(product: Product): string | undefined {
-  const src = getProductMedia(product.slug)?.hero.src
-  if (!src) return undefined
-  const stem = src.replace(/\.[a-z0-9]+$/i, '')
-  const key = Object.keys(cutoutUrls).find((assetPath) => assetPath.endsWith(`/cutouts/${stem}.webp`))
-  return key ? cutoutUrls[key] : undefined
-}
+// cutout has been promoted to production. A product without a ready cutout falls
+// back to the default hero automatically, so a placeholder is never shipped.
 import { CTA } from '../CTA'
 import { EncoreCompleteKit } from '../EncoreCompleteKit'
 import {

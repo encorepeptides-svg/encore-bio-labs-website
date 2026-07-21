@@ -5,6 +5,7 @@ import { getLocalizedProduct } from '../../data/productTranslations'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { ProductImage } from '../ProductImage'
 import { Reveal } from '../Reveal'
+import { getProductCutout } from '../../data/productCutouts'
 import { getPriceLabel, getStrengthSummary } from './catalogHelpers'
 
 export function ProductCard({ product: baseProduct }: { product: Product }) {
@@ -12,6 +13,7 @@ export function ProductCard({ product: baseProduct }: { product: Product }) {
   const { t } = useTranslation('catalog')
   const product = getLocalizedProduct(baseProduct, locale)
   const coa = coaBySlug[product.slug]
+  const cutout = getProductCutout(baseProduct)
 
   return (
     <Reveal
@@ -25,14 +27,26 @@ export function ProductCard({ product: baseProduct }: { product: Product }) {
         aria-label={product.name}
       >
         <div className="aspect-[4/3]">
-          <ProductImage
-            product={product}
-            alt={t('productVisualAlt', { product: product.name })}
-            sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
-            width={640}
-            height={480}
-            className="h-full w-full object-contain object-center opacity-95 saturate-[0.94] transition duration-500 group-hover:scale-[1.03]"
-          />
+          {cutout ? (
+            <img
+              src={cutout}
+              alt={t('productVisualAlt', { product: product.name })}
+              width={640}
+              height={480}
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-contain object-center p-3 drop-shadow-[0_18px_24px_rgba(20,50,55,0.16)] transition duration-500 group-hover:scale-[1.04]"
+            />
+          ) : (
+            <ProductImage
+              product={product}
+              alt={t('productVisualAlt', { product: product.name })}
+              sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
+              width={640}
+              height={480}
+              className="h-full w-full object-contain object-center opacity-95 saturate-[0.94] transition duration-500 group-hover:scale-[1.03]"
+            />
+          )}
         </div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_36%,rgba(255,255,255,0)_0_46%,rgba(255,255,255,0.28)_76%,rgba(255,255,255,0.92)_100%)]" />
       </a>

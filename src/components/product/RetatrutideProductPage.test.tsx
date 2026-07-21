@@ -22,7 +22,10 @@ function renderPage(locale: Locale) {
 describe('RetatrutideProductPage', () => {
   it('restores the flagship visual research and conversion journey', () => {
     const html = renderPage('en')
-    expect(html).toContain("Encore&#x27;s Flagship")
+    // The flagship now uses the standard Clean Lab hero (category badge instead
+    // of a bespoke "Encore's Flagship" eyebrow); the research/conversion body
+    // journey below the hero is what this guards.
+    expect(html).toContain('Retatrutide')
     expect(html).toContain('28.3%')
     expect(html).toContain('24.1 cm')
     expect(html).toContain('Waist Reduction Research Journey')
@@ -39,7 +42,6 @@ describe('RetatrutideProductPage', () => {
 
   it('restores the same flagship journey in Spanish', () => {
     const html = renderPage('es')
-    expect(html).toContain('Producto insignia de Encore')
     expect(html).toContain('Los investigadores están estudiando más que la pérdida de peso.')
     expect(html).toContain('Glucosa y A1C')
     expect(html).toContain('Marcadores cardiometabólicos')

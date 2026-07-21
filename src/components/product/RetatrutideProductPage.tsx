@@ -4,12 +4,8 @@ import {
   ChevronDown,
   ShoppingCart,
 } from 'lucide-react'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useMemo, useState } from 'react'
-import heroArtworkAvif1586 from '../../assets/images/research/retatrutide-triple-pathway-hero-1586.avif'
-import heroArtworkAvif768 from '../../assets/images/research/retatrutide-triple-pathway-hero-768.avif'
-import heroArtworkWebp1586 from '../../assets/images/research/retatrutide-triple-pathway-hero-1586.webp'
-import heroArtworkWebp768 from '../../assets/images/research/retatrutide-triple-pathway-hero-768.webp'
 import { useCart } from '../../context/useCart'
 import type { Product, ProductVariant } from '../../data/products'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
@@ -29,8 +25,7 @@ import { EncoreCompleteKit } from '../EncoreCompleteKit'
 import { MetabolicPortfolio } from '../metabolic/MetabolicPortfolio'
 import { RetatrutidePathways } from '../retatrutide/RetatrutidePathways'
 import { RetatrutideResearchContext } from '../retatrutide/RetatrutideResearchContext'
-import { ProductBreadcrumb } from './ProductPageSections'
-import { ProductConfigurationVisual } from './ProductConfigurationVisual'
+import { ProductBreadcrumb, ProductHero } from './ProductPageSections'
 import { RetatrutideBenefitsSection } from './retatrutide/RetatrutideBenefitsSection'
 import { RetatrutideEvidenceStrip } from './retatrutide/RetatrutideEvidenceStrip'
 import { RetatrutideQualitySection } from './retatrutide/RetatrutideQualitySection'
@@ -149,12 +144,9 @@ function PurchaseConfigurator({
 
 export function RetatrutideProductPage({ product }: { product: Product }) {
   const { t } = useTranslation('retatrutide')
-  const { t: researchT } = useTranslation('retatrutideResearch')
   const [openFaq, setOpenFaq] = useState(0)
   const [variant, setVariant] = useState<ProductVariant>(product.variants[0])
   const [selection, setSelection] = useState<PurchaseSelection>(() => getDefaultPurchaseSelection(product))
-  const reducedMotion = useReducedMotion()
-  const lowestPrice = Math.min(...product.variants.map((variant) => variant.price))
 
   const faqs = [
     { question: t('faq1Q'), answer: t('faq1A') },
@@ -169,50 +161,7 @@ export function RetatrutideProductPage({ product }: { product: Product }) {
     <main id="main-content" className="overflow-hidden bg-[#f8faf9] pb-24 text-[#071724] md:pb-0">
       <ProductBreadcrumb product={product} tone="dark" />
 
-      <section className="relative overflow-hidden bg-[#030b18] px-5 pb-32 pt-10 text-white sm:px-8 sm:pb-36 lg:pb-44 lg:pt-16">
-        <picture>
-          <source type="image/avif" srcSet={`${heroArtworkAvif768} 768w, ${heroArtworkAvif1586} 1586w`} sizes="100vw" />
-          <source type="image/webp" srcSet={`${heroArtworkWebp768} 768w, ${heroArtworkWebp1586} 1586w`} sizes="100vw" />
-          <img src={heroArtworkWebp1586} alt="" width="1586" height="1024" fetchPriority="high" className="absolute inset-0 size-full object-cover object-[68%_center] opacity-55" />
-        </picture>
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,#030b18_0%,rgba(3,11,24,0.98)_36%,rgba(3,11,24,0.62)_68%,rgba(3,11,24,0.26)_100%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_77%_46%,rgba(34,211,238,0.18),transparent_29%)]" />
-
-        <div className="relative mx-auto grid max-w-[88rem] gap-12 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
-          <motion.div initial={reducedMotion ? false : { opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <p className="inline-flex rounded-full border border-teal-200/25 bg-teal-200/10 px-4 py-2 text-[0.68rem] font-bold uppercase tracking-[0.2em] text-teal-100">{t('eyebrow')}</p>
-            <h1 className="mt-6 text-[clamp(3.8rem,8vw,7.5rem)] font-semibold leading-[0.84] tracking-[-0.075em] text-white">Retatrutide</h1>
-            <p className="mt-7 max-w-2xl text-xl font-medium leading-8 tracking-[-0.025em] text-white sm:text-2xl">{t('headline')}</p>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">{t('intro')}</p>
-            <div className="mt-6 flex flex-wrap gap-2"><span className="rounded-full border border-teal-200/20 bg-white/8 px-3 py-2 text-xs font-semibold text-teal-100">{t('glp1Pathway')}</span><span className="rounded-full border border-teal-200/20 bg-white/8 px-3 py-2 text-xs font-semibold text-teal-100">{t('gipPathway')}</span><span className="rounded-full border border-teal-200/20 bg-white/8 px-3 py-2 text-xs font-semibold text-teal-100">{t('glucagonPathway')}</span></div>
-
-            <div className="mt-8 flex flex-wrap gap-3 pr-12 sm:pr-0"><a href="#retatrutide-purchase" className="retatrutide-primary-cta inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#28e0c1] px-8 text-base font-bold text-[#071724] shadow-[0_18px_48px_rgba(20,184,166,0.28)] transition hover:-translate-y-0.5 hover:bg-white">{t('chooseStrength')}<ArrowRight size={18} aria-hidden="true" /></a><a href="#retatrutide-full-research" className="inline-flex min-h-14 items-center justify-center rounded-full border border-white/25 bg-white/8 px-7 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/14">{t('reviewTheResearch')}</a></div>
-
-            <div className="mt-7 grid max-w-2xl grid-cols-1 gap-px overflow-hidden border border-white/12 bg-white/12 sm:grid-cols-3">
-              <div className="bg-[#071724]/75 p-4"><p className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-teal-200">{t('heroPriceLabel')}</p><p className="mt-1 text-xl font-semibold text-white">{t('fromPrice', { price: money(lowestPrice) })}</p></div>
-              <div className="bg-[#071724]/75 p-4"><p className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-teal-200">{t('heroFormatsLabel')}</p><p className="mt-1 text-xl font-semibold text-white">{t('activeStrengths', { count: product.variants.length })}</p></div>
-              <div className="bg-[#071724]/75 p-4"><p className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-teal-200">{t('heroDocumentationLabel')}</p><p className="mt-1 text-sm font-semibold leading-6 text-white">{t('documentationByRequest')}</p></div>
-            </div>
-            <p className="mt-5 max-w-2xl border-l-2 border-teal-300/60 pl-4 text-xs font-semibold leading-5 text-slate-300">{t('fdaDisclaimer')}</p>
-          </motion.div>
-
-          <motion.div initial={reducedMotion ? false : { opacity: 0, y: 22, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.7, delay: reducedMotion ? 0 : 0.08 }} className="relative mx-auto w-full max-w-[42rem]">
-            <div className="absolute inset-[9%] rounded-full bg-teal-300/15 blur-3xl" aria-hidden="true" />
-            <div className="retatrutide-vial-float relative">
-              <ProductConfigurationVisual product={product} variant={variant} selection={selection} theme="dark" className="min-h-[27rem] sm:min-h-[34rem]" />
-            </div>
-            <div className="relative -mt-8 border border-white/15 bg-[#071724]/90 p-3 shadow-[0_28px_70px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:p-4">
-              <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-xl bg-white/[0.07] p-4"><p className="text-3xl font-semibold tracking-[-0.055em] text-teal-200">28.3%</p><p className="mt-1 text-[0.68rem] font-semibold leading-4 text-slate-300">{researchT('phaseStat1Label')}</p></div>
-                <div className="rounded-xl bg-white/[0.07] p-4"><p className="text-3xl font-semibold tracking-[-0.055em] text-teal-200">24.1 cm</p><p className="mt-1 text-[0.68rem] font-semibold leading-4 text-slate-300">{researchT('bodyCompositionMetricLabel')}</p></div>
-              </div>
-              <div className="mt-2 grid grid-cols-5 gap-2">
-                {product.variants.map((entry) => <a key={entry.sku} href="#retatrutide-purchase" aria-current={entry === variant ? 'true' : undefined} onClick={() => setVariant(entry)} className={cn('rounded-xl border px-2 py-3 text-center transition hover:border-teal-200/50 hover:bg-teal-300/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-300', entry === variant ? 'border-teal-200/60 bg-teal-300/15' : 'border-white/12 bg-white/[0.06]')}><span className="block text-xs font-bold text-white sm:text-sm">{entry.label}</span><span className="mt-1 block text-[0.65rem] font-semibold text-teal-200 sm:text-xs">{money(entry.price)}</span></a>)}
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      <ProductHero product={product} />
 
       <section className="relative z-10 -mt-20 px-5 pb-16 sm:px-8 lg:-mt-28 lg:pb-20">
         <div className="mx-auto max-w-[88rem]">
