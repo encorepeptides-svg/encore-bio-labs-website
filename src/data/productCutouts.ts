@@ -12,8 +12,10 @@ const cutoutUrls = import.meta.glob('../assets/images/products/cutouts/*.webp', 
 }) as Record<string, string>
 
 /** The transparent cutout URL for a product, or undefined if none is promoted. */
-export function getProductCutout(product: Product): string | undefined {
-  const src = getProductMedia(product.slug)?.hero.src
+export function getProductCutout(product: Pick<Product, 'slug' | 'image' | 'heroImage'>): string | undefined {
+  const localizedImageOverride = product.image !== product.heroImage ? product.image : undefined
+  const src = localizedImageOverride
+    ?? (product.slug === 'klow' ? 'klow-es.png' : getProductMedia(product.slug)?.hero.src)
   if (!src) return undefined
   const stem = src.replace(/\.[a-z0-9]+$/i, '')
   const key = Object.keys(cutoutUrls).find((assetPath) => assetPath.endsWith(`/cutouts/${stem}.webp`))

@@ -256,6 +256,16 @@
 .product-hero.is-bare .ph-lab-shadow { bottom: 6%; width: 52%; }
 .product-hero.is-bare { aspect-ratio: 3 / 4; }
 
+/* Embedded mode preserves the dimensions and corner radius of its existing card. */
+.product-hero.product-hero--embedded {
+  height: 100%;
+  min-height: 100%;
+  aspect-ratio: auto;
+  border-radius: inherit;
+}
+.product-hero.product-hero--embedded .ph-product { width: 78%; height: 88%; }
+.product-lab-fallback { height: 100%; width: 100%; overflow: hidden; }
+
 /* Mobile: simplify particle density before touching the product/lighting. */
 @media (max-width: 640px) {
   .ph-particles span:nth-child(n + 4),

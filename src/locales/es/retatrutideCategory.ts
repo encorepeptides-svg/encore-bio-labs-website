@@ -5,7 +5,7 @@ export const retatrutideCategory = {
   statusBadge: 'En investigación • Fase 3 • Sin aprobación de la FDA',
   heroPrimaryCta: 'Explorar la investigación',
   heroSecondaryCta: 'Revisar documentación analítica',
-  heroVisualAlt: 'Ilustración abstracta de tres rutas luminosas de investigación que convergen alrededor de una estructura molecular.',
+  heroVisualAlt: 'Una mujer que progresa de la obesidad hacia una apariencia saludable y en forma en una secuencia de transformación con estilo de laboratorio luminoso.',
   heroVisualLabel: 'Tres vías. Una molécula en investigación.',
   scrollCue: 'Continúa hacia la evidencia',
   researchUseNotice: 'Uso exclusivo para investigación. No destinado a uso humano ni veterinario. Retatrutide está en investigación y no cuenta con aprobación de la FDA.',

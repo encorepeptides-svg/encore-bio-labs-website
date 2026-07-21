@@ -10,10 +10,6 @@ import {
 } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { lazy, Suspense } from 'react'
-import heroArtworkAvif1586 from '../assets/images/research/retatrutide-triple-pathway-hero-1586.avif'
-import heroArtworkAvif768 from '../assets/images/research/retatrutide-triple-pathway-hero-768.avif'
-import heroArtworkWebp1586 from '../assets/images/research/retatrutide-triple-pathway-hero-1586.webp'
-import heroArtworkWebp768 from '../assets/images/research/retatrutide-triple-pathway-hero-768.webp'
 import { coaBySlug } from '../data/coa'
 import { products, type Product } from '../data/products'
 import { getLocalizedProduct, localizedCategoryLabel } from '../data/productTranslations'
@@ -22,7 +18,7 @@ import { useLocale, useTranslation } from '../i18n/LocaleContext'
 import { AddToCartButton } from './cart/AddToCartButton'
 import { BacWaterHeroImage } from './BacWaterHeroImage'
 import { CTA } from './CTA'
-import { ProductImage } from './ProductImage'
+import { ProductLabVisual } from './product/ProductLabVisual'
 
 const bestSellerSlugs = ['retatrutide', 'ghk-cu', 'nad-plus', 'tesamorelin']
 
@@ -114,12 +110,11 @@ function FeaturedBestSellerCard({ product: baseProduct }: { product: Product }) 
           className="relative order-1 block overflow-hidden bg-[#dfe8e7] lg:order-2"
         >
           <div className="relative flex aspect-[4/3] w-full items-center justify-center p-6 sm:aspect-[16/10] sm:p-10 lg:aspect-auto lg:h-full lg:min-h-[clamp(16rem,10rem+18vw,24rem)] lg:p-10">
-            <ProductImage
+            <ProductLabVisual
               product={product}
               alt={t('productImageAlt', { product: product.name })}
               sizes="(min-width: 1024px) 45vw, 100vw"
-              loading="eager"
-              className="h-full w-full object-contain drop-shadow-[0_28px_48px_rgba(7,23,36,0.18)] transition duration-500 motion-safe:group-hover:scale-[1.03]"
+              priority
             />
           </div>
         </a>
@@ -147,11 +142,10 @@ function SecondaryBestSellerCard({ product: baseProduct, className }: { product:
         aria-label={t('viewProduct', { product: product.name })}
         className="relative block aspect-[4/3] overflow-hidden bg-[#dfe8e7]"
       >
-        <ProductImage
+        <ProductLabVisual
           product={product}
           alt={t('productImageAlt', { product: product.name })}
           sizes="(min-width: 1024px) 30vw, 100vw"
-          className="absolute inset-0 h-full w-full object-contain object-center opacity-95 transition duration-500 motion-safe:group-hover:scale-[1.035]"
         />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(255,255,255,0)_0_42%,rgba(255,255,255,0.32)_76%,rgba(255,255,255,0.92)_100%)]" />
         <div className="absolute left-4 top-4 rounded-full border border-white/60 bg-white/78 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#071724] backdrop-blur-xl">
@@ -209,26 +203,16 @@ export function HomePage() {
   return (
     <main id="main-content" className="bg-[#f5f5f2]">
       <section className="relative isolate overflow-hidden bg-[#030b18] px-5 pb-6 pt-6 text-white sm:px-8 sm:pb-8 sm:pt-10 lg:pb-10 lg:pt-12">
-        <picture aria-hidden="true" className="pointer-events-none absolute inset-0 -z-20">
-          <source
-            type="image/avif"
-            srcSet={`${heroArtworkAvif768} 768w, ${heroArtworkAvif1586} 1586w`}
-            sizes="100vw"
-          />
-          <source
-            type="image/webp"
-            srcSet={`${heroArtworkWebp768} 768w, ${heroArtworkWebp1586} 1586w`}
-            sizes="100vw"
-          />
-          <img
-            src={heroArtworkWebp1586}
-            alt=""
-            width="1586"
-            height="1024"
-            fetchPriority="high"
-            className="h-full w-full object-cover object-[66%_center] opacity-90 sm:object-center"
-          />
-        </picture>
+        {heroProduct ? (
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-20 opacity-90">
+            <ProductLabVisual
+              product={heroProduct}
+              alt=""
+              sizes="100vw"
+              priority
+            />
+          </div>
+        ) : null}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(3,11,24,1)_0%,rgba(3,11,24,0.97)_37%,rgba(3,11,24,0.66)_65%,rgba(3,11,24,0.24)_100%)]"

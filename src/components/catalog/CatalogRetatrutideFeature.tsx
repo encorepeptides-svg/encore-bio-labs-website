@@ -3,7 +3,7 @@ import { products } from '../../data/products'
 import { getLocalizedProduct } from '../../data/productTranslations'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { money } from '../../lib/purchaseOptions'
-import { ProductImage } from '../ProductImage'
+import { ProductLabVisual } from '../product/ProductLabVisual'
 import { Reveal } from '../Reveal'
 
 function ReceptorDiagram({ labels }: { labels: [string, string, string] }) {
@@ -73,13 +73,12 @@ export function CatalogRetatrutideFeature() {
 
         <div className="relative col-start-2 row-start-1 self-center lg:row-span-2 lg:row-start-1 lg:self-stretch">
           <div className="relative mx-auto aspect-square w-full max-w-[25rem] lg:h-full lg:min-h-[27rem] lg:aspect-auto">
-            <div className="absolute inset-1 rounded-[1.5rem] bg-[radial-gradient(circle_at_50%_42%,rgba(118,228,211,0.3),transparent_66%)] sm:inset-3" aria-hidden="true" />
-            <div className="absolute inset-0 flex items-center justify-center p-1 sm:p-3 lg:p-6">
-              <ProductImage
+            <div className="absolute inset-0 overflow-hidden rounded-[1.5rem]">
+              <ProductLabVisual
                 product={product}
                 alt={t('retaVisualAlt')}
                 sizes="(min-width: 1024px) 32vw, 36vw"
-                className="max-h-full w-auto object-contain drop-shadow-[0_28px_52px_rgba(0,0,0,0.42)]"
+                priority
               />
             </div>
             <span className="absolute bottom-0 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-white/15 bg-[#071724]/75 px-2.5 py-1 text-[0.55rem] font-bold uppercase tracking-[0.18em] text-teal-100 backdrop-blur-md sm:text-[0.65rem]">

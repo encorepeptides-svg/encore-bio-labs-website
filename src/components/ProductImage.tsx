@@ -1,4 +1,5 @@
 import type { Product } from '../data/products'
+import { getProductCutout } from '../data/productCutouts'
 import { getProductMedia } from '../data/productMedia'
 import { buildSrcSet, stemOf } from '../lib/responsiveImages'
 
@@ -34,6 +35,7 @@ export function ProductImage({
   decoding = 'async',
 }: ProductImageProps) {
   const media = getProductMedia(product.slug)
+  const cutout = getProductCutout(product)
   // A locale layer may intentionally override `image` while the canonical
   // `heroImage` still points at the shared media manifest. Honor that explicit
   // override before responsive canonical assets (used by Spanish KLOW artwork).
@@ -47,6 +49,20 @@ export function ProductImage({
   const webpSrcSet = buildSrcSet(productImages, IMAGE_BASE_PATH, stem, 'webp', IMAGE_WIDTHS)
   const resolvedAlt = alt ?? media?.hero.alt ?? `${product.slug} research product packaging`
   const dimensions = { width: width ?? media?.hero.width ?? 1254, height: height ?? media?.hero.height ?? 1254 }
+
+  if (cutout) {
+    return (
+      <img
+        src={cutout}
+        alt={resolvedAlt}
+        width={dimensions.width}
+        height={dimensions.height}
+        loading={loading}
+        decoding={decoding}
+        className={className}
+      />
+    )
+  }
 
   if (!imageSrc) return null
 

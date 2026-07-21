@@ -2,7 +2,7 @@ import { ArrowRight, Check } from 'lucide-react'
 import { products } from '../../data/products'
 import { getLocalizedProduct } from '../../data/productTranslations'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
-import { ProductImage } from '../ProductImage'
+import { ProductLabVisual } from '../product/ProductLabVisual'
 import { Reveal } from '../Reveal'
 import { getPriceLabel } from './catalogHelpers'
 
@@ -33,13 +33,11 @@ export function CatalogKlowFeature() {
 
         <div className="relative col-start-2 row-start-1 self-center lg:row-span-2 lg:row-start-1 lg:self-stretch">
           <div className="relative mx-auto aspect-square w-full max-w-[28rem] lg:h-full lg:min-h-[31rem] lg:aspect-auto">
-            <div className="absolute inset-0 rounded-[1.4rem] border border-white/80 bg-white/65 shadow-[0_26px_66px_rgba(7,23,36,0.14)] backdrop-blur-xl sm:rounded-[1.8rem]" aria-hidden="true" />
             <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-[1.4rem] sm:rounded-[1.8rem]">
-              <ProductImage
+              <ProductLabVisual
                 product={product}
                 alt={t('klowVisualAlt')}
                 sizes="(min-width: 1024px) 36vw, 38vw"
-                className="h-full w-full object-cover"
               />
             </div>
           </div>

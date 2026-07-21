@@ -1,9 +1,7 @@
 import { ArrowDown, ArrowRight, BadgeCheck, FileCheck2, FlaskConical, ShieldAlert, ShieldCheck } from 'lucide-react'
 import { useEffect } from 'react'
-import heroArtworkAvif1586 from '../../assets/images/research/retatrutide-triple-pathway-hero-1586.avif'
-import heroArtworkAvif768 from '../../assets/images/research/retatrutide-triple-pathway-hero-768.avif'
-import heroArtworkWebp1586 from '../../assets/images/research/retatrutide-triple-pathway-hero-1586.webp'
-import heroArtworkWebp768 from '../../assets/images/research/retatrutide-triple-pathway-hero-768.webp'
+import transformationVideo from '../../assets/videos/encore-hero.mp4'
+import transformationPoster from '../../assets/images/hero/hero-video-poster.jpg'
 import { products, type ResearchArea } from '../../data/products'
 import { getLocalizedProduct } from '../../data/productTranslations'
 import { SITE_ORIGIN } from '../../i18n/config'
@@ -73,12 +71,19 @@ export function MetabolicWeightManagementCategoryPage({ area }: { area: Research
       <CategoryBreadcrumb area={area} />
 
       <section className="relative min-h-[calc(100svh-9rem)] overflow-hidden bg-[#030b18] px-5 pb-14 pt-8 text-white sm:px-8 lg:flex lg:items-center lg:py-16">
-        <picture>
-          <source type="image/avif" srcSet={`${heroArtworkAvif768} 768w, ${heroArtworkAvif1586} 1586w`} sizes="100vw" />
-          <source type="image/webp" srcSet={`${heroArtworkWebp768} 768w, ${heroArtworkWebp1586} 1586w`} sizes="100vw" />
-          <img src={heroArtworkWebp1586} alt={t('heroVisualAlt')} width="1586" height="1024" fetchPriority="high" className="absolute inset-0 size-full object-cover object-[62%_center] opacity-75" />
-        </picture>
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,#030b18_0%,rgba(3,11,24,0.96)_34%,rgba(3,11,24,0.52)_62%,rgba(3,11,24,0.2)_100%)]" />
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster={transformationPoster}
+          aria-label={t('heroVisualAlt')}
+          className="absolute inset-0 size-full object-cover object-[66%_center] sm:object-center"
+        >
+          <source src={transformationVideo} type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,11,24,0.94)_0%,rgba(3,11,24,0.87)_34%,rgba(3,11,24,0.34)_67%,rgba(3,11,24,0.08)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(248,250,252,0.04)_0%,rgba(3,11,24,0.08)_42%,#030b18_100%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_48%,rgba(34,211,238,0.14),transparent_30%)]" />
 
         <div className="relative mx-auto grid w-full max-w-[88rem] gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
@@ -101,7 +106,7 @@ export function MetabolicWeightManagementCategoryPage({ area }: { area: Research
         <a href="#retatrutide-quick-select" className="absolute bottom-5 left-1/2 hidden -translate-x-1/2 items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-slate-300 transition hover:text-white lg:inline-flex">{t('scrollCue')}<ArrowDown size={15} aria-hidden="true" /></a>
       </section>
 
-      <section id="retatrutide-quick-select" className="scroll-mt-24 bg-white px-5 py-16 sm:px-8 sm:py-20">
+      <section id="retatrutide-quick-select" className="scroll-mt-24 bg-[linear-gradient(180deg,#030b18_0%,#071724_7rem,#ffffff_18rem)] px-5 py-16 sm:px-8 sm:py-20">
         <div className="mx-auto grid max-w-[88rem] overflow-hidden rounded-[2rem] border border-slate-900/10 bg-[#F8FAFC] shadow-[0_24px_70px_rgba(7,23,36,0.08)] lg:grid-cols-[0.72fr_1.28fr] lg:items-center">
           <div className="relative min-h-[22rem] overflow-hidden bg-[radial-gradient(circle_at_center,rgba(45,212,191,0.2),transparent_60%)] p-6 sm:p-8 lg:min-h-[32rem]">
             <ProductImage product={product} alt={t('categoryProductImageAlt')} loading="eager" sizes="(min-width: 1024px) 36vw, 90vw" className="absolute inset-0 size-full object-contain p-6 drop-shadow-[0_30px_38px_rgba(7,23,36,0.22)] sm:p-10" />

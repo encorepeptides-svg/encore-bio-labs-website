@@ -2,7 +2,7 @@ import { Star } from 'lucide-react'
 import { products, type Product } from '../../data/products'
 import { getLocalizedProduct } from '../../data/productTranslations'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
-import { ProductImage } from '../ProductImage'
+import { ProductLabVisual } from '../product/ProductLabVisual'
 import { Reveal } from '../Reveal'
 import { getPriceLabel } from './catalogHelpers'
 
@@ -45,12 +45,11 @@ function FeaturedCard({ product: baseProduct }: { product: Product }) {
           className="relative order-1 block overflow-hidden bg-[#dfe8e7] lg:order-2"
         >
           <div className="relative flex aspect-[4/3] w-full items-center justify-center p-6 sm:aspect-[16/10] sm:p-10 lg:aspect-auto lg:h-full lg:min-h-[18rem] lg:p-10">
-            <ProductImage
+            <ProductLabVisual
               product={product}
               alt={t('productVisualAlt', { product: product.name })}
-              loading="eager"
+              priority
               sizes="(min-width: 1024px) 45vw, 100vw"
-              className="h-full w-full object-contain drop-shadow-[0_28px_48px_rgba(7,23,36,0.18)] transition duration-500 group-hover:scale-[1.03]"
             />
           </div>
         </a>
@@ -74,11 +73,10 @@ function SecondaryCard({ product: baseProduct }: { product: Product }) {
         aria-label={product.name}
         className="relative block aspect-[4/3] overflow-hidden bg-[#dfe8e7]"
       >
-        <ProductImage
+        <ProductLabVisual
           product={product}
           alt={t('productVisualAlt', { product: product.name })}
           sizes="(min-width: 1024px) 24vw, 100vw"
-          className="absolute inset-0 h-full w-full object-contain object-center opacity-95 transition duration-500 group-hover:scale-[1.035]"
         />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(255,255,255,0)_0_42%,rgba(255,255,255,0.32)_76%,rgba(255,255,255,0.92)_100%)]" />
       </a>
