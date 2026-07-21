@@ -31,6 +31,7 @@ export function PurchaseSelector({ product, compact = false }: { product: Produc
   const { statuses: inventoryStatuses, loading: inventoryLoading } = usePublicInventory(product.variants.map((entry) => entry.sku!))
   const inventoryStatus = inventoryStatuses[variant.sku!]
   const inventoryUnavailable = inventoryStatus === 'out_of_stock' || inventoryStatus === 'inactive'
+  const priceNeedsConfirmation = variant.priceNeedsConfirmation === true
   const quote = useMemo(() => quotePurchase(product, variant, selection), [product, selection, variant])
   const smallestMultipackQuote = useMemo(() => {
     if (!product.purchaseRules.multipackEligible || !product.purchaseRules.multipackQuantities.length) return undefined
@@ -68,7 +69,7 @@ export function PurchaseSelector({ product, compact = false }: { product: Produc
               const badge = entry.price > 0 ? getRetatrutideVariantBadge(product, entry, locale) : undefined
               return (
                 <button key={`${entry.label}-${entry.format}`} type="button" aria-pressed={entry === variant} onClick={() => { setVariant(entry); track('strength_selected', { productId: product.slug, sku: entry.sku, strength: entry.label }) }} className={cn('min-h-11 rounded-xl border px-3 py-2 text-sm font-semibold outline-none focus:ring-4 focus:ring-teal-100', entry === variant ? 'border-teal-700 bg-teal-50 text-teal-900' : 'border-slate-200 bg-white text-slate-600')}>
-                  {entry.label} · {entry.price > 0 ? money(entry.price) : t('requestAvailability')}{badge ? <span className="ml-2 text-[10px] uppercase tracking-wide text-teal-700">{badge}</span> : null}
+                  {entry.label} · {entry.price > 0 ? money(entry.price) : entry.priceNeedsConfirmation ? t('pricePending') : t('requestAvailability')}{badge ? <span className="ml-2 text-[10px] uppercase tracking-wide text-teal-700">{badge}</span> : null}
                 </button>
               )
             })}
@@ -82,8 +83,8 @@ export function PurchaseSelector({ product, compact = false }: { product: Produc
 
       {!isProductPurchasable(product) || variant.price <= 0 || inventoryUnavailable ? (
         <div className="mt-5 rounded-2xl border border-slate-200 bg-[#f8fafc] p-5">
-          <p className="text-sm font-semibold text-[#071724]">{t('unavailableTitle')}</p>
-          <p className="mt-2 text-xs leading-5 text-slate-500">{t('unavailableBody')}</p>
+          <p className="text-sm font-semibold text-[#071724]">{priceNeedsConfirmation ? t('pricePendingTitle') : t('unavailableTitle')}</p>
+          <p className="mt-2 text-xs leading-5 text-slate-500">{priceNeedsConfirmation ? t('pricePendingBody') : t('unavailableBody')}</p>
           <a href={path(`/intake?product=${encodeURIComponent(product.slug)}`)} className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#071724] px-5 text-sm font-semibold text-white">{t('requestAvailability')}</a>
         </div>
       ) : (

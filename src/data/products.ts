@@ -7,6 +7,7 @@ export type ProductVariant = {
   label: string
   format: string
   price: number
+  priceNeedsConfirmation?: boolean
   strength?: number
   unitType?: 'mg' | 'IU' | 'mL' | 'other'
 }
@@ -1664,6 +1665,8 @@ const catalogProducts: CatalogProduct[] = [
     featured: true,
     variants: [
       { label: 'Published Format', format: 'Vial format', price: 75 },
+      { sku: 'NAD-500MG', label: '500 mg', format: 'Vial format', price: 0, priceNeedsConfirmation: true, strength: 500, unitType: 'mg' },
+      { sku: 'NAD-1000MG', label: '1000 mg', format: 'Vial format', price: 0, priceNeedsConfirmation: true, strength: 1000, unitType: 'mg' },
     ],
   },
   {

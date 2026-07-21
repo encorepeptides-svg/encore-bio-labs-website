@@ -64,4 +64,13 @@ describe('cart hydration and variants', () => {
     expect(reconciled).toHaveLength(1)
     expect(reconciled[0]).toMatchObject({ productSlug: 'retatrutide', variantLabel: '10 mg', unitPrice: 89, linePrice: 99 })
   })
+
+  it('keeps price-pending NAD+ variants out of cart and checkout hydration', () => {
+    const nad = products.find((entry) => entry.slug === 'nad-plus')!
+    const pendingVariant = nad.variants.find((variant) => variant.sku === 'NAD-500MG')!
+    const stalePendingLine = createCartItem(nad, pendingVariant, 1, { optionId: 'vial-only', packSize: 1, includeKit: false })
+
+    expect(pendingVariant.priceNeedsConfirmation).toBe(true)
+    expect(reconcileCartItems([stalePendingLine], products)).toEqual([])
+  })
 })

@@ -99,7 +99,7 @@ export function VariantAddToCartPanel({
                   )}
                 >
                   {variant.label}
-                  {variant.price > 0 ? ` · $${variant.price.toLocaleString()}` : ''}
+                  {variant.price > 0 ? ` · $${variant.price.toLocaleString()}` : variant.priceNeedsConfirmation ? ` · ${t('quote')}` : ''}
                 </button>
               )
             })}

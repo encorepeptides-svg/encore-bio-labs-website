@@ -1,4 +1,4 @@
-import { categoryNames, products, researchAreas } from './products'
+import { categoryNames, products, researchAreas, type Product } from './products'
 import { brandText } from '../../config/brandText'
 import { WHATSAPP_DISPLAY, WHATSAPP_PHONE } from '../lib/whatsapp'
 
@@ -69,11 +69,16 @@ export type ProductSummary = {
   href: string
 }
 
+function getConfirmedStartingPrice(product: Product) {
+  const confirmedPrices = product.variants.map((variant) => variant.price).filter((price) => price > 0)
+  return confirmedPrices.length ? Math.min(...confirmedPrices) : 0
+}
+
 export const productSummaries: ProductSummary[] = products.map((product) => ({
   slug: product.slug,
   name: product.name,
   category: product.category,
-  startingPrice: Math.min(...product.variants.map((variant) => variant.price)),
+  startingPrice: getConfirmedStartingPrice(product),
   description: product.catalogTagline ?? product.shortDescription,
   featured: product.featured,
   href: `/products/${product.slug}`,

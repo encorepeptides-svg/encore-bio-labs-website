@@ -2,11 +2,13 @@ import { describe, expect, it } from 'vitest'
 import { products } from './products'
 
 describe('product catalog integrity', () => {
-  it('has unique slugs and valid variant pricing', () => {
+  it('has unique slugs and valid confirmed or explicitly pending variant pricing', () => {
     expect(new Set(products.map((product) => product.slug)).size).toBe(products.length)
     for (const product of products) {
       expect(product.variants.length).toBeGreaterThan(0)
-      for (const variant of product.variants) expect(variant.price).toBeGreaterThan(0)
+      for (const variant of product.variants) {
+        expect(variant.price > 0 || (variant.price === 0 && variant.priceNeedsConfirmation === true)).toBe(true)
+      }
     }
   })
 
@@ -34,10 +36,18 @@ describe('product catalog integrity', () => {
 
   it('contains the complete active catalog with unique variant SKUs', () => {
     expect(products).toHaveLength(24)
-    expect(products.reduce((count, product) => count + product.variants.length, 0)).toBe(28)
+    expect(products.reduce((count, product) => count + product.variants.length, 0)).toBe(30)
     const skus = products.flatMap((product) => product.variants.map((variant) => variant.sku))
     expect(skus.every(Boolean)).toBe(true)
     expect(new Set(skus).size).toBe(skus.length)
+  })
+
+  it('defines the new NAD+ strengths with unique SKUs and unconfirmed prices', () => {
+    const nad = products.find((product) => product.slug === 'nad-plus')!
+    expect(nad.variants).toEqual(expect.arrayContaining([
+      expect.objectContaining({ sku: 'NAD-500MG', label: '500 mg', strength: 500, unitType: 'mg', price: 0, priceNeedsConfirmation: true }),
+      expect.objectContaining({ sku: 'NAD-1000MG', label: '1000 mg', strength: 1000, unitType: 'mg', price: 0, priceNeedsConfirmation: true }),
+    ]))
   })
 
   it('keeps accessories and ready-to-use formats out of irrelevant kit flows', () => {

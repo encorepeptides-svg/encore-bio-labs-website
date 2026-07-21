@@ -46,7 +46,7 @@ function client() { if (!supabase) throw new Error('inventory_not_configured'); 
 export function inventoryCatalogPayload() {
   return products.map((product) => ({
     slug: product.slug, name_en: product.name, name_es: product.name, category: product.category, image_path: product.image, active: product.stockStatus !== 'Unavailable',
-    variants: product.variants.map((variant) => ({ sku: variant.sku!, name_en: variant.label, name_es: variant.label, strength: variant.strength, unit_type: variant.unitType, price_cents: Math.round(variant.price * 100), active: variant.price > 0 })),
+    variants: product.variants.map((variant) => ({ sku: variant.sku!, name_en: variant.label, name_es: variant.label, strength: variant.strength, unit_type: variant.unitType, price_cents: Math.round(variant.price * 100), active: variant.price > 0 || variant.priceNeedsConfirmation === true })),
   }))
 }
 
