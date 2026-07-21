@@ -27,4 +27,6 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+# Regenerable rembg staging + archived QA cutouts (approved sheet lives in docs/cutout-qa/)
 products/_cutout-review/
+products/_cutout-qa-archive/
