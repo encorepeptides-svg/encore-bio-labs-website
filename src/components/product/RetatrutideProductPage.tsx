@@ -27,24 +27,34 @@ import {
 import { cn } from '../../lib/utils'
 import { EncoreCompleteKit } from '../EncoreCompleteKit'
 import { MetabolicPortfolio } from '../metabolic/MetabolicPortfolio'
-import { ProductImage } from '../ProductImage'
 import { RetatrutidePathways } from '../retatrutide/RetatrutidePathways'
 import { RetatrutideResearchContext } from '../retatrutide/RetatrutideResearchContext'
 import { ProductBreadcrumb } from './ProductPageSections'
+import { ProductConfigurationVisual } from './ProductConfigurationVisual'
 import { RetatrutideBenefitsSection } from './retatrutide/RetatrutideBenefitsSection'
 import { RetatrutideEvidenceStrip } from './retatrutide/RetatrutideEvidenceStrip'
 import { RetatrutideQualitySection } from './retatrutide/RetatrutideQualitySection'
 
-function PurchaseConfigurator({ product }: { product: Product }) {
+function PurchaseConfigurator({
+  product,
+  variant,
+  selection,
+  onVariantChange,
+  onSelectionChange,
+}: {
+  product: Product
+  variant: ProductVariant
+  selection: PurchaseSelection
+  onVariantChange: (variant: ProductVariant) => void
+  onSelectionChange: (selection: PurchaseSelection) => void
+}) {
   const { addToCart } = useCart()
   const { locale } = useLocale()
   const { t } = useTranslation('retatrutide')
-  const [variant, setVariant] = useState<ProductVariant>(product.variants[0])
-  const [selection, setSelection] = useState<PurchaseSelection>(() => getDefaultPurchaseSelection(product))
   const quote = useMemo(() => quotePurchase(product, variant, selection), [product, selection, variant])
 
   function selectPurchaseType(optionId: PurchaseOptionId) {
-    setSelection((current) => changePurchaseOption(product, current, optionId))
+    onSelectionChange(changePurchaseOption(product, selection, optionId))
   }
 
   function addConfiguredOrder() {
@@ -76,7 +86,7 @@ function PurchaseConfigurator({ product }: { product: Product }) {
               key={entry.sku}
               type="button"
               aria-pressed={active}
-              onClick={() => setVariant(entry)}
+              onClick={() => onVariantChange(entry)}
               className={cn(
                 'group relative flex h-36 flex-col items-start justify-between rounded-[1.35rem] border p-4 text-left outline-none transition duration-300 hover:-translate-y-1 focus-visible:ring-4 focus-visible:ring-teal-100 sm:p-5',
                 active
@@ -114,8 +124,8 @@ function PurchaseConfigurator({ product }: { product: Product }) {
 
       {selection.optionId === 'multipack' ? (
         <div className="mt-4 grid gap-4 rounded-[1.25rem] bg-slate-50 p-4 sm:grid-cols-2 sm:items-end">
-          <label className="text-sm font-semibold text-[#071724]">{t('packQuantity')}<select aria-label={t('packQuantity')} value={selection.packSize} onChange={(event) => setSelection((current) => ({ ...current, packSize: Number(event.target.value) }))} className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-white px-3">{product.purchaseRules.multipackQuantities.map((size) => <option key={size} value={size}>{size} {t('vialsSuffix')}</option>)}</select></label>
-          <label className="flex min-h-12 items-center gap-3 rounded-xl bg-white px-4 text-sm font-semibold text-slate-700"><input type="checkbox" checked={selection.includeKit} onChange={(event) => setSelection((current) => ({ ...current, includeKit: event.target.checked }))} className="size-4 accent-teal-700" />{t('addOneKit', { price: money(getKitPremium(product)) })}</label>
+          <label className="text-sm font-semibold text-[#071724]">{t('packQuantity')}<select aria-label={t('packQuantity')} value={selection.packSize} onChange={(event) => onSelectionChange({ ...selection, packSize: Number(event.target.value) })} className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-white px-3">{product.purchaseRules.multipackQuantities.map((size) => <option key={size} value={size}>{size} {t('vialsSuffix')}</option>)}</select></label>
+          <label className="flex min-h-12 items-center gap-3 rounded-xl bg-white px-4 text-sm font-semibold text-slate-700"><input type="checkbox" checked={selection.includeKit} onChange={(event) => onSelectionChange({ ...selection, includeKit: event.target.checked })} className="size-4 accent-teal-700" />{t('addOneKit', { price: money(getKitPremium(product)) })}</label>
         </div>
       ) : null}
 
@@ -141,6 +151,8 @@ export function RetatrutideProductPage({ product }: { product: Product }) {
   const { t } = useTranslation('retatrutide')
   const { t: researchT } = useTranslation('retatrutideResearch')
   const [openFaq, setOpenFaq] = useState(0)
+  const [variant, setVariant] = useState<ProductVariant>(product.variants[0])
+  const [selection, setSelection] = useState<PurchaseSelection>(() => getDefaultPurchaseSelection(product))
   const reducedMotion = useReducedMotion()
   const lowestPrice = Math.min(...product.variants.map((variant) => variant.price))
 
@@ -186,14 +198,16 @@ export function RetatrutideProductPage({ product }: { product: Product }) {
 
           <motion.div initial={reducedMotion ? false : { opacity: 0, y: 22, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.7, delay: reducedMotion ? 0 : 0.08 }} className="relative mx-auto w-full max-w-[42rem]">
             <div className="absolute inset-[9%] rounded-full bg-teal-300/15 blur-3xl" aria-hidden="true" />
-            <div className="retatrutide-vial-float relative aspect-square"><ProductImage product={product} alt={t('imageAlt')} loading="eager" sizes="(min-width: 1024px) 44vw, 90vw" className="size-full object-contain drop-shadow-[0_42px_50px_rgba(0,0,0,0.52)]" /></div>
+            <div className="retatrutide-vial-float relative">
+              <ProductConfigurationVisual product={product} variant={variant} selection={selection} theme="dark" className="min-h-[27rem] sm:min-h-[34rem]" />
+            </div>
             <div className="relative -mt-8 border border-white/15 bg-[#071724]/90 p-3 shadow-[0_28px_70px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:p-4">
               <div className="grid grid-cols-2 gap-2">
                 <div className="rounded-xl bg-white/[0.07] p-4"><p className="text-3xl font-semibold tracking-[-0.055em] text-teal-200">28.3%</p><p className="mt-1 text-[0.68rem] font-semibold leading-4 text-slate-300">{researchT('phaseStat1Label')}</p></div>
                 <div className="rounded-xl bg-white/[0.07] p-4"><p className="text-3xl font-semibold tracking-[-0.055em] text-teal-200">24.1 cm</p><p className="mt-1 text-[0.68rem] font-semibold leading-4 text-slate-300">{researchT('bodyCompositionMetricLabel')}</p></div>
               </div>
               <div className="mt-2 grid grid-cols-5 gap-2">
-                {product.variants.map((variant) => <a key={variant.sku} href="#retatrutide-purchase" className="rounded-xl border border-white/12 bg-white/[0.06] px-2 py-3 text-center transition hover:border-teal-200/50 hover:bg-teal-300/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-300"><span className="block text-xs font-bold text-white sm:text-sm">{variant.label}</span><span className="mt-1 block text-[0.65rem] font-semibold text-teal-200 sm:text-xs">{money(variant.price)}</span></a>)}
+                {product.variants.map((entry) => <a key={entry.sku} href="#retatrutide-purchase" aria-current={entry === variant ? 'true' : undefined} onClick={() => setVariant(entry)} className={cn('rounded-xl border px-2 py-3 text-center transition hover:border-teal-200/50 hover:bg-teal-300/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-300', entry === variant ? 'border-teal-200/60 bg-teal-300/15' : 'border-white/12 bg-white/[0.06]')}><span className="block text-xs font-bold text-white sm:text-sm">{entry.label}</span><span className="mt-1 block text-[0.65rem] font-semibold text-teal-200 sm:text-xs">{money(entry.price)}</span></a>)}
               </div>
             </div>
           </motion.div>
@@ -202,7 +216,7 @@ export function RetatrutideProductPage({ product }: { product: Product }) {
 
       <section className="relative z-10 -mt-20 px-5 pb-16 sm:px-8 lg:-mt-28 lg:pb-20">
         <div className="mx-auto max-w-[88rem]">
-          <PurchaseConfigurator product={product} />
+          <PurchaseConfigurator product={product} variant={variant} selection={selection} onVariantChange={setVariant} onSelectionChange={setSelection} />
           {product.purchaseRules.kitEligible ? <EncoreCompleteKit variant="reassurance" productName={product.name} bacWaterAmount={product.bacWaterAmount} className="mt-4" /> : null}
         </div>
       </section>

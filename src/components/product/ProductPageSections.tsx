@@ -25,25 +25,22 @@ import {
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { products, type Product } from '../../data/products'
+import { products, type Product, type ProductVariant } from '../../data/products'
 import { getLocalizedProduct, localizedCategoryLabel } from '../../data/productTranslations'
 import type { ProductResearchContent } from '../../data/productResearchContent'
 import { getProductMedia } from '../../data/productMedia'
 import { contentTypeLabels, researchArticles } from '../../data/research'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { buildOrderInquiryMessage, buildWhatsAppUrl } from '../../lib/whatsapp'
+import { getDefaultPurchaseSelection, type PurchaseSelection } from '../../lib/purchaseOptions'
 import { ProductImage } from '../ProductImage'
-import { ProductHero as ProductHeroEnvironment } from './ProductHero'
-import ghkCuCutout from '../../assets/images/products/hero-demo/ghk-cu-demo.webp'
 
 // Products shipping the concise Clean Lab (light) hero: everything — what it is
 // and how to buy — in one tight view. Scoped intentionally small so it can be
-// reviewed live on one page before any wider rollout. Each entry needs a
-// transparent hero cutout + an accent.
-const LAB_HERO: Record<string, { cutout: string; accent: string }> = {
-  'ghk-cu': { cutout: ghkCuCutout, accent: '#17a894' },
-}
+// reviewed live on one page before any wider rollout.
+const LAB_HERO = new Set(['ghk-cu'])
 import { PurchaseSelector } from './PurchaseSelector'
+import { ProductConfigurationVisual } from './ProductConfigurationVisual'
 import { CTA } from '../CTA'
 import { EncoreCompleteKit } from '../EncoreCompleteKit'
 import {
@@ -166,9 +163,11 @@ export function ProductHero({ product, researchContent }: { product: Product; re
     ? product.keyHighlights.slice(0, 3)
     : [t('featureBullet1'), t('featureBullet2'), t('featureBullet3')]
   const priceLabel = getProductPriceLabel(product, t)
+  const [variant, setVariant] = useState<ProductVariant>(product.variants[0])
+  const [selection, setSelection] = useState<PurchaseSelection>(() => getDefaultPurchaseSelection(product))
 
-  const lab = LAB_HERO[product.slug]
-  if (lab) {
+  const usesLabHero = LAB_HERO.has(product.slug)
+  if (usesLabHero) {
     return (
       <section className="relative overflow-hidden bg-gradient-to-b from-[#f3f6f5] to-[#e7edea] px-5 py-8 sm:px-8 lg:py-12">
         <div className="mx-auto grid max-w-[82rem] items-center gap-6 lg:grid-cols-[1fr_1.12fr]">
@@ -184,12 +183,14 @@ export function ProductHero({ product, researchContent }: { product: Product; re
             <h1 className="mt-5 text-[clamp(2.5rem,6vw,3.9rem)] font-semibold leading-[0.92] tracking-[-0.055em] text-[#08131a]">{product.name}</h1>
             <p className="mt-4 text-xl font-semibold leading-snug tracking-[-0.035em] text-[#08131a] sm:text-2xl">{product.headline}</p>
             <p className="mt-4 max-w-xl text-[0.98rem] leading-7 text-slate-600">{getPlainProductDescription(product, researchContent, locale)}</p>
-            <div className="mt-6"><PurchaseSelector product={product} compact /></div>
+            <div className="mt-6"><PurchaseSelector product={product} compact selectedVariant={variant} selectedPurchase={selection} onVariantChange={setVariant} onPurchaseChange={setSelection} /></div>
             <p className="mt-4 text-xs leading-5 text-slate-500">{t('researchUseOnlyLine')} · <a href={path('/contact')} className="font-semibold text-teal-800 underline-offset-4 hover:underline">{t('contactQuestion')}</a></p>
           </div>
           {/* RIGHT: the vial, clean light scene */}
           <div className="relative mx-auto w-full max-w-2xl lg:sticky lg:top-16">
-            <ProductHeroEnvironment imageSrc={lab.cutout} imageAlt={t('productImageAlt', { product: product.name })} accent={lab.accent} theme="lab" bare density="low" priority imageWidth={1000} imageHeight={1000} />
+            <div className="rounded-[2.25rem] border border-slate-900/10 bg-[radial-gradient(circle_at_50%_32%,rgba(23,168,148,0.18),transparent_38%),linear-gradient(145deg,rgba(255,255,255,0.94),rgba(231,237,234,0.86))] shadow-[0_32px_90px_rgba(7,23,36,0.12)]">
+              <ProductConfigurationVisual product={product} variant={variant} selection={selection} theme="light" />
+            </div>
             <span className="absolute left-6 top-8 z-10 rounded-full border border-slate-900/10 bg-white/80 px-3 py-2 text-[0.62rem] font-semibold text-slate-700 backdrop-blur">{t('documentationByReview')}</span>
             <span className="absolute right-6 top-8 z-10 rounded-full bg-teal-700 px-3 py-2 text-[0.62rem] font-bold uppercase tracking-[0.08em] text-white">RUO</span>
           </div>
@@ -255,7 +256,7 @@ export function ProductHero({ product, researchContent }: { product: Product; re
               {t('contactEncoreWhatsapp')}
             </CTA>
           </div>
-          <div className="mt-7 max-w-2xl"><PurchaseSelector product={product} compact /></div>
+          <div className="mt-7 max-w-2xl"><PurchaseSelector product={product} compact selectedVariant={variant} selectedPurchase={selection} onVariantChange={setVariant} onPurchaseChange={setSelection} /></div>
           {product.purchaseRules.kitEligible ? (
             <EncoreCompleteKit
               variant="reassurance"
@@ -281,20 +282,8 @@ export function ProductHero({ product, researchContent }: { product: Product; re
             <div className="absolute right-6 top-6 z-10 rounded-full border border-teal-100/20 bg-[#28e0c1] px-4 py-2 text-xs font-bold text-[#071724] shadow-[0_12px_36px_rgba(40,224,193,0.22)]">
               RUO
             </div>
-            <div className="relative min-h-[31rem] overflow-hidden rounded-[1.7rem] sm:min-h-[37rem]">
-              <ProductImage
-                product={product}
-                alt={t('productImageAlt', { product: product.name })}
-                sizes="(min-width: 1024px) 45vw, 100vw"
-                loading="eager"
-                width={720}
-                height={720}
-                className="absolute inset-[3%] h-[94%] w-[94%] object-contain object-center drop-shadow-[0_34px_54px_rgba(0,0,0,0.44)] transition duration-700 group-hover:scale-[1.035]"
-              />
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0)_0_44%,rgba(3,11,24,0.04)_72%,rgba(3,11,24,0.55)_100%)]" />
-              <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#030b18]/95 to-transparent" />
-            </div>
-            <div className="absolute bottom-5 left-5 right-5 rounded-[1.4rem] border border-white/15 bg-[#06131f]/82 p-4 shadow-[0_20px_58px_rgba(0,0,0,0.25)] backdrop-blur-xl sm:bottom-7 sm:left-7 sm:right-auto sm:w-[min(22rem,calc(100%-3.5rem))]">
+            <ProductConfigurationVisual product={product} variant={variant} selection={selection} theme="dark" className="min-h-[31rem] sm:min-h-[37rem]" />
+            <div className="relative z-10 mx-1 mt-2 rounded-[1.4rem] border border-white/15 bg-[#06131f]/82 p-4 shadow-[0_20px_58px_rgba(0,0,0,0.25)] backdrop-blur-xl sm:mx-2 sm:w-[min(22rem,calc(100%-1rem))]">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#71f0db]">
                 {t('primaryReviewLens')}
               </p>

@@ -21,13 +21,29 @@ import { track } from '../../lib/analytics'
 import { usePublicInventory } from '../../hooks/usePublicInventory'
 import { publicStatusLabel } from '../../lib/inventory'
 
-export function PurchaseSelector({ product, compact = false }: { product: Product; compact?: boolean }) {
+export function PurchaseSelector({
+  product,
+  compact = false,
+  selectedVariant,
+  selectedPurchase,
+  onVariantChange,
+  onPurchaseChange,
+}: {
+  product: Product
+  compact?: boolean
+  selectedVariant?: ProductVariant
+  selectedPurchase?: PurchaseSelection
+  onVariantChange?: (variant: ProductVariant) => void
+  onPurchaseChange?: (selection: PurchaseSelection) => void
+}) {
   const { addToCart } = useCart()
   const { path, locale } = useLocale()
   const { t } = useTranslation('purchaseSelector')
   const { t: tCommon } = useTranslation('common')
-  const [variant, setVariant] = useState<ProductVariant>(product.variants[0])
-  const [selection, setSelection] = useState<PurchaseSelection>(() => getDefaultPurchaseSelection(product))
+  const [internalVariant, setInternalVariant] = useState<ProductVariant>(product.variants[0])
+  const [internalSelection, setInternalSelection] = useState<PurchaseSelection>(() => getDefaultPurchaseSelection(product))
+  const variant = selectedVariant ?? internalVariant
+  const selection = selectedPurchase ?? internalSelection
   const { statuses: inventoryStatuses, loading: inventoryLoading } = usePublicInventory(product.variants.map((entry) => entry.sku!))
   const inventoryStatus = inventoryStatuses[variant.sku!]
   const inventoryUnavailable = inventoryStatus === 'out_of_stock' || inventoryStatus === 'inactive'
@@ -45,7 +61,8 @@ export function PurchaseSelector({ product, compact = false }: { product: Produc
 
   function selectOption(optionId: PurchaseOptionId) {
     const next = changePurchaseOption(product, selection, optionId)
-    setSelection(next)
+    if (onPurchaseChange) onPurchaseChange(next)
+    else setInternalSelection(next)
     track('purchase_option_selected', { productId: product.slug, optionId })
     if (optionId === 'complete-kit') track('complete_kit_selected', { productId: product.slug })
     if (optionId === 'multipack') track('multipack_selected', { productId: product.slug, packSize: next.packSize })
@@ -68,7 +85,7 @@ export function PurchaseSelector({ product, compact = false }: { product: Produc
             {product.variants.map((entry) => {
               const badge = entry.price > 0 ? getRetatrutideVariantBadge(product, entry, locale) : undefined
               return (
-                <button key={`${entry.label}-${entry.format}`} type="button" aria-pressed={entry === variant} onClick={() => { setVariant(entry); track('strength_selected', { productId: product.slug, sku: entry.sku, strength: entry.label }) }} className={cn('min-h-11 rounded-xl border px-3 py-2 text-sm font-semibold outline-none focus:ring-4 focus:ring-teal-100', entry === variant ? 'border-teal-700 bg-teal-50 text-teal-900' : 'border-slate-200 bg-white text-slate-600')}>
+                <button key={`${entry.label}-${entry.format}`} type="button" aria-pressed={entry === variant} onClick={() => { if (onVariantChange) onVariantChange(entry); else setInternalVariant(entry); track('strength_selected', { productId: product.slug, sku: entry.sku, strength: entry.label }) }} className={cn('min-h-11 rounded-xl border px-3 py-2 text-sm font-semibold outline-none focus:ring-4 focus:ring-teal-100', entry === variant ? 'border-teal-700 bg-teal-50 text-teal-900' : 'border-slate-200 bg-white text-slate-600')}>
                   {entry.label} · {entry.price > 0 ? money(entry.price) : entry.priceNeedsConfirmation ? t('pricePending') : t('requestAvailability')}{badge ? <span className="ml-2 text-[10px] uppercase tracking-wide text-teal-700">{badge}</span> : null}
                 </button>
               )
@@ -116,8 +133,8 @@ export function PurchaseSelector({ product, compact = false }: { product: Produc
 
       {selection.optionId === 'multipack' ? (
         <div className="mt-4 rounded-2xl border border-slate-200 bg-[#f8fafc] p-4">
-          <label className="text-sm font-semibold text-[#071724]">{t('packQuantity')}<select value={selection.packSize} onChange={(event) => setSelection((current) => ({ ...current, packSize: Number(event.target.value) }))} className="mt-2 h-11 w-full rounded-xl border border-slate-200 bg-white px-3 outline-none focus:ring-4 focus:ring-teal-100">{product.purchaseRules.multipackQuantities.map((size) => <option key={size} value={size}>{size} {t('vialsSuffix')}</option>)}</select></label>
-          {product.purchaseRules.kitEligible ? <label className="mt-3 flex min-h-11 items-center gap-3 text-sm font-semibold text-slate-700"><input type="checkbox" checked={selection.includeKit} onChange={(event) => setSelection((current) => ({ ...current, includeKit: event.target.checked }))} className="size-4 accent-teal-700" />{t('addOneKit', { price: money(getKitPremium(product)) })}</label> : null}
+          <label className="text-sm font-semibold text-[#071724]">{t('packQuantity')}<select value={selection.packSize} onChange={(event) => { const next = { ...selection, packSize: Number(event.target.value) }; if (onPurchaseChange) onPurchaseChange(next); else setInternalSelection(next) }} className="mt-2 h-11 w-full rounded-xl border border-slate-200 bg-white px-3 outline-none focus:ring-4 focus:ring-teal-100">{product.purchaseRules.multipackQuantities.map((size) => <option key={size} value={size}>{size} {t('vialsSuffix')}</option>)}</select></label>
+          {product.purchaseRules.kitEligible ? <label className="mt-3 flex min-h-11 items-center gap-3 text-sm font-semibold text-slate-700"><input type="checkbox" checked={selection.includeKit} onChange={(event) => { const next = { ...selection, includeKit: event.target.checked }; if (onPurchaseChange) onPurchaseChange(next); else setInternalSelection(next) }} className="size-4 accent-teal-700" />{t('addOneKit', { price: money(getKitPremium(product)) })}</label> : null}
         </div>
       ) : null}
 
