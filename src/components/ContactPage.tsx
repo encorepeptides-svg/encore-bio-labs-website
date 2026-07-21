@@ -118,8 +118,12 @@ export function ContactPage() {
       const contactLabel = contactMethods.find((item) => item.value === form.preferredContact)
       const createdAt = new Date().toISOString()
       await submitContactMessage({ name: form.fullName, email: form.email, phone: form.phone, subject: inquiryLabel ? t(inquiryLabel.key) : t('inquiryOther'), message: form.message, locale, preferredContact: form.preferredContact, website: form.website })
-      await saveLead(
-        createCRMLeadFromIntake({
+      // The communications function persists the customer message first. The
+      // legacy CRM mirror must never make a successful support request appear
+      // to fail when its separate storage is unavailable.
+      try {
+        await saveLead(
+          createCRMLeadFromIntake({
           firstName,
           lastName: lastNameParts.join(' '),
           email: form.email.trim(),
@@ -152,8 +156,11 @@ export function ContactPage() {
             consentToContact: true,
             researchUseAcknowledgment: true,
           },
-        }),
-      )
+          }),
+        )
+      } catch (error) {
+        console.warn('CRM lead mirror could not be saved after communication storage.', error)
+      }
       setForm(initialForm)
       setErrors({})
       setStatus('success')
