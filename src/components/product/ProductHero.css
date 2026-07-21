@@ -236,6 +236,26 @@
   filter: drop-shadow(0 30px 34px rgba(30, 60, 66, 0.26));
 }
 
+/* ===== Frameless (bare) mode: no panel edge, product blends into the page ===== */
+.product-hero.is-bare {
+  background: transparent;
+  border-radius: 0;
+  overflow: visible;
+}
+.product-hero.is-bare .ph-lab-grid { display: none; }
+/* soft key light that bleeds past the box into the surrounding page */
+.product-hero.is-bare .ph-lab-key {
+  inset: -14%;
+  background: radial-gradient(42% 46% at 50% 42%,
+    rgba(255, 255, 255, 0.9),
+    rgba(220, 232, 230, 0.28) 48%,
+    transparent 74%);
+}
+/* larger product, no hard edge — the mask + shadow do the grounding */
+.product-hero[data-theme="lab"].is-bare .ph-product { width: 92%; height: 98%; }
+.product-hero.is-bare .ph-lab-shadow { bottom: 6%; width: 52%; }
+.product-hero.is-bare { aspect-ratio: 3 / 4; }
+
 /* Mobile: simplify particle density before touching the product/lighting. */
 @media (max-width: 640px) {
   .ph-particles span:nth-child(n + 4),

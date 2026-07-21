@@ -13,6 +13,8 @@ export type ProductHeroProps = {
   accent?: string
   /** 'dark' = the atmospheric night scene; 'lab' = the light clinical scene. */
   theme?: ProductHeroTheme
+  /** Frameless: transparent container, no panel edge — product blends into the page. */
+  bare?: boolean
   density?: ProductHeroDensity
   /** True only for the first, above-the-fold hero — drives LCP treatment. */
   priority?: boolean
@@ -51,6 +53,7 @@ export function ProductHero({
   imageAlt,
   accent = '#28e0c1',
   theme = 'dark',
+  bare = false,
   density = 'medium',
   priority = false,
   imageWidth = 1254,
@@ -96,7 +99,7 @@ export function ProductHero({
   const isLab = theme === 'lab'
 
   return (
-    <div ref={rootRef} className={`product-hero ${className}`} data-theme={theme} style={{ ['--ph-accent' as string]: accent }}>
+    <div ref={rootRef} className={`product-hero ${bare ? 'is-bare' : ''} ${className}`} data-theme={theme} style={{ ['--ph-accent' as string]: accent }}>
       {isLab ? (
         // Clean Lab: restrained clinical scene — base grid + white key + contact shadow.
         <div className="ph-plane ph-plane--back" aria-hidden="true">

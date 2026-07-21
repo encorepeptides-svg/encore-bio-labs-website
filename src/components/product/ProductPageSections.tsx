@@ -171,7 +171,7 @@ export function ProductHero({ product, researchContent }: { product: Product; re
   if (lab) {
     return (
       <section className="relative overflow-hidden bg-gradient-to-b from-[#f3f6f5] to-[#e7edea] px-5 py-8 sm:px-8 lg:py-12">
-        <div className="mx-auto grid max-w-[80rem] items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="mx-auto grid max-w-[82rem] items-center gap-6 lg:grid-cols-[1fr_1.12fr]">
           {/* LEFT: concise info + how to buy, together */}
           <div className="order-last lg:order-none">
             <a href={path('/catalog')} className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-900/10 bg-white/70 px-4 py-2 text-sm font-semibold text-slate-600 backdrop-blur transition hover:-translate-y-0.5 hover:border-slate-900/20 hover:text-[#08131a]">
@@ -188,10 +188,10 @@ export function ProductHero({ product, researchContent }: { product: Product; re
             <p className="mt-4 text-xs leading-5 text-slate-500">{t('researchUseOnlyLine')} · <a href={path('/contact')} className="font-semibold text-teal-800 underline-offset-4 hover:underline">{t('contactQuestion')}</a></p>
           </div>
           {/* RIGHT: the vial, clean light scene */}
-          <div className="relative mx-auto w-full max-w-md lg:sticky lg:top-24">
-            <ProductHeroEnvironment imageSrc={lab.cutout} imageAlt={t('productImageAlt', { product: product.name })} accent={lab.accent} theme="lab" density="low" priority imageWidth={1000} imageHeight={1000} />
-            <span className="absolute left-3 top-3 z-10 rounded-full border border-slate-900/10 bg-white/80 px-3 py-2 text-[0.62rem] font-semibold text-slate-700 backdrop-blur">{t('documentationByReview')}</span>
-            <span className="absolute right-3 top-3 z-10 rounded-full bg-teal-700 px-3 py-2 text-[0.62rem] font-bold uppercase tracking-[0.08em] text-white">RUO</span>
+          <div className="relative mx-auto w-full max-w-2xl lg:sticky lg:top-16">
+            <ProductHeroEnvironment imageSrc={lab.cutout} imageAlt={t('productImageAlt', { product: product.name })} accent={lab.accent} theme="lab" bare density="low" priority imageWidth={1000} imageHeight={1000} />
+            <span className="absolute left-6 top-8 z-10 rounded-full border border-slate-900/10 bg-white/80 px-3 py-2 text-[0.62rem] font-semibold text-slate-700 backdrop-blur">{t('documentationByReview')}</span>
+            <span className="absolute right-6 top-8 z-10 rounded-full bg-teal-700 px-3 py-2 text-[0.62rem] font-bold uppercase tracking-[0.08em] text-white">RUO</span>
           </div>
         </div>
       </section>
