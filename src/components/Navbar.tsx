@@ -123,6 +123,7 @@ export function Navbar() {
     if (key === 'About') return logicalPathname === '/about' || logicalPathname === '/about/'
     if (key === 'FAQ') return logicalPathname === '/faq' || logicalPathname === '/faq/'
     if (key === 'Contact') return logicalPathname === '/contact' || logicalPathname === '/contact/'
+    if (key === 'ClientPortal') return logicalPathname === '/client-login' || logicalPathname.startsWith('/portal')
     return false
   }
 
@@ -172,11 +173,11 @@ export function Navbar() {
           <LanguageSelector variant="nav" />
           <a
             href={path('/client-login')}
-            aria-label={t('clientLogin')}
-            title={t('clientLogin')}
-            className="inline-flex size-9 items-center justify-center rounded-full text-slate-600 transition hover:bg-white hover:text-[#071724] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+            aria-current={isActive('ClientPortal') ? 'page' : undefined}
+            className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-teal-900/15 bg-white/75 px-4 text-sm font-bold text-[#071724] shadow-sm transition hover:-translate-y-0.5 hover:border-teal-700/30 hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
           >
             <UserRound size={17} aria-hidden="true" />
+            {t('clientLogin')}
           </a>
           <CartNavButton />
           <a
@@ -253,7 +254,8 @@ export function Navbar() {
               <a
                 href={path('/client-login')}
                 onClick={() => setIsMenuOpen(false)}
-                className="mt-1 flex items-center gap-3 rounded-xl px-4 py-3 text-base font-semibold text-[#071724] transition hover:bg-white"
+                aria-current={isActive('ClientPortal') ? 'page' : undefined}
+                className="mt-3 flex min-h-12 items-center justify-center gap-3 rounded-full border border-teal-900/15 bg-white px-5 text-base font-bold text-[#071724] shadow-sm transition hover:border-teal-700/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
               >
                 <UserRound size={18} aria-hidden="true" className="text-teal-700" />
                 {t('clientLogin')}

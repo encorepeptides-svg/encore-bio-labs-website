@@ -35,12 +35,12 @@ export async function loadPortalIdentity(): Promise<PortalIdentity | null> {
 }
 
 export async function signInPortal(email: string, password: string) {
-  return requireSupabase().auth.signInWithPassword({ email, password })
+  return requireSupabase().auth.signInWithPassword({ email: email.trim(), password })
 }
 
 export async function registerPortalAccount(input: { legalName: string; email: string; mobile: string; preferredLanguage: string; password: string }) {
   return requireSupabase().auth.signUp({
-    email: input.email,
+    email: input.email.trim(),
     password: input.password,
     options: {
       emailRedirectTo: `${localizedAuthPath('/client-login')}?verified=1`,
@@ -50,7 +50,7 @@ export async function registerPortalAccount(input: { legalName: string; email: s
 }
 
 export async function requestPasswordReset(email: string) {
-  return requireSupabase().auth.resetPasswordForEmail(email, { redirectTo: localizedAuthPath('/client-reset-password') })
+  return requireSupabase().auth.resetPasswordForEmail(email.trim(), { redirectTo: localizedAuthPath('/client-reset-password') })
 }
 
 export async function updatePortalPassword(password: string) {

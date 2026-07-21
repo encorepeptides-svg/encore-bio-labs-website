@@ -5,7 +5,7 @@ import { purchaseTypeLabel } from './displayLabels'
 import { localizePath } from './config'
 import { translate } from './translate'
 
-const bilingualRoutes = ['/catalog', '/intake', '/research', '/review-preview', '/categories/metabolic-weight-management', '/products/retatrutide', '/legal/terms', '/checkout', '/client-login']
+const bilingualRoutes = ['/catalog', '/intake', '/research', '/review-preview', '/categories/metabolic-weight-management', '/products/retatrutide', '/legal/terms', '/checkout', '/client-login', '/portal', '/admin']
 
 describe('bilingual route contracts', () => {
   beforeEach(() => window.sessionStorage.clear())

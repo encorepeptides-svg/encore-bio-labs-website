@@ -11,6 +11,7 @@ export const footer = {
   documentation: 'Documentation',
   faq: 'FAQ',
   clientPortal: 'Client Portal',
+  adminAccess: 'Admin Access',
   website: 'Website: encorebiolabs.com',
   instagram: 'Instagram: @encorebiolabs',
   whatsapp: 'WhatsApp: 9153595448',
