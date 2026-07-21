@@ -14,6 +14,8 @@ import {
 } from 'lucide-react'
 import { useLocale, useTranslation } from '../i18n/LocaleContext'
 import { createCRMLeadFromIntake, saveLead } from '../lib/crmStorage'
+import { submitContactMessage } from '../lib/communications'
+import { SUPPORT_EMAIL, supportMailto } from '../lib/email'
 import { buildWhatsAppUrl, getGeneralInquiryMessage } from '../lib/whatsapp'
 import { CTA } from './CTA'
 import { Reveal } from './Reveal'
@@ -115,6 +117,7 @@ export function ContactPage() {
       const inquiryLabel = inquiryTypes.find((item) => item.value === form.inquiryType)
       const contactLabel = contactMethods.find((item) => item.value === form.preferredContact)
       const createdAt = new Date().toISOString()
+      await submitContactMessage({ name: form.fullName, email: form.email, phone: form.phone, subject: inquiryLabel ? t(inquiryLabel.key) : t('inquiryOther'), message: form.message, locale, preferredContact: form.preferredContact, website: form.website })
       await saveLead(
         createCRMLeadFromIntake({
           firstName,
@@ -187,7 +190,7 @@ export function ContactPage() {
           {[
             { icon: PackageSearch, title: t('productGuidanceTitle'), body: t('productGuidanceBody'), cta: t('productGuidanceCta'), href: '/catalog' },
             { icon: MessageCircle, title: t('orderSupportTitle'), body: t('orderSupportBody'), cta: t('orderSupportCta'), href: whatsappUrl, external: true },
-            { icon: Headphones, title: t('generalTitle'), body: t('generalBody'), cta: t('generalCta'), href: '#contact-form' },
+            { icon: Headphones, title: t('generalTitle'), body: t('generalBody'), cta: `${t('generalCta')} · ${SUPPORT_EMAIL}`, href: supportMailto(t('generalTitle')) },
           ].map(({ icon: Icon, title, body, cta, href, external }) => (
             <article key={title} className="flex min-h-[17rem] flex-col rounded-[1.75rem] border border-slate-900/10 bg-white/75 p-6 shadow-[0_18px_52px_rgba(7,23,36,0.06)] backdrop-blur-xl sm:p-7">
               <span className="flex size-12 items-center justify-center rounded-2xl bg-teal-50 text-teal-700"><Icon size={22} aria-hidden="true" /></span>

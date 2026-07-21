@@ -2,6 +2,7 @@ import { ArrowUpRight } from 'lucide-react'
 import logo from '../assets/images/logo/encore-logo.png'
 import { useLocale, useTranslation } from '../i18n/LocaleContext'
 import { LanguageSelector } from './LanguageSelector'
+import { SUPPORT_EMAIL } from '../lib/email'
 
 export function Footer() {
   const { path } = useLocale()
@@ -21,6 +22,7 @@ export function Footer() {
   ]
 
   const contactLinks = [
+    { label: t('email'), href: `mailto:${SUPPORT_EMAIL}` },
     { label: t('website'), href: 'https://encorebiolabs.com' },
     { label: t('instagram'), href: 'https://instagram.com/encorebiolabs' },
     { label: t('whatsapp'), href: 'https://wa.me/19153595448' },
@@ -87,7 +89,7 @@ export function Footer() {
                 {contactLinks.map((link) => (
                   <a
                     key={link.label}
-                    href={link.href.startsWith('http') ? link.href : path(link.href)}
+                    href={link.href.startsWith('http') || link.href.startsWith('mailto:') ? link.href : path(link.href)}
                     className="inline-flex w-fit items-center gap-2 text-sm font-medium text-slate-600 transition hover:text-[#071724]"
                   >
                     {link.label}

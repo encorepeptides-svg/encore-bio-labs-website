@@ -328,3 +328,20 @@ export async function adminFetchOverview(): Promise<AdminOverview> {
   ])
   return { pendingApplications: applications.count ?? 0, activeClients: clients.count ?? 0, openThreads: threads.count ?? 0, processingOrders: orders.count ?? 0 }
 }
+
+export type CommunicationMessage = { id: string; created_at: string; direction: 'inbound' | 'outbound'; source: string; mailbox: string; status: string; is_read: boolean; sender_name: string; sender_email: string; sender_phone: string | null; recipient_email: string; subject: string; body_text: string; locale: 'en' | 'es'; assigned_to: string | null; delivery_status: string }
+export async function adminFetchCommunications(options: { mailbox?: string; contactOnly?: boolean; search?: string; page?: number } = {}) {
+  const page = options.page ?? 0
+  let query = db().from('communication_messages').select('id,created_at,direction,source,mailbox,status,is_read,sender_name,sender_email,sender_phone,recipient_email,subject,body_text,locale,assigned_to,delivery_status', { count: 'exact' }).order('created_at', { ascending: false }).range(page * 25, page * 25 + 24)
+  if (options.mailbox) query = query.eq('mailbox', options.mailbox)
+  if (options.contactOnly) query = query.eq('source', 'contact_form')
+  if (options.search) query = query.or(`subject.ilike.%${options.search.replaceAll(',', ' ')}%,sender_email.ilike.%${options.search.replaceAll(',', ' ')}%,sender_name.ilike.%${options.search.replaceAll(',', ' ')}%`)
+  const { data, error, count } = await query
+  if (error) throw error
+  return { rows: (data ?? []) as CommunicationMessage[], count: count ?? 0 }
+}
+export async function adminUpdateCommunication(id: string, updates: Partial<Pick<CommunicationMessage, 'mailbox' | 'status' | 'is_read' | 'assigned_to'>>) {
+  const { error } = await db().from('communication_messages').update({ ...updates, updated_at: new Date().toISOString() }).eq('id', id)
+  if (error) throw error
+}
+export async function adminUnreadCommunicationCount() { const { count, error } = await db().from('communication_messages').select('id', { count: 'exact', head: true }).in('mailbox', ['inbox', 'contact']).eq('is_read', false); if (error) throw error; return count ?? 0 }

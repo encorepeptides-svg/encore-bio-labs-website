@@ -9,6 +9,7 @@ import { AdminInventory } from './admin/AdminInventory'
 import { AdminProtocols } from './admin/AdminProtocols'
 import { AdminStorefront } from './admin/AdminStorefront'
 import { AdminSupport } from './admin/AdminSupport'
+import { AdminCommunications } from './admin/AdminCommunications'
 import { SocialProofAdmin } from './SocialProofAdmin'
 import { EmptyCard, LoadState, useAsync, useDateFormatter } from './sections/shared'
 
@@ -19,6 +20,7 @@ export function AdminPortalPage({ section = 'overview' }: { section?: string }) 
     overview: t('adminOperationsTitle'), applications: t('adminApplicationsTitle'), clients: t('adminNavClients'),
     orders: t('adminNavOrders'), inventory: tInventory('title'), storefront: t('adminNavStorefront'), protocols: t('adminNavProtocols'), documents: t('adminNavDocuments'),
     support: t('adminNavSupport'), 'audit-log': t('adminNavAudit'), settings: t('adminNavSettings'), content: t('adminNavContent'),
+    communications: 'Communications', 'customer-messages': 'Customer Messages',
   }
   const content = (() => {
     switch (section) {
@@ -31,6 +33,8 @@ export function AdminPortalPage({ section = 'overview' }: { section?: string }) 
       case 'protocols': return <AdminProtocols />
       case 'documents': return <AdminDocuments />
       case 'support': return <AdminSupport />
+      case 'communications': return <AdminCommunications />
+      case 'customer-messages': return <AdminCommunications contactOnly />
       case 'audit-log': return <AdminAuditLog />
       case 'content': return <SocialProofAdmin />
       case 'settings': return <EmptyCard title={t('adminNavSettings')} copy={t('adminSettingsCopy')} />

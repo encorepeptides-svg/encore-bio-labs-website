@@ -15,6 +15,7 @@ export const footer = {
   clientPortal: 'Portal de clientes',
   adminAccess: 'Acceso administrativo',
   website: 'Sitio web: encorebiolabs.com',
+  email: 'Correo: support@encorebiolabs.com',
   instagram: 'Instagram: @encorebiolabs',
   whatsapp: 'WhatsApp: 9153595448',
   contactLink: 'Contacto',

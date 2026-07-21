@@ -1,8 +1,9 @@
-import { Bell, Calculator, ClipboardCheck, ClipboardList, FileText, FlaskConical, Gauge, Headphones, LogOut, Package, ShieldCheck, TrendingUp, UserRound } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { Bell, Calculator, ClipboardCheck, ClipboardList, FileText, FlaskConical, Gauge, Headphones, LogOut, Mail, Package, ShieldCheck, TrendingUp, UserRound } from 'lucide-react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { usePortalAuth } from '../../context/usePortalAuth'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { LanguageSelector } from '../LanguageSelector'
+import { adminUnreadCommunicationCount } from '../../lib/portal/portalData'
 
 export function PortalShell({ children, admin = false }: { children: ReactNode; admin?: boolean }) {
   const { identity, logout } = usePortalAuth()
@@ -16,7 +17,9 @@ export function PortalShell({ children, admin = false }: { children: ReactNode; 
     ['/portal/support', t('navSupport'), Headphones], ['/portal/notifications', t('navNotifications'), Bell], ['/portal/profile', t('navProfile'), UserRound], ['/portal/security', t('navSecurity'), ShieldCheck],
   ] as const
   const portalPath = window.location.pathname
-  const adminNav = [['/admin',t('adminNavOverview')],['/admin/applications',t('adminNavApplications')],['/admin/clients',t('adminNavClients')],['/admin/orders',t('adminNavOrders')],['/admin/inventory',tInventory('nav')],['/admin/storefront',t('adminNavStorefront')],['/admin/protocols',t('adminNavProtocols')],['/admin/documents',t('adminNavDocuments')],['/admin/support',t('adminNavSupport')],['/admin/content',t('adminNavContent')],['/admin/audit-log',t('adminNavAudit')],['/admin/settings',t('adminNavSettings')]] as const
+  const [unread, setUnread] = useState(0)
+  useEffect(() => { if (admin) void adminUnreadCommunicationCount().then(setUnread).catch(() => setUnread(0)) }, [admin, portalPath])
+  const adminNav = [['/admin',t('adminNavOverview')],['/admin/applications',t('adminNavApplications')],['/admin/clients',t('adminNavClients')],['/admin/orders',t('adminNavOrders')],['/admin/inventory',tInventory('nav')],['/admin/storefront',t('adminNavStorefront')],['/admin/protocols',t('adminNavProtocols')],['/admin/documents',t('adminNavDocuments')],['/admin/communications',`Communications${unread ? ` (${unread})` : ''}`,Mail],['/admin/customer-messages','Customer Messages',Mail],['/admin/support',t('adminNavSupport')],['/admin/content',t('adminNavContent')],['/admin/audit-log',t('adminNavAudit')],['/admin/settings',t('adminNavSettings')]] as const
   const nav = admin ? adminNav : clientNav
   const statusKey = identity ? ({
     unverified: 'accountStatusUnverified',
