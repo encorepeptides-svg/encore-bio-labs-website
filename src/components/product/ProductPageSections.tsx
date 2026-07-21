@@ -170,23 +170,35 @@ export function ProductHero({ product, researchContent }: { product: Product; re
   const studio = STUDIO_HERO[product.slug]
   if (studio) {
     const lowestPrice = Math.min(...product.variants.map((variant) => variant.price))
-    const focusBars = product.mechanismSteps.slice(0, 3)
     return (
-      <section className="relative isolate overflow-hidden bg-[radial-gradient(120%_90%_at_72%_26%,#0e2c3a_0%,#071a27_42%,#030c15_100%)] px-5 pb-24 pt-8 text-white sm:px-8 lg:pt-12">
-        <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.07] [background-image:linear-gradient(rgba(255,255,255,.6)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.6)_1px,transparent_1px)] [background-size:70px_70px] [mask-image:linear-gradient(to_right,black,transparent_72%)]" aria-hidden="true" />
-        <div className="mx-auto grid max-w-[88rem] items-center gap-8 lg:grid-cols-[1.02fr_0.98fr]">
-          <div>
-            <a href={path('/catalog')} className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/[0.05] px-4 py-2 text-sm font-semibold text-slate-200 backdrop-blur transition hover:-translate-y-0.5 hover:border-white/25 hover:text-white">
+      <>
+        <section className="relative isolate overflow-hidden bg-[radial-gradient(120%_90%_at_72%_26%,#0e2c3a_0%,#071a27_42%,#030c15_100%)] px-5 pb-24 pt-8 text-white sm:px-8 lg:pt-12">
+          <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.07] [background-image:linear-gradient(rgba(255,255,255,.6)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.6)_1px,transparent_1px)] [background-size:70px_70px] [mask-image:linear-gradient(to_right,black,transparent_72%)]" aria-hidden="true" />
+          <div className="mx-auto max-w-[88rem]">
+            <a href={path('/catalog')} className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/[0.05] px-4 py-2 text-sm font-semibold text-slate-200 backdrop-blur transition hover:-translate-y-0.5 hover:border-white/25 hover:text-white">
               {t('backToCatalog')}
             </a>
-            <div className="flex flex-wrap items-center gap-3">
-              <p className="inline-flex rounded-full border border-[#3fe6c9]/30 bg-[#3fe6c9]/10 px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#7ef0dd]">{product.badge}</p>
-              <p className="inline-flex rounded-full border border-white/16 bg-white/[0.06] px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white">{priceLabel}</p>
+
+            {/* Row 1: title + description on the left, bigger vial on the right */}
+            <div className="grid items-center gap-10 lg:grid-cols-[1fr_1.08fr]">
+              <div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <p className="inline-flex rounded-full border border-[#3fe6c9]/30 bg-[#3fe6c9]/10 px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#7ef0dd]">{product.badge}</p>
+                  <p className="inline-flex rounded-full border border-white/16 bg-white/[0.06] px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white">{priceLabel}</p>
+                </div>
+                <h1 className="mt-6 text-[clamp(3rem,8vw,5.4rem)] font-semibold leading-[0.86] tracking-[-0.06em] text-white">{product.name}</h1>
+                <p className="mt-6 text-2xl font-semibold leading-tight tracking-[-0.04em] text-white sm:text-3xl">{product.headline}</p>
+                <p className="mt-5 text-base leading-7 text-slate-300 sm:text-lg">{getPlainProductDescription(product, researchContent, locale)}</p>
+              </div>
+              <div className="relative order-first mx-auto w-full max-w-2xl lg:order-none">
+                <ProductHeroEnvironment imageSrc={studio.cutout} imageAlt={t('productImageAlt', { product: product.name })} accent={studio.accent} density="low" priority imageWidth={1000} imageHeight={1000} />
+                <span className="absolute left-3 top-3 z-10 rounded-full border border-white/14 bg-[#04101a]/55 px-3 py-2 text-[0.62rem] font-semibold text-slate-100 backdrop-blur">{t('documentationByReview')}</span>
+                <span className="absolute right-3 top-3 z-10 rounded-full bg-[#3fe6c9] px-3 py-2 text-[0.64rem] font-bold uppercase tracking-[0.08em] text-[#08131a]">RUO</span>
+              </div>
             </div>
-            <h1 className="mt-6 text-[clamp(3rem,8vw,5rem)] font-semibold leading-[0.88] tracking-[-0.06em] text-white">{product.name}</h1>
-            <p className="mt-5 max-w-2xl text-2xl font-semibold leading-tight tracking-[-0.04em] text-white sm:text-3xl">{product.headline}</p>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">{getPlainProductDescription(product, researchContent, locale)}</p>
-            <div className="mt-7 grid gap-2 sm:grid-cols-3">
+
+            {/* Row 2: research bullets, full width */}
+            <div className="mt-10 grid gap-2 sm:grid-cols-3">
               {productFeatureBullets.map((bullet) => (
                 <div key={bullet} className="flex items-start gap-3 rounded-[1.1rem] border border-white/[0.09] bg-white/[0.05] px-4 py-3 text-sm font-semibold leading-6 text-slate-100 backdrop-blur-xl">
                   <span className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-[#3fe6c9] text-[0.7rem] text-[#08131a]">✓</span>
@@ -194,39 +206,34 @@ export function ProductHero({ product, researchContent }: { product: Product; re
                 </div>
               ))}
             </div>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <CTA href="#product-specs" className="bg-[#3fe6c9] text-[#08131a] shadow-[0_16px_44px_rgba(63,230,201,0.28)] hover:bg-white">{t('viewResearchDetails')}</CTA>
-              <CTA href="https://wa.me/19153595448" target="_blank" rel="noopener noreferrer" tone="ghost" className="border-white/20 bg-white/[0.06] text-white shadow-none hover:border-white/35 hover:bg-white/[0.12]">{t('contactEncoreWhatsapp')}</CTA>
+
+            {/* Row 3: horizontal order bar — real stats + configure CTA, no table in the hero */}
+            <div className="mt-6 flex flex-col gap-4 rounded-[1.4rem] border border-white/12 bg-white/[0.055] p-5 backdrop-blur-xl sm:flex-row sm:items-center">
+              <div className="flex flex-wrap items-center gap-x-7 gap-y-3">
+                <div><p className="text-[0.55rem] font-semibold uppercase tracking-[0.16em] text-slate-400">{t('heroStatFrom')}</p><p className="mt-0.5 text-2xl font-semibold tracking-[-0.03em] text-white">${lowestPrice}</p></div>
+                <span className="hidden h-8 w-px bg-white/12 sm:block" aria-hidden="true" />
+                <div><p className="text-[0.55rem] font-semibold uppercase tracking-[0.16em] text-slate-400">{t('heroStatStrengths')}</p><p className="mt-0.5 text-2xl font-semibold tracking-[-0.03em] text-white">{product.variants.length}</p></div>
+                <span className="hidden h-8 w-px bg-white/12 sm:block" aria-hidden="true" />
+                <div><p className="text-[0.55rem] font-semibold uppercase tracking-[0.16em] text-slate-400">{t('heroStatDocs')}</p><p className="mt-0.5 text-base font-semibold text-[#7ef0dd]">{t('heroStatDocsValue')}</p></div>
+              </div>
+              <div className="flex flex-col gap-3 sm:ml-auto sm:flex-row sm:items-center">
+                <CTA href={`#purchase-options-${product.slug}`} className="bg-[#3fe6c9] text-[#08131a] shadow-[0_16px_44px_rgba(63,230,201,0.28)] hover:bg-white">{t('configureOrder')}</CTA>
+                <CTA href="https://wa.me/19153595448" target="_blank" rel="noopener noreferrer" tone="ghost" className="border-white/20 bg-white/[0.06] text-white shadow-none hover:border-white/35 hover:bg-white/[0.12]">{t('contactEncoreWhatsapp')}</CTA>
+              </div>
             </div>
-            <div className="mt-7 max-w-2xl"><PurchaseSelector product={product} compact /></div>
-            {product.purchaseRules.kitEligible ? <EncoreCompleteKit variant="reassurance" productName={product.name} bacWaterAmount={product.bacWaterAmount} className="mt-4 max-w-2xl" /> : null}
             <p className="mt-5 border-l-2 border-[#3fe6c9]/60 pl-4 text-sm leading-6 text-slate-300">{t('researchUseOnlyLine')} · <a href={path('/contact')} className="font-semibold text-[#7ef0dd] underline-offset-4 hover:underline">{t('contactQuestion')}</a></p>
           </div>
-          <div className="relative order-first mx-auto w-full max-w-xl lg:order-none lg:sticky lg:top-24">
-            <ProductHeroEnvironment imageSrc={studio.cutout} imageAlt={t('productImageAlt', { product: product.name })} accent={studio.accent} priority imageWidth={1000} imageHeight={1000} />
-            <span className="absolute left-3 top-3 z-10 rounded-full border border-white/14 bg-[#04101a]/55 px-3 py-2 text-[0.62rem] font-semibold text-slate-100 backdrop-blur">{t('documentationByReview')}</span>
-            <span className="absolute right-3 top-3 z-10 rounded-full bg-[#3fe6c9] px-3 py-2 text-[0.64rem] font-bold uppercase tracking-[0.08em] text-[#08131a]">RUO</span>
-            <div className="absolute inset-x-3 bottom-3 z-10 rounded-[1.2rem] border border-white/12 bg-[#06141e]/65 p-4 shadow-[0_20px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl">
-              <div className="grid grid-cols-3 gap-3 text-center">
-                <div><p className="text-[0.55rem] font-semibold uppercase tracking-[0.16em] text-slate-400">{t('heroStatFrom')}</p><p className="mt-1 text-xl font-semibold tracking-[-0.03em] text-white">${lowestPrice}</p></div>
-                <div><p className="text-[0.55rem] font-semibold uppercase tracking-[0.16em] text-slate-400">{t('heroStatStrengths')}</p><p className="mt-1 text-xl font-semibold tracking-[-0.03em] text-white">{product.variants.length}</p></div>
-                <div><p className="text-[0.55rem] font-semibold uppercase tracking-[0.16em] text-slate-400">{t('heroStatDocs')}</p><p className="mt-1 text-sm font-semibold leading-5 text-[#7ef0dd]">{t('heroStatDocsValue')}</p></div>
-              </div>
-              {focusBars.length ? (
-                <div className="mt-4 grid gap-2">
-                  {focusBars.map((step, index) => (
-                    <div key={step} className="grid grid-cols-[6rem_1fr] items-center gap-3">
-                      <p className="truncate text-[0.62rem] font-semibold text-slate-300">{t('stage', { number: index + 1 })}</p>
-                      <span className="h-1.5 overflow-hidden rounded-full bg-white/10"><span className="block h-full rounded-full bg-[#3fe6c9]" style={{ width: `${90 - index * 15}%` }} /></span>
-                    </div>
-                  ))}
-                </div>
-              ) : null}
-            </div>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-b from-transparent to-white" aria-hidden="true" />
+        </section>
+
+        {/* Full purchase configuration as its own clean light section (keeps the anchor) */}
+        <section className="bg-white px-5 py-12 sm:px-8">
+          <div className="mx-auto max-w-[88rem]">
+            <PurchaseSelector product={product} />
+            {product.purchaseRules.kitEligible ? <EncoreCompleteKit variant="reassurance" productName={product.name} bacWaterAmount={product.bacWaterAmount} className="mt-4" /> : null}
           </div>
-        </div>
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-b from-transparent to-white" aria-hidden="true" />
-      </section>
+        </section>
+      </>
     )
   }
 
