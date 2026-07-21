@@ -27,15 +27,18 @@ import {
 } from '../../data/intake'
 import { createCRMLeadFromIntake, saveLead } from '../../lib/crmStorage'
 
-const stepKeys = ['stepGoal', 'stepDetails', 'stepReview'] as const
+const stepKeys = ['stepGoal', 'stepSituation', 'stepReview'] as const
 const sexOptions = ['Female', 'Male', 'Intersex', 'Prefer not to say']
 const activityOptions = ['Sedentary', 'Light', 'Moderate', 'Very active', 'Athletic']
-const lifestyleOptions = ['Mostly seated', 'Mixed movement', 'Physically demanding', 'Training-focused']
 const sleepOptions = ['Excellent', 'Good', 'Inconsistent', 'Poor']
 const energyOptions = ['Steady', 'Afternoon dips', 'Low most days', 'Variable']
-const nutritionOptions = ['Very consistent', 'Mostly consistent', 'Inconsistent', 'Needs structure']
-const peptideExperienceOptions = ['No', 'Some research', 'Experienced researcher', 'Prefer to discuss']
-const glpExperienceOptions = ['No', 'Yes', 'Related category research', 'Prefer to discuss']
+const peptideExperienceOptions = ['New to this', 'Some experience', 'Very experienced', 'I want guidance']
+const priorityOptions = ['Best product fit', 'Simple next steps', 'Clear pricing', 'Fast turnaround', 'Personal support', 'Compare options']
+const timelineOptions = ['Ready now', 'Within 1 month', 'Within 1–3 months', 'Just exploring']
+const helpOptions = ['Recommend a starting point', 'Compare a few options', 'Confirm a product I have in mind', 'Answer questions first']
+const concernOptions = ['Weight or body composition', 'Energy', 'Recovery', 'Sleep', 'Focus or performance', 'Healthy aging', 'General wellness']
+const biometricsOptions = ['I can share them now', "I don't have them yet", 'I prefer to discuss them']
+const ageRangeOptions = ['18–29', '30–39', '40–49', '50–59', '60+', 'Prefer not to say']
 const contactOptions = ['Email', 'SMS', 'WhatsApp']
 
 type TranslationFunction = (key: string, vars?: Record<string, string | number>) => string
@@ -47,6 +50,39 @@ const intakeValueKeys: Record<string, string> = {
   'Endocrine Signaling': 'goalEndocrine',
   'Neurobiology & Performance Models': 'goalNeurobiology',
   'General Research Review': 'goalGeneral',
+  'Best product fit': 'priorityProductFit',
+  'Simple next steps': 'prioritySimpleSteps',
+  'Clear pricing': 'priorityClearPricing',
+  'Fast turnaround': 'priorityFastTurnaround',
+  'Personal support': 'priorityPersonalSupport',
+  'Compare options': 'priorityCompareOptions',
+  'Ready now': 'timelineReadyNow',
+  'Within 1 month': 'timelineWithinMonth',
+  'Within 1–3 months': 'timelineOneToThreeMonths',
+  'Just exploring': 'timelineExploring',
+  'Recommend a starting point': 'helpStartingPoint',
+  'Compare a few options': 'helpCompareOptions',
+  'Confirm a product I have in mind': 'helpConfirmProduct',
+  'Answer questions first': 'helpAnswerQuestions',
+  'Weight or body composition': 'concernWeight',
+  Energy: 'concernEnergy',
+  Recovery: 'concernRecovery',
+  Sleep: 'concernSleep',
+  'Focus or performance': 'concernFocus',
+  'Healthy aging': 'concernHealthyAging',
+  'General wellness': 'concernGeneralWellness',
+  'I can share them now': 'biometricsReady',
+  "I don't have them yet": 'biometricsNotReady',
+  'I prefer to discuss them': 'biometricsDiscuss',
+  'New to this': 'experienceNew',
+  'Some experience': 'experienceSome',
+  'Very experienced': 'experienceVery',
+  'I want guidance': 'experienceGuidance',
+  '18–29': 'age18To29',
+  '30–39': 'age30To39',
+  '40–49': 'age40To49',
+  '50–59': 'age50To59',
+  '60+': 'age60Plus',
   Female: 'optionFemale',
   Male: 'optionMale',
   Intersex: 'optionIntersex',
@@ -148,6 +184,24 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
+function QuestionGroup({
+  legend,
+  hint,
+  children,
+}: {
+  legend: string
+  hint?: string
+  children: ReactNode
+}) {
+  return (
+    <fieldset className="grid gap-3">
+      <legend className="text-sm font-semibold text-[#071724]">{legend}</legend>
+      {hint ? <p className="text-xs leading-5 text-slate-500">{hint}</p> : null}
+      {children}
+    </fieldset>
+  )
+}
+
 function TextInput({
   name,
   value,
@@ -175,31 +229,6 @@ function TextInput({
       placeholder={placeholder}
       onChange={(event) => onChange(name, event.target.value)}
       className={inputClass()}
-    />
-  )
-}
-
-function TextArea({
-  name,
-  value,
-  onChange,
-  placeholder,
-  required = true,
-}: {
-  name: keyof IntakeFormData
-  value: string
-  onChange: (name: keyof IntakeFormData, value: string) => void
-  placeholder?: string
-  required?: boolean
-}) {
-  return (
-    <textarea
-      name={name}
-      value={value}
-      required={required}
-      placeholder={placeholder}
-      onChange={(event) => onChange(name, event.target.value)}
-      className="min-h-28 w-full resize-none rounded-2xl border border-slate-900/10 bg-white/82 p-4 text-sm leading-6 text-[#071724] outline-none transition placeholder:text-slate-400 focus:border-teal-600/70 focus:ring-4 focus:ring-teal-100"
     />
   )
 }
@@ -279,6 +308,55 @@ function ChoiceGrid({
   )
 }
 
+function MultiChoiceGrid({
+  name,
+  selected,
+  options,
+  onToggle,
+  maxSelections,
+}: {
+  name: 'topPriorities' | 'currentConcerns'
+  selected: string[]
+  options: string[]
+  onToggle: (name: 'topPriorities' | 'currentConcerns', value: string, maxSelections?: number) => void
+  maxSelections?: number
+}) {
+  const { t } = useTranslation('intake')
+
+  return (
+    <div className="grid gap-2 sm:grid-cols-2">
+      {options.map((option) => {
+        const isSelected = selected.includes(option)
+        const isDisabled = !isSelected && Boolean(maxSelections && selected.length >= maxSelections)
+
+        return (
+          <label
+            key={option}
+            className={`flex min-h-14 items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-teal-100 has-[:focus-visible]:border-teal-500 ${
+              isSelected
+                ? 'cursor-pointer border-teal-500 bg-teal-50 text-[#071724] shadow-[0_16px_36px_rgba(45,212,191,0.14)]'
+                : isDisabled
+                  ? 'cursor-not-allowed border-slate-900/5 bg-slate-50 text-slate-400'
+                  : 'cursor-pointer border-slate-900/10 bg-white/74 text-slate-600 hover:border-slate-900/20'
+            }`}
+          >
+            <input
+              type="checkbox"
+              name={name}
+              value={option}
+              checked={isSelected}
+              disabled={isDisabled}
+              onChange={() => onToggle(name, option, maxSelections)}
+              className="size-4 shrink-0 accent-teal-600"
+            />
+            {getIntakeValueLabel(t, option)}
+          </label>
+        )
+      })}
+    </div>
+  )
+}
+
 function ProductChoiceGrid({
   selected,
   onToggle,
@@ -297,6 +375,7 @@ function ProductChoiceGrid({
           <button
             key={product.slug}
             type="button"
+            aria-pressed={isSelected}
             onClick={() => onToggle(product.name)}
             className={`min-h-12 rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition ${
               isSelected
@@ -321,32 +400,6 @@ export function IntakePage() {
   const [phase, setPhase] = useState<'form' | 'loading' | 'results'>(initialDraft.phase)
   const [lead, setLead] = useState<CustomerLead | null>(initialDraft.lead)
   const recommendation = useMemo(() => generateRecommendation(formData), [formData])
-  const hasOptionalDetails = Boolean(
-    formData.desiredResearchResult.trim() ||
-    formData.interestedProducts.length ||
-    formData.peptideExperience ||
-    formData.glpExperience ||
-    formData.age ||
-    formData.sex ||
-    formData.height ||
-    formData.currentWeight ||
-    formData.goalWeight ||
-    formData.bodyFat ||
-    formData.activityLevel ||
-    formData.waist ||
-    formData.medicationsOrCompounds.trim() ||
-    formData.sensitivities.trim() ||
-    formData.lifestyleActivity ||
-    formData.exerciseDays ||
-    formData.sleepQuality ||
-    formData.energyLevels ||
-    formData.nutritionConsistency ||
-    formData.mainObstacle.trim()
-  )
-  const additionalProducts = useMemo(() => {
-    const recommendedSlugs = new Set(recommendation.recommendedProducts.map((product) => product.slug))
-    return products.filter((product) => !recommendedSlugs.has(product.slug)).slice(0, 14)
-  }, [recommendation.recommendedProducts])
   const canContinue = isIntakeStepComplete(step, formData)
   const progress = Math.round(((step + 1) / stepKeys.length) * 100)
 
@@ -384,6 +437,23 @@ export function IntakePage() {
     }))
   }
 
+  function toggleMultiValue(
+    name: 'topPriorities' | 'currentConcerns',
+    value: string,
+    maxSelections?: number,
+  ) {
+    setFormData((current) => {
+      const selected = current[name]
+      const nextSelected = selected.includes(value)
+        ? selected.filter((item) => item !== value)
+        : maxSelections && selected.length >= maxSelections
+          ? selected
+          : [...selected, value]
+
+      return { ...current, [name]: nextSelected }
+    })
+  }
+
   async function submitIntake(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
@@ -412,16 +482,19 @@ export function IntakePage() {
           height: formData.height,
           mainGoal: formData.mainGoal || 'General Research Review',
           currentRoutine: [
+            formData.topPriorities.length ? `Priorities: ${formData.topPriorities.join(', ')}` : '',
+            formData.timeline ? `Timeline: ${formData.timeline}` : '',
+            formData.helpNeeded ? `Support needed: ${formData.helpNeeded}` : '',
+            formData.currentConcerns.length ? `Current focus: ${formData.currentConcerns.join(', ')}` : '',
             formData.lifestyleActivity,
-            formData.exerciseDays ? `${formData.exerciseDays} exercise days/week` : '',
-            formData.nutritionConsistency,
+            `Measurements: ${formData.biometricsStatus}`,
           ]
             .filter(Boolean)
             .join(' · '),
           sleepQuality: formData.sleepQuality,
-          appetite: formData.mainObstacle,
+          appetite: formData.currentConcerns.join(', '),
           energy: formData.energyLevels,
-          previousProductsUsed: [formData.peptideExperience, formData.glpExperience].filter(Boolean).join(' · '),
+          previousProductsUsed: formData.peptideExperience,
           medicalConditions: formData.sensitivities,
           medications: formData.medicationsOrCompounds,
           budget: '',
@@ -544,123 +617,86 @@ export function IntakePage() {
               <div>
                 {step === 0 ? (
                   <div className="grid gap-5">
-                    <TrustCard
-                      icon={<LockKeyhole size={18} aria-hidden="true" />}
-                      eyebrow={t('yourDataEyebrow')}
-                      title={t('yourDataTitle')}
-                      body={t('yourDataBody')}
-                      bullets={[t('yourDataBullet1'), t('yourDataBullet2'), t('yourDataBullet3'), t('yourDataBullet4')]}
-                    />
-                    <Field label={t('mainGoalQuestion')}>
+                    <div className="rounded-2xl border border-teal-700/20 bg-teal-50 p-4 text-sm leading-6 text-teal-950">
+                      <p className="font-semibold">{t('goalStepTitle')}</p>
+                      <p className="mt-1">{t('goalStepBody')}</p>
+                    </div>
+                    <QuestionGroup legend={t('mainGoalQuestion')} hint={t('mainGoalHelp')}>
                       <ChoiceGrid name="mainGoal" value={formData.mainGoal} options={mainGoalOptions} onChange={updateField} />
-                    </Field>
+                    </QuestionGroup>
+                    <QuestionGroup legend={t('prioritiesQuestion')} hint={t('chooseUpToThree')}>
+                      <MultiChoiceGrid
+                        name="topPriorities"
+                        selected={formData.topPriorities}
+                        options={priorityOptions}
+                        onToggle={toggleMultiValue}
+                        maxSelections={3}
+                      />
+                    </QuestionGroup>
+                    <QuestionGroup legend={t('timelineQuestion')} hint={t('timelineHelp')}>
+                      <ChoiceGrid name="timeline" value={formData.timeline} options={timelineOptions} onChange={updateField} />
+                    </QuestionGroup>
+                    <QuestionGroup legend={t('helpQuestion')} hint={t('helpQuestionHelp')}>
+                      <ChoiceGrid name="helpNeeded" value={formData.helpNeeded} options={helpOptions} onChange={updateField} />
+                    </QuestionGroup>
                   </div>
                 ) : null}
 
                 {step === 1 ? (
                   <div className="grid gap-5">
                     <div className="rounded-2xl border border-teal-700/20 bg-teal-50 p-4 text-sm leading-6 text-teal-950">
-                      <p className="font-semibold">{t('optionalStepTitle')}</p>
-                      <p className="mt-1">{t('optionalStepBody')}</p>
+                      <p className="font-semibold">{t('situationStepTitle')}</p>
+                      <p className="mt-1">{t('situationStepBody')}</p>
                     </div>
-                    <Field label={`${t('desiredResultQuestion')} (${t('optional')})`}>
-                      <TextArea name="desiredResearchResult" value={formData.desiredResearchResult} onChange={updateField} required={false} placeholder={t('desiredResultPlaceholder')} />
-                    </Field>
-                    <div className="grid gap-2">
-                      <p className="text-sm font-semibold text-[#071724]">{t('interestedProductsQuestion')} <span className="font-normal text-slate-500">({t('optional')})</span></p>
-                      <p className="text-xs leading-5 text-slate-500">{t('recommendedProductsHelp')}</p>
+                    <QuestionGroup legend={t('currentConcernsQuestion')} hint={t('selectAllThatApply')}>
+                      <MultiChoiceGrid
+                        name="currentConcerns"
+                        selected={formData.currentConcerns}
+                        options={concernOptions}
+                        onToggle={toggleMultiValue}
+                      />
+                    </QuestionGroup>
+                    <div className="grid gap-5 md:grid-cols-2">
+                      <Field label={t('activityQuestion')}>
+                        <SelectField name="lifestyleActivity" value={formData.lifestyleActivity} options={activityOptions} onChange={updateField} />
+                      </Field>
+                      <Field label={t('sleepQuestion')}>
+                        <SelectField name="sleepQuality" value={formData.sleepQuality} options={sleepOptions} onChange={updateField} />
+                      </Field>
+                      <Field label={t('energyQuestion')}>
+                        <SelectField name="energyLevels" value={formData.energyLevels} options={energyOptions} onChange={updateField} />
+                      </Field>
+                      <Field label={t('experienceQuestion')}>
+                        <SelectField name="peptideExperience" value={formData.peptideExperience} options={peptideExperienceOptions} onChange={updateField} />
+                      </Field>
+                    </div>
+                    <QuestionGroup legend={t('biometricsQuestion')} hint={t('biometricsHelp')}>
+                      <ChoiceGrid name="biometricsStatus" value={formData.biometricsStatus} options={biometricsOptions} onChange={updateField} />
+                    </QuestionGroup>
+
+                    {formData.biometricsStatus === 'I can share them now' ? (
+                      <div className="grid gap-4 rounded-[1.5rem] border border-slate-900/10 bg-[#f5f5f2]/70 p-4 md:grid-cols-2 sm:p-5">
+                        <Field label={`${t('ageRange')} (${t('optional')})`}>
+                          <SelectField name="age" value={formData.age} options={ageRangeOptions} onChange={updateField} required={false} />
+                        </Field>
+                        <Field label={`${t('biologicalSex')} (${t('optional')})`}>
+                          <SelectField name="sex" value={formData.sex} options={sexOptions} onChange={updateField} required={false} />
+                        </Field>
+                        <Field label={`${t('height')} (${t('optional')})`}>
+                          <TextInput name="height" value={formData.height} onChange={updateField} required={false} placeholder={t('heightPlaceholder')} />
+                        </Field>
+                        <Field label={`${t('currentWeight')} (${t('optional')})`}>
+                          <TextInput name="currentWeight" value={formData.currentWeight} onChange={updateField} required={false} placeholder={t('weightPlaceholder')} />
+                        </Field>
+                        <Field label={`${t('goalWeight')} (${t('optional')})`}>
+                          <TextInput name="goalWeight" value={formData.goalWeight} onChange={updateField} required={false} placeholder={t('weightPlaceholder')} />
+                        </Field>
+                      </div>
+                    ) : null}
+
+                    <QuestionGroup legend={`${t('interestedProductsQuestion')} (${t('optional')})`} hint={t('recommendedProductsHelp')}>
                       <ProductChoiceGrid selected={formData.interestedProducts} onToggle={toggleProduct} items={recommendation.recommendedProducts} />
-                    </div>
-
-                    <details className="rounded-2xl border border-slate-900/10 bg-white/82 p-4">
-                      <summary className="cursor-pointer text-sm font-semibold text-[#071724] marker:text-teal-600">
-                        {t('showAllProducts')}
-                      </summary>
-                      <div className="mt-4">
-                        <ProductChoiceGrid selected={formData.interestedProducts} onToggle={toggleProduct} items={additionalProducts} />
-                      </div>
-                    </details>
-
-                    <details className="rounded-[1.5rem] border border-slate-900/10 bg-[#f5f5f2]/70 p-4 sm:p-5">
-                      <summary className="cursor-pointer text-sm font-semibold text-[#071724] marker:text-teal-600">
-                        {t('addOptionalContext')}
-                      </summary>
-                      <p className="mt-3 text-sm leading-6 text-slate-600">{t('optionalContextHelp')}</p>
-
-                      <div className="mt-5 grid gap-6">
-                        <Field label={`${t('peptideExperienceQuestion')} (${t('optional')})`}>
-                          <ChoiceGrid name="peptideExperience" value={formData.peptideExperience} options={peptideExperienceOptions} onChange={updateField} required={false} />
-                        </Field>
-                        <Field label={`${t('glpExperienceQuestion')} (${t('optional')})`}>
-                          <ChoiceGrid name="glpExperience" value={formData.glpExperience} options={glpExperienceOptions} onChange={updateField} required={false} />
-                        </Field>
-
-                        <div>
-                          <h3 className="text-base font-semibold text-[#071724]">{t('optionalBiometricsTitle')}</h3>
-                          <p className="mt-1 text-sm leading-6 text-slate-600">{t('optionalBiometricsBody')}</p>
-                        </div>
-                        <div className="grid gap-4 md:grid-cols-2">
-                          <Field label={`${t('age')} (${t('optional')})`}>
-                            <TextInput name="age" value={formData.age} type="number" onChange={updateField} required={false} />
-                          </Field>
-                          <Field label={`${t('biologicalSex')} (${t('optional')})`}>
-                            <SelectField name="sex" value={formData.sex} options={sexOptions} onChange={updateField} required={false} placeholder={t('preferNotToAnswer')} />
-                          </Field>
-                          <Field label={`${t('height')} (${t('optional')})`}>
-                            <TextInput name="height" value={formData.height} onChange={updateField} required={false} placeholder={t('heightPlaceholder')} />
-                          </Field>
-                          <Field label={`${t('currentWeight')} (${t('optional')})`}>
-                            <TextInput name="currentWeight" value={formData.currentWeight} onChange={updateField} required={false} placeholder={t('weightPlaceholder')} />
-                          </Field>
-                          <Field label={`${t('goalWeight')} (${t('optional')})`}>
-                            <TextInput name="goalWeight" value={formData.goalWeight} onChange={updateField} required={false} placeholder={t('weightPlaceholder')} />
-                          </Field>
-                          <Field label={`${t('bodyFatEstimate')} (${t('optional')})`}>
-                            <TextInput name="bodyFat" value={formData.bodyFat} onChange={updateField} required={false} placeholder={t('bodyFatPlaceholder')} />
-                          </Field>
-                          <Field label={`${t('activityLevel')} (${t('optional')})`}>
-                            <SelectField name="activityLevel" value={formData.activityLevel} options={activityOptions} onChange={updateField} required={false} />
-                          </Field>
-                          <Field label={`${t('waistMeasurement')} (${t('optional')})`}>
-                            <TextInput name="waist" value={formData.waist} onChange={updateField} required={false} placeholder={t('waistPlaceholder')} />
-                          </Field>
-                          <div className="md:col-span-2">
-                            <Field label={`${t('currentCompounds')} (${t('optional')})`}>
-                              <TextArea name="medicationsOrCompounds" value={formData.medicationsOrCompounds} onChange={updateField} required={false} placeholder={t('noneUnknownPlaceholder')} />
-                            </Field>
-                          </div>
-                          <div className="md:col-span-2">
-                            <Field label={`${t('sensitivities')} (${t('optional')})`}>
-                              <TextArea name="sensitivities" value={formData.sensitivities} onChange={updateField} required={false} placeholder={t('noneUnknownPlaceholder')} />
-                            </Field>
-                          </div>
-                        </div>
-
-                        <div>
-                          <h3 className="text-base font-semibold text-[#071724]">{t('optionalLifestyleTitle')}</h3>
-                        </div>
-                        <Field label={`${t('lifestyleQuestion')} (${t('optional')})`}>
-                          <ChoiceGrid name="lifestyleActivity" value={formData.lifestyleActivity} options={lifestyleOptions} onChange={updateField} required={false} />
-                        </Field>
-                        <div className="grid gap-4 md:grid-cols-2">
-                          <Field label={`${t('exerciseDaysQuestion')} (${t('optional')})`}>
-                            <TextInput name="exerciseDays" value={formData.exerciseDays} type="number" onChange={updateField} required={false} placeholder={t('exerciseDaysPlaceholder')} />
-                          </Field>
-                          <Field label={`${t('sleepQualityQuestion')} (${t('optional')})`}>
-                            <SelectField name="sleepQuality" value={formData.sleepQuality} options={sleepOptions} onChange={updateField} required={false} />
-                          </Field>
-                          <Field label={`${t('energyLevelsQuestion')} (${t('optional')})`}>
-                            <SelectField name="energyLevels" value={formData.energyLevels} options={energyOptions} onChange={updateField} required={false} />
-                          </Field>
-                          <Field label={`${t('nutritionQuestion')} (${t('optional')})`}>
-                            <SelectField name="nutritionConsistency" value={formData.nutritionConsistency} options={nutritionOptions} onChange={updateField} required={false} />
-                          </Field>
-                        </div>
-                        <Field label={`${t('mainObstacle')} (${t('optional')})`}>
-                          <TextArea name="mainObstacle" value={formData.mainObstacle} onChange={updateField} required={false} />
-                        </Field>
-                      </div>
-                    </details>
+                    </QuestionGroup>
                   </div>
                 ) : null}
 
@@ -738,7 +774,7 @@ export function IntakePage() {
                     onClick={() => setStep((current) => Math.min(current + 1, stepKeys.length - 1))}
                     className="inline-flex h-12 items-center justify-center gap-3 rounded-full bg-[#071724] px-6 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(7,23,36,0.18)] transition hover:bg-[#102a3d] disabled:cursor-not-allowed disabled:opacity-45"
                   >
-                    {step === 1 && !hasOptionalDetails ? t('skipForNow') : t('continue')}
+                    {t('continue')}
                     <ArrowRight size={16} aria-hidden="true" />
                   </button>
                 )}

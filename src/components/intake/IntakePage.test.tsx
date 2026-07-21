@@ -1,14 +1,44 @@
 // @vitest-environment jsdom
 import { renderToStaticMarkup } from 'react-dom/server'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { defaultIntakeFormData, isIntakeStepComplete, type IntakeFormData } from '../../data/intake'
+import {
+  createLeadFromIntake,
+  defaultIntakeFormData,
+  generateRecommendation,
+  isIntakeStepComplete,
+  type IntakeFormData,
+} from '../../data/intake'
 import { LocaleProvider } from '../../i18n/LocaleContext'
 import { translate } from '../../i18n/translate'
 import { INTAKE_SESSION_KEY, IntakePage } from './IntakePage'
 
-function completeContact(overrides: Partial<IntakeFormData> = {}): IntakeFormData {
+function completeGoals(overrides: Partial<IntakeFormData> = {}): IntakeFormData {
   return {
     ...defaultIntakeFormData,
+    mainGoal: 'Metabolic Signaling',
+    topPriorities: ['Simple next steps'],
+    timeline: 'Ready now',
+    helpNeeded: 'Recommend a starting point',
+    ...overrides,
+  }
+}
+
+function completeSituation(overrides: Partial<IntakeFormData> = {}): IntakeFormData {
+  return {
+    ...completeGoals(),
+    currentConcerns: ['Energy', 'Sleep'],
+    lifestyleActivity: 'Moderate',
+    sleepQuality: 'Inconsistent',
+    energyLevels: 'Variable',
+    peptideExperience: 'New to this',
+    biometricsStatus: "I don't have them yet",
+    ...overrides,
+  }
+}
+
+function completeContact(overrides: Partial<IntakeFormData> = {}): IntakeFormData {
+  return {
+    ...completeSituation(),
     firstName: 'Research',
     lastName: 'Client',
     preferredContactMethod: 'Email',
@@ -22,14 +52,10 @@ function completeContact(overrides: Partial<IntakeFormData> = {}): IntakeFormDat
   }
 }
 
-function renderOptionalStep(locale: 'en' | 'es') {
+function renderStep(locale: 'en' | 'es', step: number, formData: IntakeFormData) {
   window.sessionStorage.setItem(
     INTAKE_SESSION_KEY,
-    JSON.stringify({
-      formData: { ...defaultIntakeFormData, mainGoal: 'Metabolic Signaling' },
-      step: 1,
-      phase: 'form',
-    }),
+    JSON.stringify({ formData, step, phase: 'form' }),
   )
 
   return renderToStaticMarkup(
@@ -39,45 +65,66 @@ function renderOptionalStep(locale: 'en' | 'es') {
   )
 }
 
-describe('simplified research intake', () => {
+describe('direct client intake flow', () => {
   beforeEach(() => window.sessionStorage.clear())
 
-  it('requires a goal but allows the optional-details step to be skipped', () => {
+  it('requires a goal, priority, timeline, and expected help in step 1', () => {
     expect(isIntakeStepComplete(0, defaultIntakeFormData)).toBe(false)
-    expect(isIntakeStepComplete(0, { ...defaultIntakeFormData, mainGoal: 'Metabolic Signaling' })).toBe(true)
-    expect(isIntakeStepComplete(1, defaultIntakeFormData)).toBe(true)
+    expect(isIntakeStepComplete(0, completeGoals({ topPriorities: [] }))).toBe(false)
+    expect(isIntakeStepComplete(0, completeGoals({ timeline: '' }))).toBe(false)
+    expect(isIntakeStepComplete(0, completeGoals({ helpNeeded: '' }))).toBe(false)
+    expect(isIntakeStepComplete(0, completeGoals())).toBe(true)
   })
 
-  it('keeps contact and all compliance acknowledgments required without requiring biometrics or city', () => {
+  it('makes guided situation answers expected while accepting unavailable measurements', () => {
+    expect(isIntakeStepComplete(1, completeGoals())).toBe(false)
+    expect(isIntakeStepComplete(1, completeSituation({ currentConcerns: [] }))).toBe(false)
+    expect(isIntakeStepComplete(1, completeSituation({ biometricsStatus: '' }))).toBe(false)
+    expect(isIntakeStepComplete(1, completeSituation())).toBe(true)
+    expect(completeSituation().age).toBe('')
+    expect(completeSituation().currentWeight).toBe('')
+  })
+
+  it('keeps contact and all compliance acknowledgments required', () => {
     const complete = completeContact()
     expect(isIntakeStepComplete(2, complete)).toBe(true)
-    expect(complete.age).toBe('')
-    expect(complete.currentWeight).toBe('')
-    expect(complete.city).toBe('')
     expect(isIntakeStepComplete(2, { ...complete, consentResearchUseOnly: false })).toBe(false)
     expect(isIntakeStepComplete(2, { ...complete, email: '' })).toBe(false)
     expect(isIntakeStepComplete(2, { ...complete, preferredContactMethod: 'WhatsApp', email: '', phone: '9155550100' })).toBe(true)
   })
 
-  it('renders the optional context collapsed and removes browser-required validation from optional fields', () => {
+  it('renders plain-language selectable questions without open text areas', () => {
     const container = document.createElement('div')
-    container.innerHTML = renderOptionalStep('en')
+    container.innerHTML = renderStep('en', 0, defaultIntakeFormData)
 
-    expect(container.textContent).toContain('Step 2 of 3')
-    expect(container.textContent).toContain('This entire step is optional.')
-    expect(container.textContent).toContain('Skip for now')
-    expect(container.querySelectorAll('details')).toHaveLength(2)
-    expect(container.querySelector<HTMLInputElement>('input[name="age"]')?.required).toBe(false)
-    expect(container.querySelector<HTMLSelectElement>('select[name="sex"]')?.required).toBe(false)
+    expect(container.textContent).toContain('What do you want help with most?')
+    expect(container.textContent).toContain('What matters most to you?')
+    expect(container.textContent).toContain('When do you want to move forward?')
+    expect(container.textContent).not.toContain('Metabolic Signaling')
+    expect(container.querySelectorAll('textarea')).toHaveLength(0)
+    expect(container.querySelectorAll('input[type="checkbox"][name="topPriorities"]')).toHaveLength(6)
   })
 
-  it('provides equivalent Spanish interface copy for the simplified flow', () => {
-    const html = renderOptionalStep('es')
+  it('stores the new profile answers in the submitted lead', () => {
+    const data = completeContact()
+    const lead = createLeadFromIntake(data, generateRecommendation(data))
 
-    expect(html).toContain('Paso 2 de 3')
-    expect(html).toContain('Todo este paso es opcional.')
-    expect(html).toContain('Omitir por ahora')
-    expect(translate('es', 'intake', 'stepDetails')).not.toBe(translate('en', 'intake', 'stepDetails'))
-    expect(translate('es', 'intake', 'optionalContextHelp')).not.toBe(translate('en', 'intake', 'optionalContextHelp'))
+    expect(lead.lifestyleAnswers.topPriorities).toEqual(['Simple next steps'])
+    expect(lead.lifestyleAnswers.timeline).toBe('Ready now')
+    expect(lead.lifestyleAnswers.helpNeeded).toBe('Recommend a starting point')
+    expect(lead.lifestyleAnswers.currentConcerns).toEqual(['Energy', 'Sleep'])
+    expect(lead.lifestyleAnswers.biometricsStatus).toBe("I don't have them yet")
+  })
+
+  it('provides equivalent Spanish interface copy for both redesigned steps', () => {
+    const goalHtml = renderStep('es', 0, defaultIntakeFormData)
+    const situationHtml = renderStep('es', 1, completeGoals())
+
+    expect(goalHtml).toContain('¿En qué necesitas más ayuda?')
+    expect(goalHtml).toContain('¿Cuándo quieres avanzar?')
+    expect(situationHtml).toContain('Ayúdanos a entender qué está pasando ahora.')
+    expect(situationHtml).toContain('Todavía no las tengo')
+    expect(translate('es', 'intake', 'stepSituation')).not.toBe(translate('en', 'intake', 'stepSituation'))
+    expect(translate('es', 'intake', 'biometricsHelp')).not.toBe(translate('en', 'intake', 'biometricsHelp'))
   })
 })

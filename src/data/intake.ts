@@ -14,6 +14,11 @@ export type ProtocolStatus = 'pending_review' | 'needs_more_info' | 'approved' |
 
 export type IntakeFormData = {
   mainGoal: MainGoal | ''
+  topPriorities: string[]
+  timeline: string
+  helpNeeded: string
+  currentConcerns: string[]
+  biometricsStatus: string
   age: string
   sex: string
   height: string
@@ -79,6 +84,11 @@ export type CustomerLead = {
   sensitivities: string
   mainGoal: MainGoal
   lifestyleAnswers: {
+    topPriorities?: string[]
+    timeline?: string
+    helpNeeded?: string
+    currentConcerns?: string[]
+    biometricsStatus?: string
     lifestyleActivity: string
     exerciseDays: string
     sleepQuality: string
@@ -126,6 +136,11 @@ export const LEADS_STORAGE_KEY = 'encore_ai_intake_leads'
 
 export const defaultIntakeFormData: IntakeFormData = {
   mainGoal: '',
+  topPriorities: [],
+  timeline: '',
+  helpNeeded: '',
+  currentConcerns: [],
+  biometricsStatus: '',
   age: '',
   sex: '',
   height: '',
@@ -161,8 +176,8 @@ export const defaultIntakeFormData: IntakeFormData = {
 
 export function isIntakeStepComplete(step: number, data: IntakeFormData) {
   const requiredFields: Array<Array<keyof IntakeFormData>> = [
-    ['mainGoal'],
-    [],
+    ['mainGoal', 'timeline', 'helpNeeded'],
+    ['lifestyleActivity', 'sleepQuality', 'energyLevels', 'peptideExperience', 'biometricsStatus'],
     ['firstName', 'lastName', 'preferredContactMethod'],
   ]
 
@@ -172,6 +187,14 @@ export function isIntakeStepComplete(step: number, data: IntakeFormData) {
     const value = data[field]
     return typeof value === 'string' && value.trim().length > 0
   })
+
+  if (step === 0) {
+    return fieldsComplete && data.topPriorities.length > 0
+  }
+
+  if (step === 1) {
+    return fieldsComplete && data.currentConcerns.length > 0
+  }
 
   if (step === 2) {
     const hasRequiredContact =
@@ -384,6 +407,11 @@ export function createLeadFromIntake(data: IntakeFormData, recommendation: Recom
     sensitivities: data.sensitivities,
     mainGoal,
     lifestyleAnswers: {
+      topPriorities: data.topPriorities,
+      timeline: data.timeline,
+      helpNeeded: data.helpNeeded,
+      currentConcerns: data.currentConcerns,
+      biometricsStatus: data.biometricsStatus,
       lifestyleActivity: data.lifestyleActivity,
       exerciseDays: data.exerciseDays,
       sleepQuality: data.sleepQuality,
