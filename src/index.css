@@ -224,17 +224,39 @@ summary:focus-visible {
 }
 
 /* Immersive hero transformation video, embedded borderless into the section.
-   All four edges feather into the surrounding dark scene — no card, no rectangle,
-   no visible crop. Top fades into the hero, bottom into the next dark section. */
-.hero-transformation-video {
-  -webkit-mask-image:
-    linear-gradient(to bottom, transparent 0%, #000 15%, #000 78%, transparent 100%),
-    linear-gradient(to right, transparent 0%, #000 13%, #000 87%, transparent 100%);
-  mask-image:
-    linear-gradient(to bottom, transparent 0%, #000 15%, #000 78%, transparent 100%),
-    linear-gradient(to right, transparent 0%, #000 13%, #000 87%, transparent 100%);
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
+   The video stays fully opaque and crisp; its edges are blended into the EXACT
+   section background (#030b18 = rgb(3,11,24)) with smooth multi-stop gradient
+   overlays — so it dissolves into solid dark, never into the busy lab render
+   behind it. No mask translucency, no blur on the seam, no visible rectangle. */
+.hero-video-edge-blend {
+  background:
+    /* cinematic grade: sink the clip's bright studio background toward the dark hero */
+    linear-gradient(rgba(3, 11, 24, 0.24), rgba(3, 11, 24, 0.24)),
+    /* vignette: outer studio bg dissolves into the exact section color, subject stays lit */
+    radial-gradient(120% 84% at 52% 44%,
+      rgba(3, 11, 24, 0) 0%, rgba(3, 11, 24, 0.06) 40%, rgba(3, 11, 24, 0.4) 64%,
+      rgba(3, 11, 24, 0.8) 84%, rgb(3, 11, 24) 100%),
+    /* each straight edge dissolves to the exact section color — no visible rectangle */
+    linear-gradient(to top,
+      rgb(3, 11, 24) 0%, rgba(3, 11, 24, 0.9) 5%, rgba(3, 11, 24, 0.45) 15%, rgba(3, 11, 24, 0) 34%),
+    linear-gradient(to bottom,
+      rgb(3, 11, 24) 0%, rgba(3, 11, 24, 0.68) 4%, rgba(3, 11, 24, 0.24) 11%, rgba(3, 11, 24, 0) 22%),
+    linear-gradient(to right,
+      rgb(3, 11, 24) 0%, rgba(3, 11, 24, 0.6) 7%, rgba(3, 11, 24, 0.18) 18%, rgba(3, 11, 24, 0) 30%),
+    linear-gradient(to left,
+      rgb(3, 11, 24) 0%, rgba(3, 11, 24, 0.58) 6%, rgba(3, 11, 24, 0.18) 16%, rgba(3, 11, 24, 0) 28%);
+}
+
+@media (max-width: 767px) {
+  /* Video is shorter on mobile — keep the vignette + a generous bottom blend. */
+  .hero-video-edge-blend {
+    background:
+      linear-gradient(rgba(3, 11, 24, 0.24), rgba(3, 11, 24, 0.24)),
+      radial-gradient(130% 78% at 52% 42%,
+        rgba(3, 11, 24, 0) 0%, rgba(3, 11, 24, 0.1) 44%, rgba(3, 11, 24, 0.6) 74%, rgb(3, 11, 24) 100%),
+      linear-gradient(to top,
+        rgb(3, 11, 24) 0%, rgba(3, 11, 24, 0.9) 8%, rgba(3, 11, 24, 0.45) 22%, rgba(3, 11, 24, 0) 40%);
+  }
 }
 
 .home-scroll-cue > span:last-child span {

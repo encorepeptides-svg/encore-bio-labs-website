@@ -284,10 +284,11 @@ export function HomePage() {
             initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.98, x: 20 }}
             animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, x: 0 }}
             transition={{ duration: prefersReducedMotion ? 0.15 : 0.6, ease: 'easeOut', delay: prefersReducedMotion ? 0 : 0.06 }}
-            className="relative z-0 min-h-[27rem] md:min-h-[32rem] lg:min-h-[41rem]"
+            className="relative z-0 min-h-[27rem] overflow-hidden bg-[#030b18] md:min-h-[32rem] lg:min-h-[41rem]"
           >
-            {/* Immersive transformation loop, embedded into the hero: no card,
-                no border — the edges fade into the surrounding dark scene. */}
+            {/* Immersive transformation loop, embedded into the hero: crisp and
+                opaque, its edges blended into the exact section color by the
+                overlay below — no card, no border, no visible rectangle. */}
             <video
               autoPlay
               muted
@@ -300,10 +301,11 @@ export function HomePage() {
               onCanPlay={(event) => {
                 void event.currentTarget.play().catch(() => undefined)
               }}
-              className="hero-transformation-video absolute inset-0 h-full w-full object-cover object-center"
+              className="absolute inset-0 h-full w-full object-cover object-center"
             >
               <source src={heroVideo} type="video/mp4" />
             </video>
+            <div aria-hidden="true" className="hero-video-edge-blend pointer-events-none absolute inset-0" />
           </motion.div>
         </div>
 
