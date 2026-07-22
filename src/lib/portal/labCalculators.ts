@@ -4,27 +4,35 @@ export function calculateStockConcentration(massMg: number, solventMl: number) {
   return { mgPerMl, microgramsPerMicroliter: mgPerMl }
 }
 
-export function calculateAliquotPlan(vialMassMg: number, diluentVolumeMl: number, targetAliquotMicrograms: number) {
-  const totalMicrograms = vialMassMg * 1000
+export function calculateAliquotPlan(vialMassMg: number, diluentVolumeMl: number, targetAliquotMg: number) {
   if (
     !Number.isFinite(vialMassMg)
     || !Number.isFinite(diluentVolumeMl)
-    || !Number.isFinite(targetAliquotMicrograms)
+    || !Number.isFinite(targetAliquotMg)
     || vialMassMg <= 0
     || diluentVolumeMl <= 0
-    || targetAliquotMicrograms <= 0
-    || targetAliquotMicrograms > totalMicrograms
+    || targetAliquotMg <= 0
+    || targetAliquotMg > vialMassMg
   ) return null
 
   const concentrationMgPerMl = vialMassMg / diluentVolumeMl
-  const concentrationMicrogramsPerMicroliter = concentrationMgPerMl
-  const transferVolumeMicroliters = targetAliquotMicrograms / concentrationMicrogramsPerMicroliter
+  const transferVolumeMl = targetAliquotMg / concentrationMgPerMl
+  const transferVolumeMicroliters = transferVolumeMl * 1000
+  const syringeUnits = transferVolumeMl * 100
+  const massMgPerUnit = concentrationMgPerMl / 100
+  const aliquotsPerVial = vialMassMg / targetAliquotMg
+
+  if (![concentrationMgPerMl, transferVolumeMl, transferVolumeMicroliters, syringeUnits, massMgPerUnit, aliquotsPerVial].every((value) => Number.isFinite(value) && value > 0)) return null
+
   return {
-    totalMicrograms,
+    totalMassMg: vialMassMg,
+    targetAliquotMg,
     concentrationMgPerMl,
-    concentrationMicrogramsPerMicroliter,
+    massMgPerUnit,
+    transferVolumeMl,
     transferVolumeMicroliters,
-    aliquotsPerVial: totalMicrograms / targetAliquotMicrograms,
+    syringeUnits,
+    aliquotsPerVial,
   }
 }
 
