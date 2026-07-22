@@ -182,23 +182,16 @@ function InlineCard({ className }: { className?: string }) {
           <p className="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{t('homeResearchNotice')}</p>
         </div>
         <div className="relative self-center overflow-hidden bg-white p-2 sm:p-3">
-          <div className="grid grid-cols-[minmax(0,1.55fr)_minmax(7rem,0.75fr)] items-center gap-2 sm:gap-3">
-            <img
-              src={ENCORE_COMPLETE_KIT_IMAGE}
-              alt={t('homeImageAlt')}
-              width={ENCORE_COMPLETE_KIT_IMAGE_WIDTH}
-              height={ENCORE_COMPLETE_KIT_IMAGE_HEIGHT}
-              loading="lazy"
-              decoding="async"
-              className="aspect-video h-auto w-full rounded-xl object-cover object-center"
-              sizes="(min-width: 1024px) 38vw, 65vw"
-            />
-            <BacWaterHeroImage
-              alt={t('bacWaterHeroAlt')}
-              sizes="(min-width: 1024px) 17vw, 35vw"
-              className="aspect-square size-full rounded-xl object-cover object-center"
-            />
-          </div>
+          <img
+            src={ENCORE_COMPLETE_KIT_IMAGE}
+            alt={t('homeImageAlt')}
+            width={ENCORE_COMPLETE_KIT_IMAGE_WIDTH}
+            height={ENCORE_COMPLETE_KIT_IMAGE_HEIGHT}
+            loading="lazy"
+            decoding="async"
+            className="aspect-video h-auto w-full rounded-xl object-cover object-center"
+            sizes="(min-width: 1024px) 52vw, 92vw"
+          />
         </div>
       </div>
     </section>
