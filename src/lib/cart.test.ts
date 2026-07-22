@@ -65,12 +65,21 @@ describe('cart hydration and variants', () => {
     expect(reconciled[0]).toMatchObject({ productSlug: 'retatrutide', variantLabel: '10 mg', unitPrice: 89, linePrice: 99 })
   })
 
-  it('keeps price-pending NAD+ variants out of cart and checkout hydration', () => {
+  it('carries confirmed NAD+ and GHK-Cu variation prices into cart and checkout hydration', () => {
     const nad = products.find((entry) => entry.slug === 'nad-plus')!
-    const pendingVariant = nad.variants.find((variant) => variant.sku === 'NAD-500MG')!
-    const stalePendingLine = createCartItem(nad, pendingVariant, 1, { optionId: 'vial-only', packSize: 1, includeKit: false })
+    const ghkCu = products.find((entry) => entry.slug === 'ghk-cu')!
+    const configured = [
+      createCartItem(nad, nad.variants.find((variant) => variant.sku === 'NAD-500MG')!, 1, { optionId: 'vial-only', packSize: 1, includeKit: false }),
+      createCartItem(nad, nad.variants.find((variant) => variant.sku === 'NAD-1000MG')!, 1, { optionId: 'vial-only', packSize: 1, includeKit: false }),
+      createCartItem(ghkCu, ghkCu.variants.find((variant) => variant.sku === 'GHK-CU-100MG')!, 1, { optionId: 'vial-only', packSize: 1, includeKit: false }),
+    ]
+    const reconciled = reconcileCartItems(configured.map((item) => ({ ...item, unitPrice: 1, linePrice: 1 })), products)
 
-    expect(pendingVariant.priceNeedsConfirmation).toBe(true)
-    expect(reconcileCartItems([stalePendingLine], products)).toEqual([])
+    expect(reconciled.map(({ sku, variantLabel, unitPrice, linePrice }) => ({ sku, variantLabel, unitPrice, linePrice }))).toEqual([
+      { sku: 'NAD-500MG-VIAL-ONLY-1', variantLabel: '500 mg', unitPrice: 65, linePrice: 65 },
+      { sku: 'NAD-1000MG-VIAL-ONLY-1', variantLabel: '1000 mg', unitPrice: 95, linePrice: 95 },
+      { sku: 'GHK-CU-100MG-VIAL-ONLY-1', variantLabel: '100 mg', unitPrice: 70, linePrice: 70 },
+    ])
+    expect(calculateSubtotal(reconciled)).toBe(230)
   })
 })

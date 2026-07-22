@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { CartItem } from '../cart'
+import { createCartItem, type CartItem } from '../cart'
 import {
   buildHandoffMessage,
   buildInstagramDmUrl,
@@ -10,6 +10,7 @@ import {
 } from './interimCheckout'
 import { getEnabledPaymentMethods, type InterimPaymentMethod } from '../../config/interimCheckout'
 import type { ShippingSelection } from '../shipping'
+import { products } from '../../data/products'
 
 const item = (overrides: Partial<CartItem> = {}): CartItem => ({
   id: 'retatrutide__10mg',
@@ -116,6 +117,15 @@ describe('interim checkout handoff', () => {
   it('serializes cart items into a processor-ready integer-cents payload', () => {
     const [payload] = toOrderItemsPayload([item({ unitPrice: 19.99, linePrice: 19.99 })])
     expect(payload).toMatchObject({ sku: 'RET-10', quantity: 2, unit_price_cents: 1999, line_total_cents: 3998 })
+  })
+
+  it('serializes the selected NAD+ strength and centralized price into checkout', () => {
+    const nad = products.find((product) => product.slug === 'nad-plus')!
+    const variant = nad.variants.find((entry) => entry.sku === 'NAD-1000MG')!
+    const [payload] = toOrderItemsPayload([
+      createCartItem(nad, variant, 1, { optionId: 'vial-only', packSize: 1, includeKit: false }),
+    ])
+    expect(payload).toMatchObject({ sku: 'NAD-1000MG-VIAL-ONLY-1', variant: '1000 mg', quantity: 1, unit_price_cents: 9500, line_total_cents: 9500 })
   })
 
   it('only exposes enabled payment methods that have a destination (cash on delivery exempt)', () => {

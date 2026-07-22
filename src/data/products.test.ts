@@ -42,12 +42,31 @@ describe('product catalog integrity', () => {
     expect(new Set(skus).size).toBe(skus.length)
   })
 
-  it('defines the new NAD+ strengths with unique SKUs and unconfirmed prices', () => {
+  it('defines the requested confirmed NAD+ and GHK-Cu strength pricing', () => {
     const nad = products.find((product) => product.slug === 'nad-plus')!
-    expect(nad.variants).toEqual(expect.arrayContaining([
-      expect.objectContaining({ sku: 'NAD-500MG', label: '500 mg', strength: 500, unitType: 'mg', price: 0, priceNeedsConfirmation: true }),
-      expect.objectContaining({ sku: 'NAD-1000MG', label: '1000 mg', strength: 1000, unitType: 'mg', price: 0, priceNeedsConfirmation: true }),
-    ]))
+    const ghkCu = products.find((product) => product.slug === 'ghk-cu')!
+    expect(nad.variants).toEqual([
+      expect.objectContaining({ sku: 'NAD-500MG', label: '500 mg', strength: 500, unitType: 'mg', price: 65 }),
+      expect.objectContaining({ sku: 'NAD-1000MG', label: '1000 mg', strength: 1000, unitType: 'mg', price: 95 }),
+    ])
+    expect(ghkCu.variants).toEqual([
+      expect.objectContaining({ sku: 'GHK-CU-50MG', label: '50 mg', strength: 50, unitType: 'mg', price: 50 }),
+      expect.objectContaining({ sku: 'GHK-CU-100MG', label: '100 mg', strength: 100, unitType: 'mg', price: 70 }),
+    ])
+  })
+
+  it('uses the requested prices and strengths for each updated single-variant product', () => {
+    const expected = {
+      'wolverine-stack': { label: 'BPC-157 + TB-500', price: 95 },
+      tesamorelin: { label: '10 mg', price: 75 },
+      'mots-c': { label: '10 mg', price: 45 },
+      dsip: { label: '10 mg', price: 40 },
+    }
+    for (const [slug, variant] of Object.entries(expected)) {
+      expect(products.find((product) => product.slug === slug)?.variants).toEqual([
+        expect.objectContaining(variant),
+      ])
+    }
   })
 
   it('keeps accessories and ready-to-use formats out of irrelevant kit flows', () => {

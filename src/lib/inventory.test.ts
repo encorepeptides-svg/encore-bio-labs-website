@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { inventoryStatus, previewInventory, publicStatusLabel } from './inventory'
+import { inventoryCatalogPayload, inventoryStatus, previewInventory, publicStatusLabel } from './inventory'
 
 const stock = { on_hand: 10, reserved: 3, low_stock_threshold: 4, active: true }
 
@@ -22,5 +22,18 @@ describe('inventory calculations', () => {
   it('exposes invalid projections for server-side rejection', () => {
     expect(previewInventory(stock, 'reserve', 8).available).toBe(-1)
     expect(previewInventory(stock, 'release', 4).reserved).toBe(-1)
+  })
+  it('sends independently priced GHK-Cu and NAD+ SKUs to the admin inventory portal', () => {
+    const payload = inventoryCatalogPayload()
+    const ghkCu = payload.find((product) => product.slug === 'ghk-cu')!
+    const nad = payload.find((product) => product.slug === 'nad-plus')!
+    expect(ghkCu.variants.map(({ sku, price_cents }) => ({ sku, price_cents }))).toEqual([
+      { sku: 'GHK-CU-50MG', price_cents: 5000 },
+      { sku: 'GHK-CU-100MG', price_cents: 7000 },
+    ])
+    expect(nad.variants.map(({ sku, price_cents }) => ({ sku, price_cents }))).toEqual([
+      { sku: 'NAD-500MG', price_cents: 6500 },
+      { sku: 'NAD-1000MG', price_cents: 9500 },
+    ])
   })
 })

@@ -1590,7 +1590,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A metabolic research entry presented once with supporting documentation and format context.',
     featured: true,
-    variants: [{ label: '10 mg', format: 'Vial format', price: 65 }],
+    variants: [{ label: '10 mg', format: 'Vial format', price: 75 }],
   },
   {
     slug: 'wolverine-stack',
@@ -1600,7 +1600,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A recovery and repair research entry prepared for complete kit organization and record review.',
     featured: true,
-    variants: [{ label: 'BPC-157 + TB-500', format: 'Vial format', price: 129 }],
+    variants: [{ label: 'BPC-157 + TB-500', format: 'Vial format', price: 95 }],
   },
   {
     slug: 'klow',
@@ -1643,7 +1643,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A mitochondrial peptide research entry structured for metabolic signaling review, cellular energy context, and documentation requests.',
     featured: true,
-    variants: [{ label: '10 mg', format: 'Vial format', price: 139 }],
+    variants: [{ label: '10 mg', format: 'Vial format', price: 45 }],
   },
   {
     slug: 'aod-9604',
@@ -1664,9 +1664,8 @@ const catalogProducts: CatalogProduct[] = [
       'A longevity research entry built for premium presentation, complete kit context, and documentation review.',
     featured: true,
     variants: [
-      { label: 'Published Format', format: 'Vial format', price: 75 },
-      { sku: 'NAD-500MG', label: '500 mg', format: 'Vial format', price: 0, priceNeedsConfirmation: true, strength: 500, unitType: 'mg' },
-      { sku: 'NAD-1000MG', label: '1000 mg', format: 'Vial format', price: 0, priceNeedsConfirmation: true, strength: 1000, unitType: 'mg' },
+      { sku: 'NAD-500MG', label: '500 mg', format: 'Vial format', price: 65, strength: 500, unitType: 'mg' },
+      { sku: 'NAD-1000MG', label: '1000 mg', format: 'Vial format', price: 95, strength: 1000, unitType: 'mg' },
     ],
   },
   {
@@ -1689,7 +1688,10 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'An aesthetic research entry with available options kept together for easier catalog review.',
     featured: true,
-    variants: [{ label: '50 mg', format: 'Vial format', price: 50 }],
+    variants: [
+      { label: '50 mg', format: 'Vial format', price: 50 },
+      { label: '100 mg', format: 'Vial format', price: 70 },
+    ],
   },
   {
     slug: 'ahk-cu',
@@ -1739,7 +1741,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A research entry designed for concise review and documentation-ready follow-up.',
     featured: true,
-    variants: [{ label: '5 mg', format: 'Vial format', price: 109 }],
+    variants: [{ label: '10 mg', format: 'Vial format', price: 40 }],
   },
   {
     slug: 'kisspeptin',
