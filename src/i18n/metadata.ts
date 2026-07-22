@@ -109,8 +109,8 @@ const categoryNameEs: Record<string, string> = {
 }
 
 export function getCategoryMetadata(slug: string, englishName: string): LocalizedPageMeta {
-  if (slug === 'metabolic-weight-management') {
-    return {
+  const categoryMetadata: Record<string, LocalizedPageMeta> = {
+    'metabolic-weight-management': {
       en: {
         title: 'Metabolic Research Peptides | Encore Bio Labs',
         description: 'Compare Retatrutide, Tesamorelin, MOTS-C, AOD-9604, and CJC-1295 + Ipamorelin by research pathway, format, price, and documentation.',
@@ -119,8 +119,26 @@ export function getCategoryMetadata(slug: string, englishName: string): Localize
         title: 'Péptidos de investigación metabólica | Encore Bio Labs',
         description: 'Compara Retatrutide, Tesamorelin, MOTS-C, AOD-9604 y CJC-1295 + Ipamorelin por vía de investigación, formato, precio y documentación.',
       },
-    }
+    },
+    'recovery-regeneration': {
+      en: { title: 'Recovery & Regeneration Research | Encore Bio Labs', description: 'Compare Wolverine Stack, KLOW, GHK-Cu, and AHK-Cu by research pathway, format, current price, kit eligibility, and documentation.' },
+      es: { title: 'Investigación de recuperación y regeneración | Encore Bio Labs', description: 'Compara Wolverine Stack, KLOW, GHK-Cu y AHK-Cu por vía de investigación, formato, precio actual, elegibilidad de kit y documentación.' },
+    },
+    'longevity-cellular-health': {
+      en: { title: 'Longevity & Cellular Health Research | Encore Bio Labs', description: 'Compare NAD+, Glutathione, SS-31, Epithalon, and Thymosin Alpha-1 by cellular research pathway, format, price, and documentation.' },
+      es: { title: 'Investigación de longevidad y salud celular | Encore Bio Labs', description: 'Compara NAD+, Glutathione, SS-31, Epithalon y Thymosin Alpha-1 por vía celular, formato, precio y documentación.' },
+    },
+    'cognitive-performance': {
+      en: { title: 'Cognitive Research Compounds | Encore Bio Labs', description: 'Compare Cerebrolysin, Semax, and Selank by neuro-signaling research pathway, format, current price, and documentation.' },
+      es: { title: 'Compuestos de investigación cognitiva | Encore Bio Labs', description: 'Compara Cerebrolysin, Semax y Selank por vía de neuroseñalización, formato, precio actual y documentación.' },
+    },
+    'hormone-wellness': {
+      en: { title: 'Hormone & Wellness Research | Encore Bio Labs', description: 'Compare six endocrine research compounds by reproductive, growth, sleep, and melanocortin signaling, format, price, and documentation.' },
+      es: { title: 'Investigación hormonal y de bienestar | Encore Bio Labs', description: 'Compara seis compuestos de investigación endocrina por señalización reproductiva, de crecimiento, del sueño y de melanocortina, formato, precio y documentación.' },
+    },
   }
+
+  if (categoryMetadata[slug]) return categoryMetadata[slug]
   const spanishName = categoryNameEs[slug] ?? englishName
   return {
     en: {

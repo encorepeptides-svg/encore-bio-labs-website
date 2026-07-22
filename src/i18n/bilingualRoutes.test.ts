@@ -5,7 +5,23 @@ import { purchaseTypeLabel } from './displayLabels'
 import { localizePath } from './config'
 import { translate } from './translate'
 
-const bilingualRoutes = ['/catalog', '/intake', '/research', '/review-preview', '/categories/metabolic-weight-management', '/products/retatrutide', '/legal/terms', '/checkout', '/client-login', '/portal', '/admin']
+const bilingualRoutes = [
+  '/catalog',
+  '/intake',
+  '/research',
+  '/review-preview',
+  '/categories/metabolic-weight-management',
+  '/categories/recovery-regeneration',
+  '/categories/longevity-cellular-health',
+  '/categories/cognitive-performance',
+  '/categories/hormone-wellness',
+  '/products/retatrutide',
+  '/legal/terms',
+  '/checkout',
+  '/client-login',
+  '/portal',
+  '/admin',
+]
 
 describe('bilingual route contracts', () => {
   beforeEach(() => window.sessionStorage.clear())

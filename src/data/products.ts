@@ -259,9 +259,9 @@ export type CategoryContent = {
 export const categoryContent: Record<string, CategoryContent> = {
   'metabolic-weight-management': {
     eyebrow: 'Metabolic & Weight Management Research',
-    headline: 'Serious Metabolic Research Starts Here.',
+    headline: 'Metabolic research, led by Retatrutide.',
     subheadline:
-      'From triple-receptor agonists like Retatrutide to growth-hormone-axis compounds — the metabolic and body-composition research catalog, every product shipped as a complete kit.',
+      'Start with Encore’s flagship triple-pathway compound, then compare four distinct metabolic research approaches by mechanism, format, price, and documentation.',
     overview:
       "Encore Bio Labs' metabolic and body-composition research catalog spans two of the most active research lines in the field: incretin-receptor compounds (GLP-1/GIP/glucagon signaling) and growth-hormone-axis compounds (GHRH analogs and ghrelin-receptor secretagogues). Compare pathways, formats, and documentation side by side — and get every compound as a complete, research-ready kit with matched supplies included.",
     whyStudied:
@@ -292,9 +292,9 @@ export const categoryContent: Record<string, CategoryContent> = {
   },
   'recovery-regeneration': {
     eyebrow: 'Recovery & Regeneration Research',
-    headline: 'Repair, Regeneration, Recovery — One Catalog.',
+    headline: 'Recovery research, led by Wolverine Stack.',
     subheadline:
-      'From the BPC-157 + TB-500 Wolverine Stack to copper-peptide matrix compounds and the four-compound KLOW blend — every recovery compound shipped complete.',
+      'Start with the BPC-157 + TB-500 signature stack, then compare KLOW and two distinct copper-peptide research paths by format, price, and documentation.',
     overview:
       "Encore Bio Labs' recovery and regeneration catalog brings together the most-studied tissue-repair and matrix-remodeling compounds in one place: the BPC-157 + TB-500 Wolverine Stack, the four-compound KLOW regenerative blend (GHK-Cu, BPC-157, TB-500, KPV), and the copper-peptide compounds GHK-Cu and AHK-Cu. Compare pathways and formats side by side — and get every entry as a complete, research-ready kit.",
     whyStudied:
@@ -323,9 +323,9 @@ export const categoryContent: Record<string, CategoryContent> = {
   },
   'longevity-cellular-health': {
     eyebrow: 'Longevity & Cellular Health Research',
-    headline: 'Cellular Health & Longevity Research, All in One Place.',
+    headline: 'Cellular energy research, led by NAD+.',
     subheadline:
-      'From NAD+ and glutathione to mitochondria-targeted SS-31 and Epithalon — the cellular-resilience and healthy-aging research catalog, shipped as complete kits.',
+      'Choose 500 mg or 1000 mg NAD+, then compare antioxidant, mitochondrial, circadian, and immune-signaling research paths in one clear collection.',
     overview:
       "Encore Bio Labs' longevity and cellular-health catalog covers the compounds at the center of aging-biology research: the metabolic cofactor NAD+, the core antioxidant Glutathione, the mitochondria-targeted peptide SS-31, the telomere-associated peptide Epithalon, and the immune-signaling peptide Thymosin Alpha-1. Compare mechanisms, formats, and documentation — and get every compound as a complete research kit.",
     whyStudied:
@@ -356,9 +356,9 @@ export const categoryContent: Record<string, CategoryContent> = {
   },
   'cognitive-performance': {
     eyebrow: 'Cognitive & Performance Research',
-    headline: 'The Cognitive & Performance Research Catalog.',
+    headline: 'Cognitive research, led by Cerebrolysin.',
     subheadline:
-      'From the neurotrophic peptide Cerebrolysin to the Semax + Selank neuropeptide pairing — the cognitive and neuro-signaling research catalog, shipped complete.',
+      'Start with the neurotrophic peptide mixture, then compare the distinct Semax and Selank neuropeptide pathways by format, price, and documentation.',
     overview:
       "Encore Bio Labs' cognitive and performance catalog brings together the most-studied neuro-signaling compounds: Cerebrolysin, a neurotrophic peptide mixture studied for neuronal-survival and synaptic-plasticity research, and Semax and Selank, two structurally distinct neuropeptides studied for BDNF-linked and stress-response signaling. Compare pathways and formats side by side — and get every compound as a complete research kit.",
     whyStudied:
@@ -384,9 +384,9 @@ export const categoryContent: Record<string, CategoryContent> = {
   },
   'hormone-wellness': {
     eyebrow: 'Hormone & Wellness Research',
-    headline: 'The Hormone & Wellness Research Catalog.',
+    headline: 'Choose the pathway. Find the right research compound.',
     subheadline:
-      'From reproductive-axis compounds like Kisspeptin and HCG to GH-axis, sleep, and melanocortin research — the endocrine research catalog, shipped as complete kits.',
+      'Compare reproductive, growth, sleep, and melanocortin signaling, then choose the current format and price without digging through technical jargon.',
     overview:
       "Encore Bio Labs' hormone and wellness catalog spans the full range of endocrine research: reproductive-axis compounds (Kisspeptin, HCG), growth-hormone-axis and growth-factor signaling (HGH 191AA, IGF1-LR3), sleep and neuroendocrine research (DSIP), and central melanocortin-receptor research (PT-141). Compare axes, formats, and documentation side by side — and get every compound as a complete research kit.",
     whyStudied:

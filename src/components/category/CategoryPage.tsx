@@ -1,22 +1,7 @@
 import { categoryContent, getResearchAreaBySlug } from '../../data/products'
 import { localizeCategoryContent, localizeResearchArea } from '../../data/categoryTranslations'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
-import {
-  CategoryBreadcrumb,
-  CategoryComparisonTable,
-  CategoryDisclaimer,
-  CategoryFAQSection,
-  CategoryFeaturedProducts,
-  CategoryFinalCTA,
-  CategoryHero,
-  CategoryOverview,
-  CategoryResearchLinks,
-  KeyThemes,
-  RelatedCategories,
-  WhyStudied,
-} from './CategoryPageSections'
-import { HormoneWellnessCategoryPage } from './HormoneWellnessCategoryPage'
-import { MetabolicWeightManagementCategoryPage } from './MetabolicWeightManagementCategoryPage'
+import { PremiumCategoryPage } from './PremiumCategoryPage'
 
 export function CategoryPage({ slug }: { slug: string }) {
   const { locale, path } = useLocale()
@@ -51,23 +36,5 @@ export function CategoryPage({ slug }: { slug: string }) {
   const displayArea = localizeResearchArea(area, locale)
   const displayContent = localizeCategoryContent(area, content, locale)
 
-  if (slug === 'hormone-wellness') return <HormoneWellnessCategoryPage area={displayArea} />
-  if (slug === 'metabolic-weight-management') return <MetabolicWeightManagementCategoryPage area={displayArea} />
-
-  return (
-    <main id="main-content" className="bg-[#F8FAFC]">
-      <CategoryBreadcrumb area={displayArea} />
-      <CategoryHero area={displayArea} content={displayContent} />
-      <CategoryOverview content={displayContent} />
-      <WhyStudied content={displayContent} />
-      <KeyThemes content={displayContent} />
-      <CategoryFeaturedProducts area={displayArea} />
-      <CategoryComparisonTable area={displayArea} content={displayContent} />
-      <CategoryFAQSection area={displayArea} content={displayContent} />
-      <CategoryResearchLinks area={displayArea} />
-      <RelatedCategories content={displayContent} />
-      <CategoryDisclaimer content={displayContent} />
-      <CategoryFinalCTA area={displayArea} />
-    </main>
-  )
+  return <PremiumCategoryPage area={displayArea} content={displayContent} />
 }
