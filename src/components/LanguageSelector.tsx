@@ -1,8 +1,9 @@
+import { Globe } from 'lucide-react'
 import { useLocale, useTranslation } from '../i18n/LocaleContext'
 import { cn } from '../lib/utils'
 
 type LanguageSelectorProps = {
-  variant?: 'nav' | 'mobile' | 'footer'
+  variant?: 'nav' | 'mobile' | 'footer' | 'compact'
   className?: string
 }
 
@@ -14,6 +15,26 @@ type LanguageSelectorProps = {
 export function LanguageSelector({ variant = 'nav', className }: LanguageSelectorProps) {
   const { locale, setLocale } = useLocale()
   const { t } = useTranslation('languageSwitcher')
+
+  // Compact single-tap toggle for the persistent mobile header: a globe + the
+  // current language code that flips to the other locale (only two languages).
+  if (variant === 'compact') {
+    const nextLocale = locale === 'en' ? 'es' : 'en'
+    return (
+      <button
+        type="button"
+        onClick={() => setLocale(nextLocale)}
+        aria-label={t(locale === 'en' ? 'switchToSpanish' : 'switchToEnglish')}
+        className={cn(
+          'inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full border border-slate-900/10 bg-white/70 px-3 text-[#071724] shadow-sm backdrop-blur-xl transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
+          className,
+        )}
+      >
+        <Globe size={17} aria-hidden="true" />
+        <span className="text-xs font-bold uppercase tracking-wide">{locale}</span>
+      </button>
+    )
+  }
 
   const sizeClasses = variant === 'nav'
     ? 'text-sm'

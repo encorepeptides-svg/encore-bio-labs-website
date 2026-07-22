@@ -200,7 +200,9 @@ export function Navbar() {
           >
             <Search size={19} aria-hidden="true" />
           </button>
-          <CartNavButton />
+          {/* Cart moves to the persistent bottom tab bar on mobile/tablet; the
+              language toggle takes its place so it's always one tap away. */}
+          <LanguageSelector variant="compact" />
           <button
             ref={menuButtonRef}
             type="button"

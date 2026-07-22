@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect } from 'react'
 import { AnnouncementBar } from './components/AnnouncementBar'
 import { CartDrawer } from './components/cart/CartDrawer'
 import { Footer } from './components/Footer'
+import { MobileTabBar } from './components/MobileTabBar'
 import { Navbar } from './components/Navbar'
 import { RouteLoadingFallback } from './components/RouteLoadingFallback'
 import { CartProvider } from './context/CartContext'
@@ -56,6 +57,10 @@ const ProductHeroPreviewPage = import.meta.env.DEV
 const AssistantWidget = lazy(() =>
   import('./components/assistant/AssistantWidget').then((module) => ({ default: module.AssistantWidget })),
 )
+
+// Ensures the post-language-switch scroll restore runs exactly once per page
+// load, even though StrictMode invokes the effect twice in development.
+let localeScrollHandled = false
 
 const knownCategorySlugs = new Set([
   'metabolic-weight-management',
@@ -120,6 +125,35 @@ function App() {
       : pageMetadata[metadataKey] ?? (categoryName ? getCategoryMetadata(categorySlug!, categoryName) : notFoundMetadata)
     applyDocumentMetadata(normalizedPath, locale, localizedMeta[locale])
   }, [categorySlug, locale, logicalPath, productSlug])
+
+  // Restore scroll position after a language switch (a full reload) so switching
+  // languages keeps the user exactly where they were. An explicit #hash target
+  // wins over the saved position. The module-level guard + timer-free cleanup keep
+  // this working under StrictMode's double-invoke (which would otherwise consume
+  // the stored value on the first pass and cancel the restore on cleanup).
+  useEffect(() => {
+    if (typeof window === 'undefined' || localeScrollHandled) return
+    localeScrollHandled = true
+    try {
+      const raw = window.sessionStorage.getItem('encore:locale-switch-scroll')
+      if (!raw) return
+      window.sessionStorage.removeItem('encore:locale-switch-scroll')
+      const saved = JSON.parse(raw) as { path?: string; y?: number }
+      if (!saved || saved.path !== logicalPath || window.location.hash) return
+      const y = Number(saved.y) || 0
+      if (y <= 0) return
+      // Re-assert the position across a few frames as lazy route content paints.
+      window.requestAnimationFrame(() =>
+        window.requestAnimationFrame(() => window.scrollTo(0, y)),
+      )
+      window.setTimeout(() => window.scrollTo(0, y), 200)
+      window.setTimeout(() => window.scrollTo(0, y), 500)
+    } catch {
+      // sessionStorage unavailable (e.g. privacy mode) — skip restoration.
+    }
+    // Runs once per full page load; logicalPath is stable without a reload.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const page = (() => {
     const authMode = logicalPath === '/client-login' ? 'login' : logicalPath === '/client-register' ? 'register' : logicalPath === '/client-forgot-password' ? 'forgot' : logicalPath === '/client-reset-password' ? 'reset' : undefined
@@ -220,13 +254,18 @@ function App() {
     <LocaleProvider locale={locale} logicalPath={logicalPath}>
       <PortalAuthProvider>
         <CartProvider>
-          <div className="min-h-screen overflow-x-clip bg-[#f5f5f2] text-[#071724]">
+          <div
+            className={`min-h-screen overflow-x-clip bg-[#f5f5f2] text-[#071724]${
+              hideGlobalChrome ? '' : ' pb-[calc(4rem+env(safe-area-inset-bottom))] xl:pb-0'
+            }`}
+          >
             <SkipToMainLink />
             {hideGlobalChrome ? null : <LatamSuggestionBanner />}
             {hideGlobalChrome ? null : <AnnouncementBar />}
             {hideGlobalChrome ? null : <Navbar />}
             <Suspense fallback={<RouteLoadingFallback />}>{page}</Suspense>
             {hideGlobalChrome ? null : <Footer />}
+            {hideGlobalChrome ? null : <MobileTabBar />}
             {hideGlobalChrome ? null : <CartDrawer />}
             {hideGlobalChrome ? null : (
               <Suspense fallback={null}>

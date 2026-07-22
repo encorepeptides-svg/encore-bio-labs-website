@@ -25,6 +25,16 @@ export function LocaleProvider({ locale, logicalPath, children }: LocaleProvider
       if (next === locale) return
       saveLocale(next)
       if (typeof window === 'undefined') return
+      // Preserve the reader's place across the reload that a locale change triggers:
+      // stash the current scroll so App can restore it once the new-language page paints.
+      try {
+        window.sessionStorage.setItem(
+          'encore:locale-switch-scroll',
+          JSON.stringify({ path: logicalPath, y: window.scrollY }),
+        )
+      } catch {
+        // sessionStorage unavailable — fall back to a normal (top-of-page) load.
+      }
       const targetPath = localizePath(logicalPath, next)
       window.location.assign(`${targetPath}${window.location.search}${window.location.hash}`)
     },

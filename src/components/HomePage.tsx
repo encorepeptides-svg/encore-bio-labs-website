@@ -14,6 +14,7 @@ import { useLocale, useTranslation } from '../i18n/LocaleContext'
 import { AddToCartButton } from './cart/AddToCartButton'
 import { CTA } from './CTA'
 import { ProductLabVisual } from './product/ProductLabVisual'
+import { ResearchProfilePrompt } from './ResearchProfilePrompt'
 import heroVideo from '../assets/videos/encore-hero.mp4'
 import heroVideoPoster from '../assets/images/hero/hero-video-poster.jpg'
 
@@ -242,6 +243,10 @@ export function HomePage() {
           </motion.div>
         </div>
       </section>
+
+      {/* Intake invite directly below the hero so the research profile is
+          impossible to miss — above the product grid, not buried down-page. */}
+      <ResearchProfilePrompt />
 
       <section id="best-sellers" className="px-5 py-10 sm:px-8 lg:py-14">
         <div className="mx-auto max-w-[88rem]">

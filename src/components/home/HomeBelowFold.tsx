@@ -3,7 +3,6 @@ import { faqLibrary } from '../../data/faq'
 import { getLocalizedFaqGroup } from '../../data/faqTranslations'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { FinalCTA } from '../FinalCTA'
-import { ResearchProfilePrompt } from '../ResearchProfilePrompt'
 import { TestimonialsSection } from '../social-proof/TestimonialsSection'
 import { FAQAccordion } from '../content/EditorialModules'
 import { CategoryShowcase } from './CategoryShowcase'
@@ -96,7 +95,6 @@ export function HomeBelowFold() {
   return (
     <>
       <CategoryShowcase />
-      <ResearchProfilePrompt />
       <PremiumTrustSection />
 
       {/* Compliance-gated social proof stays hidden while approved records are empty. */}
