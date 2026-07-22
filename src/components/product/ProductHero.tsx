@@ -23,6 +23,8 @@ export type ProductHeroProps = {
   srcSet?: string
   sizes?: string
   className?: string
+  /** Optional custom product-stage composition for bundles that reuse this environment. */
+  stageContent?: ReactNode
   /** Optional hero copy rendered over a readable scrim. */
   children?: ReactNode
 }
@@ -61,6 +63,7 @@ export function ProductHero({
   srcSet,
   sizes = '(min-width: 1024px) 45vw, 92vw',
   className = '',
+  stageContent,
   children,
 }: ProductHeroProps) {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -127,19 +130,21 @@ export function ProductHero({
       {/* Product stage (layer 7) */}
       <div className="ph-stage">
         {isLab ? <div className="ph-lab-shadow" aria-hidden="true" /> : <div className="ph-glow" aria-hidden="true" />}
-        <img
-          className="ph-product"
-          src={imageSrc}
-          srcSet={srcSet}
-          sizes={srcSet ? sizes : undefined}
-          alt={imageAlt}
-          width={imageWidth}
-          height={imageHeight}
-          loading={priority ? 'eager' : 'lazy'}
-          fetchPriority={priority ? 'high' : 'auto'}
-          decoding="async"
-          draggable={false}
-        />
+        {stageContent ? <div className="ph-stage-content">{stageContent}</div> : (
+          <img
+            className="ph-product"
+            src={imageSrc}
+            srcSet={srcSet}
+            sizes={srcSet ? sizes : undefined}
+            alt={imageAlt}
+            width={imageWidth}
+            height={imageHeight}
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
+            decoding="async"
+            draggable={false}
+          />
+        )}
       </div>
 
       {/* Foreground light particles (layer 8) — omitted in the restrained lab scene */}

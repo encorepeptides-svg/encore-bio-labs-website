@@ -22,6 +22,7 @@ import { legal } from './legal'
 import { navigation } from './navigation'
 import { notFound } from './notFound'
 import { product } from './product'
+import { protocols } from './protocols'
 import { portal } from './portal'
 import { productResearch } from './productResearch'
 import { purchaseSelector } from './purchaseSelector'
@@ -50,6 +51,7 @@ export const en = {
   brand,
   editorial,
   product,
+  protocols,
   retatrutide,
   retatrutideCategory,
   retatrutideResearch,

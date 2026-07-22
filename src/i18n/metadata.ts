@@ -17,6 +17,10 @@ export const pageMetadata: Record<string, LocalizedPageMeta> = {
     en: { title: 'Research Compound Catalog | Encore Bio Labs', description: 'Compare research compounds by biological context, formulation, available strength, price, and supporting product documentation.' },
     es: { title: 'Catálogo de compuestos de investigación | Encore Bio Labs', description: 'Compara compuestos por contexto biológico, formulación, concentración disponible, precio y documentación de respaldo.' },
   },
+  '/protocols': {
+    en: { title: 'Research Protocols & Curated Sets | Encore Bio Labs', description: 'Compare curated research sets built from current Encore Bio Labs catalog products, variants, prices, SKUs, and available documentation.' },
+    es: { title: 'Protocolos y sets de investigación | Encore Bio Labs', description: 'Compara sets de investigación creados con productos, variantes, precios, SKUs y documentación actual del catálogo de Encore Bio Labs.' },
+  },
   '/cart': {
     en: { title: 'Research Cart | Encore Bio Labs', description: 'Review selected research products, strengths, quantities, and catalog subtotal.' },
     es: { title: 'Carrito de investigación | Encore Bio Labs', description: 'Revisa los productos que seleccionaste, sus concentraciones, cantidades y el subtotal.' },

@@ -24,6 +24,7 @@ export function Navbar() {
   const primaryNavItems = [
     { key: 'Home', label: t('home'), href: '/' },
     { key: 'Catalog', label: t('catalog'), href: '/catalog' },
+    { key: 'Protocols', label: t('protocols'), href: '/protocols' },
     { key: 'Shipping', label: t('shippingDelivery'), href: '/legal/shipping-returns' },
     { key: 'About', label: t('about'), href: '/about' },
     { key: 'Contact', label: t('contact'), href: '/contact' },
@@ -121,6 +122,7 @@ export function Navbar() {
   function isActive(key: string) {
     if (key === 'Home') return logicalPathname === '/' && !location.hash
     if (key === 'Catalog') return ['/catalog', '/products/', '/categories/'].some((p) => logicalPathname === p || logicalPathname.startsWith(p))
+    if (key === 'Protocols') return logicalPathname === '/protocols' || logicalPathname.startsWith('/protocols/')
     if (key === 'About') return logicalPathname === '/about' || logicalPathname === '/about/'
     if (key === 'FAQ') return logicalPathname === '/faq' || logicalPathname === '/faq/'
     if (key === 'Contact') return logicalPathname === '/contact' || logicalPathname === '/contact/'

@@ -3,6 +3,7 @@ export const footer = {
   contact: 'Contact',
   legal: 'Legal',
   catalog: 'Catalog',
+  protocols: 'Protocols',
   howItWorks: 'How It Works',
   categories: 'Categories',
   researchLibrary: 'Research Library',

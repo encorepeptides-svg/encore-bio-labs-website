@@ -3,6 +3,7 @@ import type { navigation as navigationEn } from '../en/navigation'
 export const navigation = {
   home: 'Inicio',
   catalog: 'Catálogo',
+  protocols: 'Protocolos',
   about: 'Nosotros',
   faq: 'Preguntas frecuentes',
   contact: 'Contacto',

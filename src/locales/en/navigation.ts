@@ -1,6 +1,7 @@
 export const navigation = {
   home: 'Home',
   catalog: 'Catalog',
+  protocols: 'Protocols',
   about: 'About',
   faq: 'FAQ',
   contact: 'Contact',

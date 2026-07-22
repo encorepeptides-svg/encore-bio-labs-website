@@ -99,6 +99,7 @@
 
 /* Product stage (layer 7) */
 .ph-stage { position: absolute; inset: 0; display: grid; place-items: center; z-index: 2; }
+.ph-stage-content { position: absolute; inset: 0; z-index: 1; }
 
 /* glow/bloom behind product, color-matched, spills into scene */
 .ph-glow {

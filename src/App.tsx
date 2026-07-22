@@ -38,6 +38,8 @@ const ShippingReturnsPage = lazy(() =>
 )
 const TermsPage = lazy(() => import('./components/legal/TermsPage').then((m) => ({ default: m.TermsPage })))
 const ProductPage = lazy(() => import('./components/product/ProductPage').then((m) => ({ default: m.ProductPage })))
+const ProtocolsHubPage = lazy(() => import('./components/protocols/ProtocolsHubPage').then((m) => ({ default: m.ProtocolsHubPage })))
+const ProtocolDetailPage = lazy(() => import('./components/protocols/ProtocolDetailPage').then((m) => ({ default: m.ProtocolDetailPage })))
 const QualityPage = lazy(() => import('./components/quality/QualityPage').then((m) => ({ default: m.QualityPage })))
 const ResearchLibraryPage = lazy(() =>
   import('./components/research/ResearchLibraryPage').then((m) => ({ default: m.ResearchLibraryPage })),
@@ -93,6 +95,10 @@ function getCategorySlugFromPath(path: string) {
   return getRouteParam(path, /^\/categories\/([^/]+)\/?$/)
 }
 
+function getProtocolSlugFromPath(path: string) {
+  return getRouteParam(path, /^\/protocols\/([^/]+)\/?$/)
+}
+
 function SkipToMainLink() {
   const { t } = useTranslation('common')
   return (
@@ -110,9 +116,10 @@ function App() {
   const { locale, path: logicalPath } = stripLocalePrefix(rawPathname)
   const productSlug = getProductSlugFromPath(logicalPath)
   const categorySlug = getCategorySlugFromPath(logicalPath)
+  const protocolSlug = getProtocolSlugFromPath(logicalPath)
 
   useEffect(() => {
-    if (productSlug) return
+    if (productSlug || protocolSlug) return
 
     const normalizedPath = logicalPath.length > 1 ? logicalPath.replace(/\/$/, '') : logicalPath
     const categoryName = categorySlug && knownCategorySlugs.has(categorySlug)
@@ -124,7 +131,7 @@ function App() {
       ? notFoundMetadata
       : pageMetadata[metadataKey] ?? (categoryName ? getCategoryMetadata(categorySlug!, categoryName) : notFoundMetadata)
     applyDocumentMetadata(normalizedPath, locale, localizedMeta[locale])
-  }, [categorySlug, locale, logicalPath, productSlug])
+  }, [categorySlug, locale, logicalPath, productSlug, protocolSlug])
 
   // Restore scroll position after a language switch (a full reload) so switching
   // languages keeps the user exactly where they were. An explicit #hash target
@@ -190,6 +197,14 @@ function App() {
 
     if (logicalPath === '/catalog' || logicalPath === '/catalog/') {
       return <CatalogPage />
+    }
+
+    if (logicalPath === '/protocols' || logicalPath === '/protocols/') {
+      return <ProtocolsHubPage />
+    }
+
+    if (protocolSlug) {
+      return <ProtocolDetailPage slug={protocolSlug} />
     }
 
     if (logicalPath === '/cart' || logicalPath === '/cart/') {

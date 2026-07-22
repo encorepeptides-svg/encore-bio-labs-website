@@ -11,6 +11,7 @@ export function Footer() {
 
   const exploreLinks = [
     { label: t('catalog'), href: '/catalog' },
+    { label: t('protocols'), href: '/protocols' },
     { label: t('howItWorks'), href: '/#how-it-works' },
     { label: t('categories'), href: '/#products' },
     { label: t('researchLibrary'), href: '/research' },

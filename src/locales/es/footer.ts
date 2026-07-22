@@ -5,6 +5,7 @@ export const footer = {
   contact: 'Contacto',
   legal: 'Legal',
   catalog: 'Catálogo',
+  protocols: 'Protocolos',
   howItWorks: 'Cómo funciona',
   categories: 'Categorías',
   researchLibrary: 'Biblioteca de investigación',

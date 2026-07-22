@@ -7,6 +7,8 @@ import { translate } from './translate'
 
 const bilingualRoutes = [
   '/catalog',
+  '/protocols',
+  '/protocols/cellular-energy-research',
   '/intake',
   '/research',
   '/review-preview',
