@@ -224,7 +224,7 @@ export function HomePage() {
         />
         <div aria-hidden="true" className="absolute inset-0 -z-10 opacity-[0.08] [background-image:linear-gradient(rgba(255,255,255,.14)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.14)_1px,transparent_1px)] [background-size:72px_72px] [mask-image:linear-gradient(to_right,black,transparent_70%)]" />
 
-        <div className="relative mx-auto grid max-w-[88rem] gap-10 md:grid-cols-[minmax(0,1.15fr)_minmax(19rem,0.85fr)] md:items-center lg:min-h-[clamp(35rem,calc(100svh-14rem),47rem)] lg:gap-14">
+        <div className="relative mx-auto grid max-w-[88rem] gap-8 md:grid-cols-[minmax(0,1fr)_minmax(21rem,1fr)] md:items-center lg:min-h-[clamp(35rem,calc(100svh-14rem),47rem)] lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-12">
           <motion.div
             initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
             animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
@@ -238,8 +238,8 @@ export function HomePage() {
             <h1
               className={`mt-5 max-w-full font-semibold leading-[0.91] tracking-[-0.065em] text-white sm:mt-7 ${
                 locale === 'es'
-                  ? 'text-[clamp(2.75rem,12.4vw,3.45rem)] sm:text-[clamp(3.35rem,7vw,4.4rem)] lg:text-[clamp(4.4rem,5.8vw,6.2rem)]'
-                  : 'text-[clamp(2.9rem,13vw,3.7rem)] sm:text-[clamp(3.6rem,7.5vw,4.8rem)] lg:text-[clamp(4.75rem,6.1vw,6.6rem)]'
+                  ? 'text-[clamp(2.75rem,12.4vw,3.45rem)] sm:text-[clamp(3.35rem,7vw,4.4rem)] lg:text-[clamp(4.1rem,5.1vw,5.5rem)]'
+                  : 'text-[clamp(2.9rem,13vw,3.7rem)] sm:text-[clamp(3.6rem,7.5vw,4.8rem)] lg:text-[clamp(4.25rem,5.25vw,5.7rem)]'
               }`}
             >
               {heroTitleLines.map((line) => (
@@ -283,29 +283,30 @@ export function HomePage() {
           <motion.div
             initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.98, x: 20 }}
             animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, x: 0 }}
-            transition={{ duration: prefersReducedMotion ? 0.15 : 0.6, ease: 'easeOut', delay: prefersReducedMotion ? 0 : 0.06 }}
-            className="relative z-0 min-h-[27rem] overflow-hidden bg-[#030b18] md:min-h-[32rem] lg:min-h-[41rem]"
+            transition={{ duration: prefersReducedMotion ? 0.15 : 0.9, ease: 'easeOut', delay: prefersReducedMotion ? 0 : 0.08 }}
+            className="home-hero-video-stage relative z-0 -mx-5 min-h-[27rem] w-[calc(100%+2.5rem)] sm:-mx-8 sm:min-h-[31rem] sm:w-[calc(100%+4rem)] md:mx-0 md:min-h-[35rem] md:w-auto lg:min-h-[43rem]"
           >
-            {/* Immersive transformation loop, embedded into the hero: crisp and
-                opaque, its edges blended into the exact section color by the
-                overlay below — no card, no border, no visible rectangle. */}
-            <video
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="auto"
-              poster={heroVideoPoster}
-              aria-hidden="true"
-              tabIndex={-1}
-              onCanPlay={(event) => {
-                void event.currentTarget.play().catch(() => undefined)
-              }}
-              className="absolute inset-0 h-full w-full object-cover object-center"
-            >
-              <source src={heroVideo} type="video/mp4" />
-            </video>
-            <div aria-hidden="true" className="hero-video-edge-blend pointer-events-none absolute inset-0" />
+            <div aria-hidden="true" className="home-hero-video-aura absolute inset-0" />
+            <div className="home-hero-video-media absolute -inset-[7%]">
+              <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                poster={heroVideoPoster}
+                aria-hidden="true"
+                tabIndex={-1}
+                onCanPlay={(event) => {
+                  void event.currentTarget.play().catch(() => undefined)
+                }}
+                className="hero-transformation-video h-full w-full object-cover object-center"
+              >
+                <source src={heroVideo} type="video/mp4" />
+              </video>
+              <div aria-hidden="true" className="hero-video-edge-blend pointer-events-none absolute inset-0" />
+              <div aria-hidden="true" className="home-hero-video-glass absolute inset-0" />
+            </div>
           </motion.div>
         </div>
 

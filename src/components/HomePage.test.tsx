@@ -23,6 +23,9 @@ describe('HomePage conversion content', () => {
     expect(html).toContain('Find My Product')
     expect(html).toContain('Browse Catalog')
     // The hero right column is the immersive transformation video, not a BAC Water card.
+    expect(html).toContain('home-hero-video-stage')
+    expect(html).toContain('home-hero-video-media')
+    expect(html).toContain('preload="metadata"')
     expect(html.match(/On-file COA/g)).toHaveLength(3)
   })
 
