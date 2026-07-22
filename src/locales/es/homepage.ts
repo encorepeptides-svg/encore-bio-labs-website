@@ -2,8 +2,13 @@ import type { homepage as homepageEn } from '../en/homepage'
 
 export const homepage = {
   heroEyebrow: 'Encore Bio Labs · Plataforma premium de investigación',
-  heroTitle: 'Compuestos premium.\nKits completos.\nSin concesiones.',
-  heroSubtitle: 'Elige el compuesto. Compara cada concentración. Recibe una configuración de investigación completa, con precios claros, documentación disponible y atención humana directa.',
+  heroTitle: '¿Buscas péptidos premium para investigación? Los encontraste.',
+  heroSubtitle: 'Explora más de 20 compuestos premium para investigación con kits completos, múltiples concentraciones, precios transparentes y atención humana ágil, todo en una plataforma confiable.',
+  heroTrustLabel: 'Por qué los investigadores eligen Encore Bio Labs',
+  heroTrustCompounds: 'Más de 20 compuestos de investigación',
+  heroTrustKits: 'Kits completos de investigación incluidos',
+  heroTrustStrengths: 'Múltiples concentraciones disponibles',
+  heroTrustSupport: 'Atención humana ágil',
   startYourResearch: 'Encontrar mi producto',
   browseCatalog: 'Ver catálogo',
   scrollToLearnMore: 'Desplázate para conocer más',

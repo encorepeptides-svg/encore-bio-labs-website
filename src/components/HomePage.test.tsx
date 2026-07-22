@@ -20,6 +20,13 @@ function renderPage(locale: Locale) {
 describe('HomePage conversion content', () => {
   it('uses clear English CTAs and only marks best sellers with real COAs', () => {
     const html = renderPage('en')
+    expect(html).toContain("Looking for Premium Research Peptides? You&#x27;ve Found Them.")
+    expect(html).toContain('Explore 20+ premium research compounds')
+    expect(html).toContain('20+ Research Compounds')
+    expect(html).toContain('Complete Research Kits Included')
+    expect(html).toContain('Multiple Strengths Available')
+    expect(html).toContain('Responsive Human Support')
+    expect(html.indexOf('Responsive Human Support')).toBeLessThan(html.indexOf('Browse Catalog'))
     expect(html).toContain('Browse Catalog')
     // The video is the hero canvas itself, not a bordered or rounded media card.
     expect(html).toContain('home-hero-video-canvas')
@@ -32,6 +39,11 @@ describe('HomePage conversion content', () => {
 
   it('ships matching Spanish CTAs and verified COA chips', () => {
     const html = renderPage('es')
+    expect(html).toContain('¿Buscas péptidos premium para investigación? Los encontraste.')
+    expect(html).toContain('Más de 20 compuestos de investigación')
+    expect(html).toContain('Kits completos de investigación incluidos')
+    expect(html).toContain('Múltiples concentraciones disponibles')
+    expect(html).toContain('Atención humana ágil')
     expect(html).toContain('Ver catálogo')
     expect(html.match(/COA disponible/g)).toHaveLength(3)
   })

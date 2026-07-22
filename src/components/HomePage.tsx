@@ -1,5 +1,9 @@
 import {
   BadgeCheck,
+  Beaker,
+  MessageCircle,
+  PackageCheck,
+  SlidersHorizontal,
   Sparkles,
   Star,
 } from 'lucide-react'
@@ -179,6 +183,12 @@ export function HomePage() {
     .filter((product): product is Product => Boolean(product))
   const heroProduct = bestSellerProducts.find((product) => product.slug === 'retatrutide')
   const supportingProducts = bestSellerProducts.filter((product) => product.slug !== 'retatrutide')
+  const heroTrustItems = [
+    { icon: Beaker, label: t('heroTrustCompounds') },
+    { icon: PackageCheck, label: t('heroTrustKits') },
+    { icon: SlidersHorizontal, label: t('heroTrustStrengths') },
+    { icon: MessageCircle, label: t('heroTrustSupport') },
+  ]
   return (
     <main id="main-content" className="bg-[#f5f5f2]">
       <section className="home-hero relative isolate overflow-hidden bg-[#030b18] px-5 text-white sm:px-8">
@@ -217,8 +227,8 @@ export function HomePage() {
             <h1
               className={`mt-5 max-w-full font-semibold leading-[0.91] tracking-[-0.065em] text-white sm:mt-7 ${
                 locale === 'es'
-                  ? 'text-[clamp(2.75rem,12.4vw,3.45rem)] sm:text-[clamp(3.35rem,7vw,4.4rem)] lg:text-[clamp(4.1rem,5.1vw,5.5rem)]'
-                  : 'text-[clamp(2.9rem,13vw,3.7rem)] sm:text-[clamp(3.6rem,7.5vw,4.8rem)] lg:text-[clamp(4.25rem,5.25vw,5.7rem)]'
+                  ? 'text-[clamp(2.65rem,11.5vw,3.35rem)] sm:text-[clamp(3.15rem,6.4vw,4.15rem)] lg:text-[clamp(3.65rem,4.45vw,4.85rem)]'
+                  : 'text-[clamp(2.75rem,12vw,3.5rem)] sm:text-[clamp(3.3rem,6.7vw,4.4rem)] lg:text-[clamp(3.8rem,4.65vw,5.05rem)]'
               }`}
             >
               {heroTitleLines.map((line) => (
@@ -231,7 +241,24 @@ export function HomePage() {
               {t('heroSubtitle')}
             </p>
 
-            <div className="mt-7 sm:mt-9">
+            <ul className="mt-7 grid grid-cols-2 border-y border-white/15 py-4 sm:grid-cols-4 sm:py-5" aria-label={t('heroTrustLabel')}>
+              {heroTrustItems.map((item, index) => {
+                const Icon = item.icon
+                return (
+                  <li
+                    key={item.label}
+                    className={`flex min-w-0 items-start gap-2.5 px-3 py-2 text-[0.68rem] font-semibold leading-4 text-slate-200 sm:px-3.5 sm:py-0 ${
+                      index % 2 === 1 ? 'border-l border-white/10' : ''
+                    } ${index > 1 ? 'border-t border-white/10 pt-4 sm:border-t-0 sm:pt-0' : ''} ${index > 0 ? 'sm:border-l sm:border-white/10' : ''}`}
+                  >
+                    <Icon size={16} strokeWidth={1.6} aria-hidden="true" className="mt-0.5 shrink-0 text-[#28e0c1]" />
+                    <span>{item.label}</span>
+                  </li>
+                )
+              })}
+            </ul>
+
+            <div className="mt-7 sm:mt-8">
               <CTA
                 href="/catalog"
                 className="min-h-12 w-full bg-[#28e0c1] px-5 text-[#071724] shadow-[0_16px_48px_rgba(40,224,193,0.28)] hover:bg-white sm:min-h-14 sm:w-auto sm:px-8"
