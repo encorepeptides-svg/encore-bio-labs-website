@@ -1,7 +1,7 @@
 import { ArrowDown, ArrowRight, FlaskConical } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import {
-  ENCORE_COMPLETE_KIT_IMAGE,
+  ENCORE_COMPLETE_KIT_CATALOG_HERO_IMAGE,
   ENCORE_COMPLETE_KIT_IMAGE_HEIGHT,
   ENCORE_COMPLETE_KIT_IMAGE_WIDTH,
 } from '../../data/kitMedia'
@@ -74,7 +74,7 @@ export function CatalogHero() {
         <motion.div {...enter(0.14)} className="relative mx-auto w-full max-w-[42rem] md:max-w-none">
           <div className="relative mx-auto aspect-video max-h-[28rem] w-full overflow-hidden rounded-[1.75rem] border border-teal-900/10 bg-white shadow-[0_24px_60px_rgba(7,23,36,0.10)]">
             <img
-              src={ENCORE_COMPLETE_KIT_IMAGE}
+              src={ENCORE_COMPLETE_KIT_CATALOG_HERO_IMAGE}
               alt={t('heroVisualAlt')}
               width={ENCORE_COMPLETE_KIT_IMAGE_WIDTH}
               height={ENCORE_COMPLETE_KIT_IMAGE_HEIGHT}
