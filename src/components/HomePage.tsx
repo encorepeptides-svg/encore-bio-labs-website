@@ -16,9 +16,10 @@ import { getLocalizedProduct, localizedCategoryLabel } from '../data/productTran
 import { cn } from '../lib/utils'
 import { useLocale, useTranslation } from '../i18n/LocaleContext'
 import { AddToCartButton } from './cart/AddToCartButton'
-import { BacWaterHeroImage } from './BacWaterHeroImage'
 import { CTA } from './CTA'
 import { ProductLabVisual } from './product/ProductLabVisual'
+import heroVideo from '../assets/videos/encore-hero.mp4'
+import heroVideoPoster from '../assets/images/hero/hero-video-poster.jpg'
 
 const bestSellerSlugs = ['retatrutide', 'ghk-cu', 'nad-plus', 'tesamorelin']
 
@@ -279,47 +280,31 @@ export function HomePage() {
             </div>
           </motion.div>
 
-          <motion.a
-              href={path('/kits')}
-              aria-label={t('bacHeroCta')}
-              initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.97, x: 24 }}
-              animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, x: 0 }}
-              transition={{ duration: prefersReducedMotion ? 0.15 : 0.45, ease: 'easeOut', delay: prefersReducedMotion ? 0 : 0.04 }}
-              className="group relative block min-h-[27rem] overflow-hidden rounded-[2rem] border border-white/15 bg-[linear-gradient(145deg,rgba(20,184,166,0.15),rgba(3,11,24,0.56)_48%,rgba(255,255,255,0.06))] shadow-[0_38px_120px_rgba(0,0,0,0.42)] backdrop-blur-sm md:min-h-[32rem] lg:min-h-[39rem]"
+          <motion.div
+            initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.98, x: 20 }}
+            animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, x: 0 }}
+            transition={{ duration: prefersReducedMotion ? 0.15 : 0.6, ease: 'easeOut', delay: prefersReducedMotion ? 0 : 0.06 }}
+            className="relative z-0 min-h-[27rem] md:min-h-[32rem] lg:min-h-[41rem]"
+          >
+            {/* Immersive transformation loop, embedded into the hero: no card,
+                no border — the edges fade into the surrounding dark scene. */}
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              poster={heroVideoPoster}
+              aria-hidden="true"
+              tabIndex={-1}
+              onCanPlay={(event) => {
+                void event.currentTarget.play().catch(() => undefined)
+              }}
+              className="hero-transformation-video absolute inset-0 h-full w-full object-cover object-center"
             >
-              <BacWaterHeroImage
-                alt={t('bacHeroAlt')}
-                priority
-                sizes="(min-width: 1280px) 38vw, 42vw"
-                className="absolute inset-x-0 top-0 h-[76%] w-full object-cover object-center transition duration-700 motion-safe:group-hover:scale-[1.025]"
-              />
-              <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,11,24,0.02)_0%,rgba(3,11,24,0.08)_44%,rgba(3,11,24,0.98)_76%)]" />
-              <div className="absolute left-6 top-6 z-10 inline-flex items-center gap-2 rounded-full border border-teal-100/20 bg-teal-100/10 px-3 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-teal-100 backdrop-blur-xl lg:left-8 lg:top-8">
-                <PackageCheck size={14} aria-hidden="true" className="text-[#28e0c1]" />
-                {t('bacHeroEyebrow')}
-              </div>
-              <div className="absolute bottom-5 left-5 right-5 z-10 rounded-[1.4rem] border border-white/15 bg-[#06131f]/78 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl lg:bottom-7 lg:left-7 lg:right-7 lg:p-6">
-                <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-[#71f0db]">
-                  {t('bacHeroEyebrow')}
-                </p>
-                <div className="mt-2 flex items-end justify-between gap-4">
-                  <div>
-                    <p className="text-3xl font-semibold tracking-[-0.05em] text-white lg:text-4xl">
-                      {t('bacHeroTitle')}
-                    </p>
-                    <p className="mt-2 max-w-sm text-sm leading-6 text-slate-300">
-                      {t('bacHeroCaption')}
-                    </p>
-                  </div>
-                  <span className="mb-1 inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-[#28e0c1] text-[#071724] transition group-hover:bg-white">
-                    <ArrowRight size={18} aria-hidden="true" />
-                  </span>
-                </div>
-                <p className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-teal-100">
-                  {t('bacHeroCta')}
-                </p>
-              </div>
-            </motion.a>
+              <source src={heroVideo} type="video/mp4" />
+            </video>
+          </motion.div>
         </div>
 
         <div id="trust-strip" className="relative mx-auto mt-7 grid max-w-[88rem] scroll-mt-20 gap-2 rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-2 shadow-[0_20px_70px_rgba(0,0,0,0.22)] backdrop-blur-xl sm:grid-cols-2 lg:mt-9 lg:grid-cols-5">

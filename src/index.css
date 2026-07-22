@@ -223,6 +223,20 @@ summary:focus-visible {
   overflow: hidden;
 }
 
+/* Immersive hero transformation video, embedded borderless into the section.
+   All four edges feather into the surrounding dark scene — no card, no rectangle,
+   no visible crop. Top fades into the hero, bottom into the next dark section. */
+.hero-transformation-video {
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0%, #000 15%, #000 78%, transparent 100%),
+    linear-gradient(to right, transparent 0%, #000 13%, #000 87%, transparent 100%);
+  mask-image:
+    linear-gradient(to bottom, transparent 0%, #000 15%, #000 78%, transparent 100%),
+    linear-gradient(to right, transparent 0%, #000 13%, #000 87%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
 .home-scroll-cue > span:last-child span {
   animation: home-scroll-dot 1.8s ease-in-out infinite;
 }

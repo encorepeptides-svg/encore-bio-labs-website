@@ -22,8 +22,7 @@ describe('HomePage conversion content', () => {
     const html = renderPage('en')
     expect(html).toContain('Find My Product')
     expect(html).toContain('Browse Catalog')
-    expect(html).toContain('The 1 mL BAC Water presentation shown here')
-    expect(html).toContain('Encore Bio Labs 1 mL BAC Water vial on a bright molecular laboratory background')
+    // The hero right column is the immersive transformation video, not a BAC Water card.
     expect(html.match(/On-file COA/g)).toHaveLength(3)
   })
 
@@ -31,8 +30,6 @@ describe('HomePage conversion content', () => {
     const html = renderPage('es')
     expect(html).toContain('Encontrar mi producto')
     expect(html).toContain('Ver catálogo')
-    expect(html).toContain('La presentación de agua BAC de 1 mL que se muestra')
-    expect(html).toContain('Vial de agua BAC Encore Bio Labs de 1 mL sobre un fondo molecular de laboratorio')
     expect(html.match(/COA disponible/g)).toHaveLength(3)
   })
 
