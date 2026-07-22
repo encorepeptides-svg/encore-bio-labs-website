@@ -62,6 +62,7 @@ export const portal = {
   stepAgreements: 'Agreements',
   stepReview: 'Review & Submit',
   stepAriaLabel: 'Step {step} of {total}',
+  onboardingRequiredNotice: 'Every required section must be complete before your account can be submitted for review and portal access can be activated.',
   onboardingStepError: 'Complete the required choices on this step before continuing.',
   goalWeight: 'Weight-management tracking',
   goalBodyComp: 'Body-composition tracking',

@@ -178,7 +178,7 @@ export function isIntakeStepComplete(step: number, data: IntakeFormData) {
   const requiredFields: Array<Array<keyof IntakeFormData>> = [
     ['mainGoal', 'timeline', 'helpNeeded'],
     ['lifestyleActivity', 'sleepQuality', 'energyLevels', 'peptideExperience', 'biometricsStatus'],
-    ['firstName', 'lastName', 'preferredContactMethod'],
+    ['firstName', 'lastName', 'email', 'phone', 'city', 'preferredContactMethod'],
   ]
 
   if (step < 0 || step >= requiredFields.length) return false
@@ -193,14 +193,13 @@ export function isIntakeStepComplete(step: number, data: IntakeFormData) {
   }
 
   if (step === 1) {
-    return fieldsComplete && data.currentConcerns.length > 0
+    const sharedBiometricsComplete = data.biometricsStatus !== 'I can share them now' ||
+      [data.age, data.sex, data.height, data.currentWeight, data.goalWeight].every((value) => value.trim().length > 0)
+
+    return fieldsComplete && data.currentConcerns.length > 0 && data.interestedProducts.length > 0 && sharedBiometricsComplete
   }
 
   if (step === 2) {
-    const hasRequiredContact =
-      data.preferredContactMethod === 'Email'
-        ? data.email.trim().length > 0
-        : data.phone.trim().length > 0
     const hasConsent =
       data.consentResearchUseOnly &&
       data.consentNoMedicalAdvice &&
@@ -208,7 +207,7 @@ export function isIntakeStepComplete(step: number, data: IntakeFormData) {
       data.consentContact &&
       data.consentInternalReview
 
-    return fieldsComplete && hasRequiredContact && hasConsent
+    return fieldsComplete && hasConsent
   }
 
   return fieldsComplete

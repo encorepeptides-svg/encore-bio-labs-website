@@ -64,6 +64,7 @@ export const portal = {
   stepAgreements: 'Acuerdos',
   stepReview: 'Revisar y enviar',
   stepAriaLabel: 'Paso {step} de {total}',
+  onboardingRequiredNotice: 'Debes completar todas las secciones obligatorias antes de enviar tu cuenta a revisión y activar el acceso al portal.',
   onboardingStepError: 'Completa las opciones obligatorias de este paso antes de continuar.',
   goalWeight: 'Seguimiento de control de peso',
   goalBodyComp: 'Seguimiento de composición corporal',

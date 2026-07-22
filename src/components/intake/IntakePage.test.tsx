@@ -32,6 +32,7 @@ function completeSituation(overrides: Partial<IntakeFormData> = {}): IntakeFormD
     energyLevels: 'Variable',
     peptideExperience: 'New to this',
     biometricsStatus: "I don't have them yet",
+    interestedProducts: ['NAD+'],
     ...overrides,
   }
 }
@@ -43,6 +44,8 @@ function completeContact(overrides: Partial<IntakeFormData> = {}): IntakeFormDat
     lastName: 'Client',
     preferredContactMethod: 'Email',
     email: 'client@example.com',
+    phone: '9155550100',
+    city: 'El Paso',
     consentResearchUseOnly: true,
     consentNoMedicalAdvice: true,
     consentAccuracy: true,
@@ -76,13 +79,27 @@ describe('direct client intake flow', () => {
     expect(isIntakeStepComplete(0, completeGoals())).toBe(true)
   })
 
-  it('makes guided situation answers expected while accepting unavailable measurements', () => {
+  it('requires all visible situation answers while accepting an explicit unavailable-measurements response', () => {
     expect(isIntakeStepComplete(1, completeGoals())).toBe(false)
     expect(isIntakeStepComplete(1, completeSituation({ currentConcerns: [] }))).toBe(false)
     expect(isIntakeStepComplete(1, completeSituation({ biometricsStatus: '' }))).toBe(false)
+    expect(isIntakeStepComplete(1, completeSituation({ interestedProducts: [] }))).toBe(false)
     expect(isIntakeStepComplete(1, completeSituation())).toBe(true)
     expect(completeSituation().age).toBe('')
     expect(completeSituation().currentWeight).toBe('')
+  })
+
+  it('requires every displayed measurement when the client elects to share biometrics', () => {
+    const ready = completeSituation({
+      biometricsStatus: 'I can share them now',
+      age: '30–39',
+      sex: 'Prefer not to say',
+      height: '70 in',
+      currentWeight: '180 lb',
+      goalWeight: '170 lb',
+    })
+    expect(isIntakeStepComplete(1, ready)).toBe(true)
+    expect(isIntakeStepComplete(1, { ...ready, height: '' })).toBe(false)
   })
 
   it('keeps contact and all compliance acknowledgments required', () => {
@@ -90,7 +107,9 @@ describe('direct client intake flow', () => {
     expect(isIntakeStepComplete(2, complete)).toBe(true)
     expect(isIntakeStepComplete(2, { ...complete, consentResearchUseOnly: false })).toBe(false)
     expect(isIntakeStepComplete(2, { ...complete, email: '' })).toBe(false)
-    expect(isIntakeStepComplete(2, { ...complete, preferredContactMethod: 'WhatsApp', email: '', phone: '9155550100' })).toBe(true)
+    expect(isIntakeStepComplete(2, { ...complete, phone: '' })).toBe(false)
+    expect(isIntakeStepComplete(2, { ...complete, city: '' })).toBe(false)
+    expect(isIntakeStepComplete(2, { ...complete, preferredContactMethod: 'WhatsApp' })).toBe(true)
   })
 
   it('renders plain-language selectable questions without open text areas', () => {

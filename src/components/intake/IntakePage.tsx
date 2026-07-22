@@ -456,6 +456,7 @@ export function IntakePage() {
 
   async function submitIntake(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (!isIntakeStepComplete(stepKeys.length - 1, formData)) return
 
     const nextLead = createLeadFromIntake(formData, recommendation)
     saveStoredLeads([nextLead, ...getStoredLeads()])
@@ -676,25 +677,25 @@ export function IntakePage() {
 
                     {formData.biometricsStatus === 'I can share them now' ? (
                       <div className="grid gap-4 rounded-[1.5rem] border border-slate-900/10 bg-[#f5f5f2]/70 p-4 md:grid-cols-2 sm:p-5">
-                        <Field label={`${t('ageRange')} (${t('optional')})`}>
-                          <SelectField name="age" value={formData.age} options={ageRangeOptions} onChange={updateField} required={false} />
+                        <Field label={`${t('ageRange')} (${t('required')})`}>
+                          <SelectField name="age" value={formData.age} options={ageRangeOptions} onChange={updateField} />
                         </Field>
-                        <Field label={`${t('biologicalSex')} (${t('optional')})`}>
-                          <SelectField name="sex" value={formData.sex} options={sexOptions} onChange={updateField} required={false} />
+                        <Field label={`${t('biologicalSex')} (${t('required')})`}>
+                          <SelectField name="sex" value={formData.sex} options={sexOptions} onChange={updateField} />
                         </Field>
-                        <Field label={`${t('height')} (${t('optional')})`}>
-                          <TextInput name="height" value={formData.height} onChange={updateField} required={false} placeholder={t('heightPlaceholder')} />
+                        <Field label={`${t('height')} (${t('required')})`}>
+                          <TextInput name="height" value={formData.height} onChange={updateField} placeholder={t('heightPlaceholder')} />
                         </Field>
-                        <Field label={`${t('currentWeight')} (${t('optional')})`}>
-                          <TextInput name="currentWeight" value={formData.currentWeight} onChange={updateField} required={false} placeholder={t('weightPlaceholder')} />
+                        <Field label={`${t('currentWeight')} (${t('required')})`}>
+                          <TextInput name="currentWeight" value={formData.currentWeight} onChange={updateField} placeholder={t('weightPlaceholder')} />
                         </Field>
-                        <Field label={`${t('goalWeight')} (${t('optional')})`}>
-                          <TextInput name="goalWeight" value={formData.goalWeight} onChange={updateField} required={false} placeholder={t('weightPlaceholder')} />
+                        <Field label={`${t('goalWeight')} (${t('required')})`}>
+                          <TextInput name="goalWeight" value={formData.goalWeight} onChange={updateField} placeholder={t('weightPlaceholder')} />
                         </Field>
                       </div>
                     ) : null}
 
-                    <QuestionGroup legend={`${t('interestedProductsQuestion')} (${t('optional')})`} hint={t('recommendedProductsHelp')}>
+                    <QuestionGroup legend={`${t('interestedProductsQuestion')} (${t('required')})`} hint={t('recommendedProductsHelp')}>
                       <ProductChoiceGrid selected={formData.interestedProducts} onToggle={toggleProduct} items={recommendation.recommendedProducts} />
                     </QuestionGroup>
                   </div>
@@ -711,28 +712,26 @@ export function IntakePage() {
                       <Field label={`${t('lastName')} (${t('required')})`}>
                         <TextInput name="lastName" value={formData.lastName} onChange={updateField} autoComplete="family-name" />
                       </Field>
-                      <Field label={`${t('email')} (${formData.preferredContactMethod === 'Email' ? t('required') : t('optional')})`}>
+                      <Field label={`${t('email')} (${t('required')})`}>
                         <TextInput
                           name="email"
                           value={formData.email}
                           type="email"
                           onChange={updateField}
                           autoComplete="email"
-                          required={formData.preferredContactMethod === 'Email'}
                         />
                       </Field>
-                      <Field label={`${t('phoneNumber')} (${formData.preferredContactMethod === 'SMS' || formData.preferredContactMethod === 'WhatsApp' ? t('required') : t('optional')})`}>
+                      <Field label={`${t('phoneNumber')} (${t('required')})`}>
                         <TextInput
                           name="phone"
                           value={formData.phone}
                           type="tel"
                           onChange={updateField}
                           autoComplete="tel"
-                          required={formData.preferredContactMethod === 'SMS' || formData.preferredContactMethod === 'WhatsApp'}
                         />
                       </Field>
-                      <Field label={`${t('city')} (${t('optional')})`}>
-                        <TextInput name="city" value={formData.city} onChange={updateField} autoComplete="address-level2" required={false} />
+                      <Field label={`${t('city')} (${t('required')})`}>
+                        <TextInput name="city" value={formData.city} onChange={updateField} autoComplete="address-level2" />
                       </Field>
                       <Field label={`${t('preferredContactMethod')} (${t('required')})`}>
                         <SelectField name="preferredContactMethod" value={formData.preferredContactMethod} options={contactOptions} onChange={updateField} />

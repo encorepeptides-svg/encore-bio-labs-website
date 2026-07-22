@@ -47,6 +47,7 @@ const ResearchLibraryPage = lazy(() =>
 const NotFoundPage = lazy(() => import('./components/NotFoundPage').then((m) => ({ default: m.NotFoundPage })))
 const PortalAuthPage = lazy(() => import('./components/portal/PortalAuthPages').then((m) => ({ default: m.PortalAuthPage })))
 const OnboardingPage = lazy(() => import('./components/portal/OnboardingPage').then((m) => ({ default: m.OnboardingPage })))
+const PortalIntakeRoute = lazy(() => import('./components/portal/PortalIntakeRoute').then((m) => ({ default: m.PortalIntakeRoute })))
 const ClientPortalPage = lazy(() => import('./components/portal/ClientPortalPage').then((m) => ({ default: m.ClientPortalPage })))
 const AdminPortalPage = lazy(() => import('./components/portal/AdminPortalPage').then((m) => ({ default: m.AdminPortalPage })))
 const DraftReviewPreviewPage = import.meta.env.DEV
@@ -166,6 +167,7 @@ function App() {
     const authMode = logicalPath === '/client-login' ? 'login' : logicalPath === '/client-register' ? 'register' : logicalPath === '/client-forgot-password' ? 'forgot' : logicalPath === '/client-reset-password' ? 'reset' : undefined
     if (authMode) return <PortalAuthPage mode={authMode} />
     if (logicalPath === '/portal/onboarding') return <ProtectedPortal allowOnboarding><OnboardingPage /></ProtectedPortal>
+    if (logicalPath === '/portal/intake' || logicalPath === '/portal/intake/') return <ProtectedPortal allowOnboarding><PortalIntakeRoute /></ProtectedPortal>
     if (logicalPath === '/portal' || logicalPath.startsWith('/portal/')) {
       const section = logicalPath === '/portal' ? 'overview' : logicalPath.slice('/portal/'.length)
       const allowPending = section === 'security'

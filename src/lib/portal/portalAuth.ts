@@ -8,7 +8,14 @@ export type PortalIdentity = {
   user: User
   roles: PortalRole[]
   status: ClientAccountStatus
-  profile: { legal_name: string; preferred_name: string; email: string }
+  profile: {
+    legal_name: string
+    preferred_name: string
+    email: string
+    mobile?: string | null
+    preferred_language?: string | null
+    time_zone?: string | null
+  }
 }
 
 function requireSupabase() {
@@ -28,7 +35,7 @@ export async function loadPortalIdentity(): Promise<PortalIdentity | null> {
   const [{ data: roles, error: roleError }, { data: status, error: statusError }, { data: profile, error: profileError }] = await Promise.all([
     client.from('user_roles').select('role').eq('user_id', user.id),
     client.from('client_statuses').select('status').eq('user_id', user.id).single(),
-    client.from('profiles').select('legal_name,preferred_name,email').eq('id', user.id).single(),
+    client.from('profiles').select('legal_name,preferred_name,email,mobile,preferred_language,time_zone').eq('id', user.id).single(),
   ])
   if (roleError || statusError || profileError) throw new Error('Portal access could not be verified.')
   return { user, roles: (roles ?? []).map((entry) => entry.role as PortalRole), status: status.status as ClientAccountStatus, profile }

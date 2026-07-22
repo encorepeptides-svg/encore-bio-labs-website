@@ -27,7 +27,7 @@ export function IntakeResultsSection() {
             <div className="flex items-center gap-3"><span className="flex size-10 items-center justify-center rounded-2xl bg-teal-50 text-teal-700"><ClipboardCheck size={18} /></span><div><p className="font-semibold">{t('intakeSubmissionLabel')}</p><p className="text-sm text-slate-500">{data.submitted_at ? t('intakeSubmittedOn', { date: formatDate(data.submitted_at) }) : t('intakeNotSubmitted')}</p></div></div>
             {decisionKey ? <Badge tone={statusTone(data.decision === 'corrections_requested' ? 'pending' : data.decision)}>{t(decisionKey)}</Badge> : null}
           </div>
-          {data.decision === 'corrections_requested' ? <p className="mt-4 rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-950">{t('intakeCorrectionsNote')} <a href={path('/portal/onboarding')} className="font-semibold underline">{t('intakeCorrectionsAction')}</a></p> : null}
+          {data.decision === 'corrections_requested' ? <p className="mt-4 rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-950">{t('intakeCorrectionsNote')} <a href={path('/portal/intake')} className="font-semibold underline">{t('intakeCorrectionsAction')}</a></p> : null}
         </Card>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Metric label={t('intakeStartingWeight')} value={weight(data.starting_weight_kg)} />

@@ -14,7 +14,7 @@ export function ProtectedPortal({ children, admin = false, allowOnboarding = fal
   if (decision === 'admin_required') return <PortalGate title={t('gateAdminTitle')} copy={t('gateAdminCopy')} action={t('gateAdminAction')} href={path('/portal')} />
   if (decision === 'account_unavailable') return <PortalGate title={t('gateAccountTitle')} copy={t('gateAccountCopy')} action={t('gateAccountAction')} href={path('/client-login')} />
   if (decision === 'unverified') return <PortalGate title={t('gateUnverifiedTitle')} copy={t('gateUnverifiedCopy')} action={t('gateUnverifiedAction')} href={path('/client-login')} />
-  if (decision === 'onboarding_required') return <PortalGate title={t('gateOnboardingTitle')} copy={t('gateOnboardingCopy')} action={t('gateOnboardingAction')} href={path('/portal/onboarding')} />
+  if (decision === 'onboarding_required') return <PortalGate title={t('gateOnboardingTitle')} copy={t('gateOnboardingCopy')} action={t('gateOnboardingAction')} href={path('/portal/intake')} />
   if (decision === 'pending_review') return <PortalGate title={t('gatePendingTitle')} copy={t('gatePendingCopy')} action={t('gatePendingAction')} href={path('/portal/security')} />
   return children
 }
