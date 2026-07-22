@@ -1,9 +1,9 @@
-import { AlertTriangle, ArrowRight, Beaker, Droplets, FlaskConical, PackageSearch, Pipette, Sparkles } from 'lucide-react'
+import { AlertTriangle, ArrowRight, Beaker, Droplets, PackageSearch, Pipette, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { products } from '../../../data/products'
 import { getLocalizedProduct } from '../../../data/productTranslations'
 import { useLocale, useTranslation } from '../../../i18n/LocaleContext'
-import { calculateAliquotPlan, calculateWorkingDilution } from '../../../lib/portal/labCalculators'
+import { calculateAliquotPlan } from '../../../lib/portal/labCalculators'
 import { Card, FieldLabel, SectionIntro } from './shared'
 
 export function CalculatorsSection() {
@@ -16,7 +16,6 @@ export function CalculatorsSection() {
     </div>
     <GuidedAliquotCalculator />
     <div className="mt-5 grid gap-4 lg:grid-cols-2">
-      <WorkingDilutionCalculator />
       <BmiCalculator />
       <ChangeCalculator />
     </div>
@@ -41,8 +40,12 @@ function GuidedAliquotCalculator() {
   const selectedProduct = eligibleProducts.find((product) => product.slug === productSlug)
   const result = calculateAliquotPlan(Number(mass), Number(diluent), Number(target))
   const invalidTarget = Number(target) > 0 && Number(mass) > 0 && Number(target) > Number(mass) * 1000
-  const meterMaximum = result ? Math.max(1000, Math.ceil(result.transferVolumeMicroliters / 250) * 250) : 1000
-  const meterFill = result ? Math.max(2, Math.min(100, (result.transferVolumeMicroliters / meterMaximum) * 100)) : 0
+  // Show the draw amount in U-100 insulin-syringe units (1 unit = 10 µL) rather
+  // than microliters, which is what this audience actually reads off a syringe.
+  const drawUnits = result ? result.transferVolumeMicroliters / 10 : null
+  const microgramsPerUnit = result ? result.concentrationMicrogramsPerMicroliter * 10 : null
+  const meterMaximum = drawUnits != null ? Math.max(100, Math.ceil(drawUnits / 25) * 25) : 100
+  const meterFill = drawUnits != null ? Math.max(2, Math.min(100, (drawUnits / meterMaximum) * 100)) : 0
 
   function chooseProduct(slug: string) {
     setProductSlug(slug)
@@ -66,15 +69,15 @@ function GuidedAliquotCalculator() {
       <div className="bg-[#071724] p-5 text-white sm:p-7" aria-live="polite">
         <p className="text-xs font-bold uppercase tracking-[.16em] text-teal-200">{t('aliquotResultsTitle')}</p>
         <p className="mt-5 text-sm font-semibold text-slate-300">{t('aliquotTransferVolume')}</p>
-        <p className="mt-1 text-5xl font-semibold tracking-[-.06em]">{result ? formatResult(result.transferVolumeMicroliters) : '—'}<span className="ml-2 text-xl tracking-normal text-teal-200">µL</span></p>
-        <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4"><div className="flex items-center justify-between gap-3 text-xs font-semibold text-slate-300"><span>{t('aliquotMeterLabel')}</span><span>{formatResult(meterMaximum)} µL</span></div><div className="relative mt-3 h-7 overflow-hidden rounded-full border border-white/15 bg-white/8"><div className="absolute inset-y-0 left-0 rounded-full bg-[linear-gradient(90deg,#2dd4bf,#99f6e4)] transition-[width] duration-500" style={{ width: `${meterFill}%` }} /><div className="absolute inset-0 flex justify-evenly">{[1,2,3].map((mark) => <span key={mark} className="h-full w-px bg-white/15" />)}</div></div><div className="mt-2 flex justify-between text-[.65rem] text-slate-400"><span>0 µL</span><span>{formatResult(meterMaximum / 2)} µL</span><span>{formatResult(meterMaximum)} µL</span></div></div>
+        <p className="mt-1 text-5xl font-semibold tracking-[-.06em]">{drawUnits != null ? formatResult(drawUnits) : '—'}<span className="ml-2 text-xl tracking-normal text-teal-200">{t('aliquotUnitsLabel')}</span></p>
+        <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4"><div className="flex items-center justify-between gap-3 text-xs font-semibold text-slate-300"><span>{t('aliquotMeterLabel')}</span><span>{formatResult(meterMaximum)} {t('aliquotUnitsLabel')}</span></div><div className="relative mt-3 h-7 overflow-hidden rounded-full border border-white/15 bg-white/8"><div className="absolute inset-y-0 left-0 rounded-full bg-[linear-gradient(90deg,#2dd4bf,#99f6e4)] transition-[width] duration-500" style={{ width: `${meterFill}%` }} /><div className="absolute inset-0 flex justify-evenly">{[1,2,3].map((mark) => <span key={mark} className="h-full w-px bg-white/15" />)}</div></div><div className="mt-2 flex justify-between text-[.65rem] text-slate-400"><span>0 {t('aliquotUnitsLabel')}</span><span>{formatResult(meterMaximum / 2)} {t('aliquotUnitsLabel')}</span><span>{formatResult(meterMaximum)} {t('aliquotUnitsLabel')}</span></div></div>
         <div className="mt-4 grid grid-cols-2 gap-3">
           <ResultDark label={t('aliquotConcentration')} value={result ? `${formatResult(result.concentrationMgPerMl)} mg/mL` : '—'} />
           <ResultDark label={t('aliquotCount')} value={result ? formatResult(result.aliquotsPerVial) : '—'} />
-          <ResultDark label={t('aliquotMicroConcentration')} value={result ? `${formatResult(result.concentrationMicrogramsPerMicroliter)} µg/µL` : '—'} />
+          <ResultDark label={t('aliquotMicroConcentration')} value={microgramsPerUnit != null ? t('aliquotMicrogramsPerUnit', { value: formatResult(microgramsPerUnit) }) : '—'} />
           <ResultDark label={t('aliquotTotalVolume')} value={Number(diluent) > 0 ? `${formatResult(Number(diluent))} mL` : '—'} />
         </div>
-        <p className="mt-5 rounded-xl bg-white/5 p-3 text-xs leading-5 text-slate-300">{result ? t('aliquotFormula', { target: formatResult(Number(target)), concentration: formatResult(result.concentrationMicrogramsPerMicroliter), volume: formatResult(result.transferVolumeMicroliters) }) : t('aliquotFormulaEmpty')}</p>
+        <p className="mt-5 rounded-xl bg-white/5 p-3 text-xs leading-5 text-slate-300">{result && drawUnits != null && microgramsPerUnit != null ? t('aliquotFormula', { target: formatResult(Number(target)), concentration: formatResult(microgramsPerUnit), volume: formatResult(drawUnits) }) : t('aliquotFormulaEmpty')}</p>
         <div className="mt-5 flex flex-wrap gap-2">{selectedProduct ? <a href={path(`/products/${selectedProduct.slug}`)} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-teal-300 px-5 text-sm font-semibold text-[#071724]">{t('aliquotProductCta', { product: selectedProduct.name })}<ArrowRight size={15} /></a> : null}<a href={path('/portal/research-matches')} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/15 px-5 text-sm font-semibold text-white"><PackageSearch size={16} />{t('aliquotResearchMatchesCta')}</a></div>
       </div>
     </div>
@@ -87,33 +90,6 @@ function ChoiceStep({ step, icon: Icon, label, unit, value, presets, onChange, c
 
 function ResultDark({ label, value }: { label: string; value: string }) {
   return <div className="rounded-xl border border-white/10 bg-white/5 p-3"><p className="text-[.65rem] font-bold uppercase tracking-[.1em] text-slate-400">{label}</p><p className="mt-1 text-lg font-semibold text-white">{value}</p></div>
-}
-
-function WorkingDilutionCalculator() {
-  const { t } = useTranslation('portal')
-  const [stock, setStock] = useState('')
-  const [target, setTarget] = useState('')
-  const [finalVolume, setFinalVolume] = useState('')
-  const result = calculateWorkingDilution(Number(stock), Number(target), Number(finalVolume))
-  const invalidRange = Number(target) > 0 && Number(stock) > 0 && Number(target) > Number(stock)
-  return <Card className="border border-teal-900/10 bg-[linear-gradient(145deg,#edf9f6,#f8faf9)]">
-    <div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-2xl bg-[#071724] text-teal-200"><FlaskConical size={18} /></span><div><p className="text-xs font-bold uppercase tracking-[.14em] text-teal-700">{t('labCalculatorEyebrow')}</p><h2 className="text-lg font-semibold">{t('dilutionCalculatorTitle')}</h2></div></div>
-    <p className="mt-3 text-sm leading-6 text-slate-600">{t('dilutionCalculatorCopy')}</p>
-    <div className="mt-4 grid gap-4 sm:grid-cols-3">
-      <FieldLabel label={t('dilutionStockLabel')}><input type="number" min="0" step="0.01" value={stock} onChange={(event) => setStock(event.target.value)} className="portal-input" /></FieldLabel>
-      <FieldLabel label={t('dilutionTargetLabel')}><input type="number" min="0" step="0.01" value={target} onChange={(event) => setTarget(event.target.value)} className="portal-input" /></FieldLabel>
-      <FieldLabel label={t('dilutionFinalLabel')}><input type="number" min="0" step="0.01" value={finalVolume} onChange={(event) => setFinalVolume(event.target.value)} className="portal-input" /></FieldLabel>
-    </div>
-    {invalidRange ? <p role="alert" className="mt-3 text-xs font-semibold text-red-700">{t('dilutionRangeError')}</p> : null}
-    <div className="mt-5 grid gap-3 sm:grid-cols-2">
-      <Result label={t('dilutionStockResult')} value={result ? `${formatResult(result.stockVolumeMl)} mL` : '—'} />
-      <Result label={t('dilutionSolventResult')} value={result ? `${formatResult(result.solventVolumeMl)} mL` : '—'} />
-    </div>
-  </Card>
-}
-
-function Result({ label, value }: { label: string; value: string }) {
-  return <div className="rounded-[1.1rem] bg-white p-5"><p className="text-xs font-bold uppercase tracking-wide text-slate-500">{label}</p><p className="mt-2 text-2xl font-semibold">{value}</p></div>
 }
 
 function formatResult(value: number) {
