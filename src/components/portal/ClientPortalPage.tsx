@@ -5,6 +5,9 @@ import { CalculatorsSection } from './sections/CalculatorsSection'
 import { CheckInsSection } from './sections/CheckInsSection'
 import { DocumentsSection } from './sections/DocumentsSection'
 import { IntakeResultsSection } from './sections/IntakeResultsSection'
+import { FeedbackSection } from './sections/FeedbackSection'
+import { ResearchMatchesSection } from './sections/ResearchMatchesSection'
+import { ResearchMediaSection } from './sections/ResearchMediaSection'
 import { OrdersSection } from './sections/OrdersSection'
 import { OverviewSection } from './sections/OverviewSection'
 import { ProgressSection } from './sections/ProgressSection'
@@ -21,6 +24,9 @@ export function ClientPortalPage({ section = 'overview' }: { section?: string })
       case 'progress': return <ProgressSection />
       case 'check-ins': return <CheckInsSection />
       case 'calculators': return <CalculatorsSection />
+      case 'research-matches': return <ResearchMatchesSection />
+      case 'research-media': return <ResearchMediaSection />
+      case 'feedback': return <FeedbackSection />
       case 'documents': return <DocumentsSection />
       case 'support': return <SupportSection />
       case 'notifications': return <NotificationsSection />

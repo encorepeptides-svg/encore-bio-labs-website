@@ -1,4 +1,6 @@
 import { ClipboardCheck } from 'lucide-react'
+import { products } from '../../../data/products'
+import { getLocalizedProduct } from '../../../data/productTranslations'
 import { useLocale, useTranslation } from '../../../i18n/LocaleContext'
 import { usePortalAuth } from '../../../context/usePortalAuth'
 import { fetchMyIntake } from '../../../lib/portal/portalData'
@@ -6,7 +8,7 @@ import { Badge, Card, EmptyCard, LoadState, SectionIntro, statusTone, useAsync, 
 
 export function IntakeResultsSection() {
   const { t } = useTranslation('portal')
-  const { path } = useLocale()
+  const { path, locale } = useLocale()
   const { identity } = usePortalAuth()
   const formatDate = useDateFormatter()
   const { data, loading, error, reload } = useAsync(() => identity ? fetchMyIntake(identity.user.id) : Promise.resolve(null), [identity?.user.id])
@@ -14,6 +16,8 @@ export function IntakeResultsSection() {
   const metric = data?.preferred_units === 'metric'
   const weight = (kg: number | null) => kg == null ? '—' : metric ? `${kg.toFixed(1)} kg` : `${(kg / 0.453592).toFixed(1)} lb`
   const length = (cm: number | null) => cm == null ? '—' : metric ? `${cm.toFixed(1)} cm` : `${(cm / 2.54).toFixed(1)} in`
+  const selectedProducts = (data?.interested_products ?? []).map((slug) => products.find((product) => product.slug === slug)).filter(Boolean).map((product) => getLocalizedProduct(product!, locale))
+  const goalLabel = (goal: string) => ({ 'weight-management': t('goalWeight'), 'body-composition': t('goalBodyComp'), recovery: t('goalRecovery'), energy: t('goalEnergy'), wellness: t('goalWellness'), 'research-documentation': t('goalDocuments') } as Record<string, string>)[goal] ?? goal
   return <>
     <SectionIntro title={t('intakeTitle')} copy={t('intakeIntro')} />
     <LoadState loading={loading} error={error} onRetry={reload}>
@@ -35,7 +39,11 @@ export function IntakeResultsSection() {
         </div>
         <Card className="mt-4">
           <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{t('intakeGoals')}</p>
-          {data.goals.length ? <div className="mt-3 flex flex-wrap gap-2">{data.goals.map((goal) => <Badge key={goal} tone="info">{goal}</Badge>)}</div> : <p className="mt-2 text-sm text-slate-500">{t('reviewGoalsNone')}</p>}
+          {data.goals.length ? <div className="mt-3 flex flex-wrap gap-2">{data.goals.map((goal) => <Badge key={goal} tone="info">{goalLabel(goal)}</Badge>)}</div> : <p className="mt-2 text-sm text-slate-500">{t('reviewGoalsNone')}</p>}
+          <p className="mt-6 text-xs font-bold uppercase tracking-wide text-slate-500">{t('intakeResearchInterests')}</p>
+          {data.research_interests?.length ? <div className="mt-3 flex flex-wrap gap-2">{data.research_interests.map((interest) => <Badge key={interest} tone="neutral">{t(`researchInterest${interest.split('-').map((part) => `${part[0].toUpperCase()}${part.slice(1)}`).join('')}`)}</Badge>)}</div> : <p className="mt-2 text-sm text-slate-500">{t('intakeInterestsEmpty')}</p>}
+          <p className="mt-6 text-xs font-bold uppercase tracking-wide text-slate-500">{t('intakeProductsOfInterest')}</p>
+          {selectedProducts.length ? <div className="mt-3 flex flex-wrap gap-2">{selectedProducts.map((product) => <a key={product.slug} href={path(`/products/${product.slug}`)} className="rounded-full bg-[#071724] px-3 py-1 text-xs font-semibold text-white">{product.name}</a>)}</div> : <p className="mt-2 text-sm text-slate-500">{t('intakeInterestsEmpty')}</p>}
           <p className="mt-6 text-xs font-bold uppercase tracking-wide text-slate-500">{t('intakeBaselineRatings')}</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-5">{([[t('waterRatingLabel'), data.water_consistency], [t('appetiteRatingLabel'), data.appetite_rating], [t('energyRatingLabel'), data.energy_rating], [t('stressRatingLabel'), data.stress_rating], [t('wellnessRatingLabel'), data.wellness_rating]] as const).map(([label, value]) => <div key={label} className="rounded-[1.1rem] bg-white p-4 text-center"><p className="text-2xl font-semibold">{value ?? '—'}<span className="text-sm text-slate-400">/5</span></p><p className="mt-1 text-xs font-semibold text-slate-500">{label}</p></div>)}</div>
         </Card>

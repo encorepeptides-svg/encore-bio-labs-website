@@ -20,6 +20,10 @@ const bilingualRoutes = [
   '/checkout',
   '/client-login',
   '/portal',
+  '/portal/research-matches',
+  '/portal/calculators',
+  '/portal/research-media',
+  '/portal/feedback',
   '/admin',
 ]
 

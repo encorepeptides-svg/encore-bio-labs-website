@@ -1,4 +1,4 @@
-import { Bell, ClipboardCheck, FileText, FlaskConical, Headphones, Package, TrendingUp } from 'lucide-react'
+import { Bell, ClipboardCheck, FileText, FlaskConical, Headphones, Package, Sparkles, TrendingUp } from 'lucide-react'
 import { useLocale, useTranslation } from '../../../i18n/LocaleContext'
 import { usePortalAuth } from '../../../context/usePortalAuth'
 import { fetchOverviewSummary } from '../../../lib/portal/portalData'
@@ -12,6 +12,7 @@ export function OverviewSection() {
   const { data } = useAsync(() => identity ? fetchOverviewSummary(identity.user.id) : Promise.reject(new Error('no identity')), [identity?.user.id])
 
   const modules = [
+    ['/portal/research-matches', t('moduleResearchMatchesTitle'), t('moduleResearchMatchesCopy'), Sparkles],
     ['/portal/orders', t('moduleOrdersTitle'), t('moduleOrdersCopy'), Package],
     ['/portal/protocols', t('moduleProtocolsTitle'), t('moduleProtocolsCopy'), FlaskConical],
     ['/portal/intake', t('moduleIntakeTitle'), t('moduleIntakeCopy'), ClipboardCheck],

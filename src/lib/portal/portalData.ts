@@ -24,6 +24,7 @@ export type IntakeResult = {
   activity_level: string | null; exercise_frequency: string | null; average_sleep_hours: number | null
   water_consistency: number | null; appetite_rating: number | null; energy_rating: number | null
   stress_rating: number | null; wellness_rating: number | null
+  research_interests: string[]; interested_products: string[]
 }
 export type ProgressEntry = { id: string; entry_date: string; measurements: { weight_kg?: number; waist_cm?: number }; scores: { energy?: number; wellness?: number }; notes: string | null }
 export type WeeklyCheckin = { id: string; week_start: string; measurements: { weight_kg?: number; waist_cm?: number }; scores: { energy?: number; appetite?: number; sleep?: number; stress?: number }; support_concern: boolean; notes: string | null }
@@ -32,6 +33,14 @@ export type SupportThread = { id: string; created_at: string; updated_at: string
 export type SupportMessage = { id: string; thread_id: string; author_id: string; created_at: string; message: string }
 export type PortalNotification = { id: string; created_at: string; read_at: string | null; type: string; title: string; body: string; action_path: string | null }
 export type PortalProfile = { legal_name: string; preferred_name: string; email: string; mobile: string; preferred_language: string; time_zone: string }
+export type PortalReviewSubmission = {
+  id: string; created_at: string; status: string; category: string; rating: number | null
+  review_title: string; quote: string; product_name: string
+}
+export type ProgressPhoto = {
+  id: string; created_at: string; capture_date: string; storage_path: string; mime_type: string; byte_size: number
+  caption: string; staff_visible: boolean; scan_status: string; signed_url: string | null
+}
 
 const ORDER_SELECT = 'id,created_at,order_number,amount_cents,payment_status,fulfillment_status,user_id,portal_order_items(id,product_slug,variant_sku,quantity,unit_amount_cents,metadata),shipments(id,status,carrier,tracking_number,shipped_at,delivered_at)'
 
@@ -62,6 +71,115 @@ export async function fetchProgressEntries(): Promise<ProgressEntry[]> {
 
 export async function saveProgressEntry(userId: string, entry: { entry_date: string; measurements: ProgressEntry['measurements']; scores: ProgressEntry['scores']; notes: string }) {
   const { error } = await db().from('progress_entries').insert({ user_id: userId, ...entry, notes: entry.notes || null })
+  if (error) throw error
+}
+
+export async function hasProgressPhotoConsent(): Promise<boolean> {
+  const { data, error } = await db().rpc('portal_has_progress_photo_consent')
+  if (error) throw error
+  return Boolean(data)
+}
+
+export async function acceptProgressPhotoConsent(userId: string, signatureValue: string) {
+  const client = db()
+  const { data: consentVersion, error: versionError } = await client
+    .from('consent_versions')
+    .select('id')
+    .eq('consent_key', 'progress_photos')
+    .eq('active', true)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (versionError || !consentVersion) throw versionError ?? new Error('Photo consent version unavailable.')
+  const { error } = await client.from('consent_acceptances').insert({
+    user_id: userId,
+    consent_version_id: consentVersion.id,
+    signature_value: signatureValue.trim(),
+    metadata: { source: 'portal_research_media' },
+  })
+  if (error) throw error
+}
+
+export async function fetchProgressPhotos(userId: string): Promise<ProgressPhoto[]> {
+  const client = db()
+  const { data, error } = await client
+    .from('progress_photos')
+    .select('id,created_at,capture_date,storage_path,mime_type,byte_size,caption,staff_visible,scan_status')
+    .eq('user_id', userId)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+    .limit(48)
+  if (error) throw error
+  const rows = (data ?? []) as Omit<ProgressPhoto, 'signed_url'>[]
+  if (!rows.length) return []
+  const { data: signed, error: signedError } = await client.storage.from('progress-photos').createSignedUrls(rows.map((row) => row.storage_path), 300)
+  if (signedError) throw signedError
+  return rows.map((row, index) => ({ ...row, signed_url: signed?.[index]?.signedUrl ?? null }))
+}
+
+export async function uploadProgressPhoto(userId: string, input: { file: File; captureDate: string; caption: string; staffVisible: boolean }) {
+  const client = db()
+  const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp'])
+  if (!allowedTypes.has(input.file.type)) throw new Error('Unsupported image type.')
+  if (input.file.size > 8 * 1024 * 1024) throw new Error('Image exceeds the 8 MB limit.')
+  const safeName = input.file.name.replaceAll(/[^\w.-]/g, '_')
+  const storagePath = `${userId}/${crypto.randomUUID()}-${safeName}`
+  const { error: uploadError } = await client.storage.from('progress-photos').upload(storagePath, input.file, {
+    contentType: input.file.type,
+    upsert: false,
+  })
+  if (uploadError) throw uploadError
+  const { error: recordError } = await client.from('progress_photos').insert({
+    user_id: userId,
+    capture_date: input.captureDate,
+    storage_path: storagePath,
+    mime_type: input.file.type,
+    byte_size: input.file.size,
+    caption: input.caption.trim(),
+    staff_visible: input.staffVisible,
+  })
+  if (recordError) {
+    await client.storage.from('progress-photos').remove([storagePath])
+    throw recordError
+  }
+}
+
+export async function fetchMyReviewSubmissions(userId: string): Promise<PortalReviewSubmission[]> {
+  const { data, error } = await db()
+    .from('testimonials')
+    .select('id,created_at,status,category,rating,review_title,quote,product_name')
+    .eq('submitted_by', userId)
+    .order('created_at', { ascending: false })
+    .limit(20)
+  if (error) throw error
+  return (data ?? []) as PortalReviewSubmission[]
+}
+
+export async function submitPortalReview(userId: string, input: {
+  displayName: string; reviewTitle: string; quote: string; productName: string; rating: number; category: string
+}) {
+  const reference = `portal:${userId}:${crypto.randomUUID()}`
+  const { error } = await db().from('testimonials').insert({
+    submitted_by: userId,
+    status: 'draft',
+    display_name: input.displayName.trim(),
+    review_title: input.reviewTitle.trim(),
+    quote: input.quote.trim(),
+    product_name: input.productName.trim(),
+    rating: input.rating,
+    category: input.category,
+    submission_date: new Date().toISOString().slice(0, 10),
+    verified_purchase: null,
+    source_record_reference: reference,
+    source_user_style: 'portal_client_submission',
+    verification_notes: 'Submitted by an authenticated portal client; administrator verification is still required.',
+    relationship_to_business: 'Verified portal client; any additional material relationship requires administrator review.',
+    incentive_provided: false,
+    incentive_disclosure: '',
+    consent_verified: false,
+    consent_record_reference: `${reference}:publication-requested`,
+    claim_review_passed: false,
+  })
   if (error) throw error
 }
 
