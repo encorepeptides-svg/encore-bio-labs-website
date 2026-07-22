@@ -1,10 +1,5 @@
-import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-
-const migration = readFileSync(
-  new URL('../../../supabase/migrations/202607220002_require_complete_client_intake.sql', import.meta.url),
-  'utf8',
-)
+import migration from '../../../supabase/migrations/202607220002_require_complete_client_intake.sql?raw'
 
 describe('complete client intake migration', () => {
   it('enforces complete intake at submission and activation', () => {

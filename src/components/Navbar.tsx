@@ -21,13 +21,11 @@ export function Navbar() {
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const searchReturnFocusRef = useRef<HTMLElement | null>(null)
 
+  // Lean primary nav: the logo covers Home; Shipping, About, and Contact live in
+  // the footer; the intake CTA ("Start Your Research") owns the conversion path.
   const primaryNavItems = [
-    { key: 'Home', label: t('home'), href: '/' },
     { key: 'Catalog', label: t('catalog'), href: '/catalog' },
     { key: 'Protocols', label: t('protocols'), href: '/protocols' },
-    { key: 'Shipping', label: t('shippingDelivery'), href: '/legal/shipping-returns' },
-    { key: 'About', label: t('about'), href: '/about' },
-    { key: 'Contact', label: t('contact'), href: '/contact' },
   ]
 
   const mobileNavItems = [
