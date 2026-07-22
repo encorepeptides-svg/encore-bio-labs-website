@@ -1,12 +1,8 @@
 import {
   ArrowRight,
   BadgeCheck,
-  FileText,
-  FlaskConical,
-  PackageCheck,
   Sparkles,
   Star,
-  Truck,
 } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { lazy, Suspense } from 'react'
@@ -22,8 +18,6 @@ import heroVideo from '../assets/videos/encore-hero.mp4'
 import heroVideoPoster from '../assets/images/hero/hero-video-poster.jpg'
 
 const bestSellerSlugs = ['retatrutide', 'ghk-cu', 'nad-plus', 'tesamorelin']
-
-const trustIcons = [FlaskConical, Truck, Sparkles, PackageCheck, FileText]
 
 const HomeBelowFold = lazy(() =>
   import('./home/HomeBelowFold').then((module) => ({ default: module.HomeBelowFold })),
@@ -97,12 +91,6 @@ function FeaturedBestSellerCard({ product: baseProduct }: { product: Product }) 
               {t('viewResearchDetails')}
             </a>
           </div>
-          <a
-            href={path('/intake')}
-            className="w-fit text-xs font-semibold text-slate-500 transition hover:text-teal-700"
-          >
-            {t('getPersonalizedGuidance')}
-          </a>
         </div>
 
         <a
@@ -141,7 +129,7 @@ function SecondaryBestSellerCard({ product: baseProduct, className }: { product:
       <a
         href={path(`/products/${product.slug}`)}
         aria-label={t('viewProduct', { product: product.name })}
-        className="relative block aspect-[4/3] overflow-hidden bg-[#dfe8e7]"
+        className="relative block aspect-[16/10] overflow-hidden bg-[#dfe8e7]"
       >
         <ProductLabVisual
           product={product}
@@ -154,7 +142,7 @@ function SecondaryBestSellerCard({ product: baseProduct, className }: { product:
         </div>
       </a>
 
-      <div className="flex flex-1 flex-col p-5 sm:p-6">
+      <div className="flex flex-1 flex-col p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
             {getResearchOptionPrice(product, t)}
@@ -167,14 +155,11 @@ function SecondaryBestSellerCard({ product: baseProduct, className }: { product:
           ) : null}
         </div>
         <h3 className="mt-3 text-2xl font-semibold tracking-[-0.045em] text-[#071724]">{product.name}</h3>
-        <p className="mt-3 text-sm leading-6 text-slate-600">{getProductLine(product, locale)}</p>
-        <div className="mt-auto flex flex-col gap-3 pt-6 sm:flex-row">
-          <AddToCartButton product={product} className="min-h-11 px-4 py-2.5">
-            {t('addToCart')}
-          </AddToCartButton>
+        <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">{getProductLine(product, locale)}</p>
+        <div className="mt-auto pt-5">
           <a
             href={path(`/products/${product.slug}`)}
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-900/10 bg-white px-4 py-2.5 text-sm font-semibold text-[#071724] transition hover:bg-teal-50"
+            className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-slate-900/10 bg-white px-4 py-2.5 text-sm font-semibold text-[#071724] transition hover:bg-teal-50"
           >
             {t('viewResearchDetails')}
           </a>
@@ -189,13 +174,6 @@ export function HomePage() {
   const { path, locale } = useLocale()
   const { t } = useTranslation('homepage')
   const heroTitleLines = t('heroTitle').split('\n')
-  const trustItems = [
-    { icon: trustIcons[0], label: t('trustResearchUseOnly') },
-    { icon: trustIcons[1], label: t('trustHandling') },
-    { icon: trustIcons[2], label: t('trustPackaging') },
-    { icon: trustIcons[3], label: t('trustFulfillment') },
-    { icon: trustIcons[4], label: t('trustDocumentation') },
-  ]
   const bestSellerProducts = bestSellerSlugs
     .map((slug) => products.find((product) => product.slug === slug))
     .filter((product): product is Product => Boolean(product))
@@ -203,33 +181,34 @@ export function HomePage() {
   const supportingProducts = bestSellerProducts.filter((product) => product.slug !== 'retatrutide')
   return (
     <main id="main-content" className="bg-[#f5f5f2]">
-      <section className="relative isolate overflow-hidden bg-[#030b18] px-5 pb-6 pt-6 text-white sm:px-8 sm:pb-8 sm:pt-10 lg:pb-10 lg:pt-12">
-        {heroProduct ? (
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-20 opacity-90">
-            <ProductLabVisual
-              product={heroProduct}
-              alt=""
-              sizes="100vw"
-              priority
-            />
-          </div>
-        ) : null}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(3,11,24,1)_0%,rgba(3,11,24,0.97)_37%,rgba(3,11,24,0.66)_65%,rgba(3,11,24,0.24)_100%)]"
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_73%_42%,rgba(40,224,193,0.14),transparent_30rem),linear-gradient(180deg,rgba(3,11,24,0.12)_0%,rgba(3,11,24,0.1)_68%,rgba(3,11,24,0.92)_100%)]"
-        />
-        <div aria-hidden="true" className="absolute inset-0 -z-10 opacity-[0.08] [background-image:linear-gradient(rgba(255,255,255,.14)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.14)_1px,transparent_1px)] [background-size:72px_72px] [mask-image:linear-gradient(to_right,black,transparent_70%)]" />
+      <section className="home-hero relative isolate overflow-hidden bg-[#030b18] px-5 text-white sm:px-8">
+        <div aria-hidden="true" className="home-hero-video-canvas pointer-events-none absolute inset-0 -z-30">
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster={heroVideoPoster}
+            tabIndex={-1}
+            onCanPlay={(event) => {
+              void event.currentTarget.play().catch(() => undefined)
+            }}
+            className="hero-transformation-video size-full object-cover"
+          >
+            <source src={heroVideo} type="video/mp4" />
+          </video>
+        </div>
+        <div aria-hidden="true" className="home-hero-scrim pointer-events-none absolute inset-0 -z-20" />
+        <div aria-hidden="true" className="home-hero-atmosphere pointer-events-none absolute inset-0 -z-10" />
+        <div aria-hidden="true" className="absolute inset-0 -z-10 opacity-[0.07] [background-image:linear-gradient(rgba(255,255,255,.14)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.14)_1px,transparent_1px)] [background-size:72px_72px] [mask-image:linear-gradient(to_right,black,transparent_62%)]" />
 
-        <div className="relative mx-auto grid max-w-[88rem] gap-8 md:grid-cols-[minmax(0,1fr)_minmax(21rem,1fr)] md:items-center lg:min-h-[clamp(35rem,calc(100svh-14rem),47rem)] lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-12">
+        <div className="relative mx-auto flex min-h-[clamp(35rem,calc(100svh-12rem),46rem)] max-w-[88rem] items-center py-10 sm:py-12 lg:py-14">
           <motion.div
             initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
             animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
             transition={{ duration: prefersReducedMotion ? 0.15 : 0.35, ease: 'easeOut' }}
-            className="relative z-10 min-w-0 max-w-[52rem]"
+            className="relative z-10 min-w-0 max-w-[46rem] md:w-[57%] lg:w-[52%]"
           >
             <div className="inline-flex items-center gap-2 rounded-full border border-teal-200/20 bg-teal-100/10 px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.19em] text-teal-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl sm:px-4 sm:py-2 sm:text-xs">
               <Sparkles size={15} aria-hidden="true" className="text-[#28e0c1]" />
@@ -252,92 +231,31 @@ export function HomePage() {
               {t('heroSubtitle')}
             </p>
 
-            <div className="mt-7 grid grid-cols-2 gap-3 sm:mt-9 sm:flex sm:gap-4">
-              <CTA
-                href="/intake"
-                className="min-h-12 w-full bg-[#28e0c1] px-4 text-[#071724] shadow-[0_16px_48px_rgba(40,224,193,0.28)] hover:bg-white sm:min-h-14 sm:w-auto sm:px-7"
-              >
-                {t('startYourResearch')}
-              </CTA>
+            <div className="mt-7 sm:mt-9">
               <CTA
                 href="/catalog"
-                tone="ghost"
-                className="min-h-12 w-full border-white/20 bg-white/[0.07] px-4 text-white shadow-none backdrop-blur-xl hover:border-white/35 hover:bg-white/[0.13] sm:min-h-14 sm:w-auto sm:px-7"
+                className="min-h-12 w-full bg-[#28e0c1] px-5 text-[#071724] shadow-[0_16px_48px_rgba(40,224,193,0.28)] hover:bg-white sm:min-h-14 sm:w-auto sm:px-8"
               >
                 {t('browseCatalog')}
               </CTA>
             </div>
-
-            <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-semibold text-slate-300 sm:mt-6 sm:text-sm">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-2 backdrop-blur-xl">
-                <FlaskConical size={15} aria-hidden="true" className="text-[#28e0c1]" />
-                {t('trustResearchUseOnly')}
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <FileText size={15} aria-hidden="true" className="text-[#28e0c1]" />
-                {t('trustDocumentation')}
-              </span>
-            </div>
           </motion.div>
-
-          <motion.div
-            initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.98, x: 20 }}
-            animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, x: 0 }}
-            transition={{ duration: prefersReducedMotion ? 0.15 : 0.9, ease: 'easeOut', delay: prefersReducedMotion ? 0 : 0.08 }}
-            className="home-hero-video-stage relative z-0 -mx-5 min-h-[27rem] w-[calc(100%+2.5rem)] sm:-mx-8 sm:min-h-[31rem] sm:w-[calc(100%+4rem)] md:mx-0 md:min-h-[35rem] md:w-auto lg:min-h-[43rem]"
-          >
-            <div aria-hidden="true" className="home-hero-video-aura absolute inset-0" />
-            <div className="home-hero-video-media absolute -inset-[7%]">
-              <video
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                poster={heroVideoPoster}
-                aria-hidden="true"
-                tabIndex={-1}
-                onCanPlay={(event) => {
-                  void event.currentTarget.play().catch(() => undefined)
-                }}
-                className="hero-transformation-video h-full w-full object-cover object-center"
-              >
-                <source src={heroVideo} type="video/mp4" />
-              </video>
-              <div aria-hidden="true" className="hero-video-edge-blend pointer-events-none absolute inset-0" />
-              <div aria-hidden="true" className="home-hero-video-glass absolute inset-0" />
-            </div>
-          </motion.div>
-        </div>
-
-        <div id="trust-strip" className="relative mx-auto mt-7 grid max-w-[88rem] scroll-mt-20 gap-2 rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-2 shadow-[0_20px_70px_rgba(0,0,0,0.22)] backdrop-blur-xl sm:grid-cols-2 lg:mt-9 lg:grid-cols-5">
-          {trustItems.map((item) => (
-            <div key={item.label} className="flex items-center gap-3 rounded-[1.1rem] border border-white/[0.06] bg-black/15 px-4 py-3">
-              <item.icon size={17} aria-hidden="true" className="shrink-0 text-[#28e0c1]" />
-              <span className="text-sm font-semibold text-slate-200">{item.label}</span>
-            </div>
-          ))}
         </div>
       </section>
 
-      <section id="best-sellers" className="px-5 py-14 sm:px-8 lg:py-20">
+      <section id="best-sellers" className="px-5 py-10 sm:px-8 lg:py-14">
         <div className="mx-auto max-w-[88rem]">
-          <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
-            <div className="max-w-3xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-teal-700">{t('bestSellersEyebrow')}</p>
-              <h2 className="mt-4 text-4xl font-semibold tracking-[-0.055em] text-[#071724] sm:text-5xl">
+          <div className="home-section-banner relative overflow-hidden rounded-[1.5rem] border border-teal-900/10 bg-white px-6 py-6 shadow-[0_18px_56px_rgba(7,23,36,0.07)] sm:px-8 sm:py-7">
+            <div className="molecule-field opacity-[0.08]" aria-hidden="true" />
+            <div className="relative">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">{t('bestSellersEyebrow')}</p>
+              <h2 className="mt-2 text-3xl font-semibold tracking-[-0.045em] text-[#071724] sm:text-4xl">
                 {t('bestSellersTitle')}
               </h2>
-              <p className="mt-5 text-base leading-7 text-slate-600">
-                {t('bestSellersSubtitle')}
-              </p>
             </div>
-            <CTA href="/catalog" tone="ghost">
-              {t('browseCatalog')}
-            </CTA>
           </div>
 
-          <div className="mt-10 flex flex-col gap-6 lg:gap-8">
+          <div className="mt-5 flex flex-col gap-5 lg:gap-6">
             {heroProduct ? <FeaturedBestSellerCard product={heroProduct} /> : null}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {supportingProducts.map((product, index) => (
@@ -361,10 +279,10 @@ export function HomePage() {
       </Suspense>
 
       <a
-        href={path('/intake')}
+        href={path('/catalog')}
         className="fixed bottom-5 left-5 z-40 inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/55 bg-[#071724] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_48px_rgba(7,23,36,0.26)] transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2 focus:ring-offset-[#f5f5f2] sm:bottom-6 sm:left-6 lg:hidden"
       >
-        {t('startYourResearch')}
+        {t('browseCatalog')}
         <ArrowRight size={15} aria-hidden="true" />
       </a>
     </main>

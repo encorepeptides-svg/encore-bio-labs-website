@@ -218,61 +218,47 @@ summary:focus-visible {
   }
 }
 
-.home-hero-video-stage {
-  isolation: isolate;
-  contain: layout paint;
-}
-
-.home-hero-video-aura {
-  background:
-    radial-gradient(ellipse 62% 54% at 54% 46%, rgba(236, 252, 255, 0.24), transparent 68%),
-    radial-gradient(ellipse 78% 66% at 58% 52%, rgba(48, 203, 215, 0.15), transparent 74%);
-  filter: blur(26px);
-  opacity: 0.82;
-  transform: translateZ(0);
-}
-
-.home-hero-video-media {
-  background: #030b18;
+.home-hero-video-canvas {
   overflow: hidden;
+  background: #030b18;
   transform: translateZ(0);
 }
 
 .hero-transformation-video {
   backface-visibility: hidden;
-  filter: brightness(1.23) contrast(1.055) saturate(0.9);
+  object-position: 64% 48%;
+  filter: brightness(1.14) contrast(1.035) saturate(0.92);
   transform: translate3d(0, 0, 0) scale(1);
-  transform-origin: 52% 48%;
+  transform-origin: 66% 48%;
   will-change: transform, opacity, filter;
   animation:
     home-hero-video-reveal 1.15s cubic-bezier(0.22, 1, 0.36, 1) both,
     home-hero-video-breathe 14s ease-in-out 1.15s infinite;
 }
 
-/* Keep the footage opaque and crisp. Exact-color gradients dissolve every edge
-   into the hero background without revealing the busy lab render underneath. */
-.hero-video-edge-blend {
+.home-hero-scrim {
   background:
-    linear-gradient(rgba(3, 11, 24, 0.1), rgba(3, 11, 24, 0.1)),
-    radial-gradient(120% 86% at 52% 44%,
-      rgba(3, 11, 24, 0) 0%, rgba(3, 11, 24, 0.03) 42%, rgba(3, 11, 24, 0.32) 66%,
-      rgba(3, 11, 24, 0.76) 86%, rgb(3, 11, 24) 100%),
-    linear-gradient(to top,
-      rgb(3, 11, 24) 0%, rgba(3, 11, 24, 0.84) 5%, rgba(3, 11, 24, 0.36) 16%, rgba(3, 11, 24, 0) 34%),
-    linear-gradient(to bottom,
-      rgb(3, 11, 24) 0%, rgba(3, 11, 24, 0.6) 4%, rgba(3, 11, 24, 0.2) 12%, rgba(3, 11, 24, 0) 23%),
-    linear-gradient(to right,
-      rgb(3, 11, 24) 0%, rgba(3, 11, 24, 0.55) 7%, rgba(3, 11, 24, 0.14) 18%, rgba(3, 11, 24, 0) 30%),
-    linear-gradient(to left,
-      rgb(3, 11, 24) 0%, rgba(3, 11, 24, 0.52) 6%, rgba(3, 11, 24, 0.14) 17%, rgba(3, 11, 24, 0) 29%);
+    linear-gradient(90deg,
+      #030b18 0%, rgba(3, 11, 24, 0.99) 31%, rgba(3, 11, 24, 0.9) 46%,
+      rgba(3, 11, 24, 0.44) 62%, rgba(3, 11, 24, 0.08) 77%, transparent 100%),
+    linear-gradient(180deg,
+      rgba(3, 11, 24, 0.2) 0%, transparent 28%, transparent 66%, rgba(3, 11, 24, 0.9) 100%);
 }
 
-.home-hero-video-glass {
+.home-hero-atmosphere {
   background:
-    linear-gradient(118deg, rgba(255, 255, 255, 0.045), transparent 32% 68%, rgba(91, 224, 232, 0.03)),
-    radial-gradient(circle at 72% 22%, rgba(215, 249, 255, 0.035), transparent 31%);
+    radial-gradient(ellipse 38% 52% at 72% 44%, rgba(180, 249, 242, 0.12), transparent 72%),
+    linear-gradient(118deg, rgba(255, 255, 255, 0.025), transparent 34% 70%, rgba(91, 224, 232, 0.045));
   mix-blend-mode: screen;
-  pointer-events: none;
+}
+
+.home-section-banner::after {
+  content: '';
+  position: absolute;
+  inset: -60% -10%;
+  background: linear-gradient(112deg, transparent 32%, rgba(40, 224, 193, 0.1) 48%, transparent 64%);
+  transform: translateX(-55%);
+  animation: home-banner-shimmer 8s ease-in-out infinite;
 }
 
 @keyframes home-hero-video-reveal {
@@ -283,7 +269,7 @@ summary:focus-visible {
 
   to {
     opacity: 1;
-    filter: brightness(1.23) contrast(1.055) saturate(0.9) blur(0);
+    filter: brightness(1.14) contrast(1.035) saturate(0.92) blur(0);
   }
 }
 
@@ -298,14 +284,22 @@ summary:focus-visible {
   }
 }
 
+@keyframes home-banner-shimmer {
+  0%, 18% { transform: translateX(-55%); opacity: 0; }
+  42%, 62% { opacity: 1; }
+  86%, 100% { transform: translateX(55%); opacity: 0; }
+}
+
 @media (max-width: 767px) {
-  .hero-video-edge-blend {
+  .hero-transformation-video {
+    object-position: 68% 50%;
+    filter: brightness(1.04) contrast(1.04) saturate(0.88);
+  }
+
+  .home-hero-scrim {
     background:
-      linear-gradient(rgba(3, 11, 24, 0.08), rgba(3, 11, 24, 0.08)),
-      radial-gradient(130% 80% at 52% 42%,
-        rgba(3, 11, 24, 0) 0%, rgba(3, 11, 24, 0.06) 46%, rgba(3, 11, 24, 0.52) 76%, rgb(3, 11, 24) 100%),
-      linear-gradient(to top,
-        rgb(3, 11, 24) 0%, rgba(3, 11, 24, 0.86) 8%, rgba(3, 11, 24, 0.38) 23%, rgba(3, 11, 24, 0) 42%);
+      linear-gradient(90deg, rgba(3, 11, 24, 0.97) 0%, rgba(3, 11, 24, 0.86) 58%, rgba(3, 11, 24, 0.42) 100%),
+      linear-gradient(180deg, rgba(3, 11, 24, 0.38) 0%, rgba(3, 11, 24, 0.08) 38%, rgba(3, 11, 24, 0.94) 100%);
   }
 }
 

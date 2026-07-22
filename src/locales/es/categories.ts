@@ -1,10 +1,7 @@
 import type { categories as categoriesEn } from '../en/categories'
 
 export const categories = {
-  sectionEyebrow: 'Ve directo al compuesto que buscas',
-  sectionTitle: 'Elige lo que buscas. Encuentra el producto correcto.',
-  sectionSubtitle: 'Compara las cinco categorías, revisa sus productos y pasa de la búsqueda a una opción concreta sin rodeos.',
-  viewFullCatalog: 'Ver catálogo completo',
+  sectionTitle: 'Elige tu enfoque de investigación',
   featuredBadge: 'Área de investigación destacada',
   exploreCategory: 'Explorar categoría',
   productCountOne: '{count} producto',

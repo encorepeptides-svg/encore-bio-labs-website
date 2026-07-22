@@ -1,8 +1,5 @@
 export const categories = {
-  sectionEyebrow: 'Explore by Research Area',
-  sectionTitle: 'Find the research category that matches your focus.',
-  sectionSubtitle: 'Explore Encore Bio Labs across metabolic, recovery, longevity, cognitive, and hormone-focused research areas.',
-  viewFullCatalog: 'View Full Catalog',
+  sectionTitle: 'Choose Your Research Focus',
   featuredBadge: 'Featured Research Area',
   exploreCategory: 'Explore Category',
   productCountOne: '{count} product',

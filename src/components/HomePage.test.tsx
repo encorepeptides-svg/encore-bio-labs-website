@@ -20,27 +20,29 @@ function renderPage(locale: Locale) {
 describe('HomePage conversion content', () => {
   it('uses clear English CTAs and only marks best sellers with real COAs', () => {
     const html = renderPage('en')
-    expect(html).toContain('Find My Product')
     expect(html).toContain('Browse Catalog')
-    // The hero right column is the immersive transformation video, not a BAC Water card.
-    expect(html).toContain('home-hero-video-stage')
-    expect(html).toContain('home-hero-video-media')
+    // The video is the hero canvas itself, not a bordered or rounded media card.
+    expect(html).toContain('home-hero-video-canvas')
+    expect(html).toContain('home-hero-scrim')
+    expect(html).not.toContain('home-hero-video-stage')
+    expect(html).not.toContain('home-hero-video-media')
     expect(html).toContain('preload="metadata"')
     expect(html.match(/On-file COA/g)).toHaveLength(3)
   })
 
   it('ships matching Spanish CTAs and verified COA chips', () => {
     const html = renderPage('es')
-    expect(html).toContain('Encontrar mi producto')
     expect(html).toContain('Ver catálogo')
     expect(html.match(/COA disponible/g)).toHaveLength(3)
   })
 
-  it('keeps concrete Why Encore benefits aligned across locales', () => {
-    expect(homepageEn.whyCard1Title).toBe('Complete Kits, One Box')
-    expect(homepageEn.whyCard4Title).toBe('Real Humans, Fast Replies')
-    expect(homepageEs.whyCard1Title).toBe('Kit completo en una caja')
-    expect(homepageEs.whyCard4Title).toBe('Personas reales, respuesta rápida')
+  it('keeps the compact trust and conversion copy aligned across locales', () => {
+    expect(homepageEn.trustCompleteKits).toBe('Premium Complete Kits')
+    expect(homepageEn.trustFastSupport).toBe('Fast Human Support')
+    expect(homepageEs.trustCompleteKits).toBe('Kits completos premium')
+    expect(homepageEs.trustFastSupport).toBe('Atención humana rápida')
+    expect(homepageEn.processTitle).toContain('Three clear steps')
+    expect(homepageEs.processTitle).toContain('Tres pasos claros')
     expect(Object.keys(homepageEs)).toEqual(Object.keys(homepageEn))
   })
 })

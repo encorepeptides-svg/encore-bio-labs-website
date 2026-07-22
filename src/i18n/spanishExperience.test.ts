@@ -8,7 +8,7 @@ import { translate } from './translate'
 
 describe('Spanish storefront experience', () => {
   it('uses the approved category names and direct homepage actions', () => {
-    expect(translate('es', 'categories', 'sectionEyebrow')).toBe('Ve directo al compuesto que buscas')
+    expect(translate('es', 'categories', 'sectionTitle')).toBe('Elige tu enfoque de investigación')
     expect(translate('es', 'homepage', 'viewResearchDetails')).toBe('Ver productos')
     expect(localizedCategoryLabel('Recovery & Regeneration', 'es')).toBe('Recuperación y regeneración')
     expect(localizedCategoryLabel('Longevity & Cellular Health', 'es')).toBe('Longevidad y salud celular')

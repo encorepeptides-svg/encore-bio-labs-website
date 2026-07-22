@@ -126,7 +126,7 @@ function CategoryCard({ area, featured = false }: { area: ResearchArea; featured
     return (
       <a
         href={path(`/categories/${area.slug}`)}
-        className="group relative isolate flex h-[clamp(430px,115vw,540px)] flex-col overflow-hidden rounded-[28px] border border-slate-900/10 bg-[#071724] shadow-[0_22px_70px_rgba(7,23,36,0.12)] transition-all duration-[360ms] hover:shadow-[0_30px_90px_rgba(7,23,36,0.18)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-200 focus-visible:ring-offset-2 motion-safe:hover:-translate-y-1 md:h-[520px] xl:h-[clamp(620px,48vw,680px)]"
+        className="group relative isolate flex h-[clamp(390px,108vw,500px)] flex-col overflow-hidden rounded-[28px] border border-slate-900/10 bg-[#071724] shadow-[0_22px_70px_rgba(7,23,36,0.12)] transition-all duration-[360ms] hover:shadow-[0_30px_90px_rgba(7,23,36,0.18)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-200 focus-visible:ring-offset-2 motion-safe:hover:-translate-y-1 md:h-[480px] xl:h-[clamp(520px,40vw,570px)]"
       >
         {imageSrc ? (
           <img
@@ -207,7 +207,6 @@ function CategoryCard({ area, featured = false }: { area: ResearchArea; featured
 }
 
 export function CategoryShowcase() {
-  const { path } = useLocale()
   const { t } = useTranslation('categories')
   const visibleAreas = categoryCards
     .map((card) => researchAreas.find((area) => area.slug === card.slug))
@@ -215,36 +214,22 @@ export function CategoryShowcase() {
   const [featuredArea, ...compactAreas] = visibleAreas
 
   return (
-    <section id="products" className="bg-[#f5f5f2] px-5 py-[clamp(72px,9vw,128px)] sm:px-8">
+    <section id="products" className="bg-[#f5f5f2] px-5 py-[clamp(52px,6vw,84px)] sm:px-8">
       <div className="mx-auto max-w-[88rem]">
-        <div className="grid max-w-5xl items-end gap-6 lg:grid-cols-[minmax(0,680px)_auto] lg:gap-x-12">
-          <div className="max-w-[680px]">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">{t('sectionEyebrow').toUpperCase()}</p>
-            <h2 className="mt-4 max-w-[680px] text-[clamp(2.4rem,4.5vw,4rem)] font-semibold leading-[0.98] tracking-[-0.05em] text-[#071724]">
+        <div className="home-section-banner relative overflow-hidden rounded-[1.5rem] border border-teal-900/10 bg-white px-6 py-6 shadow-[0_18px_56px_rgba(7,23,36,0.07)] sm:px-8 sm:py-7">
+          <div className="molecule-field opacity-[0.08]" aria-hidden="true" />
+          <div className="relative max-w-[780px]">
+            <h2 className="text-[clamp(2.2rem,4vw,3.5rem)] font-semibold leading-[0.98] tracking-[-0.05em] text-[#071724]">
               {t('sectionTitle')}
             </h2>
-            <p className="mt-5 max-w-xl text-base leading-7 text-slate-600 sm:text-lg">
-              {t('sectionSubtitle')}
-            </p>
           </div>
-          <a
-            href={path('/catalog')}
-            className="group inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full px-1 text-sm font-semibold text-teal-800 transition duration-[360ms] hover:text-teal-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-200"
-          >
-            {t('viewFullCatalog')}
-            <ArrowUpRight
-              size={16}
-              aria-hidden="true"
-              className="transition-transform duration-[360ms] motion-safe:group-hover:translate-x-[3px] motion-safe:group-hover:-translate-y-0.5"
-            />
-          </a>
         </div>
 
-        <div className="mt-[clamp(32px,5vw,60px)] grid gap-[clamp(16px,2vw,24px)] xl:grid-cols-12 xl:items-stretch">
+        <div className="mt-[clamp(24px,3vw,40px)] grid gap-[clamp(16px,2vw,24px)] xl:grid-cols-12 xl:items-stretch">
           <div className="xl:col-span-5">
             <CategoryCard area={featuredArea} featured />
           </div>
-          <div className="grid gap-[clamp(16px,2vw,24px)] min-[700px]:grid-cols-2 xl:col-span-7 xl:h-[clamp(620px,48vw,680px)] xl:grid-rows-2">
+          <div className="grid gap-[clamp(16px,2vw,24px)] min-[700px]:grid-cols-2 xl:col-span-7 xl:h-[clamp(520px,40vw,570px)] xl:grid-rows-2">
             {compactAreas.map((area) => (
               <CategoryCard key={area.slug} area={area} />
             ))}
