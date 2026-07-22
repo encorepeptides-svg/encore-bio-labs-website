@@ -134,7 +134,7 @@ function PurchaseConfigurator({
       </div>
       <p className="mt-4 flex gap-2 text-xs leading-5 text-slate-500"><Check size={14} className="mt-0.5 shrink-0 text-teal-700" />{t('researchUseAvailability')}</p>
 
-      <div className="fixed bottom-3 left-3 right-20 z-40 flex items-center justify-between gap-3 rounded-full border border-white/70 bg-white/92 p-2 pl-5 shadow-[0_18px_55px_rgba(7,23,36,0.18)] backdrop-blur-xl md:hidden">
+      <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-3 right-20 z-40 flex items-center justify-between gap-3 rounded-full border border-white/70 bg-white/92 p-2 pl-5 shadow-[0_18px_55px_rgba(7,23,36,0.18)] backdrop-blur-xl md:hidden">
         <div><p className="text-[0.6rem] font-bold uppercase tracking-[0.12em] text-slate-500">{variant.label}</p><p className="text-sm font-semibold text-[#071724]">{money(quote.linePrice)}</p></div>
         <button type="button" onClick={addConfiguredOrder} className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#071724] px-5 text-sm font-semibold text-white">{t('addToCart')}</button>
       </div>

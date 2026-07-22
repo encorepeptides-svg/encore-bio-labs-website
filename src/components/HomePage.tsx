@@ -1,5 +1,4 @@
 import {
-  ArrowRight,
   BadgeCheck,
   Sparkles,
   Star,
@@ -172,7 +171,7 @@ function SecondaryBestSellerCard({ product: baseProduct, className }: { product:
 
 export function HomePage() {
   const prefersReducedMotion = useReducedMotion()
-  const { path, locale } = useLocale()
+  const { locale } = useLocale()
   const { t } = useTranslation('homepage')
   const heroTitleLines = t('heroTitle').split('\n')
   const bestSellerProducts = bestSellerSlugs
@@ -282,14 +281,6 @@ export function HomePage() {
       <Suspense fallback={<div className="min-h-48" aria-hidden="true" />}>
         <HomeBelowFold />
       </Suspense>
-
-      <a
-        href={path('/catalog')}
-        className="fixed bottom-5 left-5 z-40 inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/55 bg-[#071724] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_48px_rgba(7,23,36,0.26)] transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2 focus:ring-offset-[#f5f5f2] sm:bottom-6 sm:left-6 lg:hidden"
-      >
-        {t('browseCatalog')}
-        <ArrowRight size={15} aria-hidden="true" />
-      </a>
     </main>
   )
 }
