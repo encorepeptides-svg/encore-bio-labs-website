@@ -25,9 +25,9 @@ export function CatalogHero() {
       <div className="molecule-field opacity-[0.08]" aria-hidden="true" />
       <div className="pointer-events-none absolute right-[-6rem] top-[-5rem] size-[24rem] rounded-full bg-teal-200/30 blur-3xl" aria-hidden="true" />
 
-      <div className="relative mx-auto grid max-w-[88rem] items-center gap-7 md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] md:gap-8 lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] lg:gap-12">
+      <div className="relative mx-auto grid max-w-[88rem] items-center gap-7 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-8 lg:gap-12">
         {/* Left: compact editorial copy */}
-        <div>
+        <div className="min-w-0">
           <motion.span
             {...enter(0)}
             className="inline-flex items-center gap-2 rounded-full border border-teal-700/15 bg-white/70 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-teal-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.82),0_10px_28px_rgba(7,23,36,0.05)] backdrop-blur-xl"
@@ -38,10 +38,10 @@ export function CatalogHero() {
 
           <motion.h1
             {...enter(0.06)}
-            className="mt-5 text-[clamp(2.35rem,1.9rem+1.8vw,4.15rem)] font-semibold leading-[1.01] tracking-[-0.05em] text-[#071724]"
+            className="mt-5 max-w-[42rem] text-[clamp(2.35rem,1.85rem+1.55vw,3.65rem)] font-semibold leading-[1.01] tracking-[-0.05em] text-[#071724]"
           >
             {t('heroTitle').split('\n').map((line) => (
-              <span key={line} className="block md:whitespace-nowrap">{line}</span>
+              <span key={line} className="block">{line}</span>
             ))}
           </motion.h1>
 
