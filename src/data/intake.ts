@@ -16,7 +16,7 @@ export type IntakeFormData = {
   mainGoal: MainGoal | ''
   topPriorities: string[]
   timeline: string
-  helpNeeded: string
+  helpNeeded: string[]
   currentConcerns: string[]
   biometricsStatus: string
   age: string
@@ -86,7 +86,7 @@ export type CustomerLead = {
   lifestyleAnswers: {
     topPriorities?: string[]
     timeline?: string
-    helpNeeded?: string
+    helpNeeded?: string[]
     currentConcerns?: string[]
     biometricsStatus?: string
     lifestyleActivity: string
@@ -138,7 +138,7 @@ export const defaultIntakeFormData: IntakeFormData = {
   mainGoal: '',
   topPriorities: [],
   timeline: '',
-  helpNeeded: '',
+  helpNeeded: [],
   currentConcerns: [],
   biometricsStatus: '',
   age: '',
@@ -174,9 +174,25 @@ export const defaultIntakeFormData: IntakeFormData = {
   consentInternalReview: false,
 }
 
+export type IntakeStringField = {
+  [Field in keyof IntakeFormData]: IntakeFormData[Field] extends string ? Field : never
+}[keyof IntakeFormData]
+
+export function updateIntakeStringField(
+  data: IntakeFormData,
+  name: IntakeStringField,
+  value: string,
+): IntakeFormData {
+  return {
+    ...data,
+    [name]: value,
+    ...(name === 'peptideExperience' && value === 'New to this' ? { interestedProducts: [] } : {}),
+  }
+}
+
 export function isIntakeStepComplete(step: number, data: IntakeFormData) {
   const requiredFields: Array<Array<keyof IntakeFormData>> = [
-    ['mainGoal', 'timeline', 'helpNeeded'],
+    ['mainGoal', 'timeline'],
     ['lifestyleActivity', 'sleepQuality', 'energyLevels', 'peptideExperience', 'biometricsStatus'],
     ['firstName', 'lastName', 'email', 'phone', 'city', 'preferredContactMethod'],
   ]
@@ -189,14 +205,15 @@ export function isIntakeStepComplete(step: number, data: IntakeFormData) {
   })
 
   if (step === 0) {
-    return fieldsComplete && data.topPriorities.length > 0
+    return fieldsComplete && data.topPriorities.length > 0 && data.helpNeeded.length > 0
   }
 
   if (step === 1) {
     const sharedBiometricsComplete = data.biometricsStatus !== 'I can share them now' ||
       [data.age, data.sex, data.height, data.currentWeight, data.goalWeight].every((value) => value.trim().length > 0)
+    const productInterestComplete = data.peptideExperience === 'New to this' || data.interestedProducts.length > 0
 
-    return fieldsComplete && data.currentConcerns.length > 0 && data.interestedProducts.length > 0 && sharedBiometricsComplete
+    return fieldsComplete && data.currentConcerns.length > 0 && productInterestComplete && sharedBiometricsComplete
   }
 
   if (step === 2) {
@@ -309,6 +326,14 @@ function normalizeLead(lead: CustomerLead): CustomerLead {
 
   return {
     ...lead,
+    lifestyleAnswers: {
+      ...lead.lifestyleAnswers,
+      helpNeeded: Array.isArray(lead.lifestyleAnswers?.helpNeeded)
+        ? lead.lifestyleAnswers.helpNeeded
+        : typeof lead.lifestyleAnswers?.helpNeeded === 'string' && lead.lifestyleAnswers.helpNeeded
+          ? [lead.lifestyleAnswers.helpNeeded]
+          : [],
+    },
     consentAccepted: lead.consentAccepted ?? false,
     consentTimestamp: lead.consentTimestamp ?? '',
     internalRecommendationNotes,
@@ -362,7 +387,8 @@ export function generateRecommendation(data: IntakeFormData): Recommendation {
   const interestedProductBoost = data.interestedProducts.length > 0 ? 4 : 0
   const experienceBoost = data.peptideExperience && data.peptideExperience !== 'No' ? 3 : 0
   const biometricsBoost = data.age && data.height && data.currentWeight ? 4 : 0
-  const confidenceScore = Math.min(94, 82 + interestedProductBoost + experienceBoost + biometricsBoost)
+  const supportContextBoost = data.helpNeeded.length > 1 ? 1 : 0
+  const confidenceScore = Math.min(94, 82 + interestedProductBoost + experienceBoost + biometricsBoost + supportContextBoost)
 
   return {
     primaryCategory: matched.primaryCategory,

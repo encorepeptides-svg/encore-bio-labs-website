@@ -6,10 +6,12 @@ import {
   defaultIntakeFormData,
   generateRecommendation,
   isIntakeStepComplete,
+  updateIntakeStringField,
   type IntakeFormData,
 } from '../../data/intake'
 import { LocaleProvider } from '../../i18n/LocaleContext'
 import { translate } from '../../i18n/translate'
+import { PortalAuthProvider } from '../../context/PortalAuthContext'
 import { INTAKE_SESSION_KEY, IntakePage } from './IntakePage'
 
 function completeGoals(overrides: Partial<IntakeFormData> = {}): IntakeFormData {
@@ -18,7 +20,7 @@ function completeGoals(overrides: Partial<IntakeFormData> = {}): IntakeFormData 
     mainGoal: 'Metabolic Signaling',
     topPriorities: ['Simple next steps'],
     timeline: 'Ready now',
-    helpNeeded: 'Recommend a starting point',
+    helpNeeded: ['Recommend a starting point'],
     ...overrides,
   }
 }
@@ -63,7 +65,9 @@ function renderStep(locale: 'en' | 'es', step: number, formData: IntakeFormData)
 
   return renderToStaticMarkup(
     <LocaleProvider locale={locale} logicalPath="/intake">
-      <IntakePage />
+      <PortalAuthProvider>
+        <IntakePage />
+      </PortalAuthProvider>
     </LocaleProvider>,
   )
 }
@@ -75,7 +79,7 @@ describe('direct client intake flow', () => {
     expect(isIntakeStepComplete(0, defaultIntakeFormData)).toBe(false)
     expect(isIntakeStepComplete(0, completeGoals({ topPriorities: [] }))).toBe(false)
     expect(isIntakeStepComplete(0, completeGoals({ timeline: '' }))).toBe(false)
-    expect(isIntakeStepComplete(0, completeGoals({ helpNeeded: '' }))).toBe(false)
+    expect(isIntakeStepComplete(0, completeGoals({ helpNeeded: [] }))).toBe(false)
     expect(isIntakeStepComplete(0, completeGoals())).toBe(true)
   })
 
@@ -83,7 +87,8 @@ describe('direct client intake flow', () => {
     expect(isIntakeStepComplete(1, completeGoals())).toBe(false)
     expect(isIntakeStepComplete(1, completeSituation({ currentConcerns: [] }))).toBe(false)
     expect(isIntakeStepComplete(1, completeSituation({ biometricsStatus: '' }))).toBe(false)
-    expect(isIntakeStepComplete(1, completeSituation({ interestedProducts: [] }))).toBe(false)
+    expect(isIntakeStepComplete(1, completeSituation({ interestedProducts: [] }))).toBe(true)
+    expect(isIntakeStepComplete(1, completeSituation({ peptideExperience: 'Some experience', interestedProducts: [] }))).toBe(false)
     expect(isIntakeStepComplete(1, completeSituation())).toBe(true)
     expect(completeSituation().age).toBe('')
     expect(completeSituation().currentWeight).toBe('')
@@ -122,6 +127,7 @@ describe('direct client intake flow', () => {
     expect(container.textContent).not.toContain('Metabolic Signaling')
     expect(container.querySelectorAll('textarea')).toHaveLength(0)
     expect(container.querySelectorAll('input[type="checkbox"][name="topPriorities"]')).toHaveLength(6)
+    expect(container.querySelectorAll('input[type="checkbox"][name="helpNeeded"]')).toHaveLength(4)
   })
 
   it('stores the new profile answers in the submitted lead', () => {
@@ -130,9 +136,25 @@ describe('direct client intake flow', () => {
 
     expect(lead.lifestyleAnswers.topPriorities).toEqual(['Simple next steps'])
     expect(lead.lifestyleAnswers.timeline).toBe('Ready now')
-    expect(lead.lifestyleAnswers.helpNeeded).toBe('Recommend a starting point')
+    expect(lead.lifestyleAnswers.helpNeeded).toEqual(['Recommend a starting point'])
     expect(lead.lifestyleAnswers.currentConcerns).toEqual(['Energy', 'Sleep'])
     expect(lead.lifestyleAnswers.biometricsStatus).toBe("I don't have them yet")
+  })
+
+  it('clears hidden product interests for first-time clients and keeps them for other experience levels', () => {
+    const withProducts = completeSituation({ peptideExperience: 'Some experience', interestedProducts: ['Retatrutide'] })
+    expect(updateIntakeStringField(withProducts, 'peptideExperience', 'New to this').interestedProducts).toEqual([])
+    expect(updateIntakeStringField(withProducts, 'peptideExperience', 'Very experienced').interestedProducts).toEqual(['Retatrutide'])
+  })
+
+  it('renders the first-time reassurance instead of product interests in both languages', () => {
+    const english = renderStep('en', 1, completeSituation({ interestedProducts: [] }))
+    const spanish = renderStep('es', 1, completeSituation({ interestedProducts: [] }))
+
+    expect(english).toContain('help identify relevant research options')
+    expect(spanish).toContain('ayudar a identificar opciones de investigación relevantes')
+    expect(english).not.toContain('Which products are you interested in?')
+    expect(spanish).not.toContain('¿Qué productos te interesan?')
   })
 
   it('provides equivalent Spanish interface copy for both redesigned steps', () => {

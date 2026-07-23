@@ -6,6 +6,9 @@ import { LocaleProvider } from '../i18n/LocaleContext'
 import { homepage as homepageEn } from '../locales/en/homepage'
 import { homepage as homepageEs } from '../locales/es/homepage'
 import { HomePage } from './HomePage'
+import { FinalCTA } from './FinalCTA'
+import { ResearchProfilePrompt } from './ResearchProfilePrompt'
+import { WHATSAPP_PHONE, getGeneralInquiryMessage } from '../lib/whatsapp'
 
 function renderPage(locale: Locale) {
   return renderToStaticMarkup(
@@ -56,5 +59,33 @@ describe('HomePage conversion content', () => {
     expect(homepageEn.processTitle).toContain('Three clear steps')
     expect(homepageEs.processTitle).toContain('Tres pasos claros')
     expect(Object.keys(homepageEs)).toEqual(Object.keys(homepageEn))
+  })
+
+  it.each([
+    ['en', '/intake#research-goal', '/intake#research-priorities', '/intake#research-support'],
+    ['es', '/es/intake#research-goal', '/es/intake#research-priorities', '/es/intake#research-support'],
+  ] as const)('links each %s questionnaire pill to its corresponding accessible section', (locale, goal, priorities, support) => {
+    const html = renderToStaticMarkup(
+      <LocaleProvider locale={locale} logicalPath="/">
+        <ResearchProfilePrompt />
+      </LocaleProvider>,
+    )
+
+    expect(html).toContain(`href="${goal}"`)
+    expect(html).toContain(`href="${priorities}"`)
+    expect(html).toContain(`href="${support}"`)
+    expect(html.match(/focus-visible:ring-2/g)).toHaveLength(3)
+  })
+
+  it.each(['en', 'es'] as const)('routes the %s contact CTA to configured WhatsApp with localized copy', (locale) => {
+    const html = renderToStaticMarkup(
+      <LocaleProvider locale={locale} logicalPath="/">
+        <FinalCTA />
+      </LocaleProvider>,
+    )
+
+    expect(html).toContain(`https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(getGeneralInquiryMessage(locale)).replace(/'/g, '&#x27;')}`)
+    expect(html).toContain('target="_blank"')
+    expect(html).toContain('rel="noopener noreferrer"')
   })
 })

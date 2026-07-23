@@ -11,5 +11,8 @@ export function validatePortalEmail(email: string): PortalEmailValidationError {
 }
 
 export function getPortalLandingPath(identity: PortalIdentity) {
-  return isAdminRole(identity.roles) ? '/admin/content' : '/portal'
+  if (isAdminRole(identity.roles)) return '/admin/content'
+  if (identity.status === 'onboarding_incomplete') return '/portal/intake'
+  if (identity.status === 'pending_review') return '/portal/security'
+  return '/portal'
 }

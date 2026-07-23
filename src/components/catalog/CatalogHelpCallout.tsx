@@ -1,4 +1,5 @@
 import { getGeneralInquiryMessage, buildWhatsAppUrl } from '../../lib/whatsapp'
+import { track } from '../../lib/analytics'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { CTA } from '../CTA'
 
@@ -23,6 +24,7 @@ export function CatalogHelpCallout() {
             tone="ghost"
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => track('whatsapp_click', { source: 'catalog_help', locale })}
           >
             {tCommon('whatsapp')}
           </CTA>

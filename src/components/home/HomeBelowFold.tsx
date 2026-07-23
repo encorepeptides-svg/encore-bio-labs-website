@@ -35,7 +35,7 @@ function PremiumTrustSection() {
           {trustItems.map((item) => (
             <div
               key={item.label}
-              className="flex min-h-28 flex-col items-center justify-center gap-3 rounded-[1.15rem] border border-slate-900/8 bg-[#f7f8f5] p-4 text-center transition duration-300 hover:border-teal-700/20 hover:bg-teal-50/60"
+              className="flex min-h-28 flex-col items-center justify-center gap-3 rounded-[1.15rem] border border-slate-900/8 bg-[#f7f8f5] p-4 text-center"
             >
               <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-teal-50 text-teal-800">
                 <item.icon size={17} aria-hidden="true" />

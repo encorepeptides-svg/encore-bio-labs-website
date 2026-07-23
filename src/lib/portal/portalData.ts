@@ -25,6 +25,7 @@ export type IntakeResult = {
   water_consistency: number | null; appetite_rating: number | null; energy_rating: number | null
   stress_rating: number | null; wellness_rating: number | null
   research_interests: string[]; interested_products: string[]
+  public_intake_answers?: { topPriorities?: string[]; helpNeeded?: string[] | string; currentConcerns?: string[] }
 }
 export type ProgressEntry = { id: string; entry_date: string; measurements: { weight_kg?: number; waist_cm?: number }; scores: { energy?: number; wellness?: number }; notes: string | null }
 export type WeeklyCheckin = { id: string; week_start: string; measurements: { weight_kg?: number; waist_cm?: number }; scores: { energy?: number; appetite?: number; sleep?: number; stress?: number }; support_concern: boolean; notes: string | null }

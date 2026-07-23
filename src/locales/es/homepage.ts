@@ -26,6 +26,10 @@ export const homepage = {
   researchOptionsFrom: 'Opciones de investigación desde {price}',
   availabilityByRequest: 'Disponibilidad a solicitud',
   addVariantToCart: 'Agregar {variant} al carrito',
+  selectedPrice: 'Precio seleccionado',
+  variantReference: 'Referencia de variante',
+  variantUnavailable: 'No disponible',
+  variantUnavailableDescription: '{variant} no está disponible para comprar en este momento.',
   addToCart: 'Agregar al carrito',
   viewResearchDetails: 'Ver productos',
   viewProduct: 'Ver {product}',
@@ -61,4 +65,7 @@ export const homepage = {
   promptStep1: 'Qué estás investigando',
   promptStep2: 'Tus prioridades actuales',
   promptStep3: 'El apoyo que necesitas',
+  promptStep1Aria: 'Iniciar el cuestionario en qué estás investigando',
+  promptStep2Aria: 'Iniciar el cuestionario en tus prioridades actuales',
+  promptStep3Aria: 'Iniciar el cuestionario en el apoyo que necesitas',
 } satisfies Record<keyof typeof homepageEn, string>

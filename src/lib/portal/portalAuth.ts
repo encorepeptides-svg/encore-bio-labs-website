@@ -45,13 +45,13 @@ export async function signInPortal(email: string, password: string) {
   return requireSupabase().auth.signInWithPassword({ email: email.trim(), password })
 }
 
-export async function registerPortalAccount(input: { legalName: string; email: string; mobile: string; preferredLanguage: string; password: string }) {
+export async function registerPortalAccount(input: { legalName: string; email: string; mobile: string; preferredLanguage: string; password: string; intakeHandoffToken?: string }) {
   return requireSupabase().auth.signUp({
     email: input.email.trim(),
     password: input.password,
     options: {
       emailRedirectTo: `${localizedAuthPath('/client-login')}?verified=1`,
-      data: { legal_name: input.legalName, preferred_name: input.legalName.split(' ')[0] ?? '', mobile: input.mobile, preferred_language: input.preferredLanguage },
+      data: { legal_name: input.legalName, preferred_name: input.legalName.split(' ')[0] ?? '', mobile: input.mobile, preferred_language: input.preferredLanguage, intake_handoff_token: input.intakeHandoffToken },
     },
   })
 }

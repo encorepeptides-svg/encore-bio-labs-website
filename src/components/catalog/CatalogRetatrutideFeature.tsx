@@ -1,8 +1,10 @@
-import { ArrowRight } from 'lucide-react'
+import { useState } from 'react'
 import { products } from '../../data/products'
 import { getLocalizedProduct } from '../../data/productTranslations'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { money } from '../../lib/purchaseOptions'
+import { cn } from '../../lib/utils'
+import { AddToCartButton } from '../cart/AddToCartButton'
 import { ProductLabVisual } from '../product/ProductLabVisual'
 import { Reveal } from '../Reveal'
 
@@ -46,9 +48,10 @@ export function CatalogRetatrutideFeature() {
   const { path, locale } = useLocale()
 
   const baseProduct = products.find((product) => product.slug === 'retatrutide')
-  if (!baseProduct) return null
-  const product = getLocalizedProduct(baseProduct, locale)
-  const purchaseHref = path(`/products/${product.slug}#retatrutide-purchase`)
+  const product = baseProduct ? getLocalizedProduct(baseProduct, locale) : null
+  const firstAvailableVariant = product?.variants.find((variant) => product.stockStatus !== 'Unavailable' && variant.price > 0)
+  const [selectedVariant, setSelectedVariant] = useState(firstAvailableVariant)
+  if (!product) return null
   const researchHref = path(`/products/${product.slug}#retatrutide-full-research`)
   const receptors: [string, string, string] = [
     t('retaReceptorGip'),
@@ -61,8 +64,8 @@ export function CatalogRetatrutideFeature() {
       <div className="molecule-field opacity-[0.12]" aria-hidden="true" />
       <div className="pointer-events-none absolute -right-24 -top-24 size-[25rem] rounded-full bg-teal-400/20 blur-3xl" aria-hidden="true" />
 
-      <div className="relative grid grid-cols-[minmax(0,1fr)_7.75rem] gap-x-4 gap-y-6 p-5 sm:grid-cols-[minmax(0,1fr)_10rem] sm:p-8 lg:grid-cols-[minmax(0,1.18fr)_minmax(20rem,0.82fr)] lg:gap-x-12 lg:gap-y-7 lg:p-10">
-        <div className="col-start-1 row-start-1 self-center">
+      <div className="relative grid gap-7 p-5 sm:p-8 lg:grid-cols-[minmax(0,1.02fr)_minmax(24rem,0.98fr)] lg:gap-x-12 lg:gap-y-7 lg:p-10">
+        <div className="self-center">
           <span className="inline-flex items-center rounded-full border border-teal-200/25 bg-white/10 px-3 py-1.5 text-[0.65rem] font-bold uppercase tracking-[0.18em] text-teal-100 backdrop-blur-sm sm:px-4 sm:text-xs">
             {t('retaEyebrow')}
           </span>
@@ -71,13 +74,14 @@ export function CatalogRetatrutideFeature() {
           </h2>
         </div>
 
-        <div className="relative col-start-2 row-start-1 self-center lg:row-span-2 lg:row-start-1 lg:self-stretch">
-          <div className="relative mx-auto aspect-square w-full max-w-[25rem] lg:h-full lg:min-h-[27rem] lg:aspect-auto">
+        <div className="relative lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-stretch">
+          <div className="relative mx-auto h-[18rem] w-full max-w-[38rem] sm:h-[24rem] lg:h-full lg:min-h-[34rem]">
             <div className="absolute inset-0 overflow-hidden rounded-[1.5rem]">
               <ProductLabVisual
                 product={product}
                 alt={t('retaVisualAlt')}
-                sizes="(min-width: 1024px) 32vw, 36vw"
+                sizes="(min-width: 1024px) 42vw, 92vw"
+                className="[&_.ph-product]:!h-[94%] [&_.ph-product]:!w-[88%]"
                 priority
               />
             </div>
@@ -87,33 +91,58 @@ export function CatalogRetatrutideFeature() {
           </div>
         </div>
 
-        <div className="col-span-2 row-start-2 lg:col-span-1 lg:col-start-1">
+        <div className="lg:col-start-1">
           <p className="max-w-2xl text-sm leading-6 text-slate-200 sm:text-lg sm:leading-8">{t('retaBody')}</p>
 
           <div id="retatrutide-strengths" className="mt-6 scroll-mt-32">
             <p className="text-xs font-bold uppercase tracking-[0.17em] text-teal-200/80">{t('retaStrengthsLabel')}</p>
-            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
-              {product.variants.map((variant) => (
-                <a
-                  key={`${variant.label}-${variant.format}`}
-                  href={purchaseHref}
-                  className="group rounded-xl border border-white/15 bg-white/[0.07] px-3 py-2.5 text-left transition hover:-translate-y-0.5 hover:border-teal-200/50 hover:bg-teal-300/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-300"
-                >
-                  <span className="block text-sm font-bold text-white">{variant.label}</span>
-                  <span className="mt-0.5 block text-xs font-semibold text-teal-200">{money(variant.price)}</span>
-                </a>
-              ))}
+            <div role="group" aria-label={t('retaStrengthsLabel')} className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
+              {product.variants.map((variant, index) => {
+                const available = product.stockStatus !== 'Unavailable' && variant.price > 0
+                const selected = selectedVariant === variant
+                const unavailableId = `retatrutide-variant-${index}-status`
+
+                return (
+                  <button
+                    key={`${variant.label}-${variant.format}`}
+                    type="button"
+                    disabled={!available}
+                    aria-pressed={selected}
+                    aria-describedby={!available ? unavailableId : undefined}
+                    onClick={() => setSelectedVariant(variant)}
+                    className={cn(
+                      'rounded-xl border px-3 py-2.5 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 disabled:cursor-not-allowed disabled:opacity-45',
+                      selected
+                        ? 'border-teal-200 bg-teal-300/20 shadow-[0_0_0_1px_rgba(94,234,212,.24)]'
+                        : 'border-white/15 bg-white/[0.07] hover:-translate-y-0.5 hover:border-teal-200/50 hover:bg-teal-300/10',
+                    )}
+                  >
+                    <span className="block text-sm font-bold text-white">{variant.label}</span>
+                    <span className="mt-0.5 block text-xs font-semibold text-teal-200">{available ? money(variant.price) : t('retaUnavailable')}</span>
+                    {!available ? <span id={unavailableId} className="sr-only">{t('retaUnavailableDescription', { variant: variant.label })}</span> : null}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
+          {selectedVariant ? (
+            <div className="mt-5 grid gap-2 rounded-2xl border border-white/10 bg-black/15 p-4 text-sm sm:grid-cols-2" aria-live="polite">
+              <p className="text-slate-300"><span className="font-semibold text-white">{t('retaSelectedPrice')}:</span> {money(selectedVariant.price)}</p>
+              <p className="break-all text-slate-300"><span className="font-semibold text-white">{t('retaVariantReference')}:</span> {selectedVariant.sku ?? selectedVariant.label}</p>
+            </div>
+          ) : null}
+
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <a
-              href={purchaseHref}
-              className="inline-flex min-h-13 items-center justify-center gap-2.5 rounded-full bg-[#74f0d8] px-7 py-3.5 text-sm font-bold text-[#04141e] shadow-[0_20px_48px_rgba(45,212,191,0.3)] transition duration-300 hover:-translate-y-0.5 hover:bg-white focus:outline-none focus-visible:ring-4 focus-visible:ring-teal-200/40"
-            >
-              {t('retaPrimaryCta')}
-              <ArrowRight size={17} aria-hidden="true" />
-            </a>
+            {selectedVariant ? (
+              <AddToCartButton
+                product={product}
+                variant={selectedVariant}
+                className="min-h-13 bg-[#74f0d8] px-7 py-3.5 font-bold text-[#04141e] shadow-[0_20px_48px_rgba(45,212,191,0.3)] hover:bg-white"
+              >
+                {t('retaAddVariantToCart', { variant: selectedVariant.label })}
+              </AddToCartButton>
+            ) : null}
             <a
               href={researchHref}
               className="inline-flex min-h-13 items-center justify-center rounded-full border border-white/25 bg-white/[0.06] px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:border-white/45 hover:bg-white/12 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-200"
@@ -125,7 +154,7 @@ export function CatalogRetatrutideFeature() {
           <p className="mt-5 border-l-2 border-teal-300/50 pl-3 text-xs leading-5 text-slate-300">{t('retaCompliance')}</p>
         </div>
 
-        <div className="col-span-2 row-start-3 rounded-2xl border border-white/10 bg-white/[0.045] p-4 lg:col-span-1 lg:col-start-2">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-4 lg:col-start-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-[0.65rem] font-bold uppercase tracking-[0.17em] text-teal-200/75">{t('retaReceptorsLabel')}</p>
             <div className="flex flex-wrap gap-1.5">

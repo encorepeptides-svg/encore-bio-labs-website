@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import {
   ArrowLeft,
@@ -13,6 +13,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
+import { usePortalAuth } from '../../context/usePortalAuth'
 import { products } from '../../data/products'
 import {
   createLeadFromIntake,
@@ -22,10 +23,21 @@ import {
   isIntakeStepComplete,
   mainGoalOptions,
   saveStoredLeads,
+  updateIntakeStringField,
   type CustomerLead,
   type IntakeFormData,
+  type IntakeStringField,
 } from '../../data/intake'
-import { createCRMLeadFromIntake, saveLead } from '../../lib/crmStorage'
+import { createCRMLeadFromIntake } from '../../lib/crmStorage'
+import { track } from '../../lib/analytics'
+import { buildWhatsAppUrl, getGeneralInquiryMessage } from '../../lib/whatsapp'
+import {
+  claimPublicIntakeHandoff,
+  createIntakeHandoffToken,
+  INTAKE_SESSION_KEY,
+  normalizeHelpNeeded,
+  submitPublicIntake,
+} from '../../lib/portal/intakeHandoff'
 
 const stepKeys = ['stepGoal', 'stepSituation', 'stepReview'] as const
 const sexOptions = ['Female', 'Male', 'Intersex', 'Prefer not to say']
@@ -132,29 +144,38 @@ const recommendationKeys: Record<string, string> = {
   'General Research Review': 'recommendationGeneral',
 }
 
-export const INTAKE_SESSION_KEY = 'encore-intake-draft-v1'
+export { INTAKE_SESSION_KEY }
 
 type IntakeDraft = {
   formData: IntakeFormData
   step: number
   phase: 'form' | 'loading' | 'results'
   lead: CustomerLead | null
+  handoffToken: string
+  locale: 'en' | 'es'
 }
 
 export function readIntakeDraft(): IntakeDraft {
-  if (typeof window === 'undefined') return { formData: defaultIntakeFormData, step: 0, phase: 'form', lead: null }
+  const emptyDraft = (): IntakeDraft => ({ formData: defaultIntakeFormData, step: 0, phase: 'form', lead: null, handoffToken: createIntakeHandoffToken(), locale: 'en' })
+  if (typeof window === 'undefined') return emptyDraft()
   try {
     const saved = window.sessionStorage.getItem(INTAKE_SESSION_KEY)
-    if (!saved) return { formData: defaultIntakeFormData, step: 0, phase: 'form', lead: null }
+    if (!saved) return emptyDraft()
     const parsed = JSON.parse(saved) as Partial<IntakeDraft>
     return {
-      formData: { ...defaultIntakeFormData, ...(parsed.formData ?? {}) },
+      formData: {
+        ...defaultIntakeFormData,
+        ...(parsed.formData ?? {}),
+        helpNeeded: normalizeHelpNeeded(parsed.formData?.helpNeeded),
+      },
       step: Math.min(Math.max(Number(parsed.step) || 0, 0), stepKeys.length - 1),
-      phase: parsed.phase === 'loading' || parsed.phase === 'results' ? parsed.phase : 'form',
+      phase: parsed.phase === 'results' && parsed.lead ? 'results' : 'form',
       lead: parsed.lead ?? null,
+      handoffToken: parsed.handoffToken ?? createIntakeHandoffToken(),
+      locale: parsed.locale === 'es' ? 'es' : 'en',
     }
   } catch {
-    return { formData: defaultIntakeFormData, step: 0, phase: 'form', lead: null }
+    return emptyDraft()
   }
 }
 
@@ -185,16 +206,18 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 }
 
 function QuestionGroup({
+  id,
   legend,
   hint,
   children,
 }: {
+  id?: string
   legend: string
   hint?: string
   children: ReactNode
 }) {
   return (
-    <fieldset className="grid gap-3">
+    <fieldset id={id} tabIndex={id ? -1 : undefined} className="grid scroll-mt-32 gap-3 focus:outline-none focus-visible:ring-4 focus-visible:ring-teal-100">
       <legend className="text-sm font-semibold text-[#071724]">{legend}</legend>
       {hint ? <p className="text-xs leading-5 text-slate-500">{hint}</p> : null}
       {children}
@@ -211,9 +234,9 @@ function TextInput({
   autoComplete,
   required = true,
 }: {
-  name: keyof IntakeFormData
+  name: IntakeStringField
   value: string
-  onChange: (name: keyof IntakeFormData, value: string) => void
+  onChange: (name: IntakeStringField, value: string) => void
   type?: string
   placeholder?: string
   autoComplete?: string
@@ -241,9 +264,9 @@ function SelectField({
   placeholder,
   required = true,
 }: {
-  name: keyof IntakeFormData
+  name: IntakeStringField
   value: string
-  onChange: (name: keyof IntakeFormData, value: string) => void
+  onChange: (name: IntakeStringField, value: string) => void
   options: string[]
   placeholder?: string
   required?: boolean
@@ -274,10 +297,10 @@ function ChoiceGrid({
   onChange,
   required = true,
 }: {
-  name: keyof IntakeFormData
+  name: IntakeStringField
   value: string
   options: string[]
-  onChange: (name: keyof IntakeFormData, value: string) => void
+  onChange: (name: IntakeStringField, value: string) => void
   required?: boolean
 }) {
   const { t } = useTranslation('intake')
@@ -315,10 +338,10 @@ function MultiChoiceGrid({
   onToggle,
   maxSelections,
 }: {
-  name: 'topPriorities' | 'currentConcerns'
+  name: 'topPriorities' | 'currentConcerns' | 'helpNeeded'
   selected: string[]
   options: string[]
-  onToggle: (name: 'topPriorities' | 'currentConcerns', value: string, maxSelections?: number) => void
+  onToggle: (name: 'topPriorities' | 'currentConcerns' | 'helpNeeded', value: string, maxSelections?: number) => void
   maxSelections?: number
 }) {
   const { t } = useTranslation('intake')
@@ -377,7 +400,7 @@ function ProductChoiceGrid({
             type="button"
             aria-pressed={isSelected}
             onClick={() => onToggle(product.name)}
-            className={`min-h-12 rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition ${
+            className={`min-h-12 rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition focus:outline-none focus-visible:ring-4 focus-visible:ring-teal-100 ${
               isSelected
                 ? 'border-teal-500 bg-teal-50 text-[#071724] shadow-[0_16px_36px_rgba(45,212,191,0.14)]'
                 : 'border-slate-900/10 bg-white/74 text-slate-600 hover:border-slate-900/20'
@@ -392,36 +415,44 @@ function ProductChoiceGrid({
 }
 
 export function IntakePage() {
-  const { path } = useLocale()
+  const { path, locale } = useLocale()
+  const { identity, refresh } = usePortalAuth()
   const { t } = useTranslation('intake')
   const [initialDraft] = useState(readIntakeDraft)
   const [formData, setFormData] = useState(initialDraft.formData)
   const [step, setStep] = useState(initialDraft.step)
   const [phase, setPhase] = useState<'form' | 'loading' | 'results'>(initialDraft.phase)
   const [lead, setLead] = useState<CustomerLead | null>(initialDraft.lead)
+  const [handoffToken] = useState(initialDraft.handoffToken)
+  const [submitError, setSubmitError] = useState('')
+  const submissionInFlightRef = useRef(false)
   const recommendation = useMemo(() => generateRecommendation(formData), [formData])
   const canContinue = isIntakeStepComplete(step, formData)
   const progress = Math.round(((step + 1) / stepKeys.length) * 100)
 
   useEffect(() => {
     try {
-      window.sessionStorage.setItem(INTAKE_SESSION_KEY, JSON.stringify({ formData, step, phase, lead }))
+      window.sessionStorage.setItem(INTAKE_SESSION_KEY, JSON.stringify({ formData, step, phase, lead, handoffToken, locale, submitted: phase === 'results' }))
     } catch {
       // Draft persistence is best-effort; a private browsing policy must not block intake.
     }
-  }, [formData, lead, phase, step])
+  }, [formData, handoffToken, lead, locale, phase, step])
 
   useEffect(() => {
-    if (phase !== 'loading') {
-      return
-    }
+    if (phase !== 'form' || step !== 0 || !window.location.hash) return
+    const targetId = window.location.hash.slice(1)
+    if (!['research-goal', 'research-priorities', 'research-support'].includes(targetId)) return
+    const frame = window.requestAnimationFrame(() => {
+      const target = document.getElementById(targetId)
+      target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      target?.focus({ preventScroll: true })
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [phase, step])
 
-    const timer = window.setTimeout(() => setPhase('results'), 1800)
-    return () => window.clearTimeout(timer)
-  }, [phase])
-
-  function updateField(name: keyof IntakeFormData, value: string) {
-    setFormData((current) => ({ ...current, [name]: value }))
+  function updateField(name: IntakeStringField, value: string) {
+    setFormData((current) => updateIntakeStringField(current, name, value))
+    setSubmitError('')
   }
 
   function updateConsent(name: keyof IntakeFormData, value: boolean) {
@@ -438,7 +469,7 @@ export function IntakePage() {
   }
 
   function toggleMultiValue(
-    name: 'topPriorities' | 'currentConcerns',
+    name: 'topPriorities' | 'currentConcerns' | 'helpNeeded',
     value: string,
     maxSelections?: number,
   ) {
@@ -452,21 +483,24 @@ export function IntakePage() {
 
       return { ...current, [name]: nextSelected }
     })
+    setSubmitError('')
   }
 
   async function submitIntake(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!isIntakeStepComplete(stepKeys.length - 1, formData)) return
+    if (submissionInFlightRef.current || phase === 'loading' || !isIntakeStepComplete(stepKeys.length - 1, formData)) return
 
-    const nextLead = createLeadFromIntake(formData, recommendation)
-    saveStoredLeads([nextLead, ...getStoredLeads()])
-    await saveLead(
-      createCRMLeadFromIntake({
+    submissionInFlightRef.current = true
+    setSubmitError('')
+    setPhase('loading')
+    const nextLead = { ...createLeadFromIntake(formData, recommendation), id: handoffToken }
+    const crmLead = createCRMLeadFromIntake({
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
         phone: formData.phone,
         city: formData.city,
+        preferredLanguage: locale === 'es' ? 'Spanish' : 'English',
         source: 'Website intake',
         campaignSource: 'Website Intake',
         interestedProducts: formData.interestedProducts.map((productName) => ({
@@ -485,7 +519,7 @@ export function IntakePage() {
           currentRoutine: [
             formData.topPriorities.length ? `Priorities: ${formData.topPriorities.join(', ')}` : '',
             formData.timeline ? `Timeline: ${formData.timeline}` : '',
-            formData.helpNeeded ? `Support needed: ${formData.helpNeeded}` : '',
+            formData.helpNeeded.length ? `Support needed: ${formData.helpNeeded.join(', ')}` : '',
             formData.currentConcerns.length ? `Current focus: ${formData.currentConcerns.join(', ')}` : '',
             formData.lifestyleActivity,
             `Measurements: ${formData.biometricsStatus}`,
@@ -504,11 +538,33 @@ export function IntakePage() {
           consentToContact: formData.consentContact,
           researchUseAcknowledgment: formData.consentResearchUseOnly,
         },
-      }),
-    )
-    setLead(nextLead)
-    setPhase('loading')
-    window.history.replaceState(null, '', `/intake?lead=${nextLead.id}`)
+      })
+
+    try {
+      await submitPublicIntake({
+        lead: {
+          ...crmLead,
+          id: handoffToken,
+          intakeSubmission: crmLead.intakeSubmission ? { ...crmLead.intakeSubmission, id: handoffToken } : undefined,
+        },
+        formData,
+        handoffToken,
+        locale,
+      })
+      const storedLeads = getStoredLeads().filter((storedLead) => storedLead.id !== nextLead.id)
+      saveStoredLeads([nextLead, ...storedLeads])
+      if (identity) {
+        await claimPublicIntakeHandoff(handoffToken)
+        await refresh()
+      }
+      setLead(nextLead)
+      setPhase('results')
+      track('intake_submitted', { locale, authenticated: Boolean(identity) })
+    } catch {
+      submissionInFlightRef.current = false
+      setPhase('form')
+      setSubmitError(t('submissionError'))
+    }
   }
 
   return (
@@ -585,7 +641,7 @@ export function IntakePage() {
           className="order-1 rounded-[1.75rem] border border-slate-900/10 bg-white/74 p-4 shadow-[0_24px_80px_rgba(7,23,36,0.1),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-2xl sm:p-7 xl:order-2"
         >
           {phase === 'loading' ? <LoadingScreen /> : null}
-          {phase === 'results' && lead ? <ResultsPage lead={lead} /> : null}
+          {phase === 'results' && lead ? <ResultsPage lead={lead} authenticated={Boolean(identity)} /> : null}
           {phase === 'form' ? (
             <form onSubmit={submitIntake} className="grid gap-6">
               <div className="grid gap-3 rounded-2xl border border-slate-900/10 bg-[#f5f5f2] p-4" aria-live="polite">
@@ -622,10 +678,10 @@ export function IntakePage() {
                       <p className="font-semibold">{t('goalStepTitle')}</p>
                       <p className="mt-1">{t('goalStepBody')}</p>
                     </div>
-                    <QuestionGroup legend={t('mainGoalQuestion')} hint={t('mainGoalHelp')}>
+                    <QuestionGroup id="research-goal" legend={t('mainGoalQuestion')} hint={t('mainGoalHelp')}>
                       <ChoiceGrid name="mainGoal" value={formData.mainGoal} options={mainGoalOptions} onChange={updateField} />
                     </QuestionGroup>
-                    <QuestionGroup legend={t('prioritiesQuestion')} hint={t('chooseUpToThree')}>
+                    <QuestionGroup id="research-priorities" legend={t('prioritiesQuestion')} hint={t('chooseUpToThree')}>
                       <MultiChoiceGrid
                         name="topPriorities"
                         selected={formData.topPriorities}
@@ -637,8 +693,8 @@ export function IntakePage() {
                     <QuestionGroup legend={t('timelineQuestion')} hint={t('timelineHelp')}>
                       <ChoiceGrid name="timeline" value={formData.timeline} options={timelineOptions} onChange={updateField} />
                     </QuestionGroup>
-                    <QuestionGroup legend={t('helpQuestion')} hint={t('helpQuestionHelp')}>
-                      <ChoiceGrid name="helpNeeded" value={formData.helpNeeded} options={helpOptions} onChange={updateField} />
+                    <QuestionGroup id="research-support" legend={t('helpQuestion')} hint={t('helpQuestionHelp')}>
+                      <MultiChoiceGrid name="helpNeeded" selected={formData.helpNeeded} options={helpOptions} onToggle={toggleMultiValue} />
                     </QuestionGroup>
                   </div>
                 ) : null}
@@ -695,14 +751,21 @@ export function IntakePage() {
                       </div>
                     ) : null}
 
-                    <QuestionGroup legend={`${t('interestedProductsQuestion')} (${t('required')})`} hint={t('recommendedProductsHelp')}>
-                      <ProductChoiceGrid selected={formData.interestedProducts} onToggle={toggleProduct} items={recommendation.recommendedProducts} />
-                    </QuestionGroup>
+                    {formData.peptideExperience === 'New to this' ? (
+                      <div role="status" className="rounded-2xl border border-teal-700/20 bg-teal-50 p-4 text-sm leading-6 text-teal-950">
+                        {t('newExperienceReassurance')}
+                      </div>
+                    ) : (
+                      <QuestionGroup legend={`${t('interestedProductsQuestion')} (${t('required')})`} hint={t('recommendedProductsHelp')}>
+                        <ProductChoiceGrid selected={formData.interestedProducts} onToggle={toggleProduct} items={recommendation.recommendedProducts} />
+                      </QuestionGroup>
+                    )}
                   </div>
                 ) : null}
 
                 {step === 2 ? (
                   <div className="grid gap-5">
+                    <IntakeAnswerReview data={formData} />
                     <NextStepsCard />
                     <NotMedicalAdviceCard />
                     <div className="grid gap-4 md:grid-cols-2">
@@ -746,6 +809,12 @@ export function IntakePage() {
                 ) : null}
               </div>
 
+              {submitError ? (
+                <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-semibold leading-6 text-red-800">
+                  {submitError}
+                </p>
+              ) : null}
+
               <div className="flex flex-col gap-3 border-t border-slate-900/10 pt-5 sm:flex-row sm:justify-between">
                 <button
                   type="button"
@@ -763,7 +832,7 @@ export function IntakePage() {
                     disabled={!canContinue}
                     className="inline-flex h-12 items-center justify-center gap-3 rounded-full bg-[#071724] px-6 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(7,23,36,0.18)] transition hover:bg-[#102a3d] disabled:cursor-not-allowed disabled:opacity-45"
                   >
-                    {t('submitForReview')}
+                    {submitError ? t('retrySubmission') : t('submitForReview')}
                     <Sparkles size={16} aria-hidden="true" />
                   </button>
                 ) : (
@@ -789,7 +858,7 @@ export function IntakePage() {
 function LoadingScreen() {
   const { t } = useTranslation('intake')
   return (
-    <div className="grid min-h-[36rem] place-items-center text-center">
+    <div role="status" aria-live="polite" aria-busy="true" className="grid min-h-[36rem] place-items-center text-center">
       <div className="max-w-xl">
         <div className="mx-auto flex size-16 items-center justify-center rounded-3xl bg-[#071724] text-white shadow-[0_18px_48px_rgba(7,23,36,0.2)]">
           <LoaderCircle size={26} aria-hidden="true" className="animate-spin text-teal-300" />
@@ -889,6 +958,26 @@ function ResponseTimelineCard() {
   )
 }
 
+function IntakeAnswerReview({ data }: { data: IntakeFormData }) {
+  const { t } = useTranslation('intake')
+  const rows = [
+    [t('reviewGoalLabel'), data.mainGoal ? [getIntakeValueLabel(t, data.mainGoal)] : []],
+    [t('reviewPrioritiesLabel'), data.topPriorities.map((value) => getIntakeValueLabel(t, value))],
+    [t('reviewSupportLabel'), data.helpNeeded.map((value) => getIntakeValueLabel(t, value))],
+    [t('reviewFocusLabel'), data.currentConcerns.map((value) => getIntakeValueLabel(t, value))],
+    [t('reviewProductsLabel'), data.interestedProducts],
+  ] as const
+
+  return (
+    <div className="rounded-[1.5rem] border border-slate-900/10 bg-[#f5f5f2]/80 p-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">{t('reviewAnswersTitle')}</p>
+      <dl className="mt-4 grid gap-4 sm:grid-cols-2">
+        {rows.map(([label, values]) => <div key={label}><dt className="text-xs font-semibold text-slate-500">{label}</dt><dd className="mt-1 text-sm font-semibold leading-6 text-[#071724]">{values.length ? values.join(', ') : t('notSelected')}</dd></div>)}
+      </dl>
+    </div>
+  )
+}
+
 function ConsentChecklist({
   data,
   onChange,
@@ -929,10 +1018,12 @@ function ConsentChecklist({
 
 function ResultsPage({
   lead,
+  authenticated,
 }: {
   lead: CustomerLead
+  authenticated: boolean
 }) {
-  const { path } = useLocale()
+  const { path, locale } = useLocale()
   const { t } = useTranslation('intake')
   const categories = [
     lead.recommendationSummary.primaryCategory,
@@ -941,7 +1032,7 @@ function ResultsPage({
 
   return (
     <div className="grid gap-6">
-      <div className="rounded-[1.5rem] border border-teal-700/20 bg-teal-50 p-5">
+      <div role="status" aria-live="polite" className="rounded-[1.5rem] border border-teal-700/20 bg-teal-50 p-5">
         <div className="flex flex-wrap items-center gap-3">
           <span className="flex size-11 items-center justify-center rounded-2xl bg-[#071724] text-white">
             <Sparkles size={19} aria-hidden="true" />
@@ -987,20 +1078,6 @@ function ResultsPage({
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        {lead.recommendedProducts.map((product) => (
-          <a
-            key={product.slug}
-            href={path(`/products/${product.slug}`)}
-            className="rounded-2xl border border-slate-900/10 bg-white/82 p-4 transition hover:-translate-y-0.5 hover:border-teal-500/50 hover:shadow-[0_18px_44px_rgba(7,23,36,0.09)]"
-          >
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">{getIntakeValueLabel(t, product.category)}</p>
-            <h3 className="mt-2 text-lg font-semibold tracking-[-0.03em] text-[#071724]">{product.name}</h3>
-            <p className="mt-3 text-sm font-semibold text-slate-500">{t('viewProductPage')}</p>
-          </a>
-        ))}
-      </div>
-
       <div className="rounded-[1.5rem] border border-slate-900/10 bg-[#071724] p-5 text-white">
         <div className="flex items-center gap-2 text-sm font-semibold">
           <FlaskConical size={17} aria-hidden="true" className="text-teal-300" />
@@ -1012,19 +1089,22 @@ function ResultsPage({
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">
-        <a href={path('/catalog')} className="inline-flex h-12 items-center justify-center rounded-full bg-[#071724] px-6 text-sm font-semibold text-white">
-          {t('browseProducts')}
-        </a>
-        <a href={path('/research')} className="inline-flex h-12 items-center justify-center rounded-full border border-slate-900/10 bg-white px-6 text-sm font-semibold text-[#071724]">
-          {t('researchLibrary')}
+        <a href={path(authenticated ? '/portal/intake' : '/client-register')} className="inline-flex h-12 items-center justify-center rounded-full bg-[#071724] px-6 text-sm font-semibold text-white">
+          {authenticated ? t('continueToPortal') : t('createClientAccount')}
         </a>
         <a href={path('/')} className="inline-flex h-12 items-center justify-center rounded-full border border-slate-900/10 bg-white px-6 text-sm font-semibold text-[#071724]">
           {t('returnHome')}
         </a>
+        {!authenticated ? (
+          <a href={path('/client-login')} className="inline-flex h-12 items-center justify-center rounded-full border border-slate-900/10 bg-white px-6 text-sm font-semibold text-[#071724]">
+            {t('signInToClientAccount')}
+          </a>
+        ) : null}
         <a
-          href="https://wa.me/19153595448"
+          href={buildWhatsAppUrl(getGeneralInquiryMessage(locale))}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => track('whatsapp_click', { source: 'intake_success', locale })}
           className="inline-flex h-12 items-center justify-center rounded-full border border-slate-900/10 bg-white px-6 text-sm font-semibold text-[#071724]"
         >
           {t('contactSupport')}

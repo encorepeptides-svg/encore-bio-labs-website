@@ -8,7 +8,7 @@ import {
   Star,
 } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { coaBySlug } from '../data/coa'
 import { products, type Product } from '../data/products'
 import { getLocalizedProduct, localizedCategoryLabel } from '../data/productTranslations'
@@ -46,6 +46,8 @@ function FeaturedBestSellerCard({ product: baseProduct }: { product: Product }) 
   const { t: catalogT } = useTranslation('catalog')
   const product = getLocalizedProduct(baseProduct, locale)
   const hasCoa = Boolean(coaBySlug[product.slug])
+  const firstAvailableVariant = product.variants.find((variant) => product.stockStatus !== 'Unavailable' && variant.price > 0)
+  const [selectedVariant, setSelectedVariant] = useState(firstAvailableVariant)
 
   return (
     <article className="group overflow-hidden rounded-[1.75rem] border border-slate-900/10 bg-white shadow-[0_24px_80px_rgba(7,23,36,0.08)] transition duration-300 motion-safe:hover:-translate-y-1 hover:shadow-[0_34px_110px_rgba(20,184,166,0.16)]">
@@ -71,23 +73,49 @@ function FeaturedBestSellerCard({ product: baseProduct }: { product: Product }) 
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
               {t('availableStrengths')}
             </p>
-            <ul className="mt-3 flex flex-wrap gap-2" aria-label={t('availableStrengthsAria', { product: product.name })}>
-              {product.variants.map((variant) => (
-                <li key={`${variant.label}-${variant.format}`}>
-                  <span className="inline-flex rounded-full border border-slate-900/10 bg-[#f5f5f2] px-3 py-1.5 text-xs font-semibold text-slate-600">
-                    {variant.label}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <div role="group" className="mt-3 flex flex-wrap gap-2" aria-label={t('availableStrengthsAria', { product: product.name })}>
+              {product.variants.map((variant, index) => {
+                const available = product.stockStatus !== 'Unavailable' && variant.price > 0
+                const selected = selectedVariant === variant
+                const unavailableId = `featured-variant-${product.slug}-${index}-status`
+
+                return (
+                  <button
+                    key={`${variant.label}-${variant.format}`}
+                    type="button"
+                    disabled={!available}
+                    aria-pressed={selected}
+                    aria-describedby={!available ? unavailableId : undefined}
+                    onClick={() => setSelectedVariant(variant)}
+                    className={cn(
+                      'inline-flex flex-col rounded-xl border px-3 py-2 text-left text-xs transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:cursor-not-allowed disabled:opacity-45',
+                      selected
+                        ? 'border-teal-700 bg-teal-50 text-teal-900 shadow-[0_0_0_1px_rgba(15,118,110,.12)]'
+                        : 'border-slate-900/10 bg-[#f5f5f2] text-slate-600 hover:border-teal-600/40 hover:bg-teal-50',
+                    )}
+                  >
+                    <span className="font-semibold">{variant.label}</span>
+                    <span className="mt-0.5 text-[0.68rem]">{available ? `$${variant.price.toLocaleString()}` : t('variantUnavailable')}</span>
+                    {!available ? <span id={unavailableId} className="sr-only">{t('variantUnavailableDescription', { variant: variant.label })}</span> : null}
+                  </button>
+                )
+              })}
+            </div>
           </div>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-700">
-            {getResearchOptionPrice(product, t)}
-          </p>
+          {selectedVariant ? (
+            <div className="grid gap-1 rounded-2xl border border-slate-900/10 bg-[#f7faf9] p-4 text-sm sm:grid-cols-2" aria-live="polite">
+              <p className="text-slate-600"><span className="font-semibold text-[#071724]">{t('selectedPrice')}:</span> ${selectedVariant.price.toLocaleString()}</p>
+              <p className="break-all text-slate-600"><span className="font-semibold text-[#071724]">{t('variantReference')}:</span> {selectedVariant.sku ?? selectedVariant.label}</p>
+            </div>
+          ) : (
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-700">{getResearchOptionPrice(product, t)}</p>
+          )}
           <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-            <AddToCartButton product={product} className="min-h-12 px-6">
-              {t('addVariantToCart', { variant: product.variants[0]?.label ?? '' })}
-            </AddToCartButton>
+            {selectedVariant ? (
+              <AddToCartButton product={product} variant={selectedVariant} className="min-h-12 px-6">
+                {t('addVariantToCart', { variant: selectedVariant.label })}
+              </AddToCartButton>
+            ) : null}
             <a
               href={path(`/products/${product.slug}`)}
               className="inline-flex min-h-12 items-center justify-center rounded-full border border-slate-900/10 bg-white px-6 py-3 text-sm font-semibold text-[#071724] transition hover:bg-teal-50"
@@ -102,11 +130,12 @@ function FeaturedBestSellerCard({ product: baseProduct }: { product: Product }) 
           aria-label={t('viewProduct', { product: product.name })}
           className="relative order-1 block overflow-hidden bg-[#dfe8e7] lg:order-2"
         >
-          <div className="relative flex aspect-[4/3] w-full items-center justify-center p-6 sm:aspect-[16/10] sm:p-10 lg:aspect-auto lg:h-full lg:min-h-[clamp(16rem,10rem+18vw,24rem)] lg:p-10">
+          <div className="relative flex aspect-[4/3] w-full items-center justify-center p-3 sm:aspect-[16/10] sm:p-5 lg:aspect-auto lg:h-full lg:min-h-[clamp(22rem,15rem+18vw,34rem)] lg:p-5">
             <ProductLabVisual
               product={product}
               alt={t('productImageAlt', { product: product.name })}
               sizes="(min-width: 1024px) 45vw, 100vw"
+              className="[&_.ph-product]:!h-[96%] [&_.ph-product]:!w-[92%]"
               priority
             />
           </div>

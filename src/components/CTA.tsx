@@ -1,5 +1,5 @@
 import { ArrowRight } from 'lucide-react'
-import type { ReactNode } from 'react'
+import type { MouseEventHandler, ReactNode } from 'react'
 import { useLocale } from '../i18n/LocaleContext'
 import { cn } from '../lib/utils'
 
@@ -10,6 +10,7 @@ type CTAProps = {
   className?: string
   target?: string
   rel?: string
+  onClick?: MouseEventHandler<HTMLAnchorElement>
 }
 
 const tones = {
@@ -18,7 +19,7 @@ const tones = {
   ghost: 'border border-slate-900/10 bg-white/55 text-[#071724] shadow-[0_14px_34px_rgba(7,23,36,0.08)] backdrop-blur-xl hover:bg-white',
 }
 
-export function CTA({ children, href, tone = 'dark', className, target, rel }: CTAProps) {
+export function CTA({ children, href, tone = 'dark', className, target, rel, onClick }: CTAProps) {
   const { path } = useLocale()
 
   return (
@@ -26,6 +27,7 @@ export function CTA({ children, href, tone = 'dark', className, target, rel }: C
       href={path(href)}
       target={target}
       rel={rel}
+      onClick={onClick}
       className={cn(
         'inline-flex items-center justify-center gap-3 rounded-full px-5 py-3 text-sm font-semibold transition duration-300 hover:-translate-y-0.5 active:translate-y-0',
         tones[tone],

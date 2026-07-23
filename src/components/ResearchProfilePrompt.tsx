@@ -1,15 +1,16 @@
 import { FlaskConical, MessageCircle, Target } from 'lucide-react'
-import { useTranslation } from '../i18n/LocaleContext'
+import { useLocale, useTranslation } from '../i18n/LocaleContext'
 import { CTA } from './CTA'
 import { Reveal } from './Reveal'
 
 export function ResearchProfilePrompt() {
+  const { path } = useLocale()
   const { t } = useTranslation('homepage')
 
   const previewSteps = [
-    { icon: FlaskConical, label: t('promptStep1') },
-    { icon: Target, label: t('promptStep2') },
-    { icon: MessageCircle, label: t('promptStep3') },
+    { icon: FlaskConical, label: t('promptStep1'), href: '/intake#research-goal', ariaLabel: t('promptStep1Aria') },
+    { icon: Target, label: t('promptStep2'), href: '/intake#research-priorities', ariaLabel: t('promptStep2Aria') },
+    { icon: MessageCircle, label: t('promptStep3'), href: '/intake#research-support', ariaLabel: t('promptStep3Aria') },
   ]
 
   return (
@@ -32,9 +33,15 @@ export function ResearchProfilePrompt() {
               </p>
               <ul className="mt-5 flex flex-wrap gap-2" aria-label={t('promptCardEyebrow')}>
                 {previewSteps.map((step) => (
-                  <li key={step.label} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3 py-2 text-xs font-semibold text-slate-200">
-                    <step.icon size={14} aria-hidden="true" className="text-teal-200" />
-                    {step.label}
+                  <li key={step.label}>
+                    <a
+                      href={path(step.href)}
+                      aria-label={step.ariaLabel}
+                      className="inline-flex min-h-10 items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:border-teal-200/45 hover:bg-white/12 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-200 focus-visible:ring-offset-2 focus-visible:ring-offset-[#071724]"
+                    >
+                      <step.icon size={14} aria-hidden="true" className="text-teal-200" />
+                      {step.label}
+                    </a>
                   </li>
                 ))}
               </ul>

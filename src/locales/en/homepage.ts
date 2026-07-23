@@ -24,6 +24,10 @@ export const homepage = {
   researchOptionsFrom: 'Research options from {price}',
   availabilityByRequest: 'Availability by request',
   addVariantToCart: 'Add {variant} to Cart',
+  selectedPrice: 'Selected price',
+  variantReference: 'Variant reference',
+  variantUnavailable: 'Unavailable',
+  variantUnavailableDescription: '{variant} is currently unavailable for purchase.',
   addToCart: 'Add to Cart',
   viewResearchDetails: 'View Research Details',
   viewProduct: 'View {product}',
@@ -59,4 +63,7 @@ export const homepage = {
   promptStep1: 'What you’re researching',
   promptStep2: 'Your current priorities',
   promptStep3: 'The support you need',
+  promptStep1Aria: 'Start the questionnaire at what you are researching',
+  promptStep2Aria: 'Start the questionnaire at your current priorities',
+  promptStep3Aria: 'Start the questionnaire at the support you need',
 } as const

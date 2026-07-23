@@ -1,7 +1,10 @@
-import { useTranslation } from '../i18n/LocaleContext'
+import { useLocale, useTranslation } from '../i18n/LocaleContext'
+import { track } from '../lib/analytics'
+import { buildWhatsAppUrl, getGeneralInquiryMessage } from '../lib/whatsapp'
 import { CTA } from './CTA'
 
 export function FinalCTA() {
+  const { locale } = useLocale()
   const { t } = useTranslation('homepage')
 
   return (
@@ -25,7 +28,14 @@ export function FinalCTA() {
           <CTA href="/catalog" tone="light">
             {t('finalCtaButton')}
           </CTA>
-          <CTA href="/contact" tone="ghost" className="border-white/20 bg-white/8 text-white hover:bg-white/14">
+          <CTA
+            href={buildWhatsAppUrl(getGeneralInquiryMessage(locale))}
+            tone="ghost"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => track('whatsapp_click', { source: 'homepage_final_cta', locale })}
+            className="border-white/20 bg-white/8 text-white hover:bg-white/14"
+          >
             {t('finalCtaContact')}
           </CTA>
         </div>
