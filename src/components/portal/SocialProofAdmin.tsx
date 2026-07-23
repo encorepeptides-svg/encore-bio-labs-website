@@ -6,6 +6,16 @@ import {
 } from '../../data/socialProof/adminReadiness'
 import type { ContentStatus, PagePlacement } from '../../data/socialProof/types'
 import { ReviewIntakeForm } from './ReviewIntakeForm'
+import {
+  APPROVAL_FILTERS,
+  PUBLICATION_FILTERS,
+  selectAdminTestimonials,
+  type AdminListScope,
+  type AdminSortDirection,
+  type AdminSortKey,
+  type ApprovalFilter,
+  type PublicationFilter,
+} from './socialProofAdminList'
 
 /**
  * Content-admin panel for testimonials and before/after transformation media.
@@ -99,10 +109,12 @@ function StatusControls({
   row,
   onUpdate,
   approvalReadiness,
+  scope = 'active',
 }: {
   row: Row
   onUpdate: (patch: Record<string, unknown>) => void
   approvalReadiness?: TestimonialPublicationReadiness
+  scope?: AdminListScope
 }) {
   const approveDisabled = approvalReadiness ? !approvalReadiness.canApproveAndPublish : false
   const readinessDescriptionId = approvalReadiness ? `testimonial-readiness-${row.id}` : undefined
@@ -144,13 +156,23 @@ function StatusControls({
       >
         Unpublish
       </button>
-      <button
-        type="button"
-        onClick={() => onUpdate({ status: 'archived', published_at: null })}
-        className="h-9 rounded-lg border border-slate-300 px-3 text-xs font-semibold text-slate-500"
-      >
-        Archive
-      </button>
+      {scope === 'archived' ? (
+        <button
+          type="button"
+          onClick={() => onUpdate({ status: 'draft' })}
+          className="h-9 rounded-lg border border-slate-300 px-3 text-xs font-semibold text-teal-800"
+        >
+          Restore to draft
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => onUpdate({ status: 'archived', published_at: null })}
+          className="h-9 rounded-lg border border-slate-300 px-3 text-xs font-semibold text-slate-500"
+        >
+          Archive
+        </button>
+      )}
     </div>
   )
 }
@@ -210,20 +232,139 @@ function PublicationReadiness({ row, readiness }: { row: Row; readiness: Testimo
   )
 }
 
-function TestimonialsPanel() {
+function ListToolbar({
+  scope,
+  approval,
+  setApproval,
+  publication,
+  setPublication,
+  sortKey,
+  setSortKey,
+  sortDirection,
+  setSortDirection,
+  shown,
+  total,
+}: {
+  scope: AdminListScope
+  approval: ApprovalFilter
+  setApproval: (value: ApprovalFilter) => void
+  publication: PublicationFilter
+  setPublication: (value: PublicationFilter) => void
+  sortKey: AdminSortKey
+  setSortKey: (value: AdminSortKey) => void
+  sortDirection: AdminSortDirection
+  setSortDirection: (value: AdminSortDirection) => void
+  shown: number
+  total: number
+}) {
+  const alphabetical = sortKey !== 'manual'
+  return (
+    <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <Field label="Sort by">
+        <select
+          value={sortKey}
+          onChange={(event) => setSortKey(event.target.value as AdminSortKey)}
+          className="h-9 rounded-lg border border-slate-300 px-2 text-xs font-semibold"
+        >
+          <option value="manual">Manual order</option>
+          <option value="display_name">Display name</option>
+          <option value="review_title">Review title</option>
+        </select>
+      </Field>
+      <button
+        type="button"
+        onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+        aria-label={alphabetical
+          ? `Sort ${sortDirection === 'asc' ? 'Z to A' : 'A to Z'}`
+          : `Sort ${sortDirection === 'asc' ? 'last to first' : 'first to last'}`}
+        className="h-9 rounded-lg border border-slate-300 px-3 text-xs font-semibold"
+      >
+        {alphabetical
+          ? (sortDirection === 'asc' ? 'A → Z' : 'Z → A')
+          : (sortDirection === 'asc' ? 'First → last' : 'Last → first')}
+      </button>
+
+      {scope === 'active' ? (
+        <>
+          <Field label="Approval status">
+            <select
+              value={approval}
+              onChange={(event) => setApproval(event.target.value as ApprovalFilter)}
+              className="h-9 rounded-lg border border-slate-300 px-2 text-xs font-semibold"
+            >
+              {APPROVAL_FILTERS.map((value) => (
+                <option key={value} value={value}>{value === 'all' ? 'All statuses' : value}</option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Publication">
+            <select
+              value={publication}
+              onChange={(event) => setPublication(event.target.value as PublicationFilter)}
+              className="h-9 rounded-lg border border-slate-300 px-2 text-xs font-semibold"
+            >
+              {PUBLICATION_FILTERS.map((value) => (
+                <option key={value} value={value}>
+                  {value === 'all' ? 'All' : value === 'published' ? 'Published' : 'Unpublished'}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </>
+      ) : null}
+
+      <p className="ml-auto text-xs font-semibold text-slate-500">
+        Showing {shown} of {total} {scope === 'archived' ? 'archived' : 'active'} {total === 1 ? 'review' : 'reviews'}
+      </p>
+    </div>
+  )
+}
+
+function TestimonialsPanel({ scope = 'active' }: { scope?: AdminListScope }) {
   const { rows, loading, error, update, create } = useCollection('testimonials')
   const fileRefs = useRef<Record<string, HTMLInputElement | null>>({})
+  const [approval, setApproval] = useState<ApprovalFilter>('all')
+  const [publication, setPublication] = useState<PublicationFilter>('all')
+  const [sortKey, setSortKey] = useState<AdminSortKey>('manual')
+  const [sortDirection, setSortDirection] = useState<AdminSortDirection>('asc')
+
+  const scopeTotal = rows.filter((row) => (scope === 'archived' ? row.status === 'archived' : row.status !== 'archived')).length
+  const visibleRows = selectAdminTestimonials(rows, { scope, approval, publication, sortKey, sortDirection })
 
   return (
     <div className="space-y-4">
-      <ReviewIntakeForm onCreate={create} />
+      {scope === 'active' ? <ReviewIntakeForm onCreate={create} /> : null}
       {loading ? <p className="text-sm text-slate-500">Loading…</p> : null}
       {error ? <p role="alert" className="text-sm text-red-700">{error}</p> : null}
-      {rows.map((row) => {
+      {!loading && !error ? (
+        <ListToolbar
+          scope={scope}
+          approval={approval}
+          setApproval={setApproval}
+          publication={publication}
+          setPublication={setPublication}
+          sortKey={sortKey}
+          setSortKey={setSortKey}
+          sortDirection={sortDirection}
+          setSortDirection={setSortDirection}
+          shown={visibleRows.length}
+          total={scopeTotal}
+        />
+      ) : null}
+      {!loading && !error && visibleRows.length === 0 ? (
+        <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">
+          {scope === 'archived'
+            ? 'No archived reviews.'
+            : scopeTotal === 0
+              ? 'No reviews yet.'
+              : 'No reviews match these filters.'}
+        </p>
+      ) : null}
+      {visibleRows.map((row) => {
         const readiness = getTestimonialPublicationReadiness(row)
         return (
         <div key={row.id} className="rounded-2xl border border-slate-900/10 bg-white p-5">
-          <StatusControls row={row} approvalReadiness={readiness} onUpdate={(patch) => void update(row.id, patch)} />
+          <StatusControls row={row} approvalReadiness={readiness} scope={scope} onUpdate={(patch) => void update(row.id, patch)} />
           <PublicationReadiness row={row} readiness={readiness} />
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <Field label="Display name">
@@ -373,15 +514,34 @@ function TransformationsPanel() {
   )
 }
 
+const CONTENT_TABS = [
+  { id: 'testimonials', label: 'Testimonials' },
+  { id: 'transformations', label: 'Before / After' },
+  { id: 'archived', label: 'Archived' },
+] as const
+
+type ContentTab = (typeof CONTENT_TABS)[number]['id']
+
 export function SocialProofAdmin() {
-  const [tab, setTab] = useState<'testimonials' | 'transformations'>('testimonials')
+  const [tab, setTab] = useState<ContentTab>('testimonials')
   return (
     <div className="mt-9">
       <div className="mb-5 inline-flex rounded-full border border-slate-300 p-1">
-        <button type="button" onClick={() => setTab('testimonials')} className={`rounded-full px-4 py-1.5 text-sm font-semibold ${tab === 'testimonials' ? 'bg-[#071724] text-white' : 'text-slate-600'}`}>Testimonials</button>
-        <button type="button" onClick={() => setTab('transformations')} className={`rounded-full px-4 py-1.5 text-sm font-semibold ${tab === 'transformations' ? 'bg-[#071724] text-white' : 'text-slate-600'}`}>Before / After</button>
+        {CONTENT_TABS.map((entry) => (
+          <button
+            key={entry.id}
+            type="button"
+            onClick={() => setTab(entry.id)}
+            aria-current={tab === entry.id ? 'page' : undefined}
+            className={`rounded-full px-4 py-1.5 text-sm font-semibold ${tab === entry.id ? 'bg-[#071724] text-white' : 'text-slate-600'}`}
+          >
+            {entry.label}
+          </button>
+        ))}
       </div>
-      {tab === 'testimonials' ? <TestimonialsPanel /> : <TransformationsPanel />}
+      {tab === 'testimonials' ? <TestimonialsPanel scope="active" /> : null}
+      {tab === 'transformations' ? <TransformationsPanel /> : null}
+      {tab === 'archived' ? <TestimonialsPanel scope="archived" /> : null}
     </div>
   )
 }
