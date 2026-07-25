@@ -158,7 +158,15 @@ function getPlainProductDescription(product: Product, researchContent: ProductRe
     : `${product.name} is a premium research compound studied in ${areas}, available now with documentation on request.`
 }
 
-export function ProductHero({ product, researchContent }: { product: Product; researchContent?: ProductResearchContent }) {
+export function ProductHero({
+  product,
+  researchContent,
+  purchaseCta,
+}: {
+  product: Product
+  researchContent?: ProductResearchContent
+  purchaseCta?: { href: string; label: string }
+}) {
   const { path, locale } = useLocale()
   const { t } = useTranslation('product')
   const productFeatureBullets = product.keyHighlights?.slice(0, 3).length
@@ -185,7 +193,16 @@ export function ProductHero({ product, researchContent }: { product: Product; re
             <h1 className="mt-5 text-[clamp(2.5rem,6vw,3.9rem)] font-semibold leading-[0.92] tracking-[-0.055em] text-[#08131a]">{product.name}</h1>
             <p className="mt-4 text-xl font-semibold leading-snug tracking-[-0.035em] text-[#08131a] sm:text-2xl">{product.headline}</p>
             <p className="mt-4 max-w-xl text-[0.98rem] leading-7 text-slate-600">{getPlainProductDescription(product, researchContent, locale)}</p>
-            <div className="mt-6"><PurchaseSelector product={product} compact selectedVariant={variant} selectedPurchase={selection} onVariantChange={setVariant} onPurchaseChange={setSelection} /></div>
+            {purchaseCta ? (
+              <a
+                href={purchaseCta.href}
+                className="mt-7 inline-flex min-h-12 items-center justify-center rounded-full bg-[#071724] px-6 text-sm font-bold text-white shadow-[0_16px_38px_rgba(7,23,36,0.18)] transition hover:-translate-y-0.5 hover:bg-teal-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700"
+              >
+                {purchaseCta.label}
+              </a>
+            ) : (
+              <div className="mt-6"><PurchaseSelector product={product} compact selectedVariant={variant} selectedPurchase={selection} onVariantChange={setVariant} onPurchaseChange={setSelection} /></div>
+            )}
             <p className="mt-4 text-xs leading-5 text-slate-500">{t('researchUseOnlyLine')} · <a href={path('/contact')} className="font-semibold text-teal-800 underline-offset-4 hover:underline">{t('contactQuestion')}</a></p>
           </div>
           {/* RIGHT: the vial, clean light scene */}
