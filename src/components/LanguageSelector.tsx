@@ -16,8 +16,9 @@ export function LanguageSelector({ variant = 'nav', className }: LanguageSelecto
   const { locale, setLocale } = useLocale()
   const { t } = useTranslation('languageSwitcher')
 
-  // Compact single-tap toggle for the persistent mobile header: a globe + the
-  // current language code that flips to the other locale (only two languages).
+  // Compact single-tap toggle for the desktop header: a globe + the current
+  // language code that flips to the other locale (only two languages). Sized to
+  // match the neighboring circular icon buttons.
   if (variant === 'compact') {
     const nextLocale = locale === 'en' ? 'es' : 'en'
     return (
@@ -26,7 +27,7 @@ export function LanguageSelector({ variant = 'nav', className }: LanguageSelecto
         onClick={() => setLocale(nextLocale)}
         aria-label={t(locale === 'en' ? 'switchToSpanish' : 'switchToEnglish')}
         className={cn(
-          'inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full border border-slate-900/10 bg-white/70 px-3 text-[#071724] shadow-sm backdrop-blur-xl transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
+          'inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-slate-900/10 bg-white/70 px-3 text-[#071724] shadow-sm backdrop-blur-xl transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
           className,
         )}
       >

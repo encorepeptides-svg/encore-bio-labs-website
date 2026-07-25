@@ -241,7 +241,7 @@ export function CartNavButton() {
     <button
       type="button"
       onClick={openCart}
-      className="relative inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-slate-900/10 bg-white/70 text-[#071724] shadow-sm backdrop-blur-xl transition hover:bg-white"
+      className="relative inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-slate-900/10 bg-white/70 text-[#071724] shadow-sm backdrop-blur-xl transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
       aria-label={t(itemCount === 1 ? 'cartWithItemsAriaOne' : 'cartWithItemsAriaOther', { count: itemCount })}
     >
       <ShoppingCart size={18} aria-hidden="true" />

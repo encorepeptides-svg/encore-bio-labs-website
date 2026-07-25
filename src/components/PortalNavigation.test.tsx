@@ -38,16 +38,16 @@ describe('client and administrator navigation', () => {
     return container
   }
 
-  it('shows a prominent client login on desktop and in the opened mobile menu without an admin link', () => {
+  it('shows a prominent login on desktop and in the opened mobile menu without an admin link', () => {
     const container = renderShell('en', 'navbar')
     const desktopLogin = container.querySelector<HTMLAnchorElement>('a[href="/client-login"]')
-    expect(desktopLogin?.textContent).toContain('Client Login')
+    expect(desktopLogin?.textContent).toContain('Login')
     expect(container.querySelector('a[href="/admin"]')).toBeNull()
 
     const menuButton = container.querySelector<HTMLButtonElement>('button[aria-controls="mobile-menu"]')!
     act(() => menuButton.click())
     const mobileMenu = container.querySelector('[role="dialog"]')
-    expect(mobileMenu?.querySelector<HTMLAnchorElement>('a[href="/client-login"]')?.textContent).toContain('Client Login')
+    expect(mobileMenu?.querySelector<HTMLAnchorElement>('a[href="/client-login"]')?.textContent).toContain('Login')
     expect(mobileMenu?.querySelector('a[href="/admin"]')).toBeNull()
   })
 
