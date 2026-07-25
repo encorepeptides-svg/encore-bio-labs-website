@@ -1,6 +1,6 @@
 import { LOCALE_PREFIX, SITE_ORIGIN, type Locale } from './config'
 
-type PageMeta = { title: string; description: string }
+type PageMeta = { title: string; description: string; noindex?: boolean }
 
 function getOrCreateLink(rel: string, hreflang?: string): HTMLLinkElement {
   const selector = hreflang ? `link[rel="${rel}"][hreflang="${hreflang}"]` : `link[rel="${rel}"]`
@@ -40,6 +40,7 @@ export function applyDocumentMetadata(logicalPath: string, locale: Locale, meta:
 
   document.title = meta.title
   setMetaByName('description', meta.description)
+  setMetaByName('robots', meta.noindex ? 'noindex, nofollow' : 'index, follow')
 
   const normalizedLogical = logicalPath === '/' ? '' : logicalPath
   const enUrl = `${SITE_ORIGIN}${normalizedLogical || '/'}`

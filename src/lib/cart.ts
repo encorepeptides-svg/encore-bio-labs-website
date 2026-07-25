@@ -1,6 +1,7 @@
 import type { Product, ProductVariant } from '../data/products'
 import { getProductHeroImage } from '../data/productMedia'
 import { getDefaultPurchaseSelection, quotePurchase, type PurchaseOptionId, type PurchaseSelection } from './purchaseOptions'
+import { calculateShippingCharges, type DeliveryDestination, type ShippingRate } from './shipping'
 
 export type CartItemId = string
 
@@ -28,11 +29,6 @@ export type CartItem = CartSku & {
   inventoryStatus?: 'in-stock' | 'limited' | 'on-request' | 'unavailable'
 }
 
-export type CartAdjustment = {
-  label: string
-  amount: number
-}
-
 export type CartTotals = {
   subtotal: number
   shipping: number
@@ -41,24 +37,10 @@ export type CartTotals = {
   total: number
 }
 
-export type ShippingCalculationInput = {
-  subtotal: number
-  itemCount: number
-  destinationCountry?: string
-  destinationState?: string
-}
-
-export type TaxCalculationInput = ShippingCalculationInput & {
-  shipping: number
-}
-
-export type DiscountCalculationInput = ShippingCalculationInput & {
-  code?: string
-}
-
-export type SubscriptionCalculationInput = {
-  subtotal: number
-  enabled?: boolean
+export type CartShippingInput = {
+  destination: DeliveryDestination
+  selectedRate?: ShippingRate | null
+  localDeliveryFeeCents?: number | null
 }
 
 export function createCartItemId(productSlug: string, variant: Pick<ProductVariant, 'label' | 'format'>, selection?: PurchaseSelection): CartItemId {
@@ -159,34 +141,20 @@ export function calculateItemCount(items: CartItem[]) {
   return items.reduce((count, item) => count + item.packSize * item.quantity, 0)
 }
 
-export function calculateShipping(input: ShippingCalculationInput) {
-  if (!input.itemCount || input.subtotal <= 0) return 0
-  if (input.destinationCountry === 'MX') return 15
-  return 0
-}
-
-export function calculateTax(_input: TaxCalculationInput) {
-  return 0
-}
-
-export function calculateDiscount(_input: DiscountCalculationInput): CartAdjustment {
-  return { label: 'Discount', amount: 0 }
-}
-
-export function calculateSubscriptionAdjustment(_input: SubscriptionCalculationInput): CartAdjustment {
-  return { label: 'Subscription', amount: 0 }
-}
-
-export function calculateTotal(items: CartItem[], input: Omit<ShippingCalculationInput, 'subtotal' | 'itemCount'> = {}): CartTotals {
+export function calculateTotal(items: CartItem[], input?: CartShippingInput): CartTotals {
   const subtotal = calculateSubtotal(items)
-  const itemCount = calculateItemCount(items)
-  const shipping = calculateShipping({ ...input, subtotal, itemCount })
-  const tax = calculateTax({ ...input, subtotal, itemCount, shipping })
-  const discount = calculateDiscount({ ...input, subtotal, itemCount }).amount
-  const subscription = calculateSubscriptionAdjustment({ subtotal }).amount
-  const total = Math.max(0, subtotal + shipping + tax - discount - subscription)
+  const charges = input ? calculateShippingCharges({
+    destination: input.destination,
+    kitCount: calculateItemCount(items),
+    subtotalCents: Math.round(subtotal * 100),
+    selectedRate: input.selectedRate ?? null,
+    localDeliveryFeeCents: input.localDeliveryFeeCents ?? null,
+  }) : null
+  const shipping = charges?.shippingCents === null || !charges
+    ? 0
+    : (charges.importFeeCents + charges.shippingCents) / 100
 
-  return { subtotal, shipping, tax, discount: discount + subscription, total }
+  return { subtotal, shipping, tax: 0, discount: 0, total: subtotal + shipping }
 }
 
 export function formatCartCurrency(value: number) {

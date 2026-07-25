@@ -51,16 +51,20 @@ describe('client and administrator navigation', () => {
     expect(mobileMenu?.querySelector('a[href="/admin"]')).toBeNull()
   })
 
-  it('keeps the admin link as the final footer link and localizes both destinations in Spanish', () => {
+  it('does not advertise admin access in the footer and localizes the client destination in Spanish', () => {
     const englishFooter = renderShell('en', 'footer')
-    const englishLinks = englishFooter.querySelectorAll<HTMLAnchorElement>('footer a')
-    expect(englishLinks.item(englishLinks.length - 1).href).toMatch(/\/admin$/)
-    expect(englishLinks.item(englishLinks.length - 1).textContent).toContain('Admin Access')
+    expect(englishFooter.querySelector('a[href="/admin"]')).toBeNull()
 
     const spanishFooter = renderShell('es', 'footer')
     expect(spanishFooter.querySelector<HTMLAnchorElement>('a[href="/es/client-login"]')?.textContent).toContain('Portal de clientes')
-    const spanishLinks = spanishFooter.querySelectorAll<HTMLAnchorElement>('footer a')
-    expect(spanishLinks.item(spanishLinks.length - 1).getAttribute('href')).toBe('/es/admin')
-    expect(spanishLinks.item(spanishLinks.length - 1).textContent).toContain('Acceso administrativo')
+    expect(spanishFooter.querySelector('a[href="/es/admin"]')).toBeNull()
+  })
+
+  it('opens external footer links in a separate, isolated tab', () => {
+    const footer = renderShell('en', 'footer')
+    for (const link of footer.querySelectorAll<HTMLAnchorElement>('a[href^="http"]')) {
+      expect(link.target).toBe('_blank')
+      expect(link.rel).toBe('noopener noreferrer')
+    }
   })
 })

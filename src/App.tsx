@@ -126,8 +126,9 @@ function App() {
     const categoryName = categorySlug && knownCategorySlugs.has(categorySlug)
       ? categorySlug.split('-').map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`).join(' ')
       : undefined
-    const isPortalSubRoute = normalizedPath.startsWith('/portal/') || normalizedPath.startsWith('/admin')
-    const metadataKey = isPortalSubRoute ? '/portal' : normalizedPath
+    const isPortalSubRoute = normalizedPath.startsWith('/portal/')
+    const isAdminRoute = normalizedPath === '/admin' || normalizedPath.startsWith('/admin/')
+    const metadataKey = isAdminRoute ? '/admin' : isPortalSubRoute ? '/portal' : normalizedPath
     const localizedMeta = metadataKey === draftReviewPreviewPath && !isDraftReviewPreviewPath(normalizedPath, import.meta.env.DEV)
       ? notFoundMetadata
       : pageMetadata[metadataKey] ?? (categoryName ? getCategoryMetadata(categorySlug!, categoryName) : notFoundMetadata)
@@ -249,7 +250,7 @@ function App() {
       return <FAQLibraryPage />
     }
 
-    if (logicalPath === '/research' || logicalPath === '/research/' || logicalPath === '/research/retatrutide' || logicalPath === '/research/retatrutide/') {
+    if (logicalPath === '/research' || logicalPath === '/research/') {
       return <ResearchLibraryPage />
     }
 

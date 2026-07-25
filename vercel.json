@@ -12,6 +12,10 @@
       ]
     }
   ],
+  "redirects": [
+    { "source": "/research/retatrutide", "destination": "/research", "permanent": true },
+    { "source": "/es/research/retatrutide", "destination": "/es/research", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }
   ]

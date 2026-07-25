@@ -9,6 +9,7 @@ describe('applyDocumentMetadata', () => {
     // updates these in place rather than creating them for meta[name=...] tags.
     document.head.innerHTML = `
       <meta name="description" content="" />
+      <meta name="robots" content="index, follow" />
       <meta name="twitter:title" content="" />
       <meta name="twitter:description" content="" />
     `
@@ -44,6 +45,15 @@ describe('applyDocumentMetadata', () => {
       expect(meta.en.title, `${route} en title`).not.toBe(meta.es.title)
       expect(meta.en.description, `${route} en description`).not.toBe(meta.es.description)
     }
+  })
+
+  it('uses distinct noindex metadata for private admin routes and resets robots on public routes', () => {
+    applyDocumentMetadata('/admin/orders', 'en', pageMetadata['/admin'].en)
+    expect(document.title).toBe('Administration | Encore Bio Labs')
+    expect(document.querySelector('meta[name="robots"]')?.getAttribute('content')).toBe('noindex, nofollow')
+
+    applyDocumentMetadata('/catalog', 'en', pageMetadata['/catalog'].en)
+    expect(document.querySelector('meta[name="robots"]')?.getAttribute('content')).toBe('index, follow')
   })
 
   it('emits hreflang alternates for en, es, and x-default', () => {
