@@ -8,6 +8,7 @@ const sourceKeys: Record<string, string> = {
   invitation: 'adminAgentSourceInvitation',
   public_intake: 'adminAgentSourceIntake',
   paid_order: 'adminAgentSourcePaidOrder',
+  direct_signup: 'adminAgentSourceDirectSignup',
   unmatched: 'adminAgentSourceUnmatched',
 }
 
@@ -84,7 +85,7 @@ export function AdminApplications() {
 
 function InviteClientForm() {
   const { t } = useTranslation('portal')
-  const [form, setForm] = useState({ email: '', legalName: '', preferredLanguage: 'English' as 'English' | 'Spanish', approvalMode: 'automatic' as 'automatic' | 'manual' })
+  const [form, setForm] = useState({ email: '', legalName: '', preferredLanguage: 'English' as 'English' | 'Spanish' })
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<{ tone: 'success' | 'error'; copy: string } | null>(null)
 
@@ -93,7 +94,7 @@ function InviteClientForm() {
     setBusy(true)
     setMessage(null)
     try {
-      await adminInvitePortalClient(form)
+      await adminInvitePortalClient({ ...form, approvalMode: 'automatic' })
       setForm((current) => ({ ...current, email: '', legalName: '' }))
       setMessage({ tone: 'success', copy: t('adminInviteSuccess') })
     } catch {
@@ -114,14 +115,9 @@ function InviteClientForm() {
       <label className="grid gap-2 text-sm font-semibold text-slate-700">{t('adminInviteEmail')}
         <input required type="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} className="portal-input" autoComplete="off" />
       </label>
-      <label className="grid gap-2 text-sm font-semibold text-slate-700">{t('adminInviteLanguage')}
+      <label className="grid gap-2 text-sm font-semibold text-slate-700 lg:col-span-2">{t('adminInviteLanguage')}
         <select value={form.preferredLanguage} onChange={(event) => setForm({ ...form, preferredLanguage: event.target.value as 'English' | 'Spanish' })} className="portal-input">
           <option value="English">{t('languageEnglish')}</option><option value="Spanish">{t('languageSpanish')}</option>
-        </select>
-      </label>
-      <label className="grid gap-2 text-sm font-semibold text-slate-700">{t('adminInviteApprovalMode')}
-        <select value={form.approvalMode} onChange={(event) => setForm({ ...form, approvalMode: event.target.value as 'automatic' | 'manual' })} className="portal-input">
-          <option value="automatic">{t('adminInviteAutomatic')}</option><option value="manual">{t('adminInviteManual')}</option>
         </select>
       </label>
       <div className="flex flex-wrap items-center gap-3 lg:col-span-2">

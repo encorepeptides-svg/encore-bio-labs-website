@@ -300,7 +300,7 @@ export async function adminFetchClients(): Promise<AdminClientRow[]> {
 
 export type OnboardingEvaluation = {
   outcome: 'auto_approved' | 'manual_review'
-  matched_source: 'invitation' | 'public_intake' | 'paid_order' | 'unmatched'
+  matched_source: 'invitation' | 'public_intake' | 'paid_order' | 'direct_signup' | 'unmatched'
   flags: string[]
   created_at: string
 }
