@@ -298,11 +298,49 @@ export async function adminFetchClients(): Promise<AdminClientRow[]> {
   return (data ?? []) as unknown as AdminClientRow[]
 }
 
-export type AdminApplicationRow = { user_id: string; submitted_at: string | null; decision: string; goals: string[]; profiles: { legal_name: string; email: string } | null }
+export type OnboardingEvaluation = {
+  outcome: 'auto_approved' | 'manual_review'
+  matched_source: 'invitation' | 'public_intake' | 'paid_order' | 'unmatched'
+  flags: string[]
+  created_at: string
+}
+export type AdminApplicationRow = {
+  user_id: string
+  submitted_at: string | null
+  decision: string
+  goals: string[]
+  profiles: { legal_name: string; email: string } | null
+  evaluation: OnboardingEvaluation | null
+}
 export async function adminFetchApplications(): Promise<AdminApplicationRow[]> {
   const { data, error } = await db().from('onboarding_profiles').select('user_id,submitted_at,decision,goals,profiles!onboarding_profiles_user_id_fkey(legal_name,email)').not('submitted_at', 'is', null).eq('decision', 'pending').order('submitted_at', { ascending: true }).limit(100)
   if (error) throw error
-  return (data ?? []) as unknown as AdminApplicationRow[]
+  const applications = (data ?? []) as unknown as Omit<AdminApplicationRow, 'evaluation'>[]
+  if (!applications.length) return []
+  const { data: evaluations, error: evaluationError } = await db()
+    .from('portal_onboarding_evaluations')
+    .select('user_id,outcome,matched_source,flags,created_at')
+    .in('user_id', applications.map((application) => application.user_id))
+    .order('created_at', { ascending: false })
+  if (evaluationError) throw evaluationError
+  const latestByUser = new Map<string, OnboardingEvaluation>()
+  for (const evaluation of evaluations ?? []) {
+    if (!latestByUser.has(evaluation.user_id)) latestByUser.set(evaluation.user_id, evaluation as OnboardingEvaluation & { user_id: string })
+  }
+  return applications.map((application) => ({ ...application, evaluation: latestByUser.get(application.user_id) ?? null }))
+}
+
+export async function adminInvitePortalClient(input: {
+  email: string
+  legalName: string
+  preferredLanguage: 'English' | 'Spanish'
+  approvalMode: 'automatic' | 'manual'
+}) {
+  const { data, error } = await db().functions.invoke('communications', {
+    body: { action: 'portal_invite', ...input },
+  })
+  if (error) throw error
+  if (!data?.ok) throw new Error(data?.error || 'Portal invitation failed.')
 }
 
 export async function adminDecideApplication(

@@ -183,8 +183,10 @@ export function OnboardingPage() {
       }
       const { error: submitError } = await supabase.rpc('submit_portal_onboarding')
       if (submitError) throw submitError
+      const { data: accountStatus, error: statusError } = await supabase.from('client_statuses').select('status').eq('user_id', identity.user.id).single()
+      if (statusError) throw statusError
       await refresh()
-      window.location.assign(path('/portal/security'))
+      window.location.assign(path(accountStatus.status === 'active' ? '/portal' : '/portal/security'))
     } catch {
       setError(t('errorSubmission'))
     } finally {

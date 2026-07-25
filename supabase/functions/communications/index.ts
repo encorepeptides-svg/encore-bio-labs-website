@@ -22,17 +22,85 @@ async function sendZoho(to: string, subject: string, html: string) {
   return { sent: true, error: null }
 }
 
+async function invitePortalClient(request: Request, payload: Record<string, unknown>, service: ReturnType<typeof createClient>, origin: string) {
+  const authorization = request.headers.get('authorization') ?? ''
+  const accessToken = authorization.startsWith('Bearer ') ? authorization.slice(7).trim() : ''
+  if (!accessToken) return json({ error: 'Authentication required.' }, 401, origin)
+
+  const { data: authData, error: authError } = await service.auth.getUser(accessToken)
+  if (authError || !authData.user) return json({ error: 'Authentication required.' }, 401, origin)
+
+  const { data: roles, error: roleError } = await service
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', authData.user.id)
+    .in('role', ['admin', 'super_admin'])
+    .limit(1)
+  if (roleError || !roles?.length) return json({ error: 'Administrator authorization required.' }, 403, origin)
+
+  const invitedEmail = clean(payload.email, 254).toLowerCase()
+  const legalName = clean(payload.legalName, 120)
+  const preferredLanguage = payload.preferredLanguage === 'Spanish' ? 'Spanish' : 'English'
+  const approvalMode = payload.approvalMode === 'manual' ? 'manual' : 'automatic'
+  const configuredSiteUrl = clean(Deno.env.get('PORTAL_SITE_URL'), 500).replace(/\/$/, '')
+  if (!email(invitedEmail)) return json({ error: 'A valid client email is required.' }, 422, origin)
+  if (!configuredSiteUrl || !/^https?:\/\//.test(configuredSiteUrl)) return json({ error: 'Portal invitation delivery is not configured.' }, 503, origin)
+
+  const { data: invitation, error: invitationError } = await service
+    .from('portal_invitations')
+    .insert({
+      email: invitedEmail,
+      preferred_language: preferredLanguage,
+      approval_mode: approvalMode,
+      created_by: authData.user.id,
+      metadata: { source: 'admin_portal' },
+    })
+    .select('id')
+    .single()
+  if (invitationError || !invitation) {
+    return json({ error: 'An active invitation already exists for this email.' }, 409, origin)
+  }
+
+  const localizedPath = preferredLanguage === 'Spanish' ? '/es/client-reset-password?invited=1' : '/client-reset-password?invited=1'
+  const { data: invited, error: inviteError } = await service.auth.admin.inviteUserByEmail(invitedEmail, {
+    redirectTo: `${configuredSiteUrl}${localizedPath}`,
+    data: {
+      legal_name: legalName,
+      preferred_name: legalName.split(/\s+/)[0] ?? '',
+      preferred_language: preferredLanguage,
+      portal_invited: true,
+    },
+  })
+
+  if (inviteError || !invited.user) {
+    await service.from('portal_invitations').update({
+      status: 'revoked',
+      metadata: { source: 'admin_portal', auth_invite_sent: false },
+    }).eq('id', invitation.id)
+    return json({ error: 'The invitation could not be sent. The address may already be registered.' }, 409, origin)
+  }
+
+  const { error: linkError } = await service.from('portal_invitations').update({
+    auth_user_id: invited.user.id,
+    metadata: { source: 'admin_portal', auth_invite_sent: true },
+  }).eq('id', invitation.id)
+  if (linkError) return json({ error: 'The invitation was sent, but its portal approval record needs administrator review.' }, 500, origin)
+
+  return json({ ok: true, invitation: 'sent', approval: approvalMode }, 200, origin)
+}
+
 Deno.serve(async (request) => {
   const origin = request.headers.get('origin') || '*'
   if (request.method === 'OPTIONS') return json({}, 204, origin)
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405, origin)
   try {
-    const payload = await request.json()
+    const payload = await request.json() as Record<string, unknown>
+    const service = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
+    if (payload.action === 'portal_invite') return invitePortalClient(request, payload, service, origin)
     if (payload.action !== 'contact') return json({ error: 'Unsupported action' }, 400, origin)
     if (clean(payload.website, 200)) return json({ ok: true }, 200, origin) // honeypot: no delivery or disclosure
     const name = clean(payload.name, 120), senderEmail = clean(payload.email, 254).toLowerCase(), phone = clean(payload.phone, 40), subject = clean(payload.subject, 180), body = clean(payload.message, 4000)
     if (!name || !email(senderEmail) || !subject || body.length < 20) return json({ error: 'Invalid contact form submission.' }, 422, origin)
-    const service = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
     const ip = clean(request.headers.get('x-forwarded-for')?.split(',')[0], 64)
     const since = new Date(Date.now() - 10 * 60_000).toISOString()
     const { count } = await service.from('communication_messages').select('id', { count: 'exact', head: true }).eq('source', 'contact_form').gte('created_at', since).contains('metadata', { ip })
