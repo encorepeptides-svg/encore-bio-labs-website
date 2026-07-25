@@ -42,7 +42,7 @@ async function invitePortalClient(request: Request, payload: Record<string, unkn
   const legalName = clean(payload.legalName, 120)
   const preferredLanguage = payload.preferredLanguage === 'Spanish' ? 'Spanish' : 'English'
   const approvalMode = payload.approvalMode === 'manual' ? 'manual' : 'automatic'
-  const configuredSiteUrl = clean(Deno.env.get('PORTAL_SITE_URL'), 500).replace(/\/$/, '')
+  const configuredSiteUrl = clean(Deno.env.get('PORTAL_SITE_URL') || 'https://encorebiolabs.com', 500).replace(/\/$/, '')
   if (!email(invitedEmail)) return json({ error: 'A valid client email is required.' }, 422, origin)
   if (!configuredSiteUrl || !/^https?:\/\//.test(configuredSiteUrl)) return json({ error: 'Portal invitation delivery is not configured.' }, 503, origin)
 

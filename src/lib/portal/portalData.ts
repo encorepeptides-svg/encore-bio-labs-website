@@ -312,6 +312,11 @@ export type AdminApplicationRow = {
   profiles: { legal_name: string; email: string } | null
   evaluation: OnboardingEvaluation | null
 }
+
+export function isMissingOnboardingEvaluationRelation(error: { code?: string } | null) {
+  return error?.code === 'PGRST205' || error?.code === '42P01'
+}
+
 export async function adminFetchApplications(): Promise<AdminApplicationRow[]> {
   const { data, error } = await db().from('onboarding_profiles').select('user_id,submitted_at,decision,goals,profiles!onboarding_profiles_user_id_fkey(legal_name,email)').not('submitted_at', 'is', null).eq('decision', 'pending').order('submitted_at', { ascending: true }).limit(100)
   if (error) throw error
@@ -322,7 +327,12 @@ export async function adminFetchApplications(): Promise<AdminApplicationRow[]> {
     .select('user_id,outcome,matched_source,flags,created_at')
     .in('user_id', applications.map((application) => application.user_id))
     .order('created_at', { ascending: false })
-  if (evaluationError) throw evaluationError
+  if (evaluationError) {
+    if (isMissingOnboardingEvaluationRelation(evaluationError)) {
+      return applications.map((application) => ({ ...application, evaluation: null }))
+    }
+    throw evaluationError
+  }
   const latestByUser = new Map<string, OnboardingEvaluation>()
   for (const evaluation of evaluations ?? []) {
     if (!latestByUser.has(evaluation.user_id)) latestByUser.set(evaluation.user_id, evaluation as OnboardingEvaluation & { user_id: string })

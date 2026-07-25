@@ -1,11 +1,12 @@
 -- Encore Bio Labs portal onboarding agent
+-- Production migration version synchronized with the connected Supabase project.
 --
 -- Automatically activates verified, fully onboarded clients when their account
 -- is matched to a trusted invitation, claimed intake, or paid order. Only
 -- exceptions remain in the administrator review queue. Every decision is
 -- server-authoritative, explainable, and retained for audit.
 
-create table public.portal_invitations (
+create table if not exists public.portal_invitations (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
   expires_at timestamptz not null default (now() + interval '7 days'),
@@ -23,16 +24,16 @@ create table public.portal_invitations (
   metadata jsonb not null default '{}'::jsonb
 );
 
-create unique index portal_invitations_pending_email_uidx
+create unique index if not exists portal_invitations_pending_email_uidx
   on public.portal_invitations(lower(email))
   where status = 'pending';
-create unique index portal_invitations_auth_user_uidx
+create unique index if not exists portal_invitations_auth_user_uidx
   on public.portal_invitations(auth_user_id)
   where auth_user_id is not null;
-create index portal_invitations_created_by_idx
+create index if not exists portal_invitations_created_by_idx
   on public.portal_invitations(created_by, created_at desc);
 
-create table public.portal_onboarding_evaluations (
+create table if not exists public.portal_onboarding_evaluations (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   created_at timestamptz not null default now(),
@@ -43,19 +44,21 @@ create table public.portal_onboarding_evaluations (
   evidence jsonb not null default '{}'::jsonb
 );
 
-create index portal_onboarding_evaluations_user_created_idx
+create index if not exists portal_onboarding_evaluations_user_created_idx
   on public.portal_onboarding_evaluations(user_id, created_at desc);
-create index portal_onboarding_evaluations_manual_review_idx
+create index if not exists portal_onboarding_evaluations_manual_review_idx
   on public.portal_onboarding_evaluations(created_at desc)
   where outcome = 'manual_review';
 
 alter table public.portal_invitations enable row level security;
 alter table public.portal_onboarding_evaluations enable row level security;
 
+drop policy if exists "admins read portal invitations" on public.portal_invitations;
 create policy "admins read portal invitations"
   on public.portal_invitations for select to authenticated
   using ((select public.portal_is_admin()));
 
+drop policy if exists "clients read own onboarding evaluations" on public.portal_onboarding_evaluations;
 create policy "clients read own onboarding evaluations"
   on public.portal_onboarding_evaluations for select to authenticated
   using (
@@ -65,8 +68,10 @@ create policy "clients read own onboarding evaluations"
 
 -- New public-schema tables may require explicit Data API grants. Writes remain
 -- restricted to the decision function and the server-side invitation handler.
-revoke all on public.portal_invitations, public.portal_onboarding_evaluations from anon;
+revoke all on public.portal_invitations, public.portal_onboarding_evaluations from anon, authenticated, service_role;
 grant select on public.portal_invitations, public.portal_onboarding_evaluations to authenticated;
+grant select, insert, update on public.portal_invitations to service_role;
+grant select, insert on public.portal_onboarding_evaluations to service_role;
 
 create or replace function public.evaluate_portal_onboarding(target_user_id uuid)
 returns text
@@ -85,7 +90,9 @@ declare
   matched_source text := 'unmatched';
   review_flags text[] := '{}';
   paid_order_match boolean := false;
+  storefront_paid_order_match boolean := false;
   shipping_review_match boolean := false;
+  public_intake_match boolean := false;
   auto_approve boolean := false;
   client_language text := 'english';
   notification_title text;
@@ -137,27 +144,55 @@ begin
     review_flags := array_append(review_flags, 'prior_staff_review');
   end if;
 
-  select
-    exists (
-      select 1
-      from public.portal_orders portal_order
-      where portal_order.user_id = target_user_id
-        and portal_order.payment_status = 'paid'
-        and portal_order.deleted_at is null
-    ) or exists (
-      select 1
-      from public.storefront_orders storefront_order
-      where storefront_order.status = 'paid'
-        and lower(btrim(storefront_order.contact ->> 'email')) = coalesce(verified_email, '')
-    ),
-    exists (
-      select 1
-      from public.storefront_orders storefront_order
-      where storefront_order.status = 'paid'
-        and storefront_order.shipping_review_required = true
-        and lower(btrim(storefront_order.contact ->> 'email')) = coalesce(verified_email, '')
-    )
-    into paid_order_match, shipping_review_match;
+  select exists (
+    select 1
+    from public.portal_orders portal_order
+    where portal_order.user_id = target_user_id
+      and portal_order.payment_status = 'paid'
+      and portal_order.deleted_at is null
+  ) into paid_order_match;
+
+  -- The storefront and CRM live in some deployments but not others. Dynamic
+  -- checks keep the core portal agent deployable while still using those
+  -- trusted matches whenever the optional tables are available.
+  if to_regclass('public.storefront_orders') is not null then
+    begin
+      execute $query$
+        select exists (
+          select 1 from public.storefront_orders storefront_order
+          where storefront_order.status = 'paid'
+            and lower(btrim(storefront_order.contact ->> 'email')) = $1
+        )
+      $query$ using coalesce(verified_email, '') into storefront_paid_order_match;
+
+      execute $query$
+        select exists (
+          select 1 from public.storefront_orders storefront_order
+          where storefront_order.status = 'paid'
+            and storefront_order.shipping_review_required = true
+            and lower(btrim(storefront_order.contact ->> 'email')) = $1
+        )
+      $query$ using coalesce(verified_email, '') into shipping_review_match;
+    exception when undefined_table or undefined_column then
+      storefront_paid_order_match := false;
+      shipping_review_match := false;
+    end;
+  end if;
+  paid_order_match := paid_order_match or storefront_paid_order_match;
+
+  if to_regclass('public.crm_leads') is not null then
+    begin
+      execute $query$
+        select exists (
+          select 1 from public.crm_leads lead
+          where lead.portal_user_id = $1
+            and lower(btrim(lead.email)) = $2
+        )
+      $query$ using target_user_id, coalesce(verified_email, '') into public_intake_match;
+    exception when undefined_table or undefined_column then
+      public_intake_match := false;
+    end;
+  end if;
 
   select invitation.id, invitation.approval_mode
     into invitation_id, invitation_mode
@@ -179,12 +214,7 @@ begin
     if invitation_mode = 'manual' then
       review_flags := array_append(review_flags, 'manual_invitation');
     end if;
-  elsif exists (
-    select 1
-    from public.crm_leads lead
-    where lead.portal_user_id = target_user_id
-      and lower(btrim(lead.email)) = coalesce(verified_email, '')
-  ) then
+  elsif public_intake_match then
     matched_source := 'public_intake';
   elsif paid_order_match then
     matched_source := 'paid_order';
@@ -293,9 +323,7 @@ begin
   update public.onboarding_profiles
     set submitted_at = now(),
         updated_at = now(),
-        decision = 'pending',
-        draft_completed_at = now(),
-        draft_data = null
+        decision = 'pending'
     where user_id = auth.uid() and submitted_at is null;
 
   if not found then

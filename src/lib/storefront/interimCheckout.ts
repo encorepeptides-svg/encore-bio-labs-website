@@ -168,9 +168,6 @@ export function buildInstagramDmUrl() {
  * hand off — the reference in the message becomes the reconciliation record.
  */
 export async function createPendingOrder(input: PendingOrderInput): Promise<PendingOrder> {
-  const baseSkus = input.items.map((item) => item.sku.split(/-(?:VIAL-ONLY|COMPLETE-KIT|MULTIPACK)-/)[0])
-  const inventoryStatuses = await fetchPublicInventoryStatuses(baseSkus)
-  if (baseSkus.some((sku) => inventoryStatuses[sku] === 'out_of_stock' || inventoryStatuses[sku] === 'inactive')) throw new Error('inventory_unavailable')
   const subtotalCents = Math.round(calculateSubtotal(input.items) * 100)
   const reference = generateOrderReference()
 
@@ -185,6 +182,10 @@ export async function createPendingOrder(input: PendingOrderInput): Promise<Pend
     shippingCents: fallbackCharges?.shippingCents ?? null,
     totalCents: fallbackCharges?.totalCents ?? null,
   }
+
+  const baseSkus = input.items.map((item) => item.sku.split(/-(?:VIAL-ONLY|COMPLETE-KIT|MULTIPACK)-/)[0])
+  const inventoryStatuses = await fetchPublicInventoryStatuses(baseSkus)
+  if (baseSkus.some((sku) => inventoryStatuses[sku] === 'out_of_stock' || inventoryStatuses[sku] === 'inactive')) throw new Error('inventory_unavailable')
 
   const { data, error } = await supabase.functions.invoke<{
     reference: string

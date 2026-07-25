@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import migration from '../../../supabase/migrations/20260725025008_portal_onboarding_agent.sql?raw'
+import migration from '../../../supabase/migrations/20260725152824_portal_onboarding_agent.sql?raw'
 
 describe('portal onboarding agent migration', () => {
   it('auto-approves only verified, complete, trusted matches', () => {
@@ -36,5 +36,12 @@ describe('portal onboarding agent migration', () => {
     expect(migration).toContain("security definer\nset search_path = ''")
     expect(migration).toContain('revoke all on function public.evaluate_portal_onboarding(uuid) from public, anon, authenticated')
     expect(migration).toContain('perform public.evaluate_portal_onboarding(auth.uid())')
+  })
+
+  it('remains deployable when optional CRM and storefront tables are absent', () => {
+    expect(migration).toContain("to_regclass('public.storefront_orders')")
+    expect(migration).toContain("to_regclass('public.crm_leads')")
+    expect(migration).toContain('execute $query$')
+    expect(migration).toContain('grant select, insert, update on public.portal_invitations to service_role')
   })
 })
