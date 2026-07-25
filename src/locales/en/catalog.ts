@@ -73,7 +73,7 @@ export const catalog = {
   categoryEssentials: 'Essentials',
 
   categoryDescWeightManagement:
-    'The compounds behind today’s metabolic and body-composition research — receptor signaling, nutrient response, and energy balance, all in one place.',
+    'Compare metabolic research compounds by pathway, format, price, and documentation, from receptor signaling to nutrient response and energy balance.',
   categoryDescRecoveryRegeneration:
     'Tissue-repair, cell-migration, and skin-biology research — plus signature recovery blends built for serious study.',
   categoryDescCellularEnergyLongevity:

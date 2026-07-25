@@ -75,7 +75,7 @@ export const catalog = {
   categoryEssentials: 'Esenciales',
 
   categoryDescWeightManagement:
-    'Los compuestos detrás de la investigación metabólica y de composición corporal de hoy: señalización de receptores, respuesta a nutrientes y balance energético, todo en un solo lugar.',
+    'Compara compuestos de investigación metabólica por vía, formato, precio y documentación, desde señalización de receptores hasta respuesta a nutrientes y balance energético.',
   categoryDescRecoveryRegeneration:
     'Investigación de reparación tisular, migración celular y biología de la piel, además de mezclas de recuperación insignia para estudios serios.',
   categoryDescCellularEnergyLongevity:

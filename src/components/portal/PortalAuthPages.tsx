@@ -96,15 +96,15 @@ export function PortalAuthPage({ mode }: { mode: AuthMode }) {
         setPasswordDestination(nextIdentity ? getPortalLandingPath(nextIdentity) : '/client-login')
         setPasswordUpdated(true)
       }
-    } catch { setError(t('genericAuthError')) } finally { authSubmissionInFlightRef.current = false; setLoading(false) }
+    } catch { setError(mode === 'login' ? t('errorLogin') : t('genericAuthError')) } finally { authSubmissionInFlightRef.current = false; setLoading(false) }
   }
 
   type RegistrationConsentKey = 'terms' | 'privacy' | 'ruo' | 'electronic'
   const registrationConsentItems: Array<ConsentChecklistItem<RegistrationConsentKey>> = [
-    { key: 'terms', title: t('ackTerms'), summary: t('ackTermsSummary'), href: '/legal/terms', required: true, fullDocumentAvailable: true },
-    { key: 'privacy', title: t('ackPrivacy'), summary: t('ackPrivacySummary'), href: '/legal/privacy', required: true, fullDocumentAvailable: true },
-    { key: 'ruo', title: t('ackRuo'), summary: t('ackRuoSummary'), required: true, fullDocumentAvailable: false },
-    { key: 'electronic', title: t('ackElectronic'), summary: t('ackElectronicSummary'), required: true, fullDocumentAvailable: false },
+    { key: 'terms', title: t('ackTerms'), summary: t('ackTermsSummary'), href: '/legal/terms', required: true },
+    { key: 'privacy', title: t('ackPrivacy'), summary: t('ackPrivacySummary'), href: '/legal/privacy', required: true },
+    { key: 'ruo', title: t('ackRuo'), summary: t('ackRuoSummary'), details: t('ackRuoDetails'), required: true },
+    { key: 'electronic', title: t('ackElectronic'), summary: t('ackElectronicSummary'), details: t('ackElectronicDetails'), required: true },
   ]
   const title = mode === 'login' ? t('titleLogin') : mode === 'register' ? t('titleRegister') : mode === 'forgot' ? t('titleForgot') : t('titleReset')
   return (

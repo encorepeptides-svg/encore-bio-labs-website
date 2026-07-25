@@ -10,8 +10,8 @@ type Key = 'terms' | 'privacy' | 'ruo' | 'photos'
 const items: Array<ConsentChecklistItem<Key>> = [
   { key: 'terms', title: 'Terms of Service', summary: 'Terms summary', href: '/legal/terms', required: true },
   { key: 'privacy', title: 'Privacy Notice', summary: 'Privacy summary', href: '/legal/privacy', required: true },
-  { key: 'ruo', title: 'Research Use Only acknowledgment', summary: 'RUO summary', required: true, fullDocumentAvailable: false },
-  { key: 'photos', title: 'Optional Progress Photo Consent', summary: 'Photo summary', required: false, fullDocumentAvailable: false },
+  { key: 'ruo', title: 'Research Use Only acknowledgment', summary: 'RUO summary', details: 'RUO full details', required: true },
+  { key: 'photos', title: 'Optional Progress Photo Consent', summary: 'Photo summary', details: 'Photo full details', required: false },
 ]
 
 describe('ConsentChecklist', () => {
@@ -45,7 +45,7 @@ describe('ConsentChecklist', () => {
     expect(onChange).not.toHaveBeenCalled()
     expect((container.querySelector('#consent-ruo') as HTMLInputElement).checked).toBe(false)
     expect(container.querySelector('[role="dialog"]')).toBeTruthy()
-    expect(container.textContent).toContain(locale === 'es' ? 'contenido legal aprobado' : 'approved full copy')
+    expect(container.textContent).toContain('RUO full details')
 
     const photoCard = (container.querySelector('#consent-photos') as HTMLInputElement).closest('div')?.parentElement
     expect(photoCard?.textContent).toContain(locale === 'es' ? 'Opcional' : 'Optional')

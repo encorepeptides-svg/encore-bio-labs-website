@@ -79,4 +79,19 @@ describe('portal onboarding draft persistence', () => {
     ].join(' ')
     for (const phrase of expected) expect(copy).toContain(phrase)
   })
+
+  it.each(['en', 'es'] as const)('explains direct activation, product choices and readable consent details in %s', (locale) => {
+    const copy = [
+      translate(locale, 'portal', 'onboardingRequiredNotice'),
+      translate(locale, 'portal', 'researchInterestProductsHelp'),
+      translate(locale, 'portal', 'ackRuoDetails'),
+      translate(locale, 'portal', 'ackElectronicDetails'),
+      translate(locale, 'portal', 'progressDataConsentDetails'),
+      translate(locale, 'portal', 'progressPhotoConsentDetails'),
+      translate(locale, 'portal', 'reviewSubmitNote'),
+    ].join(' ')
+    expect(copy).toContain(locale === 'en' ? 'activates automatically' : 'se activa automáticamente')
+    expect(copy).toContain(locale === 'en' ? 'research compounds' : 'compuestos de investigación')
+    expect(copy).not.toContain(locale === 'en' ? 'required before publication' : 'antes de publicar')
+  })
 })

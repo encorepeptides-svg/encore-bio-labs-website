@@ -6,9 +6,9 @@ export type ConsentChecklistItem<Key extends string> = {
   key: Key
   title: string
   summary: string
+  details?: string
   href?: '/legal/terms' | '/legal/privacy'
   required: boolean
-  fullDocumentAvailable?: boolean
 }
 
 export function ConsentChecklist<Key extends string>({
@@ -113,9 +113,7 @@ export function ConsentChecklist<Key extends string>({
               <button ref={closeButtonRef} type="button" onClick={closeDocument} aria-label={t('closeDocument')} className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"><X size={18} /></button>
             </div>
             <p id="consent-document-summary" className="mt-6 text-sm leading-7 text-slate-700">{openItem.summary}</p>
-            {openItem.fullDocumentAvailable === false ? (
-              <p className="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-950">{t('approvedConsentCopyPending')}</p>
-            ) : null}
+            {openItem.details ? <p className="mt-4 rounded-xl border border-teal-900/10 bg-teal-50 p-4 text-sm leading-7 text-slate-700">{openItem.details}</p> : null}
             <button type="button" onClick={closeDocument} className="mt-7 min-h-11 rounded-full bg-[#071724] px-6 text-sm font-semibold text-white">{t('closeDocument')}</button>
           </section>
         </div>
