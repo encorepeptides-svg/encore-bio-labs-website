@@ -1,5 +1,6 @@
 import { ArrowRight, BadgeCheck, FlaskConical, PackageCheck, Sparkles } from 'lucide-react'
 import { ProductImage } from '../../ProductImage'
+import { ProductCardLink } from '../../product/ProductCardLink'
 import { usePortalAuth } from '../../../context/usePortalAuth'
 import { getPortalProductMatches } from '../../../data/portalRecommendations'
 import { getLocalizedProduct, localizedCategoryLabel } from '../../../data/productTranslations'
@@ -38,11 +39,11 @@ export function ResearchMatchesSection() {
           const research = baseResearch ? localizeProductResearchContent(product, baseResearch, locale) : null
           const fromPrice = Math.min(...product.variants.map((variant) => variant.price))
           const matchLabel = match.matchType === 'selected' ? t('researchMatchesSelected') : match.matchType === 'interest' ? t('researchMatchesInterest') : t('researchMatchesFeatured')
-          return <article key={product.slug} className="group overflow-hidden rounded-[1.6rem] border border-slate-900/8 bg-white shadow-[0_18px_60px_rgba(7,23,36,.08)]">
+          return <article key={product.slug} className="group relative cursor-pointer overflow-hidden rounded-[1.6rem] border border-slate-900/8 bg-white shadow-[0_18px_60px_rgba(7,23,36,.08)] transition duration-300 motion-safe:hover:-translate-y-1 hover:border-teal-400/60 hover:shadow-[0_26px_76px_rgba(20,184,166,.14)]">
             <div className="grid sm:grid-cols-[12rem_1fr]">
-              <a href={path(`/products/${product.slug}`)} className="grid min-h-52 place-items-center overflow-hidden bg-[radial-gradient(circle_at_45%_25%,rgba(45,212,191,.22),transparent_38%),linear-gradient(145deg,#f7fbfa,#e8efed)] p-4">
+              <div className="grid min-h-52 place-items-center overflow-hidden bg-[radial-gradient(circle_at_45%_25%,rgba(45,212,191,.22),transparent_38%),linear-gradient(145deg,#f7fbfa,#e8efed)] p-4">
                 <ProductImage product={product} alt={t('researchMatchesProductAlt', { product: product.name })} width={420} height={420} className="h-48 w-full object-contain drop-shadow-[0_16px_25px_rgba(7,23,36,.15)] transition duration-500 group-hover:scale-[1.04]" />
-              </a>
+              </div>
               <div className="flex flex-col p-5 sm:p-6">
                 <div className="flex flex-wrap items-center gap-2"><Badge tone="info">{matchLabel}</Badge><span className="text-xs font-semibold text-slate-500">{localizedCategoryLabel(product.category, locale)}</span></div>
                 <h2 className="mt-3 text-2xl font-semibold tracking-[-.035em] text-[#071724]">{product.name}</h2>
@@ -52,9 +53,10 @@ export function ResearchMatchesSection() {
                   <span className="flex items-center gap-2"><PackageCheck size={15} className="text-teal-700" />{product.purchaseRules.kitEligible ? t('researchMatchesKitIncluded') : t('researchMatchesFormatReview')}</span>
                   <span className="flex items-center gap-2"><BadgeCheck size={15} className="text-teal-700" />{t('researchMatchesDocs')}</span>
                 </div>
-                <div className="mt-auto flex flex-wrap items-end justify-between gap-4 pt-5"><div><p className="text-xs font-bold uppercase tracking-[.12em] text-slate-500">{t('researchMatchesFrom')}</p><p className="text-2xl font-semibold text-[#071724]">{new Intl.NumberFormat(locale === 'es' ? 'es-MX' : 'en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(fromPrice)}</p></div><a href={path(`/products/${product.slug}`)} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition hover:bg-teal-700">{t('researchMatchesCta')}<ArrowRight size={15} /></a></div>
+                <div className="mt-auto flex flex-wrap items-end justify-between gap-4 pt-5"><div><p className="text-xs font-bold uppercase tracking-[.12em] text-slate-500">{t('researchMatchesFrom')}</p><p className="text-2xl font-semibold text-[#071724]">{new Intl.NumberFormat(locale === 'es' ? 'es-MX' : 'en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(fromPrice)}</p></div><span className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition group-hover:bg-teal-700">{t('researchMatchesCta')}<ArrowRight size={15} /></span></div>
               </div>
             </div>
+            <ProductCardLink href={path(`/products/${product.slug}`)} productName={product.name} />
           </article>
         })}
       </div>

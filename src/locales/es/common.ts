@@ -11,6 +11,7 @@ export const common = {
   retry: 'Intentar de nuevo',
   close: 'Cerrar',
   viewOptions: 'Ver opciones',
+  viewProductDetails: 'Ver detalles del producto {product}',
   buyNow: 'Comprar ahora',
   addToCart: 'Agregar al carrito',
   addedToCart: 'Agregado al carrito',

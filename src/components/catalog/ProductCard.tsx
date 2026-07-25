@@ -4,6 +4,7 @@ import { type Product } from '../../data/products'
 import { getLocalizedProduct } from '../../data/productTranslations'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { ProductImage } from '../ProductImage'
+import { ProductCardLink } from '../product/ProductCardLink'
 import { Reveal } from '../Reveal'
 import { getProductCutout } from '../../data/productCutouts'
 import { getPriceLabel, getStrengthSummary } from './catalogHelpers'
@@ -19,13 +20,9 @@ export function ProductCard({ product: baseProduct }: { product: Product }) {
     <Reveal
       as="article"
       data-product-slug={product.slug}
-      className="group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-slate-900/10 bg-white shadow-[0_18px_50px_rgba(7,23,36,0.07)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_82px_rgba(20,184,166,0.16)]"
+      className="group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-[1.5rem] border border-slate-900/10 bg-white shadow-[0_18px_50px_rgba(7,23,36,0.07)] transition duration-300 motion-safe:hover:-translate-y-1 hover:shadow-[0_28px_82px_rgba(20,184,166,0.16)]"
     >
-      <a
-        href={path(`/products/${product.slug}`)}
-        className="relative block overflow-hidden bg-[radial-gradient(circle_at_50%_18%,rgba(118,228,211,0.2),transparent_34%),linear-gradient(135deg,#ffffff,#e7eeee)]"
-        aria-label={product.name}
-      >
+      <div className="relative block overflow-hidden bg-[radial-gradient(circle_at_50%_18%,rgba(118,228,211,0.2),transparent_34%),linear-gradient(135deg,#ffffff,#e7eeee)]">
         <div className="aspect-[4/3]">
           {cutout ? (
             <img
@@ -49,7 +46,7 @@ export function ProductCard({ product: baseProduct }: { product: Product }) {
           )}
         </div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_36%,rgba(255,255,255,0)_0_46%,rgba(255,255,255,0.28)_76%,rgba(255,255,255,0.92)_100%)]" />
-      </a>
+      </div>
 
       <div className="flex flex-1 flex-col p-5">
         <h3 className="text-xl font-semibold tracking-[-0.035em] text-[#071724]">{product.name}</h3>
@@ -83,14 +80,12 @@ export function ProductCard({ product: baseProduct }: { product: Product }) {
 
         <div className="mt-auto flex items-center justify-between gap-4 pt-6">
           <p className="text-lg font-semibold tracking-[-0.02em] text-[#071724]">{getPriceLabel(product, t)}</p>
-          <a
-            href={path(`/products/${product.slug}`)}
-            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-[#071724] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-700"
-          >
+          <span className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-[#071724] px-5 py-2.5 text-sm font-semibold text-white transition group-hover:bg-teal-700">
             {t('order')}
-          </a>
+          </span>
         </div>
       </div>
+      <ProductCardLink href={path(`/products/${product.slug}`)} productName={product.name} />
     </Reveal>
   )
 }

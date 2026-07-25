@@ -51,10 +51,14 @@ describe('CatalogRetatrutideFeature variant selection', () => {
 
     const addButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent?.includes('25 mg') && button.textContent?.toLowerCase().includes(locale === 'es' ? 'carrito' : 'cart'))
     expect(addButton).toBeTruthy()
+    expect(addButton?.classList.contains('z-20')).toBe(true)
     act(() => addButton?.click())
 
     const stored = JSON.parse(window.localStorage.getItem('encore-bio-labs-cart-v1') ?? '[]') as Array<{ variantLabel?: string; unitPrice?: number }>
     expect(stored).toHaveLength(1)
     expect(stored[0]).toMatchObject({ variantLabel: '25 mg', unitPrice: 149 })
+
+    const cardLink = container.querySelector<HTMLAnchorElement>(`a[href="${locale === 'es' ? '/es' : ''}/products/retatrutide"]`)
+    expect(cardLink?.getAttribute('aria-label')).toBe(locale === 'es' ? 'Ver detalles del producto Retatrutide' : 'View Retatrutide product details')
   })
 })

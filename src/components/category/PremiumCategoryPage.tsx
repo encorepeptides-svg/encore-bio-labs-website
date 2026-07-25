@@ -22,6 +22,7 @@ import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { money } from '../../lib/purchaseOptions'
 import { getCatalogFilter } from '../catalog/catalogHelpers'
 import { ProductImage } from '../ProductImage'
+import { ProductCardLink } from '../product/ProductCardLink'
 import { CategoryBreadcrumb } from './CategoryPageSections'
 
 const trustIcons = [PackageCheck, FileCheck2, ShieldCheck]
@@ -208,7 +209,7 @@ function FlagshipModule({ product }: { product: Product }) {
 
   return (
     <section id="category-start" className="scroll-mt-24 bg-[linear-gradient(180deg,#030b18_0%,#071724_6rem,#F8FAFC_17rem)] px-5 py-14 sm:px-8 sm:py-20">
-      <div className="mx-auto grid max-w-[88rem] overflow-hidden rounded-[2rem] border border-slate-900/10 bg-white shadow-[0_28px_90px_rgba(7,23,36,0.13)] lg:grid-cols-[0.7fr_1.3fr] lg:items-stretch">
+      <div className="group relative mx-auto grid max-w-[88rem] cursor-pointer overflow-hidden rounded-[2rem] border border-slate-900/10 bg-white shadow-[0_28px_90px_rgba(7,23,36,0.13)] transition duration-300 motion-safe:hover:-translate-y-1 hover:border-teal-400/60 hover:shadow-[0_34px_100px_rgba(20,184,166,0.16)] lg:grid-cols-[0.7fr_1.3fr] lg:items-stretch">
         <div className="relative min-h-[21rem] overflow-hidden bg-[radial-gradient(circle_at_50%_36%,rgba(45,212,191,0.24),transparent_45%),linear-gradient(145deg,#eef8f6,#dce9e8)] sm:min-h-[28rem]">
           <ProductImage product={product} alt={t('flagshipImageAlt', { product: product.name })} loading="eager" sizes="(min-width: 1024px) 36vw, 90vw" className="absolute inset-0 size-full object-contain p-7 drop-shadow-[0_30px_38px_rgba(7,23,36,0.24)] sm:p-10" />
         </div>
@@ -224,21 +225,22 @@ function FlagshipModule({ product }: { product: Product }) {
           <div className="mt-7"><ProductStatus product={product} /></div>
           <div className={`mt-8 grid gap-3 ${product.variants.length > 3 ? 'grid-cols-2 sm:grid-cols-3 xl:grid-cols-5' : 'sm:grid-cols-2'}`}>
             {product.variants.map((variant) => (
-              <a key={variant.sku} href={path(productPurchasePath(product))} className="min-h-20 rounded-2xl border border-slate-900/10 bg-[#F8FAFC] px-4 py-4 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-400 hover:bg-white hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-600">
+              <a key={variant.sku} href={path(productPurchasePath(product))} className="relative z-20 min-h-20 rounded-2xl border border-slate-900/10 bg-[#F8FAFC] px-4 py-4 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-400 hover:bg-white hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-600">
                 <span className="block text-sm font-bold text-[#071724]">{variant.label}</span>
                 <span className="mt-1 block text-sm font-semibold text-teal-700">{money(variant.price)}</span>
               </a>
             ))}
           </div>
           <div className="mt-8 flex flex-col gap-3 border-t border-slate-900/10 pt-6 sm:flex-row sm:items-center">
-            <a href={path(productPurchasePath(product))} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#071724] px-6 py-3 text-sm font-bold text-white transition hover:bg-teal-700">
+            <a href={path(productPurchasePath(product))} className="relative z-20 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#071724] px-6 py-3 text-sm font-bold text-white transition hover:bg-teal-700">
               {t('chooseOptions')}<ArrowRight size={16} aria-hidden="true" />
             </a>
-            <a href={path(`/products/${product.slug}`)} className="inline-flex min-h-12 items-center justify-center rounded-full border border-slate-900/12 px-6 py-3 text-sm font-bold text-[#071724] transition hover:border-teal-500 hover:text-teal-800">
+            <span className="inline-flex min-h-12 items-center justify-center rounded-full border border-slate-900/12 px-6 py-3 text-sm font-bold text-[#071724] transition group-hover:border-teal-500 group-hover:text-teal-800">
               {t('researchDetails')}
-            </a>
+            </span>
           </div>
         </div>
+        <ProductCardLink href={path(`/products/${product.slug}`)} productName={product.name} />
       </div>
     </section>
   )
@@ -314,11 +316,11 @@ function ProductCard({ product, note }: { product: Product; note?: string }) {
   const variantSummary = getVariantSummary(product, locale, (count) => t(count === 1 ? 'optionCount' : 'optionsCount', { count }))
 
   return (
-    <article id={`category-product-${product.slug}`} className="group scroll-mt-24 overflow-hidden rounded-[1.75rem] border border-slate-900/10 bg-white shadow-[0_20px_56px_rgba(7,23,36,0.07)] transition duration-300 hover:-translate-y-1 hover:border-teal-400/70 hover:shadow-[0_28px_78px_rgba(7,23,36,0.12)]">
+    <article id={`category-product-${product.slug}`} className="group relative cursor-pointer scroll-mt-24 overflow-hidden rounded-[1.75rem] border border-slate-900/10 bg-white shadow-[0_20px_56px_rgba(7,23,36,0.07)] transition duration-300 motion-safe:hover:-translate-y-1 hover:border-teal-400/70 hover:shadow-[0_28px_78px_rgba(7,23,36,0.12)]">
       <div className="grid h-full sm:grid-cols-[0.42fr_0.58fr]">
-        <a href={path(`/products/${product.slug}`)} className="relative block min-h-64 overflow-hidden bg-[radial-gradient(circle_at_50%_28%,rgba(45,212,191,0.24),transparent_42%),linear-gradient(145deg,#eff8f6,#dfeae9)]" aria-label={t('researchDetailsFor', { product: product.name })}>
+        <div className="relative block min-h-64 overflow-hidden bg-[radial-gradient(circle_at_50%_28%,rgba(45,212,191,0.24),transparent_42%),linear-gradient(145deg,#eff8f6,#dfeae9)]">
           <ProductImage product={product} alt={t('productImageAlt', { product: product.name })} sizes="(min-width: 1024px) 23vw, 50vw" className="absolute inset-0 size-full object-contain p-5 drop-shadow-[0_22px_30px_rgba(7,23,36,0.2)] transition duration-500 group-hover:scale-[1.045]" />
-        </a>
+        </div>
         <div className="flex min-w-0 flex-col p-5 sm:p-7">
           {note ? <p className="text-[0.66rem] font-bold uppercase tracking-[0.16em] text-teal-700">{note}</p> : null}
           <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
@@ -332,11 +334,12 @@ function ProductCard({ product, note }: { product: Product; note?: string }) {
           <p className="mt-5 text-xs font-semibold leading-5 text-slate-500">{variantSummary}</p>
           <div className="mt-4"><ProductStatus product={product} /></div>
           <div className="mt-auto flex flex-col gap-3 pt-6 sm:flex-row">
-            <a href={path(productPurchasePath(product))} className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[#071724] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-teal-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-teal-700">{t('chooseOptions')}<ArrowRight size={15} aria-hidden="true" /></a>
-            <a href={path(`/products/${product.slug}`)} className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-900/12 px-5 py-2.5 text-sm font-bold text-[#071724] transition hover:border-teal-500 hover:text-teal-800">{t('researchDetails')}</a>
+            <a href={path(productPurchasePath(product))} className="relative z-20 inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[#071724] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-teal-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-teal-700">{t('chooseOptions')}<ArrowRight size={15} aria-hidden="true" /></a>
+            <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-900/12 px-5 py-2.5 text-sm font-bold text-[#071724] transition group-hover:border-teal-500 group-hover:text-teal-800">{t('researchDetails')}</span>
           </div>
         </div>
       </div>
+      <ProductCardLink href={path(`/products/${product.slug}`)} productName={product.name} />
     </article>
   )
 }

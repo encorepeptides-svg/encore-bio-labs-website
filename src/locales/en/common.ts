@@ -9,6 +9,7 @@ export const common = {
   retry: 'Try again',
   close: 'Close',
   viewOptions: 'View Options',
+  viewProductDetails: 'View {product} product details',
   buyNow: 'Buy Now',
   addToCart: 'Add to Cart',
   addedToCart: 'Added to cart',

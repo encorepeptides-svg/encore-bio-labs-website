@@ -5,6 +5,7 @@ import { getLocalizedProduct } from '../../data/productTranslations'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { getPriceLabel, getStrengthSummary } from '../catalog/catalogHelpers'
 import { ProductImage } from '../ProductImage'
+import { ProductCardLink } from '../product/ProductCardLink'
 
 type PortfolioMode = 'category' | 'product'
 const secondarySlugs = ['tesamorelin', 'mots-c', 'aod-9604', 'cjc1295-ipamorelin'] as const
@@ -38,10 +39,10 @@ function PortfolioCard({ product, compact }: { product: Product; compact: boolea
   const copy = productCopyKeys[product.slug as keyof typeof productCopyKeys]
 
   return (
-    <article className={`group relative grid h-full overflow-hidden rounded-[1.75rem] border border-slate-900/10 bg-white shadow-[0_18px_55px_rgba(7,23,36,0.07)] transition duration-300 hover:-translate-y-1 hover:border-teal-400/70 hover:shadow-[0_28px_75px_rgba(7,23,36,0.12)] ${compact ? '' : 'grid-cols-[0.36fr_0.64fr] sm:grid-cols-[0.42fr_0.58fr]'}`}>
-      <a href={path(`/products/${product.slug}`)} className={`relative block overflow-hidden bg-[radial-gradient(circle_at_50%_28%,rgba(45,212,191,0.25),transparent_38%),linear-gradient(145deg,#f0f8f6,#e1ebea)] ${compact ? 'aspect-[4/3]' : 'min-h-full'}`} aria-label={product.name}>
+    <article className={`group relative grid h-full cursor-pointer overflow-hidden rounded-[1.75rem] border border-slate-900/10 bg-white shadow-[0_18px_55px_rgba(7,23,36,0.07)] transition duration-300 motion-safe:hover:-translate-y-1 hover:border-teal-400/70 hover:shadow-[0_28px_75px_rgba(7,23,36,0.12)] ${compact ? '' : 'grid-cols-[0.36fr_0.64fr] sm:grid-cols-[0.42fr_0.58fr]'}`}>
+      <div className={`relative block overflow-hidden bg-[radial-gradient(circle_at_50%_28%,rgba(45,212,191,0.25),transparent_38%),linear-gradient(145deg,#f0f8f6,#e1ebea)] ${compact ? 'aspect-[4/3]' : 'min-h-full'}`}>
         <ProductImage product={product} alt={t('portfolioImageAlt', { product: product.name })} sizes={compact ? '(min-width: 1280px) 20vw, 50vw' : '(min-width: 1024px) 21vw, 36vw'} className={`absolute inset-0 size-full object-contain drop-shadow-[0_22px_30px_rgba(7,23,36,0.2)] transition duration-500 group-hover:scale-[1.045] ${compact ? 'p-5' : 'p-2 sm:p-5'}`} />
-      </a>
+      </div>
 
       <div className="flex min-w-0 flex-col p-5 sm:p-7">
         <p className="text-[0.66rem] font-bold uppercase tracking-[0.17em] text-teal-700">{copy ? t(copy.pathway) : ''}</p>
@@ -57,9 +58,10 @@ function PortfolioCard({ product, compact }: { product: Product; compact: boolea
 
         <div className="mt-auto flex flex-wrap items-end justify-between gap-4 pt-6">
           <div><p className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-slate-400">{t('portfolioStartingPrice')}</p><p className="mt-1 text-2xl font-semibold tracking-[-0.04em] text-[#071724]">{getPriceLabel(product, t)}</p></div>
-          <a href={path(`/products/${product.slug}`)} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#071724] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-teal-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-700">{t('portfolioViewProduct')}<ArrowRight size={15} aria-hidden="true" /></a>
+          <span className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#071724] px-5 py-2.5 text-sm font-bold text-white transition group-hover:bg-teal-700">{t('portfolioViewProduct')}<ArrowRight size={15} aria-hidden="true" /></span>
         </div>
       </div>
+      <ProductCardLink href={path(`/products/${product.slug}`)} productName={product.name} />
     </article>
   )
 }

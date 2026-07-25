@@ -3,6 +3,7 @@ import { products, type Product } from '../../data/products'
 import { getLocalizedProduct } from '../../data/productTranslations'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { ProductLabVisual } from '../product/ProductLabVisual'
+import { ProductCardLink } from '../product/ProductCardLink'
 import { Reveal } from '../Reveal'
 import { getPriceLabel } from './catalogHelpers'
 
@@ -16,7 +17,7 @@ function FeaturedCard({ product: baseProduct }: { product: Product }) {
   return (
     <Reveal
       as="article"
-      className="group overflow-hidden rounded-[1.75rem] border border-slate-900/10 bg-white shadow-[0_24px_80px_rgba(7,23,36,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_34px_110px_rgba(20,184,166,0.16)]"
+      className="group relative cursor-pointer overflow-hidden rounded-[1.75rem] border border-slate-900/10 bg-white shadow-[0_24px_80px_rgba(7,23,36,0.08)] transition duration-300 motion-safe:hover:-translate-y-1 hover:shadow-[0_34px_110px_rgba(20,184,166,0.16)]"
     >
       <div className="grid lg:grid-cols-[1.05fr_0.95fr] lg:items-stretch">
         <div className="order-2 flex flex-col justify-center gap-5 p-6 sm:p-8 lg:order-1 lg:p-10">
@@ -31,19 +32,12 @@ function FeaturedCard({ product: baseProduct }: { product: Product }) {
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-700">
             {getPriceLabel(product, t)}
           </p>
-          <a
-            href={path(`/products/${product.slug}`)}
-            className="inline-flex w-fit min-h-12 items-center justify-center rounded-full bg-[#071724] px-6 py-3 text-sm font-semibold text-white transition hover:bg-teal-700"
-          >
+          <span className="inline-flex min-h-12 w-fit items-center justify-center rounded-full bg-[#071724] px-6 py-3 text-sm font-semibold text-white transition group-hover:bg-teal-700">
             {t('viewOptions')}
-          </a>
+          </span>
         </div>
 
-        <a
-          href={path(`/products/${product.slug}`)}
-          aria-label={product.name}
-          className="relative order-1 block overflow-hidden bg-[#dfe8e7] lg:order-2"
-        >
+        <div className="relative order-1 block overflow-hidden bg-[#dfe8e7] lg:order-2">
           <div className="relative flex aspect-[4/3] w-full items-center justify-center p-6 sm:aspect-[16/10] sm:p-10 lg:aspect-auto lg:h-full lg:min-h-[18rem] lg:p-10">
             <ProductLabVisual
               product={product}
@@ -52,8 +46,9 @@ function FeaturedCard({ product: baseProduct }: { product: Product }) {
               sizes="(min-width: 1024px) 45vw, 100vw"
             />
           </div>
-        </a>
+        </div>
       </div>
+      <ProductCardLink href={path(`/products/${product.slug}`)} productName={product.name} />
     </Reveal>
   )
 }
@@ -66,34 +61,28 @@ function SecondaryCard({ product: baseProduct }: { product: Product }) {
   return (
     <Reveal
       as="article"
-      className="group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-slate-900/10 bg-white shadow-[0_18px_54px_rgba(7,23,36,0.07)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_84px_rgba(20,184,166,0.14)]"
+      className="group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-[1.5rem] border border-slate-900/10 bg-white shadow-[0_18px_54px_rgba(7,23,36,0.07)] transition duration-300 motion-safe:hover:-translate-y-1 hover:shadow-[0_28px_84px_rgba(20,184,166,0.14)]"
     >
-      <a
-        href={path(`/products/${product.slug}`)}
-        aria-label={product.name}
-        className="relative block aspect-[4/3] overflow-hidden bg-[#dfe8e7]"
-      >
+      <div className="relative block aspect-[4/3] overflow-hidden bg-[#dfe8e7]">
         <ProductLabVisual
           product={product}
           alt={t('productVisualAlt', { product: product.name })}
           sizes="(min-width: 1024px) 24vw, 100vw"
         />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(255,255,255,0)_0_42%,rgba(255,255,255,0.32)_76%,rgba(255,255,255,0.92)_100%)]" />
-      </a>
+      </div>
 
       <div className="flex flex-1 flex-col p-5 sm:p-6">
         <h3 className="text-xl font-semibold tracking-[-0.04em] text-[#071724]">{product.name}</h3>
         <p className="mt-2 line-clamp-3 min-h-[4.5rem] text-sm leading-6 text-slate-600">{product.catalogTagline}</p>
         <div className="mt-auto flex items-center justify-between gap-3 pt-5">
           <p className="text-sm font-semibold text-teal-700">{getPriceLabel(product, t)}</p>
-          <a
-            href={path(`/products/${product.slug}`)}
-            className="inline-flex min-h-10 items-center justify-center rounded-full border border-slate-900/10 bg-white px-4 py-2 text-sm font-semibold text-[#071724] transition hover:bg-teal-50"
-          >
+          <span className="inline-flex min-h-10 items-center justify-center rounded-full border border-slate-900/10 bg-white px-4 py-2 text-sm font-semibold text-[#071724] transition group-hover:bg-teal-50">
             {t('view')}
-          </a>
+          </span>
         </div>
       </div>
+      <ProductCardLink href={path(`/products/${product.slug}`)} productName={product.name} />
     </Reveal>
   )
 }

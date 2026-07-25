@@ -6,6 +6,7 @@ import { money } from '../../lib/purchaseOptions'
 import { cn } from '../../lib/utils'
 import { AddToCartButton } from '../cart/AddToCartButton'
 import { ProductLabVisual } from '../product/ProductLabVisual'
+import { ProductCardLink } from '../product/ProductCardLink'
 import { Reveal } from '../Reveal'
 
 function ReceptorDiagram({ labels }: { labels: [string, string, string] }) {
@@ -60,7 +61,7 @@ export function CatalogRetatrutideFeature() {
   ]
 
   return (
-    <Reveal id="catalog-retatrutide-feature" className="relative mt-8 scroll-mt-32 overflow-hidden rounded-[1.75rem] bg-[linear-gradient(135deg,#06151f_0%,#0a2930_58%,#08212a_100%)] shadow-[0_28px_90px_rgba(7,23,36,0.34)]">
+    <Reveal id="catalog-retatrutide-feature" className="group relative mt-8 cursor-pointer scroll-mt-32 overflow-hidden rounded-[1.75rem] border border-transparent bg-[linear-gradient(135deg,#06151f_0%,#0a2930_58%,#08212a_100%)] shadow-[0_28px_90px_rgba(7,23,36,0.34)] transition duration-300 motion-safe:hover:-translate-y-1 hover:border-teal-300/40 hover:shadow-[0_34px_100px_rgba(20,184,166,0.25)]">
       <div className="molecule-field opacity-[0.12]" aria-hidden="true" />
       <div className="pointer-events-none absolute -right-24 -top-24 size-[25rem] rounded-full bg-teal-400/20 blur-3xl" aria-hidden="true" />
 
@@ -111,7 +112,7 @@ export function CatalogRetatrutideFeature() {
                     aria-describedby={!available ? unavailableId : undefined}
                     onClick={() => setSelectedVariant(variant)}
                     className={cn(
-                      'rounded-xl border px-3 py-2.5 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 disabled:cursor-not-allowed disabled:opacity-45',
+                      'relative z-20 rounded-xl border px-3 py-2.5 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 disabled:cursor-not-allowed disabled:opacity-45',
                       selected
                         ? 'border-teal-200 bg-teal-300/20 shadow-[0_0_0_1px_rgba(94,234,212,.24)]'
                         : 'border-white/15 bg-white/[0.07] hover:-translate-y-0.5 hover:border-teal-200/50 hover:bg-teal-300/10',
@@ -138,14 +139,14 @@ export function CatalogRetatrutideFeature() {
               <AddToCartButton
                 product={product}
                 variant={selectedVariant}
-                className="min-h-13 bg-[#74f0d8] px-7 py-3.5 font-bold text-[#04141e] shadow-[0_20px_48px_rgba(45,212,191,0.3)] hover:bg-white"
+                className="relative z-20 min-h-13 bg-[#74f0d8] px-7 py-3.5 font-bold text-[#04141e] shadow-[0_20px_48px_rgba(45,212,191,0.3)] hover:bg-white"
               >
                 {t('retaAddVariantToCart', { variant: selectedVariant.label })}
               </AddToCartButton>
             ) : null}
             <a
               href={researchHref}
-              className="inline-flex min-h-13 items-center justify-center rounded-full border border-white/25 bg-white/[0.06] px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:border-white/45 hover:bg-white/12 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-200"
+              className="relative z-20 inline-flex min-h-13 items-center justify-center rounded-full border border-white/25 bg-white/[0.06] px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:border-white/45 hover:bg-white/12 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-200"
             >
               {t('retaSecondaryCta')}
             </a>
@@ -170,6 +171,7 @@ export function CatalogRetatrutideFeature() {
           </div>
         </div>
       </div>
+      <ProductCardLink href={path(`/products/${product.slug}`)} productName={product.name} className="focus-visible:outline-teal-200" />
     </Reveal>
   )
 }

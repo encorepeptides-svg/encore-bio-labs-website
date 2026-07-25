@@ -3,6 +3,7 @@ import { products } from '../../data/products'
 import { getLocalizedProduct } from '../../data/productTranslations'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { ProductLabVisual } from '../product/ProductLabVisual'
+import { ProductCardLink } from '../product/ProductCardLink'
 import { Reveal } from '../Reveal'
 import { getPriceLabel } from './catalogHelpers'
 
@@ -18,7 +19,7 @@ export function CatalogKlowFeature() {
   const benefits = [t('klowBenefitOne'), t('klowBenefitTwo'), t('klowBenefitThree')]
 
   return (
-    <Reveal id="catalog-klow-feature" className="relative mt-8 scroll-mt-32 overflow-hidden rounded-[1.75rem] border border-teal-800/15 bg-[linear-gradient(135deg,#eefaf7_0%,#ffffff_48%,#e7f7f3_100%)] shadow-[0_24px_74px_rgba(7,23,36,0.1)]">
+    <Reveal id="catalog-klow-feature" className="group relative mt-8 cursor-pointer scroll-mt-32 overflow-hidden rounded-[1.75rem] border border-teal-800/15 bg-[linear-gradient(135deg,#eefaf7_0%,#ffffff_48%,#e7f7f3_100%)] shadow-[0_24px_74px_rgba(7,23,36,0.1)] transition duration-300 motion-safe:hover:-translate-y-1 hover:border-teal-500/50 hover:shadow-[0_30px_90px_rgba(20,184,166,0.18)]">
       <div className="pointer-events-none absolute -right-16 -top-20 size-[23rem] rounded-full bg-teal-200/45 blur-3xl" aria-hidden="true" />
 
       <div className="relative grid grid-cols-[minmax(0,1fr)_8rem] gap-x-4 gap-y-6 p-5 sm:grid-cols-[minmax(0,1fr)_11rem] sm:p-8 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)] lg:gap-x-12 lg:p-10">
@@ -69,13 +70,10 @@ export function CatalogKlowFeature() {
           </ul>
 
           <div className="mt-7 flex flex-wrap items-center gap-4">
-            <a
-              href={path(`/products/${product.slug}`)}
-              className="inline-flex min-h-13 items-center justify-center gap-2.5 rounded-full bg-[#071724] px-7 py-3.5 text-sm font-bold text-white shadow-[0_18px_46px_rgba(7,23,36,0.22)] transition duration-300 hover:-translate-y-0.5 hover:bg-teal-800 focus:outline-none focus-visible:ring-4 focus-visible:ring-teal-200"
-            >
+            <span className="inline-flex min-h-13 items-center justify-center gap-2.5 rounded-full bg-[#071724] px-7 py-3.5 text-sm font-bold text-white shadow-[0_18px_46px_rgba(7,23,36,0.22)] transition duration-300 group-hover:-translate-y-0.5 group-hover:bg-teal-800">
               {t('klowCta')}
               <ArrowRight size={17} aria-hidden="true" />
-            </a>
+            </span>
             <span className="text-base font-bold tracking-[-0.02em] text-teal-800">
               {getPriceLabel(product, t)}
             </span>
@@ -84,6 +82,7 @@ export function CatalogKlowFeature() {
           <p className="mt-5 border-l-2 border-teal-700/35 pl-3 text-xs leading-5 text-slate-600">{t('klowCompliance')}</p>
         </div>
       </div>
+      <ProductCardLink href={path(`/products/${product.slug}`)} productName={product.name} />
     </Reveal>
   )
 }

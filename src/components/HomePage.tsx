@@ -17,6 +17,7 @@ import { useLocale, useTranslation } from '../i18n/LocaleContext'
 import { AddToCartButton } from './cart/AddToCartButton'
 import { CTA } from './CTA'
 import { ProductLabVisual } from './product/ProductLabVisual'
+import { ProductCardLink } from './product/ProductCardLink'
 import { ResearchProfilePrompt } from './ResearchProfilePrompt'
 import heroVideo from '../assets/videos/encore-hero.mp4'
 import heroVideoPoster from '../assets/images/hero/hero-video-poster.jpg'
@@ -50,7 +51,7 @@ function FeaturedBestSellerCard({ product: baseProduct }: { product: Product }) 
   const [selectedVariant, setSelectedVariant] = useState(firstAvailableVariant)
 
   return (
-    <article className="group overflow-hidden rounded-[1.75rem] border border-slate-900/10 bg-white shadow-[0_24px_80px_rgba(7,23,36,0.08)] transition duration-300 motion-safe:hover:-translate-y-1 hover:shadow-[0_34px_110px_rgba(20,184,166,0.16)]">
+    <article className="group relative cursor-pointer overflow-hidden rounded-[1.75rem] border border-slate-900/10 bg-white shadow-[0_24px_80px_rgba(7,23,36,0.08)] transition duration-300 motion-safe:hover:-translate-y-1 hover:shadow-[0_34px_110px_rgba(20,184,166,0.16)]">
       <div className="grid lg:grid-cols-[1.05fr_0.95fr] lg:items-stretch">
         <div className="order-2 flex flex-col justify-center gap-5 p-6 sm:p-8 lg:order-1 lg:p-10 xl:p-12">
           <div className="flex flex-wrap items-center gap-3">
@@ -88,7 +89,7 @@ function FeaturedBestSellerCard({ product: baseProduct }: { product: Product }) 
                     aria-describedby={!available ? unavailableId : undefined}
                     onClick={() => setSelectedVariant(variant)}
                     className={cn(
-                      'inline-flex flex-col rounded-xl border px-3 py-2 text-left text-xs transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:cursor-not-allowed disabled:opacity-45',
+                      'relative z-20 inline-flex flex-col rounded-xl border px-3 py-2 text-left text-xs transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:cursor-not-allowed disabled:opacity-45',
                       selected
                         ? 'border-teal-700 bg-teal-50 text-teal-900 shadow-[0_0_0_1px_rgba(15,118,110,.12)]'
                         : 'border-slate-900/10 bg-[#f5f5f2] text-slate-600 hover:border-teal-600/40 hover:bg-teal-50',
@@ -112,24 +113,17 @@ function FeaturedBestSellerCard({ product: baseProduct }: { product: Product }) 
           )}
           <div className="flex flex-col gap-3 pt-2 sm:flex-row">
             {selectedVariant ? (
-              <AddToCartButton product={product} variant={selectedVariant} className="min-h-12 px-6">
+              <AddToCartButton product={product} variant={selectedVariant} className="relative z-20 min-h-12 px-6">
                 {t('addVariantToCart', { variant: selectedVariant.label })}
               </AddToCartButton>
             ) : null}
-            <a
-              href={path(`/products/${product.slug}`)}
-              className="inline-flex min-h-12 items-center justify-center rounded-full border border-slate-900/10 bg-white px-6 py-3 text-sm font-semibold text-[#071724] transition hover:bg-teal-50"
-            >
+            <span className="inline-flex min-h-12 items-center justify-center rounded-full border border-slate-900/10 bg-white px-6 py-3 text-sm font-semibold text-[#071724] transition group-hover:bg-teal-50">
               {t('viewResearchDetails')}
-            </a>
+            </span>
           </div>
         </div>
 
-        <a
-          href={path(`/products/${product.slug}`)}
-          aria-label={t('viewProduct', { product: product.name })}
-          className="relative order-1 block overflow-hidden bg-[#dfe8e7] lg:order-2"
-        >
+        <div className="relative order-1 block overflow-hidden bg-[#dfe8e7] lg:order-2">
           <div className="relative flex aspect-[4/3] w-full items-center justify-center p-3 sm:aspect-[16/10] sm:p-5 lg:aspect-auto lg:h-full lg:min-h-[clamp(22rem,15rem+18vw,34rem)] lg:p-5">
             <ProductLabVisual
               product={product}
@@ -139,8 +133,9 @@ function FeaturedBestSellerCard({ product: baseProduct }: { product: Product }) 
               priority
             />
           </div>
-        </a>
+        </div>
       </div>
+      <ProductCardLink href={path(`/products/${product.slug}`)} productName={product.name} />
     </article>
   )
 }
@@ -155,15 +150,11 @@ function SecondaryBestSellerCard({ product: baseProduct, className }: { product:
   return (
     <article
       className={cn(
-        'group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-slate-900/10 bg-white shadow-[0_18px_54px_rgba(7,23,36,0.07)] transition duration-300 motion-safe:hover:-translate-y-1 hover:shadow-[0_28px_84px_rgba(20,184,166,0.14)]',
+        'group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-[1.5rem] border border-slate-900/10 bg-white shadow-[0_18px_54px_rgba(7,23,36,0.07)] transition duration-300 motion-safe:hover:-translate-y-1 hover:shadow-[0_28px_84px_rgba(20,184,166,0.14)]',
         className,
       )}
     >
-      <a
-        href={path(`/products/${product.slug}`)}
-        aria-label={t('viewProduct', { product: product.name })}
-        className="relative block aspect-[16/10] overflow-hidden bg-[#dfe8e7]"
-      >
+      <div className="relative block aspect-[16/10] overflow-hidden bg-[#dfe8e7]">
         <ProductLabVisual
           product={product}
           alt={t('productImageAlt', { product: product.name })}
@@ -173,7 +164,7 @@ function SecondaryBestSellerCard({ product: baseProduct, className }: { product:
         <div className="absolute left-4 top-4 rounded-full border border-white/60 bg-white/78 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#071724] backdrop-blur-xl">
           {localizedCategoryLabel(baseProduct.category, locale)}
         </div>
-      </a>
+      </div>
 
       <div className="flex flex-1 flex-col p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -190,14 +181,12 @@ function SecondaryBestSellerCard({ product: baseProduct, className }: { product:
         <h3 className="mt-3 text-2xl font-semibold tracking-[-0.045em] text-[#071724]">{product.name}</h3>
         <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">{getProductLine(product, locale)}</p>
         <div className="mt-auto pt-5">
-          <a
-            href={path(`/products/${product.slug}`)}
-            className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-slate-900/10 bg-white px-4 py-2.5 text-sm font-semibold text-[#071724] transition hover:bg-teal-50"
-          >
+          <span className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-slate-900/10 bg-white px-4 py-2.5 text-sm font-semibold text-[#071724] transition group-hover:bg-teal-50">
             {t('viewResearchDetails')}
-          </a>
+          </span>
         </div>
       </div>
+      <ProductCardLink href={path(`/products/${product.slug}`)} productName={product.name} />
     </article>
   )
 }
