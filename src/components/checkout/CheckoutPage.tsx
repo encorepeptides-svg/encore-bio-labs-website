@@ -24,7 +24,7 @@ import { useCart } from '../../context/useCart'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { purchaseTypeLabel } from '../../i18n/displayLabels'
 import { calculateItemCount, calculateSubtotal, formatCartCurrency, type CartItem } from '../../lib/cart'
-import { isCheckoutFormValid, isValidEmail } from '../../lib/checkout'
+import { isCheckoutFormValid, isValidEmail, isValidPhone, normalizeCheckoutTextFields } from '../../lib/checkout'
 import {
   addressEssentialErrors,
   calculateShippingCharges,
@@ -124,7 +124,7 @@ export const CHECKOUT_SESSION_KEY = 'encore-checkout-information-v1'
 export function readStoredForm(): ReviewFormData {
   if (typeof window === 'undefined') return defaultFormData
   try {
-    const stored = JSON.parse(window.sessionStorage.getItem(CHECKOUT_SESSION_KEY) || '{}') as Partial<ReviewFormData>
+    const stored = normalizeCheckoutTextFields(JSON.parse(window.sessionStorage.getItem(CHECKOUT_SESSION_KEY) || '{}') as Partial<ReviewFormData>)
     const destination = destinationOptions.some((option) => option.id === stored.destination) ? stored.destination as DeliveryDestination : stored.country === 'MX' ? 'mexico' : 'us'
     const country = expectedCountryForDestination(destination) || (typeof stored.country === 'string' ? stored.country : '')
     const localDefaults = localDestinationDefaults(destination)
@@ -343,17 +343,18 @@ export function CheckoutPage() {
   const validationSequence = useRef(0)
   const subtotal = useMemo(() => calculateSubtotal(items), [items])
   const kitCount = useMemo(() => calculateItemCount(items), [items])
-  const usStreetAddress = useMemo(() => splitUsStreetAddress(formData.address), [formData.address])
+  const normalizedFormData = useMemo(() => normalizeCheckoutTextFields(formData), [formData])
+  const usStreetAddress = useMemo(() => splitUsStreetAddress(normalizedFormData.address), [normalizedFormData.address])
   const address = useMemo<ShippingAddress>(() => ({
-    country: formData.country,
-    state: formData.state,
-    city: formData.city,
-    neighborhood: formData.country === 'MX' ? formData.neighborhood : '',
-    postalCode: formData.zip,
-    street: formData.country === 'US' ? usStreetAddress.street : formData.address,
-    streetNumber: formData.country === 'US' ? usStreetAddress.streetNumber : formData.streetNumber,
-    line2: formData.address2,
-  }), [formData.address, formData.address2, formData.city, formData.country, formData.neighborhood, formData.state, formData.streetNumber, formData.zip, usStreetAddress.street, usStreetAddress.streetNumber])
+    country: normalizedFormData.country,
+    state: normalizedFormData.state,
+    city: normalizedFormData.city,
+    neighborhood: normalizedFormData.country === 'MX' ? normalizedFormData.neighborhood : '',
+    postalCode: normalizedFormData.zip,
+    street: normalizedFormData.country === 'US' ? usStreetAddress.street : normalizedFormData.address,
+    streetNumber: normalizedFormData.country === 'US' ? usStreetAddress.streetNumber : normalizedFormData.streetNumber,
+    line2: normalizedFormData.address2,
+  }), [normalizedFormData.address, normalizedFormData.address2, normalizedFormData.city, normalizedFormData.country, normalizedFormData.neighborhood, normalizedFormData.state, normalizedFormData.streetNumber, normalizedFormData.zip, usStreetAddress.street, usStreetAddress.streetNumber])
   const pickupSelected = formData.destination.startsWith('local_') && formData.localFulfillment === 'pickup'
   const verificationAddress = useMemo<ShippingAddress>(() => pickupSelected ? {
     ...address,
@@ -370,23 +371,23 @@ export function CheckoutPage() {
 
   useEffect(() => {
     window.sessionStorage.setItem(CHECKOUT_SESSION_KEY, JSON.stringify({
-      email: formData.email,
-      phone: formData.phone,
-      fullName: formData.fullName,
-      address: formData.address,
-      streetNumber: formData.streetNumber,
-      neighborhood: formData.neighborhood,
-      address2: formData.address2,
-      city: formData.city,
-      state: formData.state,
-      zip: formData.zip,
-      country: formData.country,
-      destination: formData.destination,
-      localFulfillment: formData.localFulfillment,
-      preferredContact: formData.preferredContact,
-      notes: formData.notes,
+      email: normalizedFormData.email,
+      phone: normalizedFormData.phone,
+      fullName: normalizedFormData.fullName,
+      address: normalizedFormData.address,
+      streetNumber: normalizedFormData.streetNumber,
+      neighborhood: normalizedFormData.neighborhood,
+      address2: normalizedFormData.address2,
+      city: normalizedFormData.city,
+      state: normalizedFormData.state,
+      zip: normalizedFormData.zip,
+      country: normalizedFormData.country,
+      destination: normalizedFormData.destination,
+      localFulfillment: normalizedFormData.localFulfillment,
+      preferredContact: normalizedFormData.preferredContact,
+      notes: normalizedFormData.notes,
     }))
-  }, [formData])
+  }, [normalizedFormData])
 
   const runVerification = useCallback(async () => {
     const sequence = ++validationSequence.current
@@ -463,7 +464,7 @@ export function CheckoutPage() {
   const reviewPathReady = verification ? verification.deliverable || verification.manualReviewRequired || manualReviewRequested : false
   const poBoxAllowed = isPoBoxAddress(address) && !formData.destination.startsWith('local_')
   const baseFormValid = pickupSelected
-    ? isValidEmail(formData.email) && formData.phone.replace(/\D/g, '').length >= 7 && Boolean(formData.fullName.trim()) && formData.researchUseAcknowledged
+    ? isValidEmail(formData.email) && isValidPhone(formData.phone) && Boolean(formData.fullName.trim()) && formData.researchUseAcknowledged
     : isCheckoutFormValid({
         ...formData,
         streetNumber: poBoxAllowed ? undefined : address.streetNumber,
@@ -544,7 +545,7 @@ export function CheckoutPage() {
               <h2 className="text-2xl font-semibold tracking-[-0.04em] text-[#071724]">{t('contactAndShipping')}</h2>
               <div className="mt-6 grid gap-5 sm:grid-cols-2">
                 <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('email')}<input className={inputClass()} type="email" autoComplete="email" required aria-invalid={showValidation && !isValidEmail(formData.email)} value={formData.email} onChange={(event) => updateField('email', event.target.value)} />{showValidation && !isValidEmail(formData.email) ? <span className="text-xs font-medium text-rose-700">{t('emailError')}</span> : null}</label>
-                <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('phone')}<input className={inputClass()} type="tel" autoComplete="tel" required aria-invalid={showValidation && formData.phone.replace(/\D/g, '').length < 7} value={formData.phone} onChange={(event) => updateField('phone', event.target.value)} />{showValidation && formData.phone.replace(/\D/g, '').length < 7 ? <span className="text-xs font-medium text-rose-700">{t('phoneError')}</span> : null}</label>
+                <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('phone')}<input className={inputClass()} type="tel" autoComplete="tel" required aria-invalid={showValidation && !isValidPhone(formData.phone)} value={formData.phone} onChange={(event) => updateField('phone', event.target.value)} />{showValidation && !isValidPhone(formData.phone) ? <span className="text-xs font-medium text-rose-700">{t('phoneError')}</span> : null}</label>
                 <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">{t('fullName')}<input className={inputClass()} autoComplete="name" required aria-invalid={showValidation && !formData.fullName.trim()} value={formData.fullName} onChange={(event) => updateField('fullName', event.target.value)} />{showValidation && !formData.fullName.trim() ? <span className="text-xs font-medium text-rose-700">{t('fullNameError')}</span> : null}</label>
                 {localDestination ? <fieldset className="sm:col-span-2">
                   <legend className="text-sm font-semibold text-[#071724]">{t('localFulfillmentTitle')}</legend>
