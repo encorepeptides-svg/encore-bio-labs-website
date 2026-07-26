@@ -211,9 +211,8 @@ export function isIntakeStepComplete(step: number, data: IntakeFormData) {
   if (step === 1) {
     const sharedBiometricsComplete = data.biometricsStatus !== 'I can share them now' ||
       [data.age, data.sex, data.height, data.currentWeight, data.goalWeight].every((value) => value.trim().length > 0)
-    const productInterestComplete = data.peptideExperience === 'New to this' || data.interestedProducts.length > 0
 
-    return fieldsComplete && data.currentConcerns.length > 0 && productInterestComplete && sharedBiometricsComplete
+    return fieldsComplete && data.currentConcerns.length > 0 && sharedBiometricsComplete
   }
 
   if (step === 2) {

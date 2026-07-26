@@ -88,7 +88,7 @@ describe('direct client intake flow', () => {
     expect(isIntakeStepComplete(1, completeSituation({ currentConcerns: [] }))).toBe(false)
     expect(isIntakeStepComplete(1, completeSituation({ biometricsStatus: '' }))).toBe(false)
     expect(isIntakeStepComplete(1, completeSituation({ interestedProducts: [] }))).toBe(true)
-    expect(isIntakeStepComplete(1, completeSituation({ peptideExperience: 'Some experience', interestedProducts: [] }))).toBe(false)
+    expect(isIntakeStepComplete(1, completeSituation({ peptideExperience: 'Some experience', interestedProducts: [] }))).toBe(true)
     expect(isIntakeStepComplete(1, completeSituation())).toBe(true)
     expect(completeSituation().age).toBe('')
     expect(completeSituation().currentWeight).toBe('')
@@ -147,14 +147,26 @@ describe('direct client intake flow', () => {
     expect(updateIntakeStringField(withProducts, 'peptideExperience', 'Very experienced').interestedProducts).toEqual(['Retatrutide'])
   })
 
-  it('renders the first-time reassurance instead of product interests in both languages', () => {
+  it('renders first-time reassurance plus optional product suggestions in both languages', () => {
     const english = renderStep('en', 1, completeSituation({ interestedProducts: [] }))
     const spanish = renderStep('es', 1, completeSituation({ interestedProducts: [] }))
 
     expect(english).toContain('help identify relevant research options')
     expect(spanish).toContain('ayudar a identificar opciones de investigación relevantes')
-    expect(english).not.toContain('Which products are you interested in?')
-    expect(spanish).not.toContain('¿Qué productos te interesan?')
+    expect(english).toContain('Which products are you interested in?')
+    expect(spanish).toContain('¿Qué productos te interesan?')
+    expect(english).toContain('(Optional)')
+    expect(spanish).toContain('(Opcional)')
+  })
+
+  it('offers products that match the primary goal selected on the previous page', () => {
+    const metabolic = renderStep('en', 1, completeSituation({ mainGoal: 'Metabolic Signaling', interestedProducts: [] }))
+    const endocrine = renderStep('en', 1, completeSituation({ mainGoal: 'Endocrine Signaling', interestedProducts: [] }))
+
+    expect(metabolic).toContain('Retatrutide')
+    expect(metabolic).not.toContain('Kisspeptin')
+    expect(endocrine).toContain('Kisspeptin')
+    expect(endocrine).not.toContain('Retatrutide')
   })
 
   it('provides equivalent Spanish interface copy for both redesigned steps', () => {

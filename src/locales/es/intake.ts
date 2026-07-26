@@ -168,7 +168,7 @@ export const intake = {
   desiredResultPlaceholder: 'Comparte una nota breve o deja este campo en blanco.',
   optionalStepTitle: 'Todo este paso es opcional.',
   optionalStepBody: 'Puedes omitirlo y enviar el formulario solo con tu objetivo de investigación y datos de contacto. Agrega contexto únicamente si ayudará a nuestro equipo a comprender tu solicitud.',
-  recommendedProductsHelp: 'Estas sugerencias del catálogo se basan en el objetivo que seleccionaste. Elige los productos que te interesen o no selecciones ninguno.',
+  recommendedProductsHelp: 'Estas sugerencias del catálogo se basan en las respuestas que compartiste. Elige los productos que te interesen o no selecciones ninguno.',
   showAllProducts: 'Mostrar más productos del catálogo',
   addOptionalContext: 'Agregar datos biométricos, experiencia o contexto de estilo de vida',
   optionalContextHelp: 'Abre esta sección solo si deseas brindar más contexto. No necesitas calcular ni escribir “desconocido” en ningún campo que prefieras omitir.',
