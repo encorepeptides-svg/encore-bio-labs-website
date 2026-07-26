@@ -75,7 +75,7 @@ export function LegalPageLayout({
               {t('researchIntakeProcess')}
             </a>{' '}
             {t('questionsBodyConnector')}{' '}
-            <a href="https://wa.me/19153595448" className="font-semibold text-teal-700 hover:underline">
+            <a href="https://wa.me/19153595448" target="_blank" rel="noopener noreferrer" className="font-semibold text-teal-700 hover:underline">
               9153595448
             </a>
             .

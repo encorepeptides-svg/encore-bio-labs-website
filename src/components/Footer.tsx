@@ -91,6 +91,8 @@ export function Footer() {
                   <a
                     key={link.label}
                     href={link.href.startsWith('http') || link.href.startsWith('mailto:') ? link.href : path(link.href)}
+                    target={link.href.startsWith('http') ? '_blank' : undefined}
+                    rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
                     className="inline-flex w-fit items-center gap-2 text-sm font-medium text-slate-600 transition hover:text-[#071724]"
                   >
                     {link.label}
@@ -122,14 +124,6 @@ export function Footer() {
         <div className="mt-6 flex flex-col gap-4 border-t border-slate-900/10 pt-6 text-xs leading-5 text-slate-500 sm:flex-row sm:items-center sm:justify-between">
           <p>{t('copyright')}</p>
           <p>{tBrand('complianceDisclaimer')}</p>
-        </div>
-        <div className="mt-5 flex justify-end border-t border-slate-900/8 pt-4">
-          <a
-            href={path('/admin')}
-            className="text-xs font-medium text-slate-400 transition hover:text-[#071724] focus:outline-none focus-visible:rounded focus-visible:ring-2 focus-visible:ring-teal-500"
-          >
-            {t('adminAccess')}
-          </a>
         </div>
       </div>
     </footer>

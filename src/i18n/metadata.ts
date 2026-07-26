@@ -1,6 +1,6 @@
 import type { Locale } from './config'
 
-type PageMeta = { title: string; description: string }
+type PageMeta = { title: string; description: string; noindex?: boolean }
 type LocalizedPageMeta = Record<Locale, PageMeta>
 
 /**
@@ -61,10 +61,6 @@ export const pageMetadata: Record<string, LocalizedPageMeta> = {
     en: { title: 'Research Library | Encore Bio Labs', description: 'Explore research-use educational material and product-category context from Encore Bio Labs.' },
     es: { title: 'Biblioteca de investigación | Encore Bio Labs', description: 'Explora material educativo y contexto por categoría de producto de Encore Bio Labs.' },
   },
-  '/research/retatrutide': {
-    en: { title: 'Retatrutide Research | Encore Bio Labs', description: 'Review educational Retatrutide research context, evidence status, and research-use limitations.' },
-    es: { title: 'Investigación sobre Retatrutide | Encore Bio Labs', description: 'Conoce el contexto educativo, el estado de la evidencia y las limitaciones de uso exclusivo para investigación de Retatrutide.' },
-  },
   '/legal/terms': {
     en: { title: 'Terms of Service | Encore Bio Labs', description: 'Read the Encore Bio Labs terms governing site access and research catalog inquiries.' },
     es: { title: 'Términos de servicio | Encore Bio Labs', description: 'Lee los términos que rigen el acceso al sitio y las solicitudes del catálogo de investigación de Encore Bio Labs.' },
@@ -96,6 +92,10 @@ export const pageMetadata: Record<string, LocalizedPageMeta> = {
   '/portal': {
     en: { title: 'Client Portal | Encore Bio Labs', description: 'Your private Encore Bio Labs workspace for progress, orders, documents, and support.' },
     es: { title: 'Portal de clientes | Encore Bio Labs', description: 'Tu espacio privado de Encore Bio Labs para progreso, pedidos, documentos y soporte.' },
+  },
+  '/admin': {
+    en: { title: 'Administration | Encore Bio Labs', description: 'Private Encore Bio Labs administration workspace.', noindex: true },
+    es: { title: 'Administración | Encore Bio Labs', description: 'Espacio privado de administración de Encore Bio Labs.', noindex: true },
   },
 }
 

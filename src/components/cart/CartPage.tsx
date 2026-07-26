@@ -101,7 +101,7 @@ export function CartPage() {
               <div className="mt-6 rounded-2xl bg-[#f8fafc] p-4">
                 <p className="flex items-center gap-2 text-sm font-semibold text-[#071724]"><PackageCheck size={16} aria-hidden="true" className="text-teal-700" />{t('kitSelectionsShown')}</p>
                 <p className="mt-2 text-xs leading-5 text-slate-500">{t('orderReviewedNote')}</p>
-                <a href="https://wa.me/19153595448" className="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-teal-800"><MessageCircle size={14} aria-hidden="true" />{t('contactSupportWhatsapp')}</a>
+                <a href="https://wa.me/19153595448" target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-teal-800"><MessageCircle size={14} aria-hidden="true" />{t('contactSupportWhatsapp')}</a>
               </div>
             </aside>
           </div>

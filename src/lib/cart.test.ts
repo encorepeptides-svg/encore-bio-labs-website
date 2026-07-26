@@ -39,6 +39,11 @@ describe('cart hydration and variants', () => {
     expect(item.linePrice - item.unitPrice * item.packSize).toBe(10)
     expect(calculateSubtotal([item])).toBe(512)
     expect(calculateTotal([item]).total).toBe(512)
+    expect(calculateTotal([item], { destination: 'mexico' })).toMatchObject({
+      subtotal: 512,
+      shipping: 65,
+      total: 577,
+    })
   })
 
   it('hydrates all purchase fields and rejects corrupt money fields', () => {
