@@ -1040,7 +1040,7 @@ const productFacts: Record<string, ProductFact> = {
       { title: 'Neuro-repair models', description: 'Supports study planning around injury-response and neuronal resilience pathways.' },
       { title: 'Cognitive research', description: 'Often reviewed in relation to cognitive-performance and neurobiology markers.' },
       { title: 'Inflammation context', description: 'Can be paired with neuroinflammatory marker review in qualified study designs.' },
-      { title: 'Ampoule format clarity', description: 'Keeps format, handling, and documentation questions clear for review.' },
+      { title: 'Vial format clarity', description: 'Keeps format, handling, and documentation questions clear for review.' },
     ],
     researchHighlights: [
       { title: 'Neurotrophic peptide mixture', journal: 'Neurobiology literature', takeaway: 'Cerebrolysin is studied as a peptide mixture with neurotrophic and neuronal-survival research interest.', metric: 'NTF' },
@@ -1701,7 +1701,8 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'An aesthetic research entry structured for clean display, kit review, and premium positioning.',
     featured: true,
-    variants: [{ label: '50 mg', format: 'Vial format', price: 139 }],
+    variants: [{ label: '50 mg', format: 'Vial format', price: 49 }],
+    purchaseRules: { kitPremium: 10 },
   },
   {
     slug: 'epithalon',
@@ -1721,7 +1722,8 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A cognitive research entry prepared for premium presentation and documentation-led follow-up.',
     featured: true,
-    variants: [{ label: 'Published Ampoule Format', format: 'Ampoule format', price: 169 }],
+    variants: [{ label: '10 mg', format: 'Vial format', price: 69 }],
+    purchaseRules: { kitPremium: 10 },
   },
   {
     slug: 'ss31',
@@ -1751,7 +1753,8 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'A sexual wellness research entry designed to keep product review concise, organized, and inquiry-ready.',
     featured: true,
-    variants: [{ label: '10 mg', format: 'Vial format', price: 119 }],
+    variants: [{ label: '10 mg', format: 'Vial format', price: 49 }],
+    purchaseRules: { kitPremium: 1 },
   },
   {
     slug: 'hcg',

@@ -42,6 +42,24 @@ describe('purchase option pricing', () => {
     expect(quote.pricePerMeasure).toBe(8.9)
   })
 
+  it('quotes the exact vial and Complete Kit totals for the updated catalog products', () => {
+    const expected = {
+      'ahk-cu': { vial: 49, kit: 59, premium: 10 },
+      kisspeptin: { vial: 49, kit: 50, premium: 1 },
+      cerebrolysin: { vial: 69, kit: 79, premium: 10 },
+    }
+
+    for (const [slug, row] of Object.entries(expected)) {
+      const product = products.find((entry) => entry.slug === slug)!
+      const variant = product.variants[0]
+      const vial = quotePurchase(product, variant, { optionId: 'vial-only', packSize: 1, includeKit: false })
+      const kit = quotePurchase(product, variant, { optionId: 'complete-kit', packSize: 1, includeKit: true })
+      expect(getKitPremium(product)).toBe(row.premium)
+      expect(vial).toMatchObject({ purchaseType: 'Vial Only', linePrice: row.vial, kitIncluded: false })
+      expect(kit).toMatchObject({ purchaseType: 'Encore Complete Kit', linePrice: row.kit, kitIncluded: true })
+    }
+  })
+
   it('applies 8% to three vials and charges only one optional kit', () => {
     const quote = quotePurchase(retatrutide, tenMg, { optionId: 'multipack', packSize: 3, includeKit: true })
     expect(quote.unitPrice).toBe(82)

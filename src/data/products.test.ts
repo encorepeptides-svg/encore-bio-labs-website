@@ -69,12 +69,31 @@ describe('product catalog integrity', () => {
     }
   })
 
+  it('defines the exact AHK-Cu, Kisspeptin, and Cerebrolysin catalog variants', () => {
+    const expected = {
+      'ahk-cu': { sku: 'AHK-CU-50MG', label: '50 mg', strength: 50, unitType: 'mg', price: 49, kitPremium: 10 },
+      kisspeptin: { sku: 'KISSPEPTIN-10MG', label: '10 mg', strength: 10, unitType: 'mg', price: 49, kitPremium: 1 },
+      cerebrolysin: { sku: 'CEREBROLYSIN-10MG', label: '10 mg', strength: 10, unitType: 'mg', price: 69, kitPremium: 10 },
+    }
+
+    for (const [slug, row] of Object.entries(expected)) {
+      const product = products.find((entry) => entry.slug === slug)!
+      const { kitPremium, ...variant } = row
+      expect(product.variants).toEqual([expect.objectContaining(variant)])
+      expect(product.purchaseRules).toMatchObject({
+        productType: 'research-vial',
+        kitEligible: true,
+        kitPremium,
+      })
+    }
+  })
+
   it('keeps accessories and ready-to-use formats out of irrelevant kit flows', () => {
     const klow = products.find((product) => product.slug === 'klow')!
     const cerebrolysin = products.find((product) => product.slug === 'cerebrolysin')!
     const bacWater = products.find((product) => product.slug === 'bac-water')!
     expect(klow.purchaseRules).toMatchObject({ productType: 'accessory', kitEligible: false, multipackEligible: false })
-    expect(cerebrolysin.purchaseRules).toMatchObject({ productType: 'ready-to-use', kitEligible: false, multipackEligible: true })
+    expect(cerebrolysin.purchaseRules).toMatchObject({ productType: 'research-vial', kitEligible: true, multipackEligible: true })
     expect(bacWater.purchaseRules).toMatchObject({ productType: 'accessory', kitEligible: false, multipackEligible: false })
     expect(bacWater.variants).toEqual([
       expect.objectContaining({ sku: 'BACWATER-10ML', label: '10 mL', price: 11.99, strength: 10, unitType: 'mL' }),
