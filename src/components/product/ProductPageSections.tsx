@@ -5,6 +5,7 @@ import {
   Boxes,
   Brain,
   ClipboardCheck,
+  ChevronDown,
   Dna,
   FileSearch,
   FileText,
@@ -888,20 +889,66 @@ export function ResearchUseDisclaimer({ product }: { product: Product }) {
 
 export function ProductSpecs({ product }: { product: Product }) {
   const { t } = useTranslation('product')
+  const format = product.specs[4]?.value ?? product.dosage
+  const strength = product.specs[5]?.value ?? product.dosage
+  const classification = product.specs[7]?.value ?? t('researchUseOnly')
+  const expandedSpecs = product.specs.slice(1, 4)
+
+  const essentials = [
+    { label: t('formatLabel'), value: format },
+    { label: t('strengthLabel'), value: strength },
+    { label: t('useClassification'), value: classification },
+    { label: t('documentation'), value: t('availableByRequest') },
+  ]
+
   return (
-    <SectionShell id="product-specs" eyebrow={t('specsEyebrow')} title={t('specsTitle')}>
-      <div className="overflow-hidden rounded-[1.75rem] border border-slate-900/10 bg-white shadow-[0_24px_72px_rgba(7,23,36,0.08)]">
-        {product.specs.map((spec) => (
-          <div
-            key={spec.label}
-            className="grid gap-2 border-b border-slate-900/10 p-5 last:border-b-0 sm:grid-cols-[0.35fr_0.65fr] sm:items-center"
-          >
-            <p className="text-sm font-semibold text-[#071724]">{spec.label}</p>
-            <p className="text-sm leading-6 text-slate-600">{spec.value}</p>
-          </div>
-        ))}
+    <section id="product-specs" className="px-5 py-10 sm:px-8 lg:py-14">
+      <div className="mx-auto max-w-[88rem]">
+        <div className="mb-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">
+            {t('productDetailsEyebrow')}
+          </p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[#071724] sm:text-4xl">
+            {t('productDetailsTitle')}
+          </h2>
+        </div>
+
+        <div className="overflow-hidden rounded-[1.75rem] border border-slate-900/10 bg-white shadow-[0_24px_72px_rgba(7,23,36,0.08)]">
+          <dl className="grid sm:grid-cols-2 lg:grid-cols-4">
+            {essentials.map((item) => (
+              <div
+                key={item.label}
+                className="border-b border-slate-900/8 p-5 last:border-b-0 sm:[&:nth-child(odd)]:border-r sm:[&:nth-child(n+3)]:border-b-0 lg:border-b-0 lg:border-r lg:last:border-r-0"
+              >
+                <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{item.label}</dt>
+                <dd className="mt-2 text-sm font-semibold leading-6 text-[#071724]">{item.value}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <details className="group border-t border-slate-900/10">
+            <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-5 py-3 text-sm font-semibold text-teal-800 transition hover:bg-teal-50/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-teal-600 [&::-webkit-details-marker]:hidden">
+              <span>
+                <span className="group-open:hidden">{t('viewFullSpecs')}</span>
+                <span className="hidden group-open:inline">{t('hideFullSpecs')}</span>
+              </span>
+              <ChevronDown size={18} aria-hidden="true" className="shrink-0 transition-transform duration-200 group-open:rotate-180" />
+            </summary>
+            <dl className="border-t border-slate-900/8 bg-slate-50/65">
+              {expandedSpecs.map((spec) => (
+                <div
+                  key={spec.label}
+                  className="grid gap-2 border-b border-slate-900/8 px-5 py-4 last:border-b-0 sm:grid-cols-[0.35fr_0.65fr] sm:items-start"
+                >
+                  <dt className="text-sm font-semibold text-[#071724]">{spec.label}</dt>
+                  <dd className="text-sm leading-6 text-slate-600">{spec.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </details>
+        </div>
       </div>
-    </SectionShell>
+    </section>
   )
 }
 
