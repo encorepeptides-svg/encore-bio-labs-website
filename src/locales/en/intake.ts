@@ -166,7 +166,7 @@ export const intake = {
   desiredResultPlaceholder: 'Share a short note, or leave this blank.',
   optionalStepTitle: 'This entire step is optional.',
   optionalStepBody: 'You can skip it and submit with only your research goal and contact details. Add context only if it would help our team understand your inquiry.',
-  recommendedProductsHelp: 'These catalog suggestions are based on the goal you selected. Choose any that interest you, or choose none.',
+  recommendedProductsHelp: 'These catalog suggestions are based on the answers you shared. Choose any that interest you, or choose none.',
   showAllProducts: 'Show more catalog products',
   addOptionalContext: 'Add biometrics, experience, or lifestyle context',
   optionalContextHelp: 'Open this section only if you want to provide more context. You do not need to estimate or enter “unknown” for anything you prefer to skip.',

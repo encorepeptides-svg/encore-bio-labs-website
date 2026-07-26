@@ -755,11 +755,10 @@ export function IntakePage() {
                       <div role="status" className="rounded-2xl border border-teal-700/20 bg-teal-50 p-4 text-sm leading-6 text-teal-950">
                         {t('newExperienceReassurance')}
                       </div>
-                    ) : (
-                      <QuestionGroup legend={`${t('interestedProductsQuestion')} (${t('required')})`} hint={t('recommendedProductsHelp')}>
-                        <ProductChoiceGrid selected={formData.interestedProducts} onToggle={toggleProduct} items={recommendation.recommendedProducts} />
-                      </QuestionGroup>
-                    )}
+                    ) : null}
+                    <QuestionGroup legend={`${t('interestedProductsQuestion')} (${t('optional')})`} hint={t('recommendedProductsHelp')}>
+                      <ProductChoiceGrid selected={formData.interestedProducts} onToggle={toggleProduct} items={recommendation.recommendedProducts} />
+                    </QuestionGroup>
                   </div>
                 ) : null}
 
