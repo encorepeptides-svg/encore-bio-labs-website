@@ -23,7 +23,7 @@ describe('inventory calculations', () => {
     expect(previewInventory(stock, 'reserve', 8).available).toBe(-1)
     expect(previewInventory(stock, 'release', 4).reserved).toBe(-1)
   })
-  it('sends independently priced GHK-Cu and NAD+ SKUs to the admin inventory portal', () => {
+  it('sends canonical product prices and strengths to the admin inventory portal', () => {
     const payload = inventoryCatalogPayload()
     const ghkCu = payload.find((product) => product.slug === 'ghk-cu')!
     const nad = payload.find((product) => product.slug === 'nad-plus')!
@@ -35,5 +35,16 @@ describe('inventory calculations', () => {
       { sku: 'NAD-500MG', price_cents: 6500 },
       { sku: 'NAD-1000MG', price_cents: 9500 },
     ])
+
+    const updated = {
+      'ahk-cu': { sku: 'AHK-CU-50MG', strength: 50, unit_type: 'mg', price_cents: 4900 },
+      kisspeptin: { sku: 'KISSPEPTIN-10MG', strength: 10, unit_type: 'mg', price_cents: 4900 },
+      cerebrolysin: { sku: 'CEREBROLYSIN-10MG', strength: 10, unit_type: 'mg', price_cents: 6900 },
+    }
+    for (const [slug, variant] of Object.entries(updated)) {
+      expect(payload.find((product) => product.slug === slug)?.variants).toEqual([
+        expect.objectContaining(variant),
+      ])
+    }
   })
 })

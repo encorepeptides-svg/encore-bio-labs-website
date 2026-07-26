@@ -174,18 +174,18 @@ export const protocols: ProtocolConfig[] = [
     categorySlug: 'cognitive-performance',
     tags: [t('Neuro-signaling', 'Neuroseñalización'), t('Three-format review', 'Revisión de tres formatos')],
     components: [
-      { productSlug: 'cerebrolysin', quantity: 1, defaultVariantLabel: 'Published Ampoule Format' },
+      { productSlug: 'cerebrolysin', quantity: 1, defaultVariantLabel: '10 mg' },
       { productSlug: 'semax', quantity: 1, defaultVariantLabel: '10 mg' },
       { productSlug: 'selank', quantity: 1, defaultVariantLabel: '10 mg' },
     ],
     content: {
       title: t('Multi-Pathway Neuro-Signaling Set', 'Set multivía de neuroseñalización'),
-      tagline: t('Compare one ampoule-format mixture and two peptide entries.', 'Compara una mezcla en ampolleta y dos entradas de péptidos.'),
+      tagline: t('Compare one 10 mg vial-format mixture and two peptide entries.', 'Compara una mezcla de 10 mg en formato vial y dos entradas de péptidos.'),
       description: t('Organizes Cerebrolysin, Semax, and Selank for side-by-side review of distinct neuro-signaling research formats.', 'Organiza Cerebrolysin, Semax y Selank para revisar en paralelo distintos formatos de investigación de neuroseñalización.'),
       objective: t('For qualified teams comparing distinct neuro-signaling catalog entries, formats, and documentation without implying a clinical regimen.', 'Para equipos calificados que comparan entradas, formatos y documentación de neuroseñalización sin implicar un régimen clínico.'),
       education: {
-        en: ['Cerebrolysin is presented in its published ampoule format, while Semax and Selank remain independent vial-format entries.', 'Grouping them supports catalog comparison only; it does not establish combined use, sequence, or an expected cognitive outcome.'],
-        es: ['Cerebrolysin se presenta en su formato publicado de ampolleta, mientras que Semax y Selank siguen siendo entradas independientes en vial.', 'Agruparlos solo facilita la comparación del catálogo; no establece uso combinado, secuencia ni un resultado cognitivo esperado.'],
+        en: ['Cerebrolysin is presented in its 10 mg vial format, while Semax and Selank remain independent vial-format entries.', 'Grouping them supports catalog comparison only; it does not establish combined use, sequence, or an expected cognitive outcome.'],
+        es: ['Cerebrolysin se presenta en su formato vial de 10 mg, mientras que Semax y Selank siguen siendo entradas independientes en vial.', 'Agruparlos solo facilita la comparación del catálogo; no establece uso combinado, secuencia ni un resultado cognitivo esperado.'],
       },
     },
   },
