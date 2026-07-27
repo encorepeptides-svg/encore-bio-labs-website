@@ -35,32 +35,32 @@ export type ProductTextOverride = Partial<{
 
 export const productTranslationsEs: Record<string, ProductTextOverride> = {
   retatrutide: {
-    catalogTagline: 'Un activador triple en investigación de GIP, GLP-1 y glucagón. Se estudia en señalización de nutrientes, balance energético y composición corporal.',
-    description: 'Retatrutide es un péptido sintético que se estudia como activador triple de los puntos de acción de GLP-1, GIP y glucagón. En investigación se revisa por su señalización en la regulación de energía, modelos de composición corporal y respuesta de marcadores metabólicos.',
+    catalogTagline: 'Un agonista triple en investigación de GIP, GLP-1 y glucagón. Se estudia en señalización de nutrientes, balance energético y composición corporal.',
+    description: 'Una entrada del catálogo de investigación organizada para comparar variantes, solicitar el COA y facilitar una revisión centrada en la documentación.',
     headline: 'Mapea la señalización de triple receptor. Estudia la respuesta metabólica. Revisa con precisión.',
-    shortDescription: 'Retatrutide es un péptido sintético estudiado como activador triple de los puntos de acción de GLP-1, GIP y glucagón, revisado en contextos de investigación para la señalización de regulación energética, modelos de composición corporal y respuesta de marcadores metabólicos.',
+    shortDescription: 'Retatrutide es un péptido sintético estudiado como agonista triple de los receptores GLP-1, GIP y glucagón, revisado en contextos de investigación para la señalización de regulación energética, modelos de composición corporal y respuesta de marcadores metabólicos.',
     keyHighlights: [
       'Agonista sintético de triple receptor (GLP-1 / GIP / glucagón)',
-      'Señalización de los puntos de acción de GLP-1, GIP y glucagón',
+      'Señalización de los receptores GLP-1, GIP y glucagón',
       'Tendencia de peso corporal, glucosa en ayunas, HbA1c y marcadores del perfil de lípidos en diseños de investigación calificados',
       'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
     ],
     mechanismSteps: [
-      'Revisión del activador de triple receptor',
+      'Revisión del agonista de triple receptor',
       'Modelo de señalización GLP-1/GIP/glucagón',
       'Observación de la vía de gasto energético',
       'Registro de marcadores de composición corporal',
     ],
     benefits: [
-      { title: 'Investigación de triple receptor', description: 'Útil para estudiar el compromiso combinado de los puntos de acción de GLP-1, GIP y glucagón en un solo producto de investigación.' },
+      { title: 'Investigación de triple receptor', description: 'Útil para estudiar el compromiso combinado de los receptores GLP-1, GIP y glucagón en una sola entrada de investigación.' },
       { title: 'Modelos de gasto energético', description: 'El componente del receptor de glucagón suele revisarse junto con preguntas de investigación sobre gasto energético, distintas de las entradas exclusivas de GLP-1.' },
       { title: 'Contexto de composición corporal', description: 'Aparece en la literatura relacionada con la investigación de peso y composición corporal, presentada sin resultados garantizados.' },
       { title: 'Revisión de marcadores glucémicos', description: 'Apoya conversaciones de investigación sobre glucosa en ayunas y HbA1c junto con paneles metabólicos.' },
       { title: 'Investigación incretina comparativa', description: 'Útil para comparar modelos de investigación incretina de receptor único y múltiple dentro de la misma categoría.' },
-      { title: 'Revisión centrada en documentos de laboratorio', description: 'Combina la revisión del producto con supervisión calificada, contexto de laboratorio y un registro cuidadoso.' },
+      { title: 'Revisión centrada en documentación', description: 'Combina la revisión del producto con supervisión calificada, contexto de laboratorio y un registro cuidadoso.' },
     ],
     researchHighlights: [
-      { title: 'Agonismo de triple receptor', journal: 'Literatura de la vía incretina', takeaway: 'Retatrutide se estudia como una sola molécula que compromete los puntos de acción de GLP-1, GIP y glucagón, lo que la distingue de las entradas de receptor único o doble en esta categoría.', metric: 'GLP·GIP·GCG' },
+      { title: 'Agonismo de triple receptor', journal: 'Literatura de la vía incretina', takeaway: 'Retatrutide se estudia como una sola molécula que compromete los receptores GLP-1, GIP y glucagón, lo que la distingue de las entradas de receptor único o doble en esta categoría.', metric: 'GLP·GIP·GCG' },
       { title: 'Señalización energética vía receptor de glucagón', journal: 'Resúmenes de investigación metabólica', takeaway: 'El componente del receptor de glucagón se analiza con frecuencia como un mecanismo de investigación del gasto energético, distinto de la sola señalización del apetito.', metric: 'EE' },
       { title: 'Investigación de composición corporal', journal: 'Contexto de literatura clínica', takeaway: 'Estudios publicados han evaluado retatrutide en modelos de peso y composición corporal; su aplicabilidad depende del diseño del estudio y la supervisión calificada.', metric: 'BC' },
     ],

@@ -494,8 +494,8 @@ const productPositioning: Record<string, { headline: string; focus: string; mech
   },
   retatrutide: {
     headline: 'Map Triple-Receptor Signaling. Study Metabolic Response. Review With Precision.',
-    focus: 'triple-receptor GLP-1, GIP, and glucagon activator research, energy-regulation models, and body-composition pathway review',
-    mechanism: ['Triple-receptor activator review', 'GLP-1/GIP/glucagon signaling model', 'Energy-expenditure pathway observation', 'Body-composition marker record'],
+    focus: 'triple-receptor GLP-1, GIP, and glucagon agonist research, energy-regulation models, and body-composition pathway review',
+    mechanism: ['Triple-receptor agonist review', 'GLP-1/GIP/glucagon signaling model', 'Energy-expenditure pathway observation', 'Body-composition marker record'],
     visual: 'triple-receptor pathway map',
   },
   tesamorelin: {
@@ -665,8 +665,8 @@ const productFacts: Record<string, ProductFact> = {
   },
   retatrutide: {
     overview:
-      'Retatrutide is a synthetic peptide studied as a triple activator at the GLP-1, GIP, and glucagon receptors, reviewed in research settings for energy-regulation signaling, body-composition models, and metabolic marker response.',
-    identity: 'Triple-receptor (GLP-1 / GIP / glucagon) synthetic peptide activator',
+      'Retatrutide is a synthetic peptide studied as a triple agonist at the GLP-1, GIP, and glucagon receptors, reviewed in research settings for energy-regulation signaling, body-composition models, and metabolic marker response.',
+    identity: 'Triple-receptor (GLP-1 / GIP / glucagon) synthetic peptide agonist',
     target: 'GLP-1, GIP, and glucagon receptor signaling',
     pathway: 'Combined incretin and glucagon-receptor signaling, with downstream energy-expenditure and appetite-regulation models',
     markers: 'Body-weight trend, fasting glucose, HbA1c, and lipid-panel markers in qualified research designs',
@@ -676,7 +676,7 @@ const productFacts: Record<string, ProductFact> = {
       { title: 'Body-composition context', description: 'Appears in literature around body-weight and composition research, framed without guaranteed outcomes.' },
       { title: 'Glycemic marker review', description: 'Supports research conversations around fasting glucose and HbA1c alongside metabolic panels.' },
       { title: 'Comparative incretin research', description: 'Useful when comparing single- and multi-receptor incretin research models within the same category.' },
-      { title: 'Lab paperwork-first review', description: 'Pairs product review with qualified oversight, lab context, and careful record keeping.' },
+      { title: 'Documentation-first review', description: 'Pairs product review with qualified oversight, lab context, and careful record keeping.' },
     ],
     researchHighlights: [
       { title: 'Triple-receptor agonism', journal: 'Incretin pathway literature', takeaway: 'Retatrutide is studied as a single molecule engaging GLP-1, GIP, and glucagon receptors, distinguishing it from single- or dual-receptor entries in this category.', metric: 'GLP·GIP·GCG' },
@@ -689,7 +689,7 @@ const productFacts: Record<string, ProductFact> = {
       { title: 'Glucagon receptor activity', description: 'The third receptor target, most associated in the literature with energy-expenditure research questions.' },
     ],
     faqs: [
-      { question: 'What is Retatrutide?', answer: 'Retatrutide is a synthetic peptide studied as a triple activator at the GLP-1, GIP, and glucagon receptors.' },
+      { question: 'What is Retatrutide?', answer: 'Retatrutide is a synthetic peptide studied as a triple agonist at the GLP-1, GIP, and glucagon receptors.' },
       {
         question: 'How is it different from other incretin-research entries in this catalog?',
         answer:
@@ -1330,7 +1330,7 @@ const productFacts: Record<string, ProductFact> = {
 }
 
 const catalogTaglines: Record<string, string> = {
-  retatrutide: 'An investigational GIP, GLP-1, and glucagon triple activator. Studied across nutrient signaling, energy balance, and body-composition research.',
+  retatrutide: 'An investigational GIP, GLP-1, and glucagon triple agonist. Studied across nutrient signaling, energy balance, and body-composition research.',
   tesamorelin: 'A synthetic GHRH analog studied through the GH–IGF-1 axis. Research examines endocrine signaling and body-composition endpoints.',
   'cjc1295-ipamorelin': 'CJC-1295 and Ipamorelin combine two GH-axis research mechanisms. The formulation supports comparative review of GHRH and ghrelin-receptor signaling.',
   'mots-c': 'A mitochondria-derived peptide studied in cellular energy signaling. Preclinical research examines metabolic adaptation, AMPK-associated pathways, and mitochondrial communication.',
@@ -1571,7 +1571,7 @@ const catalogProducts: CatalogProduct[] = [
     category: 'Metabolic & Weight Management',
     image: 'retatrutide.png',
     description:
-      'Retatrutide is a synthetic peptide studied as a triple activator at the GLP-1, GIP, and glucagon receptors, reviewed in research settings for energy-regulation signaling, body-composition models, and metabolic marker response.',
+      'A research catalog entry organized for variant comparison, COA request routing, and documentation-first review.',
     featured: true,
     variants: [
       { label: '10 mg', format: 'Vial format', price: 89 },
