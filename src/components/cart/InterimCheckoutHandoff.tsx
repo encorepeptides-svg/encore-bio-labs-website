@@ -3,15 +3,15 @@ import { useMemo, useState } from 'react'
 import { getEnabledPaymentMethods, type InterimPaymentMethod, type InterimPaymentMethodId } from '../../config/interimCheckout'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import type { CartItem } from '../../lib/cart'
-import type { CheckoutAcknowledgmentAudit } from '../../data/acknowledgmentContent'
 import type { ShippingSelection } from '../../lib/shipping'
 import { shippingSelectionAllowsPayment } from '../../lib/shipping'
 import {
   buildHandoffMessage,
   buildInstagramDmUrl,
   buildWhatsAppHandoffUrl,
-  createPendingOrder,
   type HandoffChannel,
+  type OrderContact,
+  type PendingOrder,
 } from '../../lib/storefront/interimCheckout'
 
 const methodLabelKeys: Record<InterimPaymentMethodId, string> = {
@@ -23,43 +23,6 @@ const methodLabelKeys: Record<InterimPaymentMethodId, string> = {
   apple_pay: 'payApplePay',
   cash_on_delivery: 'payCod',
   manual_review: 'payManualReview',
-}
-
-// Same key the checkout page uses to remember contact info in this session.
-const CHECKOUT_SESSION_KEY = 'encore-checkout-information-v1'
-function readKnownContact() {
-  try {
-    const stored = JSON.parse(window.sessionStorage.getItem(CHECKOUT_SESSION_KEY) || '{}') as {
-      fullName?: string
-      phone?: string
-      email?: string
-      address?: string
-      streetNumber?: string
-      neighborhood?: string
-      address2?: string
-      city?: string
-      state?: string
-      zip?: string
-      country?: string
-      preferredContact?: string
-      notes?: string
-    }
-    return {
-      name: stored.fullName || '',
-      phone: stored.phone || '',
-      email: stored.email || '',
-      address: [stored.address, stored.streetNumber].filter(Boolean).join(' '),
-      address2: [stored.neighborhood, stored.address2].filter(Boolean).join(', '),
-      city: stored.city || '',
-      state: stored.state || '',
-      zip: stored.zip || '',
-      country: stored.country || '',
-      preferredContact: stored.preferredContact || '',
-      notes: stored.notes || '',
-    }
-  } catch {
-    return { name: '', phone: '', email: '', address: '', address2: '', city: '', state: '', zip: '', country: '', preferredContact: '', notes: '' }
-  }
 }
 
 async function copyText(text: string) {
@@ -85,17 +48,19 @@ async function copyText(text: string) {
 }
 
 type HandoffState =
-  | { step: 'choose'; channel: HandoffChannel }
+  | { step: 'choose'; channel: Exclude<HandoffChannel, 'checkout'> }
   | { step: 'done'; channel: HandoffChannel; reference: string; message: string; method: InterimPaymentMethod; recorded: boolean; copied: boolean }
 
 export function InterimCheckoutHandoff({
   items,
   shipping,
-  acknowledgment,
+  contact,
+  order,
 }: {
   items: CartItem[]
   shipping?: ShippingSelection
-  acknowledgment: CheckoutAcknowledgmentAudit
+  contact: OrderContact
+  order: PendingOrder
 }) {
   const { t } = useTranslation('cart')
   const { locale } = useLocale()
@@ -110,7 +75,7 @@ export function InterimCheckoutHandoff({
 
   if (!items.length || !enabledMethods.length) return null
 
-  function open(channel: HandoffChannel) {
+  function open(channel: Exclude<HandoffChannel, 'checkout'>) {
     setError(false)
     setMethod(enabledMethods.length === 1 ? enabledMethods[0].id : '')
     setState({ step: 'choose', channel })
@@ -127,28 +92,9 @@ export function InterimCheckoutHandoff({
     if (!chosenMethod) return
     setError(false)
     setCreating(true)
-    const knownContact = readKnownContact()
-    const contact = shipping?.localFulfillment === 'pickup' ? {
-      ...knownContact,
-      address: '',
-      address2: '',
-      city: shipping.address.city,
-      state: shipping.address.state,
-      zip: '',
-      country: shipping.address.country,
-    } : knownContact
     // Pre-open the tab inside the click gesture so popup blockers allow it.
     const handoffWindow = window.open('', '_blank', 'noopener')
     try {
-      const order = await createPendingOrder({
-        items,
-        channel: state.channel,
-        paymentMethod: chosenMethod.id,
-        locale,
-        contact,
-        shipping,
-        acknowledgment,
-      })
       const effectiveMethod: InterimPaymentMethod = order.reviewRequired ? { id: 'manual_review', enabled: true, details: [] } : chosenMethod
       const message = buildHandoffMessage({ reference: order.reference, items, paymentMethod: effectiveMethod.id, locale, contact, shipping, totalCents: order.totalCents })
       let copied = false
@@ -156,7 +102,7 @@ export function InterimCheckoutHandoff({
       const url = state.channel === 'whatsapp' ? buildWhatsAppHandoffUrl(message) : buildInstagramDmUrl()
       if (handoffWindow) handoffWindow.location.href = url
       else window.open(url, '_blank', 'noopener')
-      setState({ step: 'done', channel: state.channel, reference: order.reference, message, method: effectiveMethod, recorded: order.recorded, copied })
+      setState({ step: 'done', channel: state.channel, reference: order.reference, message, method: effectiveMethod, recorded: true, copied })
     } catch {
       handoffWindow?.close()
       setError(true)

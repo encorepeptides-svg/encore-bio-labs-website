@@ -8,7 +8,8 @@ import { calculateShippingCharges, selectedShippingAddress } from '../shipping'
 import { isSupabaseConfigured, supabase } from '../supabaseClient'
 import { fetchPublicInventoryStatuses } from '../inventory'
 
-export type HandoffChannel = 'whatsapp' | 'instagram'
+export type HandoffChannel = 'checkout' | 'whatsapp' | 'instagram'
+export type PendingPaymentMethod = InterimPaymentMethodId | 'pending_selection'
 
 export type OrderContact = {
   name?: string
@@ -27,7 +28,7 @@ export type OrderContact = {
 export type PendingOrderInput = {
   items: CartItem[]
   channel: HandoffChannel
-  paymentMethod: InterimPaymentMethodId
+  paymentMethod: PendingPaymentMethod
   locale: Locale
   contact?: OrderContact
   shipping?: ShippingSelection
@@ -225,7 +226,7 @@ export type StorefrontOrderRow = {
   id: string
   created_at: string
   order_reference: string
-  status: 'review_required' | 'quote_pending' | 'pending_payment' | 'paid' | 'cancelled'
+  status: 'pending_shipping_review' | 'quote_pending' | 'pending_payment' | 'paid' | 'cancelled'
   channel: HandoffChannel
   payment_method: string
   items: Array<{ product: string; variant: string; quantity: number; line_total_cents: number }>

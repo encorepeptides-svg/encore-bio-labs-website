@@ -24,6 +24,7 @@ type Verification = {
 }
 
 const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8' }
+const SUPPORT_EMAIL = 'support@encorebiolabs.com'
 const US_ZIP = /^\d{5}(?:-\d{4})?$/
 const MX_POSTAL_CODE = /^\d{5}$/
 const INTERNATIONAL_POSTAL_CODE = /^[\p{L}\d][\p{L}\d -]{1,11}$/u
@@ -69,6 +70,36 @@ function response(body: unknown, status = 200, origin: string | null = null) {
 
 function text(value: unknown) {
   return typeof value === 'string' ? value.trim() : ''
+}
+
+function escapeHtml(value: string) {
+  return value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]!))
+}
+
+async function notifySupport(reference: string, status: string, contact: Record<string, unknown>, items: Array<Record<string, unknown>>, subtotalCents: number, totalCents: number | null) {
+  const token = Deno.env.get('ZOHO_OAUTH_ACCESS_TOKEN') || ''
+  const accountId = Deno.env.get('ZOHO_MAIL_ACCOUNT_ID') || ''
+  if (!token || !accountId) return { sent: false, error: 'Zoho Mail API credentials are not configured.' }
+  const customer = text(contact.name) || 'Checkout customer'
+  const itemLines = items.map((item) => `${Math.max(1, Number(item.quantity) || 1)}× ${text(item.product)} ${text(item.variant)}`.trim())
+  const statusLabel = status === 'pending_shipping_review' ? 'Pending Shipping Review' : status.replaceAll('_', ' ')
+  const subject = `[${reference}] ${statusLabel}`
+  const html = `<div style="font-family:Arial,sans-serif;color:#071724;max-width:680px;margin:auto"><div style="padding:20px 24px;background:#071724;color:#d5fff9;font-size:21px;font-weight:700">Encore Bio Labs checkout</div><main style="padding:26px"><h1 style="font-size:24px">${escapeHtml(statusLabel)}</h1><p><strong>Request:</strong> ${escapeHtml(reference)}</p><p><strong>Customer:</strong> ${escapeHtml(customer)} · ${escapeHtml(text(contact.email))} · ${escapeHtml(text(contact.phone))}</p><p><strong>Items:</strong><br>${itemLines.map(escapeHtml).join('<br>')}</p><p><strong>Subtotal:</strong> $${(subtotalCents / 100).toFixed(2)}<br><strong>Total:</strong> ${totalCents === null ? 'Pending shipping review' : `$${(totalCents / 100).toFixed(2)}`}</p><p>Open the admin storefront portal to review the full shipping and acknowledgment record.</p></main></div>`
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 8_000)
+  try {
+    const mailResponse = await fetch(`https://mail.zoho.com/api/accounts/${accountId}/messages`, {
+      method: 'POST',
+      headers: { authorization: `Zoho-oauthtoken ${token}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ fromAddress: Deno.env.get('ZOHO_FROM_EMAIL') || SUPPORT_EMAIL, toAddress: SUPPORT_EMAIL, subject, content: html, mailFormat: 'html' }),
+      signal: controller.signal,
+    })
+    return mailResponse.ok ? { sent: true, error: null } : { sent: false, error: `Zoho Mail API returned ${mailResponse.status}.` }
+  } catch (error) {
+    return { sent: false, error: error instanceof Error ? error.message : 'Notification delivery failed.' }
+  } finally {
+    clearTimeout(timer)
+  }
 }
 
 function checkoutAcknowledgment(value: unknown, locale: 'en' | 'es') {
@@ -614,11 +645,13 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const reference = generateReference()
+    const status = reviewRequired ? 'pending_shipping_review' : 'pending_payment'
+    const channel = text(body.channel) === 'instagram' ? 'instagram' : text(body.channel) === 'whatsapp' ? 'whatsapp' : 'checkout'
     const { error } = await client.from('storefront_orders').insert({
       order_reference: reference,
-      status: reviewRequired ? (destination === 'international' ? 'quote_pending' : 'review_required') : 'pending_payment',
-      channel: text(body.channel) === 'instagram' ? 'instagram' : 'whatsapp',
-      payment_method: reviewRequired ? 'manual_review' : text(body.paymentMethod),
+      status,
+      channel,
+      payment_method: reviewRequired ? 'manual_review' : text(body.paymentMethod) || 'pending_selection',
       items: safeItems,
       subtotal_cents: subtotalCents,
       import_fee_cents: importFeeCents,
@@ -643,7 +676,27 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
       checkout_acknowledgment_locale: acknowledgment.locale,
       checkout_policy_versions: acknowledgment.policyVersions,
     })
-    if (!error) return response({ reference, subtotalCents, importFeeCents, shippingCents, totalCents, recorded: true, reviewRequired, verification }, 200, origin)
+    if (!error) {
+      const notification = await notifySupport(reference, status, contact, safeItems, subtotalCents, totalCents)
+      await client.from('communication_messages').insert({
+        direction: 'inbound',
+        source: 'checkout_order',
+        mailbox: 'contact',
+        sender_name: text(contact.name),
+        sender_email: text(contact.email),
+        sender_phone: text(contact.phone) || null,
+        recipient_email: SUPPORT_EMAIL,
+        subject: `[${reference}] ${status === 'pending_shipping_review' ? 'Pending Shipping Review' : 'New checkout order'}`,
+        body_text: `Checkout request ${reference} was saved with status ${status.replaceAll('_', ' ')}. Review the order in the admin storefront portal.`,
+        locale,
+        delivery_status: notification.sent ? 'sent' : 'queued',
+        delivery_error: notification.error,
+        attempts: 1,
+        last_attempt_at: new Date().toISOString(),
+        metadata: { order_reference: reference, notification_recipient: SUPPORT_EMAIL },
+      })
+      return response({ reference, subtotalCents, importFeeCents, shippingCents, totalCents, recorded: true, reviewRequired, verification, supportNotification: notification.sent ? 'sent' : 'queued' }, 200, origin)
+    }
     if (error.code !== '23505') return response({ code: 'order_store_unavailable' }, 503, origin)
   }
   return response({ code: 'order_reference_collision' }, 503, origin)

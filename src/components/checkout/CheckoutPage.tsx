@@ -46,12 +46,12 @@ import { cn } from '../../lib/utils'
 import { EncoreCompleteKit } from '../EncoreCompleteKit'
 import { LanguageSelector } from '../LanguageSelector'
 import { InterimCheckoutHandoff } from '../cart/InterimCheckoutHandoff'
+import { createPendingOrder, type OrderContact, type PendingOrder } from '../../lib/storefront/interimCheckout'
 import { CheckoutAcknowledgment } from '../acknowledgment/CheckoutAcknowledgment'
 import {
   createCheckoutAcknowledgmentAudit,
   createEmptyCheckoutAcknowledgmentState,
   isCheckoutAcknowledgmentComplete,
-  type CheckoutAcknowledgmentAudit,
 } from '../../data/acknowledgmentContent'
 
 type ReviewFormData = {
@@ -77,7 +77,8 @@ type CheckoutSummary = {
   items: CartItem[]
   subtotal: number
   shipping: ShippingSelection
-  acknowledgment: CheckoutAcknowledgmentAudit
+  contact: OrderContact
+  order: PendingOrder
 }
 
 const defaultFormData: ReviewFormData = {
@@ -345,6 +346,8 @@ export function CheckoutPage() {
   const [outcome, setOutcome] = useState<'support' | null>(null)
   const [completedSummary, setCompletedSummary] = useState<CheckoutSummary | null>(null)
   const [showValidation, setShowValidation] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState(false)
   const [checkoutAcknowledgments, setCheckoutAcknowledgments] = useState(createEmptyCheckoutAcknowledgmentState)
   const checkoutFormRef = useRef<HTMLDivElement>(null)
   const validationSequence = useRef(0)
@@ -493,19 +496,44 @@ export function CheckoutPage() {
     && formData.destinationAcknowledged
     && checkoutAcknowledgmentComplete
 
-  function submitRequest() {
+  async function submitRequest() {
     setShowValidation(true)
-    if (!formIsValid || !items.length || !shippingSelection) {
+    setSubmitError(false)
+    if (!formIsValid || !items.length || !shippingSelection || submitting) {
       window.requestAnimationFrame(() => checkoutFormRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus())
       return
     }
-    setCompletedSummary({
-      items,
-      subtotal,
-      shipping: shippingSelection,
-      acknowledgment: createCheckoutAcknowledgmentAudit(locale),
-    })
-    setOutcome('support')
+    const contact: OrderContact = {
+      name: formData.fullName,
+      phone: formData.phone,
+      email: formData.email,
+      address: pickupSelected ? '' : formData.country === 'US' ? formData.address : [formData.address, formData.streetNumber].filter(Boolean).join(' '),
+      address2: pickupSelected ? '' : [formData.neighborhood, formData.address2].filter(Boolean).join(', '),
+      city: formData.city,
+      state: formData.state,
+      zip: pickupSelected ? '' : formData.zip,
+      country: formData.country,
+      preferredContact: formData.preferredContact,
+      notes: formData.notes,
+    }
+    setSubmitting(true)
+    try {
+      const order = await createPendingOrder({
+        items,
+        channel: 'checkout',
+        paymentMethod: paymentAllowed ? 'pending_selection' : 'manual_review',
+        locale,
+        contact,
+        shipping: shippingSelection,
+        acknowledgment: createCheckoutAcknowledgmentAudit(locale),
+      })
+      setCompletedSummary({ items, subtotal, shipping: shippingSelection, contact, order })
+      setOutcome('support')
+    } catch {
+      setSubmitError(true)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   if (outcome && completedSummary) {
@@ -518,8 +546,12 @@ export function CheckoutPage() {
         <div className="pt-8"><CheckoutProgress stage="next" /></div>
         <div className="mx-auto flex max-w-xl flex-col items-center px-5 py-12 text-center sm:px-8">
           <span className={cn('flex size-16 items-center justify-center rounded-full', summaryPaymentAllowed ? 'bg-teal-50 text-teal-700' : 'bg-amber-50 text-amber-700')}>{summaryPaymentAllowed ? <Check size={28} aria-hidden="true" /> : <AlertTriangle size={28} aria-hidden="true" />}</span>
-          <h1 className="mt-6 text-4xl font-semibold tracking-[-0.05em] text-[#071724]">{t(summaryPaymentAllowed ? 'supportTitle' : 'manualReviewOutcomeTitle')}</h1>
-          <p className="mt-4 text-base leading-7 text-slate-600">{t(summaryPaymentAllowed ? 'supportBody' : 'manualReviewOutcomeBody')}</p>
+          <h1 className="mt-6 text-4xl font-semibold tracking-[-0.05em] text-[#071724]">{t(summaryPaymentAllowed ? 'orderSubmittedTitle' : 'manualReviewOutcomeTitle')}</h1>
+          <p className="mt-4 text-base leading-7 text-slate-600">{t(summaryPaymentAllowed ? 'orderSubmittedBody' : 'manualReviewOutcomeBody')}</p>
+          <div className="mt-6 rounded-2xl bg-[#071724] px-6 py-4 text-white" role="status">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-teal-200">{t('orderReferenceLabel')}</p>
+            <p className="mt-1 font-mono text-3xl font-semibold">{completedSummary.order.reference}</p>
+          </div>
           <section className="mt-8 w-full rounded-3xl border border-slate-900/10 bg-white p-5 text-left" aria-labelledby="request-summary-heading">
             <h2 id="request-summary-heading" className="text-lg font-semibold text-[#071724]">{t('requestSummary')}</h2>
             <div className="mt-4 grid gap-3">
@@ -532,7 +564,7 @@ export function CheckoutPage() {
               </div>
             </div>
           </section>
-          <div className="mt-8 w-full text-left"><InterimCheckoutHandoff items={completedSummary.items} shipping={completedSummary.shipping} acknowledgment={completedSummary.acknowledgment} /></div>
+          <div className="mt-8 w-full text-left"><InterimCheckoutHandoff items={completedSummary.items} shipping={completedSummary.shipping} contact={completedSummary.contact} order={completedSummary.order} /></div>
           <a href={path('/cart')} className="mt-5 text-sm font-semibold text-slate-600 hover:text-[#071724]">{t('returnToCart')}</a>
           <div className="mt-10 w-full"><EncoreCompleteKit variant="checkout" /></div>
         </div>
@@ -643,15 +675,15 @@ export function CheckoutPage() {
             </div>
             <div className="mt-6"><EncoreCompleteKit variant="checkout" /></div>
             {showValidation && !formIsValid ? <p className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900" role="alert">{t('validationBannerShipping')}</p> : null}
+            {submitError ? <p className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm leading-6 text-red-900" role="alert">{t('submitErrorGeneric')}</p> : null}
             <button
               type="button"
-              onClick={submitRequest}
-              disabled={!checkoutAcknowledgmentComplete}
+              onClick={() => void submitRequest()}
+              disabled={!checkoutAcknowledgmentComplete || submitting}
               aria-describedby="checkout-acknowledgment-status"
               className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-45"
             >
-              {t(paymentAllowed ? 'continueWithSupport' : 'continueToManualReview')}
-              <ChevronRight size={16} aria-hidden="true" />
+              {submitting ? <><LoaderCircle size={16} className="animate-spin" aria-hidden="true" />{t('submittingOrder')}</> : <>{t('submitOrderRequest')}<ChevronRight size={16} aria-hidden="true" /></>}
             </button>
             <div className="mt-4 grid gap-1.5"><p className="flex items-center gap-1.5 text-xs font-medium text-slate-500"><ShieldCheck size={13} className="text-teal-700" aria-hidden="true" />{t('serverValidationNote')}</p><p className="flex items-center gap-1.5 text-xs font-medium text-slate-500"><PackageCheck size={13} className="text-teal-700" aria-hidden="true" />{t('inventoryReviewNote')}</p><p className="flex items-center gap-1.5 text-xs font-medium text-slate-500"><MessageCircle size={13} className="text-teal-700" aria-hidden="true" />{t('supportAvailable')} <a href="https://wa.me/19153595448" className="font-semibold text-teal-800 hover:underline">{t('contactEncoreWhatsapp')}</a></p></div>
           </aside>

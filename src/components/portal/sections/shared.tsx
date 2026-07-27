@@ -55,7 +55,7 @@ export function Badge({ tone, children }: { tone: keyof typeof badgeTones; child
 
 export function statusTone(status: string): keyof typeof badgeTones {
   if (['paid', 'delivered', 'active', 'approved', 'completed', 'resolved'].includes(status)) return 'positive'
-  if (['payment_pending', 'review_required', 'pending', 'processing', 'open', 'requested'].includes(status)) return 'attention'
+  if (['payment_pending', 'review_required', 'pending_shipping_review', 'quote_pending', 'pending', 'processing', 'open', 'requested'].includes(status)) return 'attention'
   if (['shipped', 'in_transit'].includes(status)) return 'info'
   if (['rejected', 'cancelled', 'suspended', 'refunded'].includes(status)) return 'negative'
   return 'neutral'

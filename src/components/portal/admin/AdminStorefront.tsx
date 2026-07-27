@@ -21,7 +21,13 @@ export function AdminStorefront() {
     finally { setBusy('') }
   }
 
-  const rows = (data ?? []).filter((order) => showAll || ['review_required', 'quote_pending', 'pending_payment'].includes(order.status))
+  const rows = (data ?? []).filter((order) => showAll || ['pending_shipping_review', 'quote_pending', 'pending_payment'].includes(order.status))
+
+  function statusLabel(status: StorefrontOrderRow['status']) {
+    if (status === 'pending_shipping_review') return t('adminStorefrontPendingShippingReview')
+    if (status === 'quote_pending') return t('adminStorefrontQuotePending')
+    return status.replaceAll('_', ' ')
+  }
 
   return <>
     <p className="mt-4 max-w-2xl leading-7 text-slate-600">{t('adminStorefrontIntro')}</p>
@@ -57,7 +63,7 @@ export function AdminStorefront() {
               <td className="px-5 py-3 text-slate-600">{order.payment_method.replaceAll('_', ' ')}</td>
               <td className="px-5 py-3 text-slate-600">{contact || '—'}</td>
               <td className="px-5 py-3 font-semibold">{order.total_cents === null ? `${formatMoney(order.subtotal_cents)} + review` : formatMoney(order.total_cents)}</td>
-              <td className="px-5 py-3"><Badge tone={statusTone(order.status === 'pending_payment' ? 'pending' : order.status)}>{order.status.replaceAll('_', ' ')}</Badge></td>
+              <td className="px-5 py-3"><Badge tone={statusTone(order.status === 'pending_payment' ? 'pending' : order.status)}>{statusLabel(order.status)}</Badge></td>
               <td className="px-5 py-3">
                 {order.status === 'pending_payment' ? <div className="flex flex-wrap gap-2">
                   <button disabled={busy === order.id} onClick={() => { if (window.confirm(t('adminStorefrontMarkPaidConfirm', { reference: order.order_reference }))) void setStatus(order, 'paid') }} className="min-h-10 rounded-full bg-teal-700 px-4 text-xs font-semibold text-white transition hover:bg-teal-800 disabled:opacity-50">{t('adminStorefrontMarkPaid')}</button>
