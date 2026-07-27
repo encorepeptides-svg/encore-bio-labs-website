@@ -5,6 +5,7 @@ import { useCart } from '../../context/useCart'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { cn } from '../../lib/utils'
 import { isProductPurchasable } from '../../lib/purchaseOptions'
+import { formatMoney } from '../../lib/money'
 
 type AddToCartButtonProps = {
   product: Product
@@ -99,7 +100,7 @@ export function VariantAddToCartPanel({
                   )}
                 >
                   {variant.label}
-                  {variant.price > 0 ? ` · $${variant.price.toLocaleString()}` : variant.priceNeedsConfirmation ? ` · ${t('quote')}` : ''}
+                  {variant.price > 0 ? ` · $${formatMoney(variant.price)}` : variant.priceNeedsConfirmation ? ` · ${t('quote')}` : ''}
                 </button>
               )
             })}
@@ -115,7 +116,7 @@ export function VariantAddToCartPanel({
           </div>
           {selectedVariant.price > 0 ? (
             <p className="text-lg font-semibold tracking-[-0.02em] text-[#071724]">
-              ${selectedVariant.price.toLocaleString()}
+              ${formatMoney(selectedVariant.price)}
             </p>
           ) : null}
         </div>
@@ -148,7 +149,7 @@ export function MobileStickyPurchaseBar({ product, variant }: { product: Product
             {variant.label}
           </p>
           <p className="text-base font-semibold tracking-[-0.02em] text-[#071724]">
-            {variant.price > 0 ? `$${variant.price.toLocaleString()}` : t('quote')}
+            {variant.price > 0 ? `${formatMoney(variant.price)}` : t('quote')}
           </p>
         </div>
         <AddToCartButton product={product} variant={variant} className="shrink-0 px-5 py-2.5 text-xs">

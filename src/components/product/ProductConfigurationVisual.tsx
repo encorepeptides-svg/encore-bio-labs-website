@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import type { Product, ProductVariant } from '../../data/products'
 import { getEncoreCompleteKitConfig } from '../../data/encoreCompleteKit'
 import { useTranslation } from '../../i18n/LocaleContext'
@@ -21,6 +21,7 @@ export function ProductConfigurationVisual({
   theme?: 'dark' | 'light'
   className?: string
 }) {
+  const reducedMotion = useReducedMotion()
   const { t } = useTranslation('purchaseSelector')
   const { t: tKit } = useTranslation('kit')
   const { vialCount, includesKit } = getPurchaseVisualDetails(selection)
@@ -46,9 +47,9 @@ export function ProductConfigurationVisual({
     >
       <motion.div
         key={`${variant.sku}-${selection.optionId}-${vialCount}-${includesKit}`}
-        initial={{ opacity: 0.7, scale: 0.985 }}
+        initial={reducedMotion ? false : { opacity: 0.7, scale: 0.985 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.2 }}
+        transition={{ duration: reducedMotion ? 0 : 0.2 }}
         className="relative z-[1] w-full"
       >
         {includesKit ? (

@@ -110,7 +110,7 @@ export function QualityPage() {
           {
             label: t('questionsLabel'),
             title: t('questionsTitle'),
-            href: '/faq#documentation',
+            href: '/faq#lab paperwork',
             description: t('questionsDescription'),
           },
           {

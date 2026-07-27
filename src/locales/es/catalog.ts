@@ -3,8 +3,8 @@ import type { catalog as catalogEn } from '../en/catalog'
 export const catalog = {
   // Compact image-led hero
   heroEyebrow: 'EL CATÁLOGO ENCORE',
-  heroTitle: 'Elige tu compuesto.\nRecibe el kit completo.',
-  heroSupporting: 'Explora nuestro catálogo por categoría, compara opciones y encuentra rápidamente el compuesto adecuado para tu investigación. Los productos elegibles incluyen suministros esenciales seleccionados para cada presentación.',
+  heroTitle: 'Elige tu producto.\nRecibe el kit completo.',
+  heroSupporting: 'Explora nuestro catálogo por categoría, compara opciones y encuentra rápidamente el producto adecuado para tu investigación. Los productos elegibles incluyen suministros esenciales seleccionados para cada presentación.',
   heroPrimaryCta: 'Ver todos los productos',
   heroSecondaryCta: 'Comprar por categoría',
   heroReassurance: 'Envío nacional · Entrega local disponible · Kits completos en productos elegibles',
@@ -13,16 +13,16 @@ export const catalog = {
 
   // Compact category selector
   selectorLabel: 'Compra por categoría de investigación',
-  areaProductCountOne: '{count} compuesto',
-  areaProductCountOther: '{count} compuestos',
+  areaProductCountOne: '{count} producto',
+  areaProductCountOther: '{count} productos',
   researchHighlightsLabel: 'Puntos clave de investigación',
 
   // KLOW signature feature
-  klowEyebrow: 'MEZCLA REGENERATIVA DE CUATRO COMPUESTOS',
-  klowTitle: 'KLOW: cuatro compuestos en una fórmula de investigación más completa.',
+  klowEyebrow: 'MEZCLA REGENERATIVA DE CUATRO PRODUCTOS',
+  klowTitle: 'KLOW: cuatro productos en una fórmula de investigación más completa.',
   klowTagline: 'GHK-Cu, BPC-157, TB-500 y KPV reunidos en una sola mezcla para proyectos que estudian recuperación, reparación y señalización regenerativa.',
   klowCompositionLabel: 'Composición',
-  klowBenefitOne: 'Cuatro compuestos en una sola presentación',
+  klowBenefitOne: 'Cuatro productos en una sola presentación',
   klowBenefitTwo: 'Un enfoque integral para estudios de recuperación',
   klowBenefitThree: 'Una selección más simple para proyectos regenerativos',
   klowCta: 'Comprar KLOW',
@@ -34,7 +34,7 @@ export const catalog = {
   retaTitle: 'Retatrutide',
   retaPullQuote: 'Lleva tu investigación metabólica más lejos.',
   retaBody:
-    'Retatrutide reúne la actividad agonista de GIP, GLP-1 y glucagón en un solo compuesto de investigación. Elige la concentración que tu proyecto requiere y avanza con una opción clara.',
+    'Retatrutide reúne la actividad activador de GIP, GLP-1 y glucagón en un solo producto de investigación. Elige la concentración que tu proyecto requiere y avanza con una opción clara.',
   retaReceptorsLabel: 'Respaldo: tres vías receptoras',
   retaReceptorGip: 'GIP',
   retaReceptorGlp1: 'GLP-1',
@@ -47,8 +47,8 @@ export const catalog = {
   retaAddVariantToCart: 'Agregar {variant} al carrito',
   retaPrimaryCta: 'Elegir concentración',
   retaSecondaryCta: 'Revisar la investigación',
-  retaCompliance: 'Compuesto en investigación. Uso exclusivo para investigación; no destinado a uso humano ni veterinario.',
-  retaVisualAlt: 'Vial del compuesto de investigación en fase experimental Retatrutide',
+  retaCompliance: 'Producto en investigación. Uso exclusivo para investigación; no destinado a uso humano ni veterinario.',
+  retaVisualAlt: 'Vial del producto de investigación en fase experimental Retatrutide',
 
   // Closing research-use notice
   closingTitle: 'Solo investigación de laboratorio',
@@ -57,7 +57,7 @@ export const catalog = {
 
   // Legacy best-sellers keys (retained for the standalone bestsellers module)
   bestSellersEyebrow: 'Más vendidos',
-  bestSellersTitle: 'Los compuestos que más ordenan los investigadores.',
+  bestSellersTitle: 'Los productos que más ordenan los investigadores.',
   featuredBestseller: 'Más vendido destacado',
   viewOptions: 'Ver opciones',
   view: 'Ver',
@@ -75,19 +75,19 @@ export const catalog = {
   categoryEssentials: 'Esenciales',
 
   categoryDescWeightManagement:
-    'Compara compuestos de investigación metabólica por vía, formato, precio y documentación, desde señalización de receptores hasta respuesta a nutrientes y balance energético.',
+    'Compara productos de investigación metabólica por vía, formato, precio y papeles de laboratorio, desde señalización de receptores hasta respuesta a nutrientes y balance energético.',
   categoryDescRecoveryRegeneration:
     'Investigación de reparación tisular, migración celular y biología de la piel, además de mezclas de recuperación insignia para estudios serios.',
   categoryDescCellularEnergyLongevity:
     'La frontera de la energía celular y la longevidad: función mitocondrial, equilibrio redox y vías del envejecimiento saludable.',
   categoryDescCognitivePerformance:
-    'Compuestos de investigación para concentración, cognición y neuroseñalización, organizados para que elijas rápido.',
+    'Productos de investigación para concentración, cognición y neuroseñalización, organizados para que elijas rápido.',
   categoryDescHormoneWellness:
-    'Compuestos de investigación endocrina, del eje reproductivo y de respuesta hormonal, listos para enviar.',
+    'Productos de investigación endocrina, del eje reproductivo y de respuesta hormonal, listos para enviar.',
   categoryDescEssentials: 'Los suministros que todo flujo de investigación necesita: accesorios de manejo y preparación, presentados por separado.',
 
   onFileCoa: 'COA disponible',
-  docsOnRequest: 'Documentación a solicitud',
+  docsOnRequest: 'Papeles de laboratorio a solicitud',
   order: 'Ver producto',
   noResultsTitle: 'No encontramos productos que coincidan con tu búsqueda.',
   noResultsBody: 'Prueba otra forma de escribirlo, una categoría o un término de investigación, o borra los filtros para ver todo el catálogo.',
@@ -102,15 +102,15 @@ export const catalog = {
   sortPriceLow: 'Precio: menor a mayor',
   sortPriceHigh: 'Precio: mayor a menor',
   sortName: 'Nombre: A–Z',
-  trustThirdPartyTested: 'Documentación a solicitud',
+  trustThirdPartyTested: 'Papeles de laboratorio a solicitud',
   trustJanoshikCoas: 'Registros COA disponibles',
   trustShipsFromUsa: 'Envíos desde Estados Unidos',
   trustResearchUseOnly: 'Uso exclusivo para investigación',
   helpTitle: '¿No sabes qué kit ordenar?',
-  helpBody: 'Cuéntanos las vías, formatos o documentación que necesita tu proyecto y nuestro equipo te indicará directamente los compuestos y kits correctos, sin hacer recomendaciones de tratamiento o uso.',
+  helpBody: 'Cuéntanos las vías, formatos o papeles de laboratorio que necesita tu proyecto y nuestro equipo te indicará directamente los productos y kits correctos, sin hacer recomendaciones de tratamiento o uso.',
   startResearchIntake: 'Recibir mi recomendación',
   quote: 'Cotización',
   from: 'Desde',
   optionsCount: '{count} opciones',
-  productVisualAlt: 'Empaque del compuesto de investigación {product}',
+  productVisualAlt: 'Empaque del producto de investigación {product}',
 } satisfies Record<keyof typeof catalogEn, string>

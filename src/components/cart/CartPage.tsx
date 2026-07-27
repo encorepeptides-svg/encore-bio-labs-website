@@ -10,7 +10,7 @@ export function CartPage() {
   const { items, itemCount, subtotal, updateQuantity, removeFromCart, clearCart } = useCart()
   const { path } = useLocale()
   const { t } = useTranslation('cart')
-  const { t: tCommon } = useTranslation('common')
+  const { t: tCommon} = useTranslation('common')
 
   return (
     <main id="main-content" className="bg-[#f5f5f2] px-5 py-10 sm:px-8 lg:py-16">

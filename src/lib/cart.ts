@@ -1,3 +1,5 @@
+import type { Locale } from '../i18n/config'
+import { formatMoney } from './money'
 import type { Product, ProductVariant } from '../data/products'
 import { getProductHeroImage } from '../data/productMedia'
 import { getDefaultPurchaseSelection, quotePurchase, type PurchaseOptionId, type PurchaseSelection } from './purchaseOptions'
@@ -189,10 +191,6 @@ export function calculateTotal(items: CartItem[], input: Omit<ShippingCalculatio
   return { subtotal, shipping, tax, discount: discount + subscription, total }
 }
 
-export function formatCartCurrency(value: number) {
-  const rounded = Math.round((value + Number.EPSILON) * 100) / 100
-  return `$${rounded.toLocaleString(undefined, {
-    minimumFractionDigits: Number.isInteger(rounded) ? 0 : 2,
-    maximumFractionDigits: 2,
-  })}`
+export function formatCartCurrency(value: number, locale?: Locale) {
+  return formatMoney(value, locale)
 }

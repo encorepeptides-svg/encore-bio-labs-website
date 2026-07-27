@@ -76,6 +76,7 @@ export function ProductHero({
     if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
 
     let frame = 0
+    let pointerFrame = 0
     const update = () => {
       frame = 0
       const rect = root.getBoundingClientRect()
@@ -86,14 +87,37 @@ export function ProductHero({
       root.style.setProperty('--ph-scroll', `${(capped * 48).toFixed(2)}px`)
     }
     const onScroll = () => { if (!frame) frame = window.requestAnimationFrame(update) }
+    const finePointer = window.matchMedia?.('(hover: hover) and (pointer: fine)').matches
+    const onPointerMove = (event: PointerEvent) => {
+      if (!finePointer || pointerFrame) return
+      pointerFrame = window.requestAnimationFrame(() => {
+        pointerFrame = 0
+        const rect = root.getBoundingClientRect()
+        const x = ((event.clientX - rect.left) / Math.max(rect.width, 1) - 0.5) * 18
+        const y = ((event.clientY - rect.top) / Math.max(rect.height, 1) - 0.5) * 14
+        root.style.setProperty('--ph-pointer-x', `${x.toFixed(2)}px`)
+        root.style.setProperty('--ph-pointer-y', `${y.toFixed(2)}px`)
+      })
+    }
+    const resetPointer = () => {
+      root.style.setProperty('--ph-pointer-x', '0px')
+      root.style.setProperty('--ph-pointer-y', '0px')
+    }
 
     update()
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onScroll, { passive: true })
+    if (finePointer) {
+      root.addEventListener('pointermove', onPointerMove, { passive: true })
+      root.addEventListener('pointerleave', resetPointer)
+    }
     return () => {
       if (frame) window.cancelAnimationFrame(frame)
+      if (pointerFrame) window.cancelAnimationFrame(pointerFrame)
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
+      root.removeEventListener('pointermove', onPointerMove)
+      root.removeEventListener('pointerleave', resetPointer)
     }
   }, [])
 

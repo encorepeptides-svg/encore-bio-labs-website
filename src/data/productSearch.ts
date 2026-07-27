@@ -7,10 +7,10 @@ type SearchAliases = { en: string[]; es: string[] }
 
 /** Search vocabulary is metadata layered over the canonical products array. */
 export const productSearchAliases: Record<string, SearchAliases> = {
-  retatrutide: { en: ['retatrutide', 'triple agonist', 'gip glp-1 glucagon'], es: ['retatrutida', 'agonista triple'] },
+  retatrutide: { en: ['retatrutide', 'triple activator', 'gip glp-1 glucagon'], es: ['retatrutida', 'activador triple'] },
   tesamorelin: { en: ['tesamorelin', 'ghrh analog', 'growth hormone releasing hormone'], es: ['tesamorelina', 'análogo de ghrh'] },
   'wolverine-stack': { en: ['wolverine stack', 'wolverine', 'bpc-157 tb-500', 'bpc157 tb500', 'bpc-157 + tb-500'], es: ['mezcla wolverine', 'bpc-157 tb-500', 'bpc157 tb500'] },
-  klow: { en: ['klow', 'ghk-cu bpc-157 tb-500 kpv', 'four compound blend'], es: ['klow', 'mezcla de cuatro compuestos'] },
+  klow: { en: ['klow', 'ghk-cu bpc-157 tb-500 kpv', 'four product blend'], es: ['klow', 'mezcla de cuatro productos'] },
   'igf1-lr3': { en: ['igf-1 lr3', 'igf1-lr3', 'igf-1lr3', 'igf1 lr3', 'igf1lr3', 'igf-1 analog'], es: ['igf-1 lr3', 'igf1-lr3', 'análogo de igf-1'] },
   'cjc1295-ipamorelin': { en: ['cjc-1295', 'cjc1295', 'ipamorelin', 'cjc ipamorelin'], es: ['cjc-1295', 'cjc1295', 'ipamorelina'] },
   'mots-c': { en: ['mots-c', 'mots c', 'mitochondrial peptide'], es: ['mots-c', 'péptido mitocondrial'] },
@@ -24,7 +24,7 @@ export const productSearchAliases: Record<string, SearchAliases> = {
   ss31: { en: ['ss-31', 'ss31', 'elamipretide', 'mitochondria targeted'], es: ['ss-31', 'ss31', 'elamipretida'] },
   dsip: { en: ['dsip', 'delta sleep inducing peptide', 'sleep peptide'], es: ['dsip', 'péptido relacionado con el sueño'] },
   kisspeptin: { en: ['kisspeptin', 'kiss-1', 'gnrh signaling'], es: ['kisspeptina', 'kisspeptin', 'señalización gnrh'] },
-  hcg: { en: ['hcg', 'human chorionic gonadotropin', 'gonadotropin'], es: ['hcg', 'gonadotropina coriónica humana', 'gonadotropina'] },
+  hcg: { en: ['hcg', 'human chorionic fertility hormone', 'fertility hormone'], es: ['hcg', 'hormona de fertilidad coriónica humana', 'hormona de fertilidad'] },
   'hgh-191aa': { en: ['hgh 191aa', 'human growth hormone', '191 amino acid'], es: ['hgh 191aa', 'hormona de crecimiento humana', '191 aminoácidos'] },
   'thymosin-alpha-1': { en: ['thymosin alpha-1', 'thymosin alpha 1', 'ta1'], es: ['timosina alfa-1', 'timosina alfa 1'] },
   'pt-141': { en: ['pt-141', 'pt141', 'bremelanotide', 'melanocortin'], es: ['pt-141', 'pt141', 'bremelanotida', 'melanocortina'] },

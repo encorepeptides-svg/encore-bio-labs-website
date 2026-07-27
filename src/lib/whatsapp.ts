@@ -1,7 +1,7 @@
 import type { Locale } from '../i18n/config'
 
 export const WHATSAPP_PHONE = '19153595448'
-export const WHATSAPP_DISPLAY = '9153595448'
+export const WHATSAPP_DISPLAY = '+1 915 359 5448'
 
 export function buildWhatsAppUrl(message: string) {
   return `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(message)}`

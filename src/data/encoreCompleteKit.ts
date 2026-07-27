@@ -65,7 +65,7 @@ export function getEncoreCompleteKitItems(input: EncoreCompleteKitConfigInput = 
 
   if (!t) {
     return [
-      { key: 'peptide', title: 'Research peptide', description: productName ? `The ${productName} vial included with your order.` : 'The research compound included with your order.' },
+      { key: 'peptide', title: 'Research peptide', description: productName ? `The ${productName} vial included with your order.` : 'The research product included with your order.' },
       { key: 'bac-water', title: config.bacWaterLabel, description: 'Measured for this product where applicable, so nothing needs to be sourced separately.' },
       { key: 'syringes', title: `${config.syringeCount} sterile ${config.syringeGauge} insulin syringes`, description: 'Individually wrapped and ready for research preparation.' },
       { key: 'prep-pads', title: `${config.prepPadCount} alcohol prep pads`, description: 'Included for clean, consistent preparation.' },

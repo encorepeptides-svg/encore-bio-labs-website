@@ -1,11 +1,11 @@
 export const brand = {
-  brandPromise: 'We accelerate your timeline from discovery to clinical trials with human-centric collaborative support.',
+  brandPromise: 'We accelerate your timeline from discovery to clinical trials with we work with you directly.',
   complianceDisclaimer: 'For Research Use Only (RUO). Not for use in diagnostic or therapeutic procedures.',
-  documentationPromise: 'Our team confirms which identity, purity, storage, and batch documentation applies during product review.',
+  documentationPromise: 'Our team confirms which identity, purity, storage, and batch lab paperwork applies during product review.',
   humanSupport: 'Collaborate with a responsive specialist who understands research procurement, not a generic form queue.',
-  catalogPositioning: 'Explore research-grade and GMP-oriented reagents organized for enterprise sourcing, documentation review, and bulk procurement.',
+  catalogPositioning: 'Explore research-grade and GMP-oriented reagents organized for enterprise sourcing, lab paperwork review, and bulk procurement.',
   researchUseLabel: 'Research use only',
-  documentationLabel: 'Documentation by request',
+  documentationLabel: 'Lab paperwork by request',
   notMedicalAdviceLabel: 'Not medical advice',
   educationalDisclaimer: 'Educational content only; not medical advice, dosing guidance, use instructions, or treatment recommendations.',
   sitewideResearchReminder: 'All products and information on this site are intended for laboratory research use only. Nothing here should be read as medical advice, dosing guidance, use instructions, a treatment recommendation, or a promised outcome.',
@@ -15,6 +15,6 @@ export const brand = {
   researchUsePoint2: 'Not intended for human or animal consumption',
   researchUsePoint3: 'Not a supplement, drug, or cosmetic product',
   researchUseBoundary1: 'This is not medical advice, dosing guidance, use instructions, or a treatment recommendation',
-  researchUseBoundary2: 'Nothing here suggests what a compound will do for you personally',
+  researchUseBoundary2: 'Nothing here suggests what a product will do for you personally',
   researchUseBoundary3: 'It does not replace a conversation with a licensed healthcare provider',
 } as const

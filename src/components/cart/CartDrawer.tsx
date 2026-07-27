@@ -26,7 +26,7 @@ export function CartDrawer() {
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const { path } = useLocale()
   const { t } = useTranslation('cart')
-  const { t: tCommon } = useTranslation('common')
+  const { t: tCommon} = useTranslation('common')
 
   useEffect(() => {
     if (!isOpen) return

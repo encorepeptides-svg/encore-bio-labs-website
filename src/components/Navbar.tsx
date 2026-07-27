@@ -213,7 +213,7 @@ export function Navbar() {
     { key: 'Protocols', label: t('protocols'), href: '/protocols' },
     { key: 'ResearchLibrary', label: t('researchLibrary'), href: '/research' },
     { key: 'FAQ', label: t('faq'), href: '/faq' },
-    { key: 'Documentation', label: t('documentationCoas'), href: '/quality' },
+    { key: 'Lab paperwork', label: t('documentationCoas'), href: '/quality' },
   ]
 
   const exploreItems: NavLinkItem[] = [

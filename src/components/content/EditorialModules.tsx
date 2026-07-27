@@ -113,7 +113,7 @@ export function MechanismOfActionSection({
   eyebrow = 'Mechanism of action',
   title,
   steps,
-  description = 'Modeled as research stages for documentation, observation, and qualified review.',
+  description = 'Modeled as research stages for lab paperwork, observation, and qualified review.',
 }: {
   eyebrow?: string
   title: string
@@ -438,7 +438,7 @@ export function CategoryEducationSection({
 }
 
 export function TrustAndHandlingSection({
-  title = 'Documentation-first standards, applied per product.',
+  title = 'Lab paperwork-first standards, applied per product.',
   items,
   footnote,
 }: {
