@@ -45,7 +45,7 @@ export type ResearchDocumentationRecord = {
 export const retatrutideSources: RetatrutideSource[] = [
   {
     id: 'phase-2-nejm',
-    title: 'Triple-Hormone-Receptor Agonist Retatrutide for Obesity — A Phase 2 Trial',
+    title: 'Triple-Hormone-Receptor Activator Retatrutide for Obesity — A Phase 2 Trial',
     publisher: 'The New England Journal of Medicine',
     url: 'https://www.nejm.org/doi/full/10.1056/NEJMoa2301972',
     publishedAt: '2023-06-26',
@@ -65,7 +65,7 @@ export const retatrutideSources: RetatrutideSource[] = [
     id: 'transcend-topline',
     title: 'TRANSCEND-T2D-1 Phase 3 topline results',
     publisher: 'Eli Lilly and Company',
-    url: 'https://investor.lilly.com/news-releases/news-release-details/lillys-triple-agonist-retatrutide-demonstrated-significant',
+    url: 'https://investor.lilly.com/news-releases/news-release-details/lillys-triple-activator-retatrutide-demonstrated-significant',
     publishedAt: '2026-03-19',
     sourceType: 'sponsor-topline',
     lastVerified: '2026-07-15',
@@ -74,7 +74,7 @@ export const retatrutideSources: RetatrutideSource[] = [
     id: 'triumph-topline',
     title: 'TRIUMPH-1 Phase 3 topline results',
     publisher: 'Eli Lilly and Company',
-    url: 'https://investor.lilly.com/news-releases/news-release-details/lillys-triple-agonist-retatrutide-delivered-powerful-weight-loss',
+    url: 'https://investor.lilly.com/news-releases/news-release-details/lillys-triple-activator-retatrutide-delivered-powerful-weight-loss',
     publishedAt: '2026-05-21',
     sourceType: 'sponsor-topline',
     lastVerified: '2026-07-15',
