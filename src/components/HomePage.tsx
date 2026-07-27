@@ -21,6 +21,7 @@ import { ProductCardLink } from './product/ProductCardLink'
 import { ResearchProfilePrompt } from './ResearchProfilePrompt'
 import heroVideo from '../assets/videos/encore-hero.mp4'
 import heroVideoPoster from '../assets/images/hero/hero-video-poster.jpg'
+import { formatMoney } from '../lib/money'
 
 const bestSellerSlugs = ['retatrutide', 'ghk-cu', 'nad-plus', 'tesamorelin']
 
@@ -31,7 +32,7 @@ const HomeBelowFold = lazy(() =>
 function getResearchOptionPrice(product: Product, t: (key: string, vars?: Record<string, string | number>) => string) {
   const prices = product.variants.map((variant) => variant.price).filter((price) => price > 0)
   const startingPrice = prices.length ? Math.min(...prices) : undefined
-  return startingPrice ? t('researchOptionsFrom', { price: `$${startingPrice.toLocaleString()}` }) : t('availabilityByRequest')
+  return startingPrice ? t('researchOptionsFrom', { price: formatMoney(startingPrice) }) : t('availabilityByRequest')
 }
 
 function getProductLine(product: Product, locale: 'en' | 'es') {
@@ -96,7 +97,7 @@ function FeaturedBestSellerCard({ product: baseProduct }: { product: Product }) 
                     )}
                   >
                     <span className="font-semibold">{variant.label}</span>
-                    <span className="mt-0.5 text-[0.68rem]">{available ? `$${variant.price.toLocaleString()}` : t('variantUnavailable')}</span>
+                    <span className="mt-0.5 text-[0.68rem]">{available ? formatMoney(variant.price) : t('variantUnavailable')}</span>
                     {!available ? <span id={unavailableId} className="sr-only">{t('variantUnavailableDescription', { variant: variant.label })}</span> : null}
                   </button>
                 )
@@ -105,7 +106,7 @@ function FeaturedBestSellerCard({ product: baseProduct }: { product: Product }) 
           </div>
           {selectedVariant ? (
             <div className="grid gap-1 rounded-2xl border border-slate-900/10 bg-[#f7faf9] p-4 text-sm sm:grid-cols-2" aria-live="polite">
-              <p className="text-slate-600"><span className="font-semibold text-[#071724]">{t('selectedPrice')}:</span> ${selectedVariant.price.toLocaleString()}</p>
+              <p className="text-slate-600"><span className="font-semibold text-[#071724]">{t('selectedPrice')}:</span> {formatMoney(selectedVariant.price)}</p>
               <p className="break-all text-slate-600"><span className="font-semibold text-[#071724]">{t('variantReference')}:</span> {selectedVariant.sku ?? selectedVariant.label}</p>
             </div>
           ) : (

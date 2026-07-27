@@ -57,7 +57,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
       { title: 'Contexto de composición corporal', description: 'Aparece en la literatura relacionada con la investigación de peso y composición corporal, presentada sin resultados garantizados.' },
       { title: 'Revisión de marcadores glucémicos', description: 'Apoya conversaciones de investigación sobre glucosa en ayunas y HbA1c junto con paneles metabólicos.' },
       { title: 'Investigación incretina comparativa', description: 'Útil para comparar modelos de investigación incretina de receptor único y múltiple dentro de la misma categoría.' },
-      { title: 'Revisión centrada en papeles de laboratorio', description: 'Combina la revisión del producto con supervisión calificada, contexto de laboratorio y un registro cuidadoso.' },
+      { title: 'Revisión centrada en documentos de laboratorio', description: 'Combina la revisión del producto con supervisión calificada, contexto de laboratorio y un registro cuidadoso.' },
     ],
     researchHighlights: [
       { title: 'Agonismo de triple receptor', journal: 'Literatura de la vía incretina', takeaway: 'Retatrutide se estudia como una sola molécula que compromete los puntos de acción de GLP-1, GIP y glucagón, lo que la distingue de las entradas de receptor único o doble en esta categoría.', metric: 'GLP·GIP·GCG' },
@@ -94,7 +94,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   },
   klow: {
     catalogTagline: 'GHK-Cu, BPC-157, TB-500 y KPV en una mezcla integrada. Posicionada para investigación en piel, señalización tisular y ciencia regenerativa.',
-    description: 'Una entrada de insumos de investigación pensada para planear tu catálogo, dar contexto del kit y facilitar el seguimiento con papeles de laboratorio.',
+    description: 'Una entrada de insumos de investigación pensada para planear tu catálogo, dar contexto del kit y facilitar el seguimiento con documentos de laboratorio.',
     headline: 'Cuatro productos. Una mezcla regenerativa insignia.',
     keyHighlights: [
       'Mezcla regenerativa de cuatro productos (GHK-Cu, BPC-157, TB-500, KPV)',
@@ -141,7 +141,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
     description: 'AOD-9604 es un fragmento de la hormona de crecimiento humana que se estudia por su señalización metabólica y en modelos de investigación de composición corporal.',
     headline: 'El fragmento de GH para investigación metabólica.',
     keyHighlights: [
-      'Revisión de catálogo centrada en los papeles de laboratorio',
+      'Revisión de catálogo centrada en los documentos de laboratorio',
       'Variantes agrupadas en una sola página de producto',
       'Posicionamiento de uso exclusivo para investigación con lenguaje conforme',
       'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
@@ -319,7 +319,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
     keyHighlights: [
       'Accesorio de manejo para investigación: agua bacteriostática de 10 mL',
       'Flujos de trabajo calificados de preparación y manejo de laboratorio',
-      'Tamaño del frasco, empaque, papeles de laboratorio de lote y contexto de almacenamiento',
+      'Tamaño del frasco, empaque, documentos de laboratorio de lote y contexto de almacenamiento',
       'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
     ],
   },
@@ -476,7 +476,7 @@ function localizeSpecsEs(product: Product, keyHighlights?: string[]): Product['s
         value = spec.value.split(', ').map(formatWordEs).join(', ')
         break
       case 'Access pathway':
-        value = 'Solicitud de evaluación y papeles de laboratorio'
+        value = 'Solicitud de evaluación y documentos de laboratorio'
         break
       case 'Use classification':
         value = 'Uso exclusivo para investigación'

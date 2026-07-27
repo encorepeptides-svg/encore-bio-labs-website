@@ -69,7 +69,7 @@ export const protocols: ProtocolConfig[] = [
       objective: t('For qualified laboratory teams planning a side-by-side review of three distinct metabolic research pathways, with each component kept as its own catalog item and batch record.', 'Para equipos de laboratorio calificados que planean una revisión paralela de tres vías distintas de investigación metabólica, con cada componente como producto y registro de lote independiente.'),
       education: {
         en: ['Retatrutide is cataloged for triple-receptor research context, while MOTS-C is reviewed through mitochondrial signaling and AOD-9604 through GH-fragment models.', 'Keeping the components separate supports clearer controls, variant selection, and lot-level lab paperwork. This set is not a dosing or administration plan.'],
-        es: ['Retatrutide se cataloga en el contexto de investigación de triple receptor, mientras que MOTS-C se revisa mediante señalización mitocondrial y AOD-9604 mediante modelos de fragmentos de GH.', 'Mantener los componentes separados facilita controles más claros, selección de variantes y papeles de laboratorio por lote. Este set no es un plan de dosificación ni de administración.'],
+        es: ['Retatrutide se cataloga en el contexto de investigación de triple receptor, mientras que MOTS-C se revisa mediante señalización mitocondrial y AOD-9604 mediante modelos de fragmentos de GH.', 'Mantener los componentes separados facilita controles más claros, selección de variantes y documentos de laboratorio por lote. Este set no es un plan de dosificación ni de administración.'],
       },
     },
   },
@@ -126,7 +126,7 @@ export const protocols: ProtocolConfig[] = [
       objective: t('For qualified teams organizing a controlled comparison of two separate copper-peptide catalog entries, formats, and records.', 'Para equipos calificados que organizan una comparación controlada de dos entradas, formatos y registros separados de péptidos de cobre.'),
       education: {
         en: ['GHK-Cu and AHK-Cu are displayed together for research planning, but they remain separate products with distinct identities and lab paperwork.', 'Variant changes affect current catalog subtotal and SKU selection immediately; no bundle discount or performance claim is implied.'],
-        es: ['GHK-Cu y AHK-Cu se muestran juntos para planear investigación, pero siguen siendo productos separados con identidades y papeles de laboratorio distintas.', 'Los cambios de variante actualizan de inmediato el subtotal y el SKU; no se implica descuento de paquete ni afirmación de desempeño.'],
+        es: ['GHK-Cu y AHK-Cu se muestran juntos para planear investigación, pero siguen siendo productos separados con identidades y documentos de laboratorio distintas.', 'Los cambios de variante actualizan de inmediato el subtotal y el SKU; no se implica descuento de paquete ni afirmación de desempeño.'],
       },
     },
   },
@@ -142,7 +142,7 @@ export const protocols: ProtocolConfig[] = [
     content: {
       title: t('Cellular Energy Research Set', 'Set de investigación de energía celular'),
       tagline: t('Organize cofactor and mitochondrial-pathway entries in one comparison.', 'Organiza entradas de cofactores y vías mitocondriales en una sola comparación.'),
-      description: t('Groups NAD+, SS-31, and MOTS-C for lab paperwork-led review across distinct cellular-energy research contexts.', 'Agrupa NAD+, SS-31 y MOTS-C para una revisión guiada por papeles de laboratorio en distintos contextos de investigación de energía celular.'),
+      description: t('Groups NAD+, SS-31, and MOTS-C for lab paperwork-led review across distinct cellular-energy research contexts.', 'Agrupa NAD+, SS-31 y MOTS-C para una revisión guiada por documentos de laboratorio en distintos contextos de investigación de energía celular.'),
       objective: t('For qualified research teams comparing redox-cofactor and mitochondrial-signaling entries while preserving independent variants and records.', 'Para equipos de investigación calificados que comparan entradas de cofactores redox y señalización mitocondrial, manteniendo variantes y registros independientes.'),
       education: {
         en: ['NAD+ is represented as a cellular redox cofactor, while SS-31 and MOTS-C are separate peptide entries discussed in mitochondrial research contexts.', 'The configurable NAD+ strength lets teams align the catalog selection with a documented study plan without publishing use instructions.'],
@@ -182,7 +182,7 @@ export const protocols: ProtocolConfig[] = [
       title: t('Multi-Pathway Neuro-Signaling Set', 'Set multivía de neuroseñalización'),
       tagline: t('Compare one 10 mg vial-format mixture and two peptide entries.', 'Compara una mezcla de 10 mg en formato vial y dos entradas de péptidos.'),
       description: t('Organizes Cerebrolysin, Semax, and Selank for side-by-side review of distinct neuro-signaling research formats.', 'Organiza Cerebrolysin, Semax y Selank para revisar en paralelo distintos formatos de investigación de neuroseñalización.'),
-      objective: t('For qualified teams comparing distinct neuro-signaling catalog entries, formats, and lab paperwork without implying a clinical regimen.', 'Para equipos calificados que comparan entradas, formatos y papeles de laboratorio de neuroseñalización sin implicar un régimen clínico.'),
+      objective: t('For qualified teams comparing distinct neuro-signaling catalog entries, formats, and lab paperwork without implying a clinical regimen.', 'Para equipos calificados que comparan entradas, formatos y documentos de laboratorio de neuroseñalización sin implicar un régimen clínico.'),
       education: {
         en: ['Cerebrolysin is presented in its 10 mg vial format, while Semax and Selank remain independent vial-format entries.', 'Grouping them supports catalog comparison only; it does not establish combined use, sequence, or an expected cognitive outcome.'],
         es: ['Cerebrolysin se presenta en su formato vial de 10 mg, mientras que Semax y Selank siguen siendo entradas independientes en vial.', 'Agruparlos solo facilita la comparación del catálogo; no establece uso combinado, secuencia ni un resultado cognitivo esperado.'],
@@ -200,7 +200,7 @@ export const protocols: ProtocolConfig[] = [
     content: {
       title: t('Focused Neuro-Signaling Pair', 'Par enfocado de neuroseñalización'),
       tagline: t('A concise two-entry comparison for cognitive research planning.', 'Una comparación concisa de dos entradas para planear investigación cognitiva.'),
-      description: t('Keeps Semax and Selank together as a simple, lab paperwork-led comparison set while preserving separate SKUs.', 'Mantiene Semax y Selank juntos como un set comparativo simple y guiado por papeles de laboratorio, conservando SKUs separados.'),
+      description: t('Keeps Semax and Selank together as a simple, lab paperwork-led comparison set while preserving separate SKUs.', 'Mantiene Semax y Selank juntos como un set comparativo simple y guiado por documentos de laboratorio, conservando SKUs separados.'),
       objective: t('For qualified laboratory teams seeking a smaller cognitive-category set with clear product identity and no clinical-use instructions.', 'Para equipos de laboratorio calificados que buscan un set cognitivo más pequeño, con identidad clara y sin instrucciones de uso clínico.'),
       education: {
         en: ['Semax and Selank remain independent catalog entries with separate product pages, research context, and records.', 'This focused set shortens the path to comparison and cart selection without making condition, treatment, or outcome claims.'],
@@ -264,7 +264,7 @@ export const protocolFaqs = {
     { question: '¿Los componentes vienen combinados en un solo vial?', answer: 'No, salvo que un componente nombrado ya se venda como su propia mezcla terminada. Los demás componentes siguen siendo productos, SKUs, variantes, cantidades y registros de lote separados.' },
     { question: '¿Cómo se calcula el precio del protocolo?', answer: 'El subtotal mostrado se calcula con el precio actual del catálogo centralizado para cada variante y cantidad seleccionada. No existe un precio oculto ni un descuento de paquete supuesto.' },
     { question: '¿Puedo cambiar una concentración disponible?', answer: 'Sí. Aparece un selector para cada componente con más de una opción actual en el catálogo. El subtotal y el SKU del carrito se actualizan con esa selección.' },
-    { question: '¿Qué papeles de laboratorio está disponible?', answer: 'Los COA archivados se enlazan solo cuando Encore tiene un registro revisado. Se pueden solicitar otros registros de lote, identidad, manejo y disponibilidad; los papeles de laboratorio varía por producto y lote.' },
+    { question: '¿Qué documentos de laboratorio está disponible?', answer: 'Los COA archivados se enlazan solo cuando Encore tiene un registro revisado. Se pueden solicitar otros registros de lote, identidad, manejo y disponibilidad; los documentos de laboratorio varía por producto y lote.' },
     { question: '¿Cómo se gestiona el envío?', answer: 'Los componentes se agregan al carrito como líneas separadas y siguen las reglas actuales de disponibilidad, destino, envío y checkout. Un integrante del equipo se comunicará si algún producto requiere revisión.' },
   ],
 } as const

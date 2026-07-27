@@ -75,7 +75,7 @@ export const catalog = {
   categoryEssentials: 'Esenciales',
 
   categoryDescWeightManagement:
-    'Compara productos de investigación metabólica por vía, formato, precio y papeles de laboratorio, desde señalización de receptores hasta respuesta a nutrientes y balance energético.',
+    'Compara productos de investigación metabólica por vía, formato, precio y documentos de laboratorio, desde señalización de receptores hasta respuesta a nutrientes y balance energético.',
   categoryDescRecoveryRegeneration:
     'Investigación de reparación tisular, migración celular y biología de la piel, además de mezclas de recuperación insignia para estudios serios.',
   categoryDescCellularEnergyLongevity:
@@ -87,7 +87,7 @@ export const catalog = {
   categoryDescEssentials: 'Los suministros que todo flujo de investigación necesita: accesorios de manejo y preparación, presentados por separado.',
 
   onFileCoa: 'COA disponible',
-  docsOnRequest: 'Papeles de laboratorio a solicitud',
+  docsOnRequest: 'Documentos de laboratorio a solicitud',
   order: 'Ver producto',
   noResultsTitle: 'No encontramos productos que coincidan con tu búsqueda.',
   noResultsBody: 'Prueba otra forma de escribirlo, una categoría o un término de investigación, o borra los filtros para ver todo el catálogo.',
@@ -102,12 +102,12 @@ export const catalog = {
   sortPriceLow: 'Precio: menor a mayor',
   sortPriceHigh: 'Precio: mayor a menor',
   sortName: 'Nombre: A–Z',
-  trustThirdPartyTested: 'Papeles de laboratorio a solicitud',
+  trustThirdPartyTested: 'Documentos de laboratorio a solicitud',
   trustJanoshikCoas: 'Registros COA disponibles',
   trustShipsFromUsa: 'Envíos desde Estados Unidos',
   trustResearchUseOnly: 'Uso exclusivo para investigación',
   helpTitle: '¿No sabes qué kit ordenar?',
-  helpBody: 'Cuéntanos las vías, formatos o papeles de laboratorio que necesita tu proyecto y nuestro equipo te indicará directamente los productos y kits correctos, sin hacer recomendaciones de tratamiento o uso.',
+  helpBody: 'Cuéntanos las vías, formatos o documentos de laboratorio que necesita tu proyecto y nuestro equipo te indicará directamente los productos y kits correctos, sin hacer recomendaciones de tratamiento o uso.',
   startResearchIntake: 'Recibir mi recomendación',
   quote: 'Cotización',
   from: 'Desde',

@@ -9,15 +9,13 @@ const validForm = {
   city: 'El Paso',
   state: 'TX',
   zip: '79901',
-  researchUseAcknowledged: true,
 }
 
 describe('checkout validation and persistence', () => {
-  it('requires valid contact, shipping, and research-use fields', () => {
+  it('requires valid contact and shipping fields', () => {
     expect(isCheckoutFormValid(validForm)).toBe(true)
     expect(isCheckoutFormValid({ ...validForm, email: 'invalid' })).toBe(false)
     expect(isCheckoutFormValid({ ...validForm, address: '' })).toBe(false)
-    expect(isCheckoutFormValid({ ...validForm, researchUseAcknowledged: false })).toBe(false)
   })
 
   it('clears the cart only after persistence succeeds', async () => {

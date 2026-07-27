@@ -121,8 +121,6 @@ export const checkout = {
   verifiedLocalDistance: 'Distancia verificada desde el centro del código postal de distribución: {distance} millas.',
   pendingConfirmation: 'Por confirmar',
   destinationAcknowledgment: 'Revisé el destino, los cargos de envío o importación y el tiempo de procesamiento más transporte que se muestran para esta solicitud.',
-  researchUseAcknowledgment: 'Al continuar, reconozco que los productos de Encore Bio Labs se venden exclusivamente para uso en investigación y no están destinados al consumo humano ni al uso clínico.',
-  researchUseError: 'Acepta los términos de uso exclusivo para investigación para continuar.',
   cart: 'Carrito',
   itemCountOne: '{count} producto',
   itemCountOther: '{count} productos',

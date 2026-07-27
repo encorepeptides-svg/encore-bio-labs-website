@@ -47,14 +47,14 @@ const categoryHeroEs: Record<string, { headline: string; subheadline: string; ov
   'metabolic-weight-management': {
     headline: 'Investigación metabólica, liderada por Retatrutide.',
     subheadline:
-      'Comienza con el producto insignia de triple vía de Encore y compara otros cuatro enfoques metabólicos por mecanismo, formato, precio y papeles de laboratorio.',
+      'Comienza con el producto insignia de triple vía de Encore y compara otros cuatro enfoques metabólicos por mecanismo, formato, precio y documentos de laboratorio.',
     overview:
-      'El catálogo de investigación metabólica y de composición corporal de Encore Bio Labs abarca dos de las líneas de investigación más activas del área: productos de receptores de incretinas (señalización GLP-1/GIP/glucagón) y productos del eje de la hormona de crecimiento (análogos de GHRH y secretagogos del receptor de grelina). Compara vías, formatos y papeles de laboratorio en paralelo, y recibe cada producto como un kit completo y listo para investigar, con los suministros correspondientes incluidos.',
+      'El catálogo de investigación metabólica y de composición corporal de Encore Bio Labs abarca dos de las líneas de investigación más activas del área: productos de receptores de incretinas (señalización GLP-1/GIP/glucagón) y productos del eje de la hormona de crecimiento (análogos de GHRH y secretagogos del receptor de grelina). Compara vías, formatos y documentos de laboratorio en paralelo, y recibe cada producto como un kit completo y listo para investigar, con los suministros correspondientes incluidos.',
   },
   'recovery-regeneration': {
     headline: 'Investigación de recuperación, liderada por Wolverine Stack.',
     subheadline:
-      'Comienza con la combinación insignia BPC-157 + TB-500 y compara KLOW con dos vías distintas de péptidos de cobre por formato, precio y papeles de laboratorio.',
+      'Comienza con la combinación insignia BPC-157 + TB-500 y compara KLOW con dos vías distintas de péptidos de cobre por formato, precio y documentos de laboratorio.',
     overview:
       'El catálogo de recuperación y regeneración de Encore Bio Labs reúne en un solo lugar los productos más estudiados en reparación tisular y remodelación de la matriz: el Wolverine Stack de BPC-157 + TB-500, la mezcla regenerativa de cuatro productos KLOW (GHK-Cu, BPC-157, TB-500, KPV) y los productos de péptidos de cobre GHK-Cu y AHK-Cu. Compara vías y formatos en paralelo, y recibe cada entrada como un kit completo y listo para investigar.',
   },
@@ -63,12 +63,12 @@ const categoryHeroEs: Record<string, { headline: string; subheadline: string; ov
     subheadline:
       'Elige NAD+ de 500 mg o 1000 mg y compara vías antioxidantes, mitocondriales, circadianas y de señalización inmune en una sola colección clara.',
     overview:
-      'El catálogo de longevidad y salud celular de Encore Bio Labs cubre los productos en el centro de la investigación del envejecimiento: el cofactor metabólico NAD+, el antioxidante esencial glutatión, el péptido dirigido a la mitocondria SS-31, el péptido asociado a los telómeros Epithalon y el péptido de señalización inmune Thymosin Alpha-1. Compara mecanismos, formatos y papeles de laboratorio, y recibe cada producto como un kit completo de investigación.',
+      'El catálogo de longevidad y salud celular de Encore Bio Labs cubre los productos en el centro de la investigación del envejecimiento: el cofactor metabólico NAD+, el antioxidante esencial glutatión, el péptido dirigido a la mitocondria SS-31, el péptido asociado a los telómeros Epithalon y el péptido de señalización inmune Thymosin Alpha-1. Compara mecanismos, formatos y documentos de laboratorio, y recibe cada producto como un kit completo de investigación.',
   },
   'cognitive-performance': {
     headline: 'Investigación cognitiva, liderada por Cerebrolysin.',
     subheadline:
-      'Comienza con la mezcla de péptidos neurotróficos y compara las vías distintas de Semax y Selank por formato, precio y papeles de laboratorio.',
+      'Comienza con la mezcla de péptidos neurotróficos y compara las vías distintas de Semax y Selank por formato, precio y documentos de laboratorio.',
     overview:
       'El catálogo cognitivo y de rendimiento de Encore Bio Labs reúne los productos de neuroseñalización más estudiados: Cerebrolysin, una mezcla de péptidos neurotróficos estudiada en la supervivencia neuronal y la plasticidad sináptica, y Semax y Selank, dos neuropéptidos estructuralmente distintos estudiados en la señalización asociada a BDNF y de respuesta al estrés. Compara vías y formatos en paralelo, y recibe cada producto como un kit completo de investigación.',
   },
@@ -77,7 +77,7 @@ const categoryHeroEs: Record<string, { headline: string; subheadline: string; ov
     subheadline:
       'Compara señalización reproductiva, de crecimiento, del sueño y de melanocortina, y elige el formato y precio actuales sin perderte en lenguaje técnico.',
     overview:
-      'El catálogo hormonal y de bienestar de Encore Bio Labs abarca toda la gama de la investigación endocrina: productos del eje reproductivo (Kisspeptin, HCG), señalización del eje de la hormona de crecimiento y de factores de crecimiento (HGH 191AA, IGF1-LR3), investigación del sueño y del cerebro y las hormonas (DSIP) e investigación del receptor central de melanocortina (PT-141). Compara ejes, formatos y papeles de laboratorio en paralelo, y recibe cada producto como un kit completo de investigación.',
+      'El catálogo hormonal y de bienestar de Encore Bio Labs abarca toda la gama de la investigación endocrina: productos del eje reproductivo (Kisspeptin, HCG), señalización del eje de la hormona de crecimiento y de factores de crecimiento (HGH 191AA, IGF1-LR3), investigación del sueño y del cerebro y las hormonas (DSIP) e investigación del receptor central de melanocortina (PT-141). Compara ejes, formatos y documentos de laboratorio en paralelo, y recibe cada producto como un kit completo de investigación.',
   },
 }
 
@@ -207,7 +207,7 @@ export function localizeCategoryContent(area: ResearchArea, content: CategoryCon
     ...content,
     eyebrow: `${name} · investigación`,
     headline: hero?.headline ?? `Investigación de ${name.toLowerCase()}.`,
-    subheadline: hero?.subheadline ?? `Revisa el contexto científico, los mecanismos estudiados y los papeles de laboratorio disponibles para ${name.toLowerCase()}.`,
+    subheadline: hero?.subheadline ?? `Revisa el contexto científico, los mecanismos estudiados y los documentos de laboratorio disponibles para ${name.toLowerCase()}.`,
     overview: hero?.overview ?? `${name} reúne productos estudiados en señalización biológica, energía celular, composición corporal y otros modelos relacionados. Esta página ofrece contexto de investigación, no recomendaciones de tratamiento.`,
     whyStudied: details?.whyStudied ?? 'Los equipos científicos estudian estas vías para separar señales moleculares, parámetros medidos y límites del modelo antes de extraer conclusiones.',
     themes: details?.themes ?? content.themes.map((theme) => ({

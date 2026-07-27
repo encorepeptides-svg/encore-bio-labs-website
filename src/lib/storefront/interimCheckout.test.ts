@@ -11,6 +11,7 @@ import {
 import { getEnabledPaymentMethods, type InterimPaymentMethod } from '../../config/interimCheckout'
 import type { ShippingSelection } from '../shipping'
 import { products } from '../../data/products'
+import { createCheckoutAcknowledgmentAudit } from '../../data/acknowledgmentContent'
 
 const item = (overrides: Partial<CartItem> = {}): CartItem => ({
   id: 'retatrutide__10mg',
@@ -138,17 +139,14 @@ describe('interim checkout handoff', () => {
     expect(getEnabledPaymentMethods(methods).map((method) => method.id)).toEqual(['paypal', 'cash_on_delivery'])
   })
 
-  it('keeps the message handoff available when the order store is not configured', async () => {
-    const order = await createPendingOrder({
+  it('blocks the handoff when the acknowledgment cannot be stored', async () => {
+    await expect(createPendingOrder({
       items: [item()],
       channel: 'whatsapp',
       paymentMethod: 'cash_on_delivery',
       locale: 'en',
       contact: { name: 'Test Researcher', phone: '5551234567', email: 'researcher@example.test' },
-    })
-
-    expect(order.reference).toMatch(/^ORD-\d{4}$/)
-    expect(order.subtotalCents).toBe(4000)
-    expect(order.recorded).toBe(false)
+      acknowledgment: createCheckoutAcknowledgmentAudit('en'),
+    })).rejects.toThrow('acknowledgment_store_unavailable')
   })
 })

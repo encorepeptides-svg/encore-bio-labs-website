@@ -46,6 +46,13 @@ import { cn } from '../../lib/utils'
 import { EncoreCompleteKit } from '../EncoreCompleteKit'
 import { LanguageSelector } from '../LanguageSelector'
 import { InterimCheckoutHandoff } from '../cart/InterimCheckoutHandoff'
+import { CheckoutAcknowledgment } from '../acknowledgment/CheckoutAcknowledgment'
+import {
+  createCheckoutAcknowledgmentAudit,
+  createEmptyCheckoutAcknowledgmentState,
+  isCheckoutAcknowledgmentComplete,
+  type CheckoutAcknowledgmentAudit,
+} from '../../data/acknowledgmentContent'
 
 type ReviewFormData = {
   email: string
@@ -63,7 +70,6 @@ type ReviewFormData = {
   localFulfillment: LocalFulfillmentMethod | null
   preferredContact: 'email' | 'phone' | 'whatsapp'
   notes: string
-  researchUseAcknowledged: boolean
   destinationAcknowledged: boolean
 }
 
@@ -71,6 +77,7 @@ type CheckoutSummary = {
   items: CartItem[]
   subtotal: number
   shipping: ShippingSelection
+  acknowledgment: CheckoutAcknowledgmentAudit
 }
 
 const defaultFormData: ReviewFormData = {
@@ -89,7 +96,6 @@ const defaultFormData: ReviewFormData = {
   localFulfillment: null,
   preferredContact: 'whatsapp',
   notes: '',
-  researchUseAcknowledged: false,
   destinationAcknowledged: false,
 }
 
@@ -339,10 +345,15 @@ export function CheckoutPage() {
   const [outcome, setOutcome] = useState<'support' | null>(null)
   const [completedSummary, setCompletedSummary] = useState<CheckoutSummary | null>(null)
   const [showValidation, setShowValidation] = useState(false)
+  const [checkoutAcknowledgments, setCheckoutAcknowledgments] = useState(createEmptyCheckoutAcknowledgmentState)
   const checkoutFormRef = useRef<HTMLDivElement>(null)
   const validationSequence = useRef(0)
   const subtotal = useMemo(() => calculateSubtotal(items), [items])
   const kitCount = useMemo(() => calculateItemCount(items), [items])
+  const cartAcknowledgmentKey = useMemo(
+    () => items.map((item) => `${item.id}:${item.quantity}:${item.linePrice}`).sort().join('|'),
+    [items],
+  )
   const usStreetAddress = useMemo(() => splitUsStreetAddress(formData.address), [formData.address])
   const address = useMemo<ShippingAddress>(() => ({
     country: formData.country,
@@ -387,6 +398,10 @@ export function CheckoutPage() {
       notes: formData.notes,
     }))
   }, [formData])
+
+  useEffect(() => {
+    setCheckoutAcknowledgments(createEmptyCheckoutAcknowledgmentState())
+  }, [cartAcknowledgmentKey])
 
   const runVerification = useCallback(async () => {
     const sequence = ++validationSequence.current
@@ -462,14 +477,21 @@ export function CheckoutPage() {
   const correctedChoiceReady = verification?.status !== 'corrected' || Boolean(addressChoice)
   const reviewPathReady = verification ? verification.deliverable || verification.manualReviewRequired || manualReviewRequested : false
   const poBoxAllowed = isPoBoxAddress(address) && !formData.destination.startsWith('local_')
+  const checkoutAcknowledgmentComplete = isCheckoutAcknowledgmentComplete(checkoutAcknowledgments)
   const baseFormValid = pickupSelected
-    ? isValidEmail(formData.email) && formData.phone.replace(/\D/g, '').length >= 7 && Boolean(formData.fullName.trim()) && formData.researchUseAcknowledged
+    ? isValidEmail(formData.email) && formData.phone.replace(/\D/g, '').length >= 7 && Boolean(formData.fullName.trim())
     : isCheckoutFormValid({
         ...formData,
         streetNumber: poBoxAllowed ? undefined : address.streetNumber,
         neighborhoodRequired: formData.country === 'MX',
       })
-  const formIsValid = baseFormValid && Boolean(verification) && !validating && correctedChoiceReady && reviewPathReady && formData.destinationAcknowledged
+  const formIsValid = baseFormValid
+    && Boolean(verification)
+    && !validating
+    && correctedChoiceReady
+    && reviewPathReady
+    && formData.destinationAcknowledged
+    && checkoutAcknowledgmentComplete
 
   function submitRequest() {
     setShowValidation(true)
@@ -477,7 +499,12 @@ export function CheckoutPage() {
       window.requestAnimationFrame(() => checkoutFormRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus())
       return
     }
-    setCompletedSummary({ items, subtotal, shipping: shippingSelection })
+    setCompletedSummary({
+      items,
+      subtotal,
+      shipping: shippingSelection,
+      acknowledgment: createCheckoutAcknowledgmentAudit(locale),
+    })
     setOutcome('support')
   }
 
@@ -505,7 +532,7 @@ export function CheckoutPage() {
               </div>
             </div>
           </section>
-          <div className="mt-8 w-full text-left"><InterimCheckoutHandoff items={completedSummary.items} shipping={completedSummary.shipping} /></div>
+          <div className="mt-8 w-full text-left"><InterimCheckoutHandoff items={completedSummary.items} shipping={completedSummary.shipping} acknowledgment={completedSummary.acknowledgment} /></div>
           <a href={path('/cart')} className="mt-5 text-sm font-semibold text-slate-600 hover:text-[#071724]">{t('returnToCart')}</a>
           <div className="mt-10 w-full"><EncoreCompleteKit variant="checkout" /></div>
         </div>
@@ -595,10 +622,10 @@ export function CheckoutPage() {
                 <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">{t('notes')}<textarea rows={4} className="w-full resize-none rounded-2xl border border-slate-900/10 bg-white p-4 text-sm text-[#071724] outline-none transition focus:border-teal-600/70 focus:ring-4 focus:ring-teal-100" value={formData.notes} onChange={(event) => updateField('notes', event.target.value)} /></label>
                 <div className="grid gap-3 sm:col-span-2">
                   <label className="flex items-start gap-3 rounded-2xl border border-slate-900/10 bg-[#f8fafc] p-4 text-sm leading-6 text-slate-600"><input type="checkbox" checked={formData.destinationAcknowledged} onChange={(event) => updateField('destinationAcknowledged', event.target.checked)} aria-invalid={showValidation && !formData.destinationAcknowledged} className="mt-1 size-4 accent-teal-700" /><span>{t('destinationAcknowledgment')}</span></label>
-                  <label className="flex items-start gap-3 rounded-2xl border border-slate-900/10 bg-[#f8fafc] p-4 text-sm leading-6 text-slate-600"><input type="checkbox" checked={formData.researchUseAcknowledged} onChange={(event) => updateField('researchUseAcknowledged', event.target.checked)} aria-invalid={showValidation && !formData.researchUseAcknowledged} className="mt-1 size-4 accent-teal-700" /><span>{t('researchUseAcknowledgment')}</span></label>
                 </div>
               </div>
             </section>
+            <CheckoutAcknowledgment value={checkoutAcknowledgments} onChange={setCheckoutAcknowledgments} />
           </div>
 
           <aside className="order-first rounded-[1.75rem] border border-white/70 bg-white/85 p-6 shadow-[0_28px_80px_rgba(7,23,36,0.09)] backdrop-blur-2xl sm:p-7 lg:sticky lg:top-8 lg:order-none">
@@ -616,7 +643,16 @@ export function CheckoutPage() {
             </div>
             <div className="mt-6"><EncoreCompleteKit variant="checkout" /></div>
             {showValidation && !formIsValid ? <p className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900" role="alert">{t('validationBannerShipping')}</p> : null}
-            <button type="button" onClick={submitRequest} className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition hover:bg-teal-700">{t(paymentAllowed ? 'continueWithSupport' : 'continueToManualReview')}<ChevronRight size={16} aria-hidden="true" /></button>
+            <button
+              type="button"
+              onClick={submitRequest}
+              disabled={!checkoutAcknowledgmentComplete}
+              aria-describedby="checkout-acknowledgment-status"
+              className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              {t(paymentAllowed ? 'continueWithSupport' : 'continueToManualReview')}
+              <ChevronRight size={16} aria-hidden="true" />
+            </button>
             <div className="mt-4 grid gap-1.5"><p className="flex items-center gap-1.5 text-xs font-medium text-slate-500"><ShieldCheck size={13} className="text-teal-700" aria-hidden="true" />{t('serverValidationNote')}</p><p className="flex items-center gap-1.5 text-xs font-medium text-slate-500"><PackageCheck size={13} className="text-teal-700" aria-hidden="true" />{t('inventoryReviewNote')}</p><p className="flex items-center gap-1.5 text-xs font-medium text-slate-500"><MessageCircle size={13} className="text-teal-700" aria-hidden="true" />{t('supportAvailable')} <a href="https://wa.me/19153595448" className="font-semibold text-teal-800 hover:underline">{t('contactEncoreWhatsapp')}</a></p></div>
           </aside>
         </div>

@@ -1,4 +1,5 @@
 import type { Locale } from '../../i18n/config'
+import type { CheckoutAcknowledgmentAudit } from '../../data/acknowledgmentContent'
 import { BUSINESS_INSTAGRAM_USERNAME, BUSINESS_WHATSAPP_PHONE, type InterimPaymentMethodId } from '../../config/interimCheckout'
 import type { CartItem } from '../cart'
 import { calculateSubtotal, formatCartCurrency } from '../cart'
@@ -30,12 +31,13 @@ export type PendingOrderInput = {
   locale: Locale
   contact?: OrderContact
   shipping?: ShippingSelection
+  acknowledgment: CheckoutAcknowledgmentAudit
 }
 
 export type PendingOrder = {
   reference: string
   subtotalCents: number
-  /** False when Supabase is unreachable — the handoff message is the only record. */
+  /** The handoff is blocked unless the server returns a recorded order. */
   recorded: boolean
   reviewRequired: boolean
   importFeeCents: number
@@ -162,26 +164,14 @@ export function buildInstagramDmUrl() {
 }
 
 /**
- * Creates the pending_payment order record before either handoff. Retries the
- * short human-readable reference on a uniqueness collision. When Supabase is
- * not configured/reachable, returns recorded:false so the caller can still
- * hand off — the reference in the message becomes the reconciliation record.
+ * Creates the pending_payment order record before either handoff. The handoff
+ * remains blocked unless the server safely stores the per-order acknowledgment.
  */
 export async function createPendingOrder(input: PendingOrderInput): Promise<PendingOrder> {
-  const subtotalCents = Math.round(calculateSubtotal(input.items) * 100)
-  const reference = generateOrderReference()
-
-  const selectedRate: ShippingRate | null = input.shipping?.verification.rates.find((rate) => rate.id === input.shipping?.selectedRateId) ?? null
-  const fallbackCharges = input.shipping ? calculateShippingCharges({ destination: input.shipping.destination, kitCount: input.shipping.kitCount, subtotalCents, selectedRate, localDeliveryFeeCents: input.shipping.verification.localDeliveryFeeCents }) : null
-  if (!isSupabaseConfigured || !supabase || !input.shipping) return {
-    reference,
-    subtotalCents,
-    recorded: false,
-    reviewRequired: true,
-    importFeeCents: fallbackCharges?.importFeeCents ?? 0,
-    shippingCents: fallbackCharges?.shippingCents ?? null,
-    totalCents: fallbackCharges?.totalCents ?? null,
+  if (!isSupabaseConfigured || !supabase || !input.shipping) {
+    throw new Error('acknowledgment_store_unavailable')
   }
+  const selectedRate = input.shipping.verification.rates.find((rate) => rate.id === input.shipping?.selectedRateId) ?? null
 
   const baseSkus = input.items.map((item) => item.sku.split(/-(?:VIAL-ONLY|COMPLETE-KIT|MULTIPACK)-/)[0])
   const inventoryStatuses = await fetchPublicInventoryStatuses(baseSkus)
@@ -210,6 +200,7 @@ export async function createPendingOrder(input: PendingOrderInput): Promise<Pend
       channel: input.channel,
       paymentMethod: input.paymentMethod,
       locale: input.locale,
+      checkoutAcknowledgment: input.acknowledgment,
       contact: {
         name: input.contact?.name ?? '',
         phone: input.contact?.phone ?? '',
@@ -251,6 +242,11 @@ export type StorefrontOrderRow = {
   address_verification: AddressVerificationResult
   shipping_service: ShippingRate | null
   shipping_review_required: boolean
+  checkout_acknowledgment_version: string | null
+  checkout_acknowledged_at: string | null
+  checkout_acknowledgment_language: string[] | null
+  checkout_acknowledgment_locale: Locale | null
+  checkout_policy_versions: Record<string, string> | null
   contact: OrderContact
   paid_at: string | null
 }
@@ -258,7 +254,7 @@ export type StorefrontOrderRow = {
 export async function adminFetchStorefrontOrders(): Promise<StorefrontOrderRow[]> {
   if (!supabase) throw new Error('not configured')
   const { data, error } = await supabase.from('storefront_orders')
-    .select('id,created_at,order_reference,status,channel,payment_method,items,subtotal_cents,import_fee_cents,shipping_cents,total_cents,destination_type,local_fulfillment_method,delivery_distance_miles,original_address,validated_address,selected_address,address_verification,shipping_service,shipping_review_required,contact,paid_at')
+    .select('id,created_at,order_reference,status,channel,payment_method,items,subtotal_cents,import_fee_cents,shipping_cents,total_cents,destination_type,local_fulfillment_method,delivery_distance_miles,original_address,validated_address,selected_address,address_verification,shipping_service,shipping_review_required,checkout_acknowledgment_version,checkout_acknowledged_at,checkout_acknowledgment_language,checkout_acknowledgment_locale,checkout_policy_versions,contact,paid_at')
     .order('created_at', { ascending: false })
     .limit(300)
   if (error) throw error

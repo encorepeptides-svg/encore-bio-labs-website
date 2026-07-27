@@ -1,5 +1,6 @@
 import { categoryVisuals, products, type Product } from '../../data/products'
 import { getProductHeroImage } from '../../data/productMedia'
+import { formatMoney } from '../../lib/money'
 
 /**
  * The five approved catalog research categories, in the approved display order.
@@ -157,7 +158,7 @@ export function getPriceLabel(product: Product, t?: (key: string) => string) {
   if (!prices.length) return t ? t('quote') : 'Quote'
 
   const lowestPrice = Math.min(...prices)
-  const price = `$${lowestPrice.toLocaleString()}`
+  const price = formatMoney(lowestPrice)
 
   if (product.variants.length <= 1) return price
   return t ? `${t('from')} ${price}` : `From ${price}`

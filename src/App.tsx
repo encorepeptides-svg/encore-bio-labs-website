@@ -17,6 +17,8 @@ import {
   draftReviewPreviewPath,
   isDraftReviewPreviewPath,
 } from './components/social-proof/draftReviewPreviewRoute'
+import { AcknowledgmentProvider } from './components/acknowledgment/AcknowledgmentProvider'
+import { AcknowledgmentGate } from './components/acknowledgment/AcknowledgmentGate'
 
 // Route pages are code-split so each experience only loads when it renders.
 const AboutPage = lazy(() => import('./components/AboutPage').then((m) => ({ default: m.AboutPage })))
@@ -37,6 +39,12 @@ const ShippingReturnsPage = lazy(() =>
   import('./components/legal/ShippingReturnsPage').then((m) => ({ default: m.ShippingReturnsPage })),
 )
 const TermsPage = lazy(() => import('./components/legal/TermsPage').then((m) => ({ default: m.TermsPage })))
+const ResearchUseOnlyPolicyPage = lazy(() =>
+  import('./components/legal/ResearchUseOnlyPolicyPage').then((m) => ({ default: m.ResearchUseOnlyPolicyPage })),
+)
+const AccessDeniedPage = lazy(() =>
+  import('./components/acknowledgment/AccessDeniedPage').then((m) => ({ default: m.AccessDeniedPage })),
+)
 const ProductPage = lazy(() => import('./components/product/ProductPage').then((m) => ({ default: m.ProductPage })))
 const ProtocolsHubPage = lazy(() => import('./components/protocols/ProtocolsHubPage').then((m) => ({ default: m.ProtocolsHubPage })))
 const ProtocolDetailPage = lazy(() => import('./components/protocols/ProtocolDetailPage').then((m) => ({ default: m.ProtocolDetailPage })))
@@ -186,6 +194,10 @@ function App() {
       return <AboutPage />
     }
 
+    if (logicalPath === '/access-denied' || logicalPath === '/access-denied/') {
+      return <AccessDeniedPage />
+    }
+
     if (logicalPath === '/') {
       return <HomePage />
     }
@@ -241,6 +253,10 @@ function App() {
       return <PrivacyPage />
     }
 
+    if (logicalPath === '/legal/research-use-only' || logicalPath === '/legal/research-use-only/') {
+      return <ResearchUseOnlyPolicyPage />
+    }
+
     if (logicalPath === '/legal/shipping-returns' || logicalPath === '/legal/shipping-returns/') {
       return <ShippingReturnsPage />
     }
@@ -265,33 +281,39 @@ function App() {
   const isCheckoutRoute =
     logicalPath === '/checkout' ||
     logicalPath === '/checkout/'
-  const hideGlobalChrome = isInternalAdminRoute || isCheckoutRoute || isPortalRoute || isPortalAuthRoute
+  const isAccessDeniedRoute = logicalPath === '/access-denied' || logicalPath === '/access-denied/'
+  const bypassEntryGate = logicalPath.startsWith('/legal/') || isAccessDeniedRoute
+  const hideGlobalChrome = isInternalAdminRoute || isCheckoutRoute || isPortalRoute || isPortalAuthRoute || isAccessDeniedRoute
 
   return (
     <LocaleProvider locale={locale} logicalPath={logicalPath}>
-      <PortalAuthProvider>
-        <CartProvider>
-          <div
-            className={`min-h-screen overflow-x-clip bg-[#f5f5f2] text-[#071724]${
-              hideGlobalChrome ? '' : ' pb-[calc(4rem+env(safe-area-inset-bottom))] xl:pb-0'
-            }`}
-          >
-            <SkipToMainLink />
-            {hideGlobalChrome ? null : <LatamSuggestionBanner />}
-            {hideGlobalChrome ? null : <AnnouncementBar />}
-            {hideGlobalChrome ? null : <Navbar />}
-            <Suspense fallback={<RouteLoadingFallback />}>{page}</Suspense>
-            {hideGlobalChrome ? null : <Footer />}
-            {hideGlobalChrome ? null : <MobileTabBar />}
-            {hideGlobalChrome ? null : <CartDrawer />}
-            {hideGlobalChrome ? null : (
-              <Suspense fallback={null}>
-                <AssistantWidget />
-              </Suspense>
-            )}
-          </div>
-        </CartProvider>
-      </PortalAuthProvider>
+      <AcknowledgmentProvider bypassEntryGate={bypassEntryGate}>
+        <AcknowledgmentGate>
+          <PortalAuthProvider>
+            <CartProvider>
+              <div
+                className={`min-h-screen overflow-x-clip bg-[#f5f5f2] text-[#071724]${
+                  hideGlobalChrome ? '' : ' pb-[calc(4rem+env(safe-area-inset-bottom))] xl:pb-0'
+                }`}
+              >
+                <SkipToMainLink />
+                {hideGlobalChrome ? null : <LatamSuggestionBanner />}
+                {hideGlobalChrome ? null : <AnnouncementBar />}
+                {hideGlobalChrome ? null : <Navbar />}
+                <Suspense fallback={<RouteLoadingFallback />}>{page}</Suspense>
+                {hideGlobalChrome ? null : <Footer />}
+                {hideGlobalChrome ? null : <MobileTabBar />}
+                {hideGlobalChrome ? null : <CartDrawer />}
+                {hideGlobalChrome ? null : (
+                  <Suspense fallback={null}>
+                    <AssistantWidget />
+                  </Suspense>
+                )}
+              </div>
+            </CartProvider>
+          </PortalAuthProvider>
+        </AcknowledgmentGate>
+      </AcknowledgmentProvider>
     </LocaleProvider>
   )
 }

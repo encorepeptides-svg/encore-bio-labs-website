@@ -11,15 +11,15 @@ type LocalizedPageMeta = Record<Locale, PageMeta>
 export const pageMetadata: Record<string, LocalizedPageMeta> = {
   '/': {
     en: { title: 'Encore Bio Labs | Research-grade products', description: 'Explore Encore Bio Labs research-use-only products, lab paperwork, complete kits, and inquiry support.' },
-    es: { title: 'Encore Bio Labs | Productos de investigación premium', description: 'Descubre los productos exclusivos para investigación de Encore Bio Labs, con papeles de laboratorio, kits completos y atención personalizada.' },
+    es: { title: 'Encore Bio Labs | Productos de investigación premium', description: 'Descubre los productos exclusivos para investigación de Encore Bio Labs, con documentos de laboratorio, kits completos y atención personalizada.' },
   },
   '/catalog': {
     en: { title: 'Research Product Catalog | Encore Bio Labs', description: 'Compare research products by biological context, formulation, available strength, price, and supporting product lab paperwork.' },
-    es: { title: 'Catálogo de productos de investigación | Encore Bio Labs', description: 'Compara productos por contexto biológico, formulación, concentración disponible, precio y papeles de laboratorio de respaldo.' },
+    es: { title: 'Catálogo de productos de investigación | Encore Bio Labs', description: 'Compara productos por contexto biológico, formulación, concentración disponible, precio y documentos de laboratorio de respaldo.' },
   },
   '/protocols': {
     en: { title: 'Research Protocols & Curated Sets | Encore Bio Labs', description: 'Compare curated research sets built from current Encore Bio Labs catalog products, variants, prices, SKUs, and available lab paperwork.' },
-    es: { title: 'Protocolos y sets de investigación | Encore Bio Labs', description: 'Compara sets de investigación creados con productos, variantes, precios, SKUs y papeles de laboratorio actual del catálogo de Encore Bio Labs.' },
+    es: { title: 'Protocolos y sets de investigación | Encore Bio Labs', description: 'Compara sets de investigación creados con productos, variantes, precios, SKUs y documentos de laboratorio actual del catálogo de Encore Bio Labs.' },
   },
   '/cart': {
     en: { title: 'Research Cart | Encore Bio Labs', description: 'Review selected research products, strengths, quantities, and catalog subtotal.' },
@@ -35,11 +35,11 @@ export const pageMetadata: Record<string, LocalizedPageMeta> = {
   },
   '/faq': {
     en: { title: 'Research Product FAQ | Encore Bio Labs', description: 'Read answers about research-use classification, products, lab paperwork, ordering, shipping, and support.' },
-    es: { title: 'Preguntas frecuentes | Encore Bio Labs', description: 'Encuentra respuestas sobre nuestra clasificación de uso exclusivo para investigación, productos, papeles de laboratorio, pedidos, envíos y soporte.' },
+    es: { title: 'Preguntas frecuentes | Encore Bio Labs', description: 'Encuentra respuestas sobre nuestra clasificación de uso exclusivo para investigación, productos, documentos de laboratorio, pedidos, envíos y soporte.' },
   },
   '/about': {
     en: { title: 'About Encore Bio Labs', description: 'Learn about Encore Bio Labs, its research catalog, lab paperwork-first approach, and responsible product positioning.' },
-    es: { title: 'Sobre Encore Bio Labs', description: 'Conoce a Encore Bio Labs, nuestro catálogo de investigación, nuestro enfoque centrado en los papeles de laboratorio y nuestro compromiso con la transparencia.' },
+    es: { title: 'Sobre Encore Bio Labs', description: 'Conoce a Encore Bio Labs, nuestro catálogo de investigación, nuestro enfoque centrado en los documentos de laboratorio y nuestro compromiso con la transparencia.' },
   },
   '/review-preview': {
     en: { title: 'Draft Review Preview | Encore Bio Labs', description: 'Development-only preview of imported review drafts that are not approved or published.' },
@@ -51,7 +51,7 @@ export const pageMetadata: Record<string, LocalizedPageMeta> = {
   },
   '/quality': {
     en: { title: 'Quality and Lab paperwork | Encore Bio Labs', description: 'Review Encore Bio Labs quality, lab paperwork, handling, and research-use standards.' },
-    es: { title: 'Calidad y papeles de laboratorio | Encore Bio Labs', description: 'Conoce los estándares de calidad, papeles de laboratorio, manejo y uso exclusivo para investigación de Encore Bio Labs.' },
+    es: { title: 'Calidad y documentos de laboratorio | Encore Bio Labs', description: 'Conoce los estándares de calidad, documentos de laboratorio, manejo y uso exclusivo para investigación de Encore Bio Labs.' },
   },
   '/kits': {
     en: { title: 'Encore Complete Kit', description: 'Review the shared components included with eligible Encore Bio Labs research products.' },
@@ -72,6 +72,14 @@ export const pageMetadata: Record<string, LocalizedPageMeta> = {
   '/legal/privacy': {
     en: { title: 'Privacy Policy | Encore Bio Labs', description: 'Read how Encore Bio Labs handles information submitted through the website.' },
     es: { title: 'Política de privacidad | Encore Bio Labs', description: 'Conoce cómo Encore Bio Labs maneja la información que envías a través del sitio web.' },
+  },
+  '/legal/research-use-only': {
+    en: { title: 'Research Use Only Policy | Encore Bio Labs', description: 'Review the laboratory-research-only conditions that apply to Encore Bio Labs products, website information, and order requests.' },
+    es: { title: 'Política de uso exclusivo para investigación | Encore Bio Labs', description: 'Consulta las condiciones de uso exclusivo para investigación de laboratorio aplicables a los productos, la información y los pedidos de Encore Bio Labs.' },
+  },
+  '/access-denied': {
+    en: { title: 'Access Not Granted | Encore Bio Labs', description: 'Encore Bio Labs site access requires acknowledgment of age and research-use-only conditions.' },
+    es: { title: 'Acceso no autorizado | Encore Bio Labs', description: 'El acceso al sitio de Encore Bio Labs requiere reconocer las condiciones de edad y uso exclusivo para investigación.' },
   },
   '/legal/shipping-returns': {
     en: { title: 'Shipping & Delivery | Encore Bio Labs', description: 'Review destination coverage, Mexico charges, live carrier validation, delivery timing, and return support.' },
@@ -121,24 +129,24 @@ export function getCategoryMetadata(slug: string, englishName: string): Localize
       },
       es: {
         title: 'Péptidos de investigación metabólica | Encore Bio Labs',
-        description: 'Compara Retatrutide, Tesamorelin, MOTS-C, AOD-9604 y CJC-1295 + Ipamorelin por vía de investigación, formato, precio y papeles de laboratorio.',
+        description: 'Compara Retatrutide, Tesamorelin, MOTS-C, AOD-9604 y CJC-1295 + Ipamorelin por vía de investigación, formato, precio y documentos de laboratorio.',
       },
     },
     'recovery-regeneration': {
       en: { title: 'Recovery & Regeneration Research | Encore Bio Labs', description: 'Compare Wolverine Stack, KLOW, GHK-Cu, and AHK-Cu by research pathway, format, current price, kit eligibility, and lab paperwork.' },
-      es: { title: 'Investigación de recuperación y regeneración | Encore Bio Labs', description: 'Compara Wolverine Stack, KLOW, GHK-Cu y AHK-Cu por vía de investigación, formato, precio actual, elegibilidad de kit y papeles de laboratorio.' },
+      es: { title: 'Investigación de recuperación y regeneración | Encore Bio Labs', description: 'Compara Wolverine Stack, KLOW, GHK-Cu y AHK-Cu por vía de investigación, formato, precio actual, elegibilidad de kit y documentos de laboratorio.' },
     },
     'longevity-cellular-health': {
       en: { title: 'Longevity & Cellular Health Research | Encore Bio Labs', description: 'Compare NAD+, Glutathione, SS-31, Epithalon, and Thymosin Alpha-1 by cellular research pathway, format, price, and lab paperwork.' },
-      es: { title: 'Investigación de longevidad y salud celular | Encore Bio Labs', description: 'Compara NAD+, Glutathione, SS-31, Epithalon y Thymosin Alpha-1 por vía celular, formato, precio y papeles de laboratorio.' },
+      es: { title: 'Investigación de longevidad y salud celular | Encore Bio Labs', description: 'Compara NAD+, Glutathione, SS-31, Epithalon y Thymosin Alpha-1 por vía celular, formato, precio y documentos de laboratorio.' },
     },
     'cognitive-performance': {
       en: { title: 'Cognitive Research Products | Encore Bio Labs', description: 'Compare Cerebrolysin, Semax, and Selank by neuro-signaling research pathway, format, current price, and lab paperwork.' },
-      es: { title: 'Productos de investigación cognitiva | Encore Bio Labs', description: 'Compara Cerebrolysin, Semax y Selank por vía de neuroseñalización, formato, precio actual y papeles de laboratorio.' },
+      es: { title: 'Productos de investigación cognitiva | Encore Bio Labs', description: 'Compara Cerebrolysin, Semax y Selank por vía de neuroseñalización, formato, precio actual y documentos de laboratorio.' },
     },
     'hormone-wellness': {
       en: { title: 'Hormone & Wellness Research | Encore Bio Labs', description: 'Compare six endocrine research products by reproductive, growth, sleep, and melanocortin signaling, format, price, and lab paperwork.' },
-      es: { title: 'Investigación hormonal y de bienestar | Encore Bio Labs', description: 'Compara seis productos de investigación endocrina por señalización reproductiva, de crecimiento, del sueño y de melanocortina, formato, precio y papeles de laboratorio.' },
+      es: { title: 'Investigación hormonal y de bienestar | Encore Bio Labs', description: 'Compara seis productos de investigación endocrina por señalización reproductiva, de crecimiento, del sueño y de melanocortina, formato, precio y documentos de laboratorio.' },
     },
   }
 

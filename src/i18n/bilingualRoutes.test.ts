@@ -19,6 +19,7 @@ const bilingualRoutes = [
   '/categories/hormone-wellness',
   '/products/retatrutide',
   '/legal/terms',
+  '/legal/research-use-only',
   '/checkout',
   '/client-login',
   '/portal',

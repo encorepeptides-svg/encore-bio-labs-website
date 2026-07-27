@@ -41,6 +41,7 @@ export function Footer() {
   const legalLinks = [
     { label: t('terms'), href: '/legal/terms' },
     { label: t('privacyPolicy'), href: '/legal/privacy' },
+    { label: t('researchUseOnlyPolicy'), href: '/legal/research-use-only' },
     { label: t('shippingReturns'), href: '/legal/shipping-returns' },
   ]
 

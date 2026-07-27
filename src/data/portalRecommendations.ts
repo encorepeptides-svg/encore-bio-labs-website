@@ -23,7 +23,7 @@ const goalInterestAliases: Array<[string[], PortalResearchInterest[]]> = [
   [['recovery', 'recuperación'], ['recovery-regeneration']],
   [['energy', 'energía'], ['longevity-cellular-health', 'metabolic-weight-management']],
   [['wellness', 'bienestar'], ['longevity-cellular-health', 'hormone-wellness']],
-  [['lab paperwork', 'papeles de laboratorio'], ['longevity-cellular-health']],
+  [['lab paperwork', 'documentos de laboratorio'], ['longevity-cellular-health']],
 ]
 
 export type PortalProductMatch = {

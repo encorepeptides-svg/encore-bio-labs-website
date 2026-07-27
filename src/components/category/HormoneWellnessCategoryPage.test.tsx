@@ -35,8 +35,8 @@ describe('HormoneWellnessCategoryPage', () => {
   it('keeps the Spanish route localized with the same products and conversion structure', () => {
     const html = renderPage('es')
 
-    expect(html).toContain('Elige la vía. Encuentra el compuesto de investigación correcto.')
-    expect(html).toContain('Seis compuestos, organizados claramente')
+    expect(html).toContain('Elige la vía. Encuentra el producto de investigación correcto.')
+    expect(html).toContain('Seis productos, organizados claramente')
     expect(html).toContain('Todos los productos de esta categoría se venden exclusivamente para investigación de laboratorio.')
     expect(html).toContain('/es/products/kisspeptin')
     expect(html).not.toContain('Choose Options')

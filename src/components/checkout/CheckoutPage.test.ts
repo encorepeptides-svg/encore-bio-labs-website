@@ -28,6 +28,6 @@ describe('checkout draft persistence across a reload (language switch)', () => {
   it('starts from a clean default when no draft was saved, without throwing', () => {
     const restored = readStoredForm()
     expect(restored.email).toBe('')
-    expect(restored.researchUseAcknowledged).toBe(false)
+    expect(restored.destinationAcknowledged).toBe(false)
   })
 })

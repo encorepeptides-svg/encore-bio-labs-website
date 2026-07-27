@@ -26,3 +26,10 @@ export function formatMoney(value: number, locale?: Locale): string {
   })
   return active === 'es' ? `USD $${amount}` : `$${amount}`
 }
+
+/** Per-unit prices (e.g. price per mg) keep more precision but the same currency rule. */
+export function formatUnitMoney(value: number, locale?: Locale): string {
+  const active = locale ?? currentLocale
+  const amount = value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })
+  return active === 'es' ? `USD $${amount}` : `$${amount}`
+}

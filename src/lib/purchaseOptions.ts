@@ -1,6 +1,7 @@
 export const COMPLETE_KIT_DEFAULT_PREMIUM = 10
 
 import type { Product, ProductVariant } from '../data/products'
+import { formatMoney, formatUnitMoney } from './money'
 
 export type PurchaseOptionId = 'vial-only' | 'complete-kit' | 'multipack'
 
@@ -34,12 +35,12 @@ export function roundMultipackProductTotal(product: Product, value: number) {
 }
 
 export function money(value: number) {
-  return `$${value.toLocaleString(undefined, { minimumFractionDigits: value % 1 ? 2 : 0, maximumFractionDigits: 2 })}`
+  return formatMoney(value)
 }
 
 export function unitMoney(value: number) {
   if (value >= 1) return money(value)
-  return `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`
+  return formatUnitMoney(value)
 }
 
 export function getKitPremium(product: Product) {

@@ -91,7 +91,7 @@ describe('portal onboarding draft persistence', () => {
       translate(locale, 'portal', 'reviewSubmitNote'),
     ].join(' ')
     expect(copy).toContain(locale === 'en' ? 'activates automatically' : 'se activa automáticamente')
-    expect(copy).toContain(locale === 'en' ? 'research compounds' : 'compuestos de investigación')
+    expect(copy).toContain(locale === 'en' ? 'research products' : 'productos de investigación')
     expect(copy).not.toContain(locale === 'en' ? 'required before publication' : 'antes de publicar')
   })
 })

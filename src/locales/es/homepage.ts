@@ -17,7 +17,7 @@ export const homepage = {
   trustHandling: 'Envíos desde Estados Unidos',
   trustPackaging: 'Empaque premium',
   trustFulfillment: 'Kits completos incluidos',
-  trustDocumentation: 'Papeles de laboratorio de lote a solicitud',
+  trustDocumentation: 'Documentos de laboratorio de lote a solicitud',
   bestSellersEyebrow: 'Más vendidos',
   bestSellersTitle: 'Nuestros productos de investigación más solicitados',
   featuredBestseller: 'Más vendido destacado',

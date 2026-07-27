@@ -27,6 +27,30 @@ const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8' }
 const US_ZIP = /^\d{5}(?:-\d{4})?$/
 const MX_POSTAL_CODE = /^\d{5}$/
 const INTERNATIONAL_POSTAL_CODE = /^[\p{L}\d][\p{L}\d -]{1,11}$/u
+const CHECKOUT_ACKNOWLEDGMENT_VERSION = 'checkout-ruo-v1'
+const CHECKOUT_ACKNOWLEDGMENT_IDS = ['age', 'researchOnly', 'noConsumption', 'noAdvice', 'policies']
+const ACKNOWLEDGMENT_POLICY_VERSIONS = {
+  terms: 'terms-2026-07-07',
+  privacy: 'privacy-2026-07-07',
+  researchUseOnly: 'research-use-only-2026-07-26',
+  shippingReturns: 'shipping-returns-2026-07-20',
+}
+const CHECKOUT_ACKNOWLEDGMENT_LANGUAGE = {
+  en: [
+    'I confirm that I am at least 18 years old.',
+    'I understand that these products are sold exclusively for laboratory research.',
+    'I confirm that these products will not be used for human or animal consumption.',
+    'I understand that Encore Bio Labs does not provide medical advice, treatment recommendations, dosing instructions, or administration guidance.',
+    'I agree to the Terms, Privacy Policy, Research Use Only Policy, and Shipping and Returns Policy.',
+  ],
+  es: [
+    'Confirmo que tengo al menos 18 años.',
+    'Entiendo que estos productos se venden exclusivamente para investigación de laboratorio.',
+    'Confirmo que estos productos no se utilizarán para consumo humano o animal.',
+    'Entiendo que Encore Bio Labs no proporciona consejos médicos, recomendaciones de tratamiento, dosis ni instrucciones de administración.',
+    'Acepto los Términos, la Política de Privacidad, la Política de Uso Exclusivo para Investigación y la Política de Envíos y Devoluciones.',
+  ],
+}
 
 function corsHeaders(origin: string | null) {
   const configured = (Deno.env.get('STOREFRONT_ALLOWED_ORIGINS') || '').split(',').map((value) => value.trim()).filter(Boolean)
@@ -45,6 +69,37 @@ function response(body: unknown, status = 200, origin: string | null = null) {
 
 function text(value: unknown) {
   return typeof value === 'string' ? value.trim() : ''
+}
+
+function checkoutAcknowledgment(value: unknown, locale: 'en' | 'es') {
+  if (!value || typeof value !== 'object') return null
+  const input = value as Record<string, unknown>
+  if (text(input.version) !== CHECKOUT_ACKNOWLEDGMENT_VERSION || text(input.locale) !== locale) return null
+
+  const acceptedAt = text(input.acceptedAt)
+  const acceptedAtMs = Date.parse(acceptedAt)
+  const now = Date.now()
+  if (!Number.isFinite(acceptedAtMs) || acceptedAtMs > now + 5 * 60_000 || now - acceptedAtMs > 24 * 60 * 60_000) return null
+
+  const confirmedIds = Array.isArray(input.confirmedStatementIds) ? input.confirmedStatementIds.map(text) : []
+  if (confirmedIds.length !== CHECKOUT_ACKNOWLEDGMENT_IDS.length || CHECKOUT_ACKNOWLEDGMENT_IDS.some((id) => !confirmedIds.includes(id))) return null
+
+  const exactLanguage = Array.isArray(input.exactLanguage) ? input.exactLanguage.map(text) : []
+  const expectedLanguage = CHECKOUT_ACKNOWLEDGMENT_LANGUAGE[locale]
+  if (exactLanguage.length !== expectedLanguage.length || expectedLanguage.some((statement, index) => exactLanguage[index] !== statement)) return null
+
+  const policyVersions = input.policyVersions && typeof input.policyVersions === 'object'
+    ? input.policyVersions as Record<string, unknown>
+    : {}
+  if (Object.entries(ACKNOWLEDGMENT_POLICY_VERSIONS).some(([id, version]) => text(policyVersions[id]) !== version)) return null
+
+  return {
+    version: CHECKOUT_ACKNOWLEDGMENT_VERSION,
+    acceptedAt: new Date(acceptedAtMs).toISOString(),
+    locale,
+    exactLanguage: expectedLanguage,
+    policyVersions: ACKNOWLEDGMENT_POLICY_VERSIONS,
+  }
 }
 
 function normalize(value: string) {
@@ -491,6 +546,9 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
   }
   if (Math.floor(Number(body.kitCount) || 0) !== kitCount) return response({ code: 'cart_quantity_mismatch' }, 409, origin)
   if (body.destinationAcknowledged !== true) return response({ code: 'destination_acknowledgment_required' }, 422, origin)
+  const locale = text(body.locale) === 'es' ? 'es' : 'en'
+  const acknowledgment = checkoutAcknowledgment(body.checkoutAcknowledgment, locale)
+  if (!acknowledgment) return response({ code: 'checkout_acknowledgment_required' }, 422, origin)
   const contact = body.contact && typeof body.contact === 'object' ? body.contact as Record<string, unknown> : {}
   if (!text(contact.name) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text(contact.email)) || text(contact.phone).replace(/\D/g, '').length < 7) {
     return response({ code: 'contact_information_incomplete' }, 422, origin)
@@ -566,7 +624,7 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
       import_fee_cents: importFeeCents,
       shipping_cents: shippingCents,
       total_cents: totalCents,
-      locale: text(body.locale) === 'es' ? 'es' : 'en',
+      locale,
       contact,
       destination_type: destination,
       local_fulfillment_method: isLocal(destination) ? localFulfillment : null,
@@ -579,6 +637,11 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
       shipping_service: matchedRate || (localReady ? { carrier: localFulfillment === 'pickup' ? 'Encore Distribution Point' : 'Encore Local Delivery', service: verification.localDeliveryTime, amountCents: verification.localDeliveryFeeCents, currency: 'USD' } : null),
       shipping_review_required: reviewRequired,
       destination_acknowledged: body.destinationAcknowledged === true,
+      checkout_acknowledgment_version: acknowledgment.version,
+      checkout_acknowledged_at: acknowledgment.acceptedAt,
+      checkout_acknowledgment_language: acknowledgment.exactLanguage,
+      checkout_acknowledgment_locale: acknowledgment.locale,
+      checkout_policy_versions: acknowledgment.policyVersions,
     })
     if (!error) return response({ reference, subtotalCents, importFeeCents, shippingCents, totalCents, recorded: true, reviewRequired, verification }, 200, origin)
     if (error.code !== '23505') return response({ code: 'order_store_unavailable' }, 503, origin)

@@ -46,6 +46,7 @@ import { ProductHero as ProductHeroEnvironment } from './ProductHero'
 // back to the default hero automatically, so a placeholder is never shipped.
 import { CTA } from '../CTA'
 import { EncoreCompleteKit } from '../EncoreCompleteKit'
+import { formatMoney } from '../../lib/money'
 import {
   InternalLinkGrid,
   MechanismOfActionSection,
@@ -137,7 +138,7 @@ export function ProductBreadcrumb({ product, tone = 'light' }: { product: Produc
 function getProductPriceLabel(product: Product, t: (key: string, vars?: Record<string, string | number>) => string) {
   const prices = product.variants.map((variant) => variant.price).filter((price) => price > 0)
 
-  return prices.length ? t('fromPrice', { price: `$${Math.min(...prices).toLocaleString()}` }) : t('byReview')
+  return prices.length ? t('fromPrice', { price: formatMoney(Math.min(...prices)) }) : t('byReview')
 }
 
 function plainResearchArea(title: string, locale: 'en' | 'es') {
@@ -155,7 +156,7 @@ function getPlainProductDescription(product: Product, researchContent: ProductRe
   if (!researchContent) return product.shortDescription
   const areas = [...new Set(researchContent.researchAreas.slice(0, 3).map((area) => plainResearchArea(area.title, locale)))].join(locale === 'es' ? ', ' : ', ')
   return locale === 'es'
-    ? `${product.name} es un producto de investigación premium estudiado en ${areas}, disponible ahora con papeles de laboratorio a solicitud.`
+    ? `${product.name} es un producto de investigación premium estudiado en ${areas}, disponible ahora con documentos de laboratorio a solicitud.`
     : `${product.name} is a premium research product studied in ${areas}, available now with lab paperwork on request.`
 }
 

@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import { getEnabledPaymentMethods, type InterimPaymentMethod, type InterimPaymentMethodId } from '../../config/interimCheckout'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import type { CartItem } from '../../lib/cart'
+import type { CheckoutAcknowledgmentAudit } from '../../data/acknowledgmentContent'
 import type { ShippingSelection } from '../../lib/shipping'
 import { shippingSelectionAllowsPayment } from '../../lib/shipping'
 import {
@@ -87,7 +88,15 @@ type HandoffState =
   | { step: 'choose'; channel: HandoffChannel }
   | { step: 'done'; channel: HandoffChannel; reference: string; message: string; method: InterimPaymentMethod; recorded: boolean; copied: boolean }
 
-export function InterimCheckoutHandoff({ items, shipping }: { items: CartItem[]; shipping?: ShippingSelection }) {
+export function InterimCheckoutHandoff({
+  items,
+  shipping,
+  acknowledgment,
+}: {
+  items: CartItem[]
+  shipping?: ShippingSelection
+  acknowledgment: CheckoutAcknowledgmentAudit
+}) {
   const { t } = useTranslation('cart')
   const { locale } = useLocale()
   const [state, setState] = useState<HandoffState | null>(null)
@@ -138,6 +147,7 @@ export function InterimCheckoutHandoff({ items, shipping }: { items: CartItem[];
         locale,
         contact,
         shipping,
+        acknowledgment,
       })
       const effectiveMethod: InterimPaymentMethod = order.reviewRequired ? { id: 'manual_review', enabled: true, details: [] } : chosenMethod
       const message = buildHandoffMessage({ reference: order.reference, items, paymentMethod: effectiveMethod.id, locale, contact, shipping, totalCents: order.totalCents })

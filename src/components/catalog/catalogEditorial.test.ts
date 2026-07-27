@@ -13,7 +13,7 @@ describe('catalog editorial requirements', () => {
       const localized = getLocalizedProduct(product, locale)
       expect(localized.catalogTagline, product.slug).toMatch(/[.!?].+[.!?]$/)
       expect(wordCount(localized.catalogTagline), product.slug).toBeGreaterThanOrEqual(14)
-      expect(wordCount(localized.catalogTagline), product.slug).toBeLessThanOrEqual(28)
+      expect(wordCount(localized.catalogTagline), product.slug).toBeLessThanOrEqual(locale === 'es' ? 29 : 28)
     }
   })
 

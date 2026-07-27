@@ -90,7 +90,7 @@ export function localizeProductResearchContent(product: Product, content: Produc
     biologicalPathway: 'Vías biológicas descritas en la literatura del producto.',
     evidenceProfile: 'Evidencia dependiente del modelo y del estudio',
     overview: `${product.name} se presenta como material de investigación para estudiar las preguntas descritas en la literatura disponible. La interpretación depende del modelo, la formulación y los parámetros medidos en cada estudio.`,
-    scientificIdentity: 'La identidad, la pureza y los papeles de laboratorio deben verificarse para cada material y lote; la literatura publicada no valida por sí sola un producto de catálogo.',
+    scientificIdentity: 'La identidad, la pureza y los documentos de laboratorio deben verificarse para cada material y lote; la literatura publicada no valida por sí sola un producto de catálogo.',
     howStudied: 'La investigación puede incluir modelos celulares, animales, observacionales o clínicos, según el registro. Cada modelo tiene límites y no debe extrapolarse a resultados individuales.',
     mechanismSummary: `Los estudios de ${product.name} examinan las vías descritas para esta entrada mediante parámetros medibles. La relación entre un mecanismo propuesto y un resultado depende del diseño experimental.`,
     mechanismSteps: content.mechanismSteps.map((step, index) => ({

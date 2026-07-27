@@ -20,7 +20,7 @@ export const navigation = {
   shopLongevity: 'Longevidad y salud celular',
   shopCognitive: 'Rendimiento cognitivo',
   researchLibrary: 'Biblioteca de investigación',
-  documentationCoas: 'Papeles de laboratorio / COAs',
+  documentationCoas: 'Documentos de laboratorio / COAs',
   menuExplore: 'Explorar',
   language: 'Idioma',
   openMenu: 'Abrir menú',

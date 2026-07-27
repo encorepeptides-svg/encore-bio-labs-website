@@ -111,7 +111,7 @@ describe('EditorialReviewRail', () => {
 
     expect(html).toContain('All reviews')
     expect(html).toContain('Service')
-    expect(html).toContain('Documentation')
+    expect(html).toContain('Lab paperwork')
     expect(html).toContain('Fulfillment')
     expect(html).not.toContain('>Support<')
     expect(html.match(/data-review-rail-card/g)).toHaveLength(3)
