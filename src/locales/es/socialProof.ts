@@ -7,7 +7,7 @@ export const socialProof = {
   filterAriaLabel: 'Filtrar opiniones verificadas',
   filterAll: 'Todas',
   filterService: 'Servicio',
-  filterDocumentation: 'Documentación',
+  filterDocumentation: 'Papeles de laboratorio',
   filterFulfillment: 'Preparación y envío',
   filterSupport: 'Atención',
   verifiedLabel: 'Opinión verificada',

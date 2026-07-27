@@ -18,7 +18,7 @@ export const navigation = {
   shopLongevity: 'Longevity & Cellular Health',
   shopCognitive: 'Cognitive Performance',
   researchLibrary: 'Research Library',
-  documentationCoas: 'Documentation / COAs',
+  documentationCoas: 'Lab paperwork / COAs',
   menuExplore: 'Explore',
   language: 'Language',
   openMenu: 'Open menu',

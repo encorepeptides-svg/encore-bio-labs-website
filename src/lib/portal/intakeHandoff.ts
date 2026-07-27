@@ -26,7 +26,7 @@ function goalPrefill(mainGoal: IntakeFormData['mainGoal']) {
     case 'Endocrine Signaling':
       return { goal: 'wellness', interest: 'hormone-wellness' }
     default:
-      return { goal: 'research-documentation', interest: 'longevity-cellular-health' }
+      return { goal: 'research-lab paperwork', interest: 'longevity-cellular-health' }
   }
 }
 

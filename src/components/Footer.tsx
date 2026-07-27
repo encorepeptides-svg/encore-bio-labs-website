@@ -25,7 +25,6 @@ export function Footer() {
   const contactLinks = [
     { label: t('email'), href: `mailto:${SUPPORT_EMAIL}` },
     { label: t('website'), href: 'https://encorebiolabs.com' },
-    { label: t('instagram'), href: 'https://instagram.com/encorebiolabs' },
     { label: t('whatsapp'), href: 'https://wa.me/19153595448' },
     { label: t('contactLink'), href: '/contact' },
   ]

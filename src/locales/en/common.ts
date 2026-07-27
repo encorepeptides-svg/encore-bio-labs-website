@@ -1,7 +1,7 @@
 export const common = {
   skipToMain: 'Skip to main content',
   researchUseOnly: 'Research use only',
-  documentationByRequest: 'Documentation by request',
+  documentationByRequest: 'Lab paperwork by request',
   notMedicalAdvice: 'Not medical advice',
   loading: 'Loading…',
   loadingPage: 'Loading page…',

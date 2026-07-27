@@ -23,7 +23,7 @@ export const kit = {
   browseCatalog: 'Explorar el catálogo',
   peptideTitle: 'Péptido de investigación',
   peptideDescriptionWithProduct: 'El vial de {product} incluido en tu pedido.',
-  peptideDescriptionGeneric: 'El compuesto de investigación incluido en tu pedido.',
+  peptideDescriptionGeneric: 'El producto de investigación incluido en tu pedido.',
   bacWaterDescription: 'Medida específicamente para este producto cuando aplica, para que no tengas que conseguirla por separado.',
   bacWaterLabelDefault: 'Agua bacteriostática premedida según el producto',
   bacWaterLabelWithAmount: 'Agua bacteriostática premedida ({amount})',

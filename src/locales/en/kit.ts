@@ -21,7 +21,7 @@ export const kit = {
   browseCatalog: 'Browse Catalog',
   peptideTitle: 'Research peptide',
   peptideDescriptionWithProduct: 'The {product} vial included with your order.',
-  peptideDescriptionGeneric: 'The research compound included with your order.',
+  peptideDescriptionGeneric: 'The research product included with your order.',
   bacWaterDescription: 'Measured for this product where applicable, so nothing needs to be sourced separately.',
   bacWaterLabelDefault: 'Product-specific pre-measured BAC water',
   bacWaterLabelWithAmount: 'Pre-measured BAC water ({amount})',

@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useMemo, type ReactNode } from 
 import { localizePath, type Locale } from './config'
 import { saveLocale } from './detectLocale'
 import { translate } from './translate'
+import { setMoneyLocale } from '../lib/money'
 
 type LocaleContextValue = {
   locale: Locale
@@ -49,6 +50,8 @@ export function LocaleProvider({ locale, logicalPath, children }: LocaleProvider
     }),
     [locale, setLocale],
   )
+
+  setMoneyLocale(locale)
 
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>
 }

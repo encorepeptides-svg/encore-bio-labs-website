@@ -5,7 +5,7 @@ export const socialProof = {
   filterAriaLabel: 'Filter verified feedback',
   filterAll: 'All reviews',
   filterService: 'Service',
-  filterDocumentation: 'Documentation',
+  filterDocumentation: 'Lab paperwork',
   filterFulfillment: 'Fulfillment',
   filterSupport: 'Support',
   verifiedLabel: 'Verified feedback',

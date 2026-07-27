@@ -155,8 +155,8 @@ function getPlainProductDescription(product: Product, researchContent: ProductRe
   if (!researchContent) return product.shortDescription
   const areas = [...new Set(researchContent.researchAreas.slice(0, 3).map((area) => plainResearchArea(area.title, locale)))].join(locale === 'es' ? ', ' : ', ')
   return locale === 'es'
-    ? `${product.name} es un compuesto de investigación premium estudiado en ${areas}, disponible ahora con documentación a solicitud.`
-    : `${product.name} is a premium research compound studied in ${areas}, available now with documentation on request.`
+    ? `${product.name} es un producto de investigación premium estudiado en ${areas}, disponible ahora con papeles de laboratorio a solicitud.`
+    : `${product.name} is a premium research product studied in ${areas}, available now with lab paperwork on request.`
 }
 
 export function ProductHero({
@@ -443,7 +443,7 @@ function getIncludedItems(product: Product) {
   if (isKit) {
     items.push({
       title: 'Measured BAC water',
-      description: 'Included where applicable on complete research kit formats, alongside documentation and premium packaging.',
+      description: 'Included where applicable on complete research kit formats, alongside lab paperwork and premium packaging.',
     })
   }
 

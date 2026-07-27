@@ -21,6 +21,23 @@ import { track } from '../../lib/analytics'
 import { usePublicInventory } from '../../hooks/usePublicInventory'
 import { publicStatusLabel } from '../../lib/inventory'
 
+const catalogStatusLabels = {
+  en: {
+    'In Stock': 'In Stock',
+    'Limited Stock': 'Limited Availability',
+    'On Request': 'On Request',
+    'Availability by request': 'Availability by request',
+    Unavailable: 'Unavailable',
+  },
+  es: {
+    'In Stock': 'En existencia',
+    'Limited Stock': 'Disponibilidad limitada',
+    'On Request': 'Bajo solicitud',
+    'Availability by request': 'Disponibilidad bajo solicitud',
+    Unavailable: 'No disponible',
+  },
+} as const
+
 export function PurchaseSelector({
   product,
   compact = false,
@@ -47,6 +64,9 @@ export function PurchaseSelector({
   const { statuses: inventoryStatuses, loading: inventoryLoading } = usePublicInventory(product.variants.map((entry) => entry.sku!))
   const inventoryStatus = inventoryStatuses[variant.sku!]
   const inventoryUnavailable = inventoryStatus === 'out_of_stock' || inventoryStatus === 'inactive'
+  const inventoryLabel = inventoryStatus
+    ? publicStatusLabel(inventoryStatus, locale)
+    : catalogStatusLabels[locale][product.stockStatus]
   const priceNeedsConfirmation = variant.priceNeedsConfirmation === true
   const quote = useMemo(() => quotePurchase(product, variant, selection), [product, selection, variant])
   const smallestMultipackQuote = useMemo(() => {
@@ -96,7 +116,7 @@ export function PurchaseSelector({
         <p className="mt-4 text-sm font-semibold text-[#071724]">{t('formatLabel', { label: variant.label, format: formatLabel(tCommon, variant.format) })}</p>
       )}
 
-      {inventoryStatus ? <p aria-live="polite" className={`mt-4 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${inventoryUnavailable ? 'bg-red-50 text-red-900' : inventoryStatus === 'limited' ? 'bg-amber-50 text-amber-950' : 'bg-emerald-50 text-emerald-900'}`}>{publicStatusLabel(inventoryStatus, locale)}</p> : null}
+      <p aria-live="polite" className={`mt-4 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${inventoryUnavailable || product.stockStatus === 'Unavailable' ? 'bg-red-50 text-red-900' : inventoryStatus === 'limited' || product.stockStatus === 'Limited Stock' ? 'bg-amber-50 text-amber-950' : inventoryStatus === 'in_stock' || product.stockStatus === 'In Stock' ? 'bg-emerald-50 text-emerald-900' : 'bg-slate-100 text-slate-700'}`}>{inventoryLabel}</p>
 
       {!isProductPurchasable(product) || variant.price <= 0 || inventoryUnavailable ? (
         <div className="mt-5 rounded-2xl border border-slate-200 bg-[#f8fafc] p-5">

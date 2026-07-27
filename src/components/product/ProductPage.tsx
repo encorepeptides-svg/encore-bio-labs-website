@@ -15,9 +15,10 @@ import {
   RelatedProducts,
   ResearchUseDisclaimer,
 } from './ProductPageSections'
-import { RetatrutideProductPage } from './RetatrutideProductPage'
 import { getProductResearchContent } from '../../data/productResearchContent'
+import { getProductConversionContent, isConversionProductSlug } from '../../data/productConversionContent'
 import { ProductResearchExperience } from './ProductResearchExperience'
+import { ProductConversionPage } from './ProductConversionPage'
 
 function findProductBySlug(slug: string) {
   try {
@@ -37,14 +38,20 @@ export function ProductPage({ slug }: { slug: string }) {
   const baseProduct = findProductBySlug(slug)
   const product = baseProduct ? getLocalizedProduct(baseProduct, locale) : null
   const researchContent = product ? getProductResearchContent(product.slug) : undefined
+  const conversionContent = product && isConversionProductSlug(product.slug)
+    ? getProductConversionContent(product.slug, locale)
+    : undefined
+  const metadataTitle = conversionContent?.localeContent.metadata.title
+    ?? (product ? `${product.name} ${titleSuffix[locale]}` : notFoundTitle[locale])
+  const metadataDescription = conversionContent?.localeContent.metadata.description
+    ?? (product ? product.shortDescription || product.description : notFoundDescription[locale])
 
   useEffect(() => {
-    const title = product ? `${product.name} ${titleSuffix[locale]}` : notFoundTitle[locale]
-    const description = product
-      ? product.shortDescription || product.description
-      : notFoundDescription[locale]
-    applyDocumentMetadata(`/products/${product?.slug ?? slug}`, locale, { title, description })
-  }, [locale, product, slug])
+    applyDocumentMetadata(`/products/${product?.slug ?? slug}`, locale, {
+      title: metadataTitle,
+      description: metadataDescription,
+    })
+  }, [locale, metadataDescription, metadataTitle, product?.slug, slug])
 
   if (!product) {
     return (
@@ -70,8 +77,8 @@ export function ProductPage({ slug }: { slug: string }) {
     )
   }
 
-  if (product.slug === 'retatrutide') {
-    return <RetatrutideProductPage product={product} />
+  if (conversionContent) {
+    return <ProductConversionPage product={product} content={conversionContent} />
   }
 
   return (

@@ -495,7 +495,7 @@ ${productsList}
 Research summary:
 ${lead.recommendationSummary.explanation}
 
-A specialist can help review product options, documentation needs, quantities, and fulfillment timing.
+A specialist can help review product options, lab paperwork needs, quantities, and fulfillment timing.
 
 Important: ${brandText.complianceDisclaimer}`
 }

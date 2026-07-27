@@ -1,8 +1,8 @@
 export const catalog = {
   // Compact image-led hero
   heroEyebrow: 'THE ENCORE CATALOG',
-  heroTitle: 'Choose Your Compound.\nGet the Complete Kit.',
-  heroSupporting: 'Browse by category, compare options, and quickly find the right compound for your research. Eligible products include essential supplies selected for each configuration.',
+  heroTitle: 'Choose Your Product.\nGet the Complete Kit.',
+  heroSupporting: 'Browse by category, compare options, and quickly find the right product for your research. Eligible products include essential supplies selected for each configuration.',
   heroPrimaryCta: 'View All Products',
   heroSecondaryCta: 'Shop by Category',
   heroReassurance: 'Nationwide shipping · Local delivery available · Complete kits on eligible products',
@@ -11,16 +11,16 @@ export const catalog = {
 
   // Compact category selector
   selectorLabel: 'Shop by research category',
-  areaProductCountOne: '{count} compound',
-  areaProductCountOther: '{count} compounds',
+  areaProductCountOne: '{count} product',
+  areaProductCountOther: '{count} products',
   researchHighlightsLabel: 'Research Highlights',
 
   // KLOW signature feature
-  klowEyebrow: 'FOUR-COMPOUND REGENERATIVE BLEND',
-  klowTitle: 'KLOW: four compounds in one more complete research formula.',
+  klowEyebrow: 'FOUR-PRODUCT REGENERATIVE BLEND',
+  klowTitle: 'KLOW: four products in one more complete research formula.',
   klowTagline: 'GHK-Cu, BPC-157, TB-500, and KPV brought together in one blend for projects studying recovery, repair, and regenerative signaling.',
   klowCompositionLabel: 'Composition',
-  klowBenefitOne: 'Four compounds in one presentation',
+  klowBenefitOne: 'Four products in one presentation',
   klowBenefitTwo: 'An integrated approach for recovery studies',
   klowBenefitThree: 'A simpler selection for regenerative projects',
   klowCta: 'Buy KLOW',
@@ -32,7 +32,7 @@ export const catalog = {
   retaTitle: 'Retatrutide',
   retaPullQuote: 'Take your metabolic research further.',
   retaBody:
-    'Retatrutide brings GIP, GLP-1, and glucagon agonist activity together in one research compound. Choose the strength your project requires and move forward with a clear option.',
+    'Retatrutide brings GIP, GLP-1, and glucagon activator activity together in one research product. Choose the strength your project requires and move forward with a clear option.',
   retaReceptorsLabel: 'Supporting context: three receptor pathways',
   retaReceptorGip: 'GIP',
   retaReceptorGlp1: 'GLP-1',
@@ -45,8 +45,8 @@ export const catalog = {
   retaAddVariantToCart: 'Add {variant} to cart',
   retaPrimaryCta: 'Choose a strength',
   retaSecondaryCta: 'Review the Research',
-  retaCompliance: 'Investigational compound. For research use only. Not for human or veterinary use.',
-  retaVisualAlt: 'Retatrutide investigational research compound vial',
+  retaCompliance: 'Investigational product. For research use only. Not for human or veterinary use.',
+  retaVisualAlt: 'Retatrutide investigational research product vial',
 
   // Closing research-use notice
   closingTitle: 'Laboratory research only',
@@ -55,7 +55,7 @@ export const catalog = {
 
   // Legacy best-sellers keys (retained for the standalone bestsellers module)
   bestSellersEyebrow: 'Best Sellers',
-  bestSellersTitle: 'The compounds researchers order most.',
+  bestSellersTitle: 'The products researchers order most.',
   featuredBestseller: 'Featured Bestseller',
   viewOptions: 'View Options',
   view: 'View',
@@ -73,15 +73,15 @@ export const catalog = {
   categoryEssentials: 'Essentials',
 
   categoryDescWeightManagement:
-    'Compare metabolic research compounds by pathway, format, price, and documentation, from receptor signaling to nutrient response and energy balance.',
+    'Compare metabolic research products by pathway, format, price, and lab paperwork, from receptor signaling to nutrient response and energy balance.',
   categoryDescRecoveryRegeneration:
     'Tissue-repair, cell-migration, and skin-biology research — plus signature recovery blends built for serious study.',
   categoryDescCellularEnergyLongevity:
     'The cellular-energy and longevity frontier: mitochondrial function, redox balance, and healthy-aging pathways.',
   categoryDescCognitivePerformance:
-    'Focus, cognition, and neuro-signaling research compounds — organized so you can choose fast.',
+    'Focus, cognition, and neuro-signaling research products — organized so you can choose fast.',
   categoryDescHormoneWellness:
-    'Endocrine, reproductive-axis, and hormone-response research compounds, ready to ship.',
+    'Endocrine, reproductive-axis, and hormone-response research products, ready to ship.',
   categoryDescEssentials: 'The lab supplies every research workflow needs — handling and preparation accessories, listed separately.',
 
   onFileCoa: 'On-file COA',
@@ -100,15 +100,15 @@ export const catalog = {
   sortPriceLow: 'Price: Low to High',
   sortPriceHigh: 'Price: High to Low',
   sortName: 'Name: A–Z',
-  trustThirdPartyTested: 'Documentation by Request',
+  trustThirdPartyTested: 'Lab paperwork by Request',
   trustJanoshikCoas: 'Available COA Records',
   trustShipsFromUsa: 'Ships from USA',
   trustResearchUseOnly: 'Research Use Only',
   helpTitle: 'Not sure which kit to order?',
-  helpBody: 'Tell us the pathways, formats, or documentation your project needs, and our team will point you straight to the right compounds and kits — without making treatment or use recommendations.',
+  helpBody: 'Tell us the pathways, formats, or lab paperwork your project needs, and our team will point you straight to the right products and kits — without making treatment or use recommendations.',
   startResearchIntake: 'Get My Recommendation',
   quote: 'Quote',
   from: 'From',
   optionsCount: '{count} options',
-  productVisualAlt: '{product} research compound packaging',
+  productVisualAlt: '{product} research product packaging',
 } as const

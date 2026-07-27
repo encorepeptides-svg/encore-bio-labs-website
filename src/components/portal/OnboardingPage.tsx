@@ -42,7 +42,7 @@ export function OnboardingPage() {
   const goals = [
     { value: 'weight-management', label: t('goalWeight') }, { value: 'body-composition', label: t('goalBodyComp') },
     { value: 'recovery', label: t('goalRecovery') }, { value: 'energy', label: t('goalEnergy') },
-    { value: 'wellness', label: t('goalWellness') }, { value: 'research-documentation', label: t('goalDocuments') },
+    { value: 'wellness', label: t('goalWellness') }, { value: 'research-lab paperwork', label: t('goalDocuments') },
   ]
   const researchInterests = PORTAL_RESEARCH_INTERESTS.map((value) => ({ value, label: t(`researchInterest${value.split('-').map((part) => `${part[0].toUpperCase()}${part.slice(1)}`).join('')}`) }))
   const productChoices = productsForInterestSelection().map((product) => getLocalizedProduct(product, locale))

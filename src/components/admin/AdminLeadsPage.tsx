@@ -286,7 +286,7 @@ function LeadDetail({
                   ['Body fat', lead.bodyFat],
                   ['Waist', lead.waist],
                   ['Activity level', lead.activityLevel],
-                  ['Medications or compounds', lead.medicationsOrCompounds],
+                  ['Medications or products', lead.medicationsOrCompounds],
                   ['Sensitivities', lead.sensitivities],
                 ]}
               />

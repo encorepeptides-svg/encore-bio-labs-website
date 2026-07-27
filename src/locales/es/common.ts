@@ -3,7 +3,7 @@ import type { common as commonEn } from '../en/common'
 export const common = {
   skipToMain: 'Saltar al contenido principal',
   researchUseOnly: 'Uso exclusivo para investigación',
-  documentationByRequest: 'Documentación disponible a solicitud',
+  documentationByRequest: 'Papeles de laboratorio disponible a solicitud',
   notMedicalAdvice: 'No es un consejo médico',
   loading: 'Cargando…',
   loadingPage: 'Cargando la página…',
