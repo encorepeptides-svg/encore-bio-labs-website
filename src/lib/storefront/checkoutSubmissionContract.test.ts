@@ -21,6 +21,8 @@ describe('checkout submission contract', () => {
   it('notifies support without making messaging the order-creation step', () => {
     expect(edgeFunction).toContain("const SUPPORT_EMAIL = 'support@encorebiolabs.com'")
     expect(edgeFunction).toContain('await notifySupport')
+    expect(edgeFunction).toContain('EdgeRuntime.waitUntil(task)')
+    expect(edgeFunction.indexOf("scheduleBackground(recordSupportNotification")).toBeLessThan(edgeFunction.indexOf("supportNotification: 'scheduled'"))
     expect(edgeFunction).toContain("source: 'checkout_order'")
     expect(handoff).not.toContain('createPendingOrder(')
     expect(handoff).toContain('order.reference')

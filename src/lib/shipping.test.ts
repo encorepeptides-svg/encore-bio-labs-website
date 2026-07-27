@@ -12,6 +12,7 @@ import {
   localDestinationIdentityMatches,
   localFulfillmentRequiresAddress,
   shippingSelectionAllowsPayment,
+  shippingVerificationCanBeReviewed,
   splitUsStreetAddress,
   verifyShippingAddress,
   type AddressVerificationResult,
@@ -163,6 +164,13 @@ describe('server-mirrored charges and payment gates', () => {
     expect(shippingSelectionAllowsPayment(selection({ destinationAcknowledged: false }))).toBe(false)
     expect(shippingSelectionAllowsPayment(selection({ manualReviewRequested: true }))).toBe(false)
     expect(shippingSelectionAllowsPayment(selection({ verification: { ...verified, status: 'provider_unavailable', rates: [], manualReviewRequired: true, deliverable: false } }))).toBe(false)
+  })
+
+  it('routes every eligible shipping exception directly to manual review', () => {
+    for (const status of ['provider_unavailable', 'manual_review', 'undeliverable', 'out_of_coverage'] as const) {
+      expect(shippingVerificationCanBeReviewed({ ...verified, status, manualReviewRequired: false, deliverable: false })).toBe(true)
+    }
+    expect(shippingVerificationCanBeReviewed({ ...verified, status: 'incomplete', manualReviewRequired: false, deliverable: false })).toBe(false)
   })
 
   it('starts an empty international address without assuming a country', () => {

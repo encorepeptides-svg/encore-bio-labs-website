@@ -1,5 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.110.1'
 
+declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void } | undefined
+
 type Destination = 'us' | 'mexico' | 'local_el_paso' | 'local_juarez' | 'local_chihuahua' | 'international'
 type LocalFulfillment = 'pickup' | 'home_delivery'
 type Address = { country: string; state: string; city: string; neighborhood: string; postalCode: string; street: string; streetNumber: string; line2: string }
@@ -100,6 +102,34 @@ async function notifySupport(reference: string, status: string, contact: Record<
   } finally {
     clearTimeout(timer)
   }
+}
+
+async function recordSupportNotification(client: ReturnType<typeof createClient>, reference: string, status: string, contact: Record<string, unknown>, items: Array<Record<string, unknown>>, subtotalCents: number, totalCents: number | null, locale: 'en' | 'es') {
+  const notification = await notifySupport(reference, status, contact, items, subtotalCents, totalCents)
+  const { error } = await client.from('communication_messages').insert({
+    direction: 'inbound',
+    source: 'checkout_order',
+    mailbox: 'contact',
+    sender_name: text(contact.name),
+    sender_email: text(contact.email),
+    sender_phone: text(contact.phone) || null,
+    recipient_email: SUPPORT_EMAIL,
+    subject: `[${reference}] ${status === 'pending_shipping_review' ? 'Pending Shipping Review' : 'New checkout order'}`,
+    body_text: `Checkout request ${reference} was saved with status ${status.replaceAll('_', ' ')}. Review the order in the admin storefront portal.`,
+    locale,
+    delivery_status: notification.sent ? 'sent' : 'queued',
+    delivery_error: notification.error,
+    attempts: 1,
+    last_attempt_at: new Date().toISOString(),
+    metadata: { order_reference: reference, notification_recipient: SUPPORT_EMAIL },
+  })
+  if (error) console.error('[shipping-checkout] support notification record failed', { reference, code: error.code })
+  else console.log('[shipping-checkout] support notification completed', { reference, delivery: notification.sent ? 'sent' : 'queued' })
+}
+
+function scheduleBackground(task: Promise<unknown>) {
+  if (typeof EdgeRuntime !== 'undefined') EdgeRuntime.waitUntil(task)
+  else void task.catch((error) => console.error('[shipping-checkout] background task failed', { error: error instanceof Error ? error.message : String(error) }))
 }
 
 function checkoutAcknowledgment(value: unknown, locale: 'en' | 'es') {
@@ -566,6 +596,7 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
   const localFulfillment = ['pickup', 'home_delivery'].includes(text(body.localFulfillment)) ? text(body.localFulfillment) as LocalFulfillment : null
   const address = sanitizeAddress(body.address)
   const items = Array.isArray(body.items) ? body.items : []
+  console.log('[shipping-checkout] create order received', { destination, itemCount: items.length })
   const kitCount = Math.min(999, items.reduce((count, value) => {
     if (!value || typeof value !== 'object') return count
     const item = value as Record<string, unknown>
@@ -677,28 +708,16 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
       checkout_policy_versions: acknowledgment.policyVersions,
     })
     if (!error) {
-      const notification = await notifySupport(reference, status, contact, safeItems, subtotalCents, totalCents)
-      await client.from('communication_messages').insert({
-        direction: 'inbound',
-        source: 'checkout_order',
-        mailbox: 'contact',
-        sender_name: text(contact.name),
-        sender_email: text(contact.email),
-        sender_phone: text(contact.phone) || null,
-        recipient_email: SUPPORT_EMAIL,
-        subject: `[${reference}] ${status === 'pending_shipping_review' ? 'Pending Shipping Review' : 'New checkout order'}`,
-        body_text: `Checkout request ${reference} was saved with status ${status.replaceAll('_', ' ')}. Review the order in the admin storefront portal.`,
-        locale,
-        delivery_status: notification.sent ? 'sent' : 'queued',
-        delivery_error: notification.error,
-        attempts: 1,
-        last_attempt_at: new Date().toISOString(),
-        metadata: { order_reference: reference, notification_recipient: SUPPORT_EMAIL },
-      })
-      return response({ reference, subtotalCents, importFeeCents, shippingCents, totalCents, recorded: true, reviewRequired, verification, supportNotification: notification.sent ? 'sent' : 'queued' }, 200, origin)
+      console.log('[shipping-checkout] order saved', { reference, status, destination, reviewRequired })
+      scheduleBackground(recordSupportNotification(client, reference, status, contact, safeItems, subtotalCents, totalCents, locale))
+      return response({ reference, subtotalCents, importFeeCents, shippingCents, totalCents, recorded: true, reviewRequired, verification, supportNotification: 'scheduled' }, 200, origin)
     }
-    if (error.code !== '23505') return response({ code: 'order_store_unavailable' }, 503, origin)
+    if (error.code !== '23505') {
+      console.error('[shipping-checkout] order save failed', { destination, status, code: error.code })
+      return response({ code: 'order_store_unavailable' }, 503, origin)
+    }
   }
+  console.error('[shipping-checkout] order reference collision', { destination })
   return response({ code: 'order_reference_collision' }, 503, origin)
 }
 

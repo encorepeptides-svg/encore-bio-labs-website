@@ -33,6 +33,7 @@ import {
   isPoBoxAddress,
   localDistributionPostalCode,
   shippingSelectionAllowsPayment,
+  shippingVerificationCanBeReviewed,
   splitUsStreetAddress,
   verifyShippingAddress,
   type AddressChoice,
@@ -414,7 +415,7 @@ export function CheckoutPage() {
     setVerification(result)
     setAddressChoice(null)
     setSelectedRateId(null)
-    setManualReviewRequested(result.manualReviewRequired)
+    setManualReviewRequested(shippingVerificationCanBeReviewed(result))
     setValidating(false)
   }, [formData.destination, formData.localFulfillment, kitCount, verificationAddress])
 

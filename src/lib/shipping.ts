@@ -236,6 +236,10 @@ export function shippingSelectionAllowsPayment(selection: ShippingSelection) {
   return Boolean(selection.selectedRateId)
 }
 
+export function shippingVerificationCanBeReviewed(verification: AddressVerificationResult) {
+  return verification.manualReviewRequired || ['provider_unavailable', 'manual_review', 'undeliverable', 'out_of_coverage'].includes(verification.status)
+}
+
 export async function verifyShippingAddress(input: ShippingVerificationRequest): Promise<AddressVerificationResult> {
   if (destinationIsLocal(input.destination) && !input.localFulfillment) {
     return {
