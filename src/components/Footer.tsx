@@ -1,8 +1,17 @@
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight, Facebook, Instagram } from 'lucide-react'
 import logo from '../assets/images/logo/encore-logo.png'
 import { useLocale, useTranslation } from '../i18n/LocaleContext'
 import { LanguageSelector } from './LanguageSelector'
 import { SUPPORT_EMAIL } from '../lib/email'
+import { SOCIAL_PROFILES } from '../lib/social'
+
+function TikTokIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 1 1-1.79-2.46V9.77a5.77 5.77 0 1 0 4.88 5.7V9.01a7.35 7.35 0 0 0 4.29 1.37V7.3a4.29 4.29 0 0 1-3.23-1.48Z" />
+    </svg>
+  )
+}
 
 export function Footer() {
   const { path } = useLocale()
@@ -55,6 +64,27 @@ export function Footer() {
             <p className="mt-5 max-w-2xl rounded-2xl border border-slate-900/10 bg-white/70 p-4 text-xs leading-5 text-slate-500">
               {tBrand('complianceDisclaimer')}
             </p>
+            <div className="mt-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">{t('followUs')}</p>
+              <div className="mt-3 flex items-center gap-3">
+                {SOCIAL_PROFILES.map((profile) => (
+                  <a
+                    key={profile.id}
+                    href={profile.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${t(`${profile.id}Label`)} ${profile.handle}`}
+                    title={profile.handle}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-900/10 text-slate-600 transition hover:border-teal-600/40 hover:text-[#071724] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                  >
+                    {profile.id === 'instagram' ? <Instagram size={18} aria-hidden="true" /> : null}
+                    {profile.id === 'facebook' ? <Facebook size={18} aria-hidden="true" /> : null}
+                    {profile.id === 'tiktok' ? <TikTokIcon size={18} /> : null}
+                  </a>
+                ))}
+              </div>
+            </div>
+
             <div className="mt-5">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">{t('language')}</p>
               <div className="mt-2">

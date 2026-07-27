@@ -36,12 +36,12 @@ export type ProductTextOverride = Partial<{
 export const productTranslationsEs: Record<string, ProductTextOverride> = {
   retatrutide: {
     catalogTagline: 'Un activador triple en investigación de GIP, GLP-1 y glucagón. Se estudia en señalización de nutrientes, balance energético y composición corporal.',
-    description: 'Una entrada del catálogo de investigación organizada para comparar variantes, solicitar el COA y facilitar una revisión centrada en los papeles de laboratorio.',
+    description: 'Retatrutide es un péptido sintético que se estudia como activador triple de los puntos de acción de GLP-1, GIP y glucagón. En investigación se revisa por su señalización en la regulación de energía, modelos de composición corporal y respuesta de marcadores metabólicos.',
     headline: 'Mapea la señalización de triple receptor. Estudia la respuesta metabólica. Revisa con precisión.',
-    shortDescription: 'Retatrutide es un péptido sintético estudiado como activador triple de los receptores GLP-1, GIP y glucagón, revisado en contextos de investigación para la señalización de regulación energética, modelos de composición corporal y respuesta de marcadores metabólicos.',
+    shortDescription: 'Retatrutide es un péptido sintético estudiado como activador triple de los puntos de acción de GLP-1, GIP y glucagón, revisado en contextos de investigación para la señalización de regulación energética, modelos de composición corporal y respuesta de marcadores metabólicos.',
     keyHighlights: [
       'Agonista sintético de triple receptor (GLP-1 / GIP / glucagón)',
-      'Señalización de los receptores GLP-1, GIP y glucagón',
+      'Señalización de los puntos de acción de GLP-1, GIP y glucagón',
       'Tendencia de peso corporal, glucosa en ayunas, HbA1c y marcadores del perfil de lípidos en diseños de investigación calificados',
       'Posicionamiento de uso exclusivo para investigación, sin protocolos de dosificación',
     ],
@@ -52,7 +52,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
       'Registro de marcadores de composición corporal',
     ],
     benefits: [
-      { title: 'Investigación de triple receptor', description: 'Útil para estudiar el compromiso combinado de los receptores GLP-1, GIP y glucagón en una sola entrada de investigación.' },
+      { title: 'Investigación de triple receptor', description: 'Útil para estudiar el compromiso combinado de los puntos de acción de GLP-1, GIP y glucagón en un solo producto de investigación.' },
       { title: 'Modelos de gasto energético', description: 'El componente del receptor de glucagón suele revisarse junto con preguntas de investigación sobre gasto energético, distintas de las entradas exclusivas de GLP-1.' },
       { title: 'Contexto de composición corporal', description: 'Aparece en la literatura relacionada con la investigación de peso y composición corporal, presentada sin resultados garantizados.' },
       { title: 'Revisión de marcadores glucémicos', description: 'Apoya conversaciones de investigación sobre glucosa en ayunas y HbA1c junto con paneles metabólicos.' },
@@ -60,7 +60,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
       { title: 'Revisión centrada en papeles de laboratorio', description: 'Combina la revisión del producto con supervisión calificada, contexto de laboratorio y un registro cuidadoso.' },
     ],
     researchHighlights: [
-      { title: 'Agonismo de triple receptor', journal: 'Literatura de la vía incretina', takeaway: 'Retatrutide se estudia como una sola molécula que compromete los receptores GLP-1, GIP y glucagón, lo que la distingue de las entradas de receptor único o doble en esta categoría.', metric: 'GLP·GIP·GCG' },
+      { title: 'Agonismo de triple receptor', journal: 'Literatura de la vía incretina', takeaway: 'Retatrutide se estudia como una sola molécula que compromete los puntos de acción de GLP-1, GIP y glucagón, lo que la distingue de las entradas de receptor único o doble en esta categoría.', metric: 'GLP·GIP·GCG' },
       { title: 'Señalización energética vía receptor de glucagón', journal: 'Resúmenes de investigación metabólica', takeaway: 'El componente del receptor de glucagón se analiza con frecuencia como un mecanismo de investigación del gasto energético, distinto de la sola señalización del apetito.', metric: 'EE' },
       { title: 'Investigación de composición corporal', journal: 'Contexto de literatura clínica', takeaway: 'Estudios publicados han evaluado retatrutide en modelos de peso y composición corporal; su aplicabilidad depende del diseño del estudio y la supervisión calificada.', metric: 'BC' },
     ],
@@ -72,7 +72,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   },
   tesamorelin: {
     catalogTagline: 'Un análogo sintético de GHRH estudiado a través del eje GH–IGF-1. La investigación examina señalización endocrina y composición corporal.',
-    description: 'Una entrada de investigación metabólica presentada de forma clara, con papeles de laboratorio de respaldo y contexto de formato.',
+    description: 'Tesamorelin es una versión hecha en laboratorio de la hormona que libera la hormona de crecimiento. Se estudia por su señalización en la cadena de la hormona de crecimiento, la respuesta de IGF-1, modelos de grasa visceral y revisión de marcadores metabólicos.',
     headline: 'El producto del eje GH para investigación metabólica seria.',
     keyHighlights: [
       'Análogo sintético de GHRH',
@@ -83,7 +83,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   },
   'wolverine-stack': {
     catalogTagline: 'Un formato combinado de BPC-157 y TB-500. La literatura de sus componentes examina señalización tisular, biología de actina y migración celular en modelos preclínicos.',
-    description: 'Una entrada de investigación de recuperación y reparación, preparada con un kit completo y lista para la revisión de registros.',
+    description: 'Wolverine Stack reúne los temas de investigación de BPC-157 y TB-500 en un kit enfocado en recuperación, para planear estudios de señalización de reparación, migración celular, angiogénesis y tejido conectivo.',
     headline: 'BPC-157 + TB-500. El kit completo de investigación de recuperación.',
     keyHighlights: [
       'Combinación de investigación de recuperación BPC-157 más TB-500',
@@ -105,7 +105,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   },
   'igf1-lr3': {
     catalogTagline: 'Un análogo de IGF-1 de acción prolongada investigado en modelos de señalización receptora. El estudio se centra en duración, respuesta celular y medición controlada.',
-    description: 'Una entrada de investigación de rendimiento, estructurada para una revisión clara, formato bien definido y solicitud de registros.',
+    description: 'IGF1-LR3 es una versión de IGF-1 hecha en laboratorio, de acción prolongada. Se estudia por su señalización en el punto de acción de IGF-1, modelos de crecimiento celular, captación de nutrientes e investigación de vías orientadas al rendimiento.',
     headline: 'Investigación de IGF-1 de acción prolongada, simplificada.',
     keyHighlights: [
       'Análogo de IGF-1 Long Arginine 3 (LR3)',
@@ -116,7 +116,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   },
   'cjc1295-ipamorelin': {
     catalogTagline: 'CJC-1295 e Ipamorelin combinan dos mecanismos de investigación del eje GH. La formulación permite comparar señalización de GHRH y del receptor de grelina.',
-    description: 'Una entrada de investigación combinada, con las variantes agrupadas para comparar más fácilmente en el catálogo.',
+    description: 'CJC-1295 con Ipamorelin es una combinación que une una versión de GHRH hecha en laboratorio con un estimulante del punto de acción de grelina, para modelos de pulso de la cadena de hormona de crecimiento, recuperación y composición corporal.',
     headline: 'Dos mecanismos del eje GH. Un kit listo para investigar.',
     keyHighlights: [
       'Análogo de GHRH más secretagogo del receptor de grelina',
@@ -127,7 +127,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   },
   'mots-c': {
     catalogTagline: 'Un péptido derivado de la mitocondria estudiado en señalización de energía celular. La investigación preclínica examina adaptación metabólica, vías asociadas con AMPK y comunicación mitocondrial.',
-    description: 'Una entrada de investigación de péptidos mitocondriales, estructurada para revisar la señalización metabólica, el contexto energético celular y solicitar papeles de laboratorio.',
+    description: 'MOTS-C es un péptido derivado de la mitocondria que se estudia en estrés metabólico, señalización relacionada con AMPK, modelos de manejo de glucosa e investigación de adaptación energética celular.',
     headline: 'El péptido mitocondrial detrás de la investigación de energía metabólica.',
     keyHighlights: [
       'Péptido derivado de la mitocondria',
@@ -138,7 +138,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   },
   'aod-9604': {
     catalogTagline: 'Un fragmento modificado de hormona de crecimiento estudiado por separado de la hGH intacta. La investigación aborda señalización metabólica y balance energético, con evidencia humana limitada.',
-    description: 'Una entrada de investigación de fragmentos de GH, estructurada para revisar la señalización metabólica, el contexto de composición corporal y solicitar papeles de laboratorio.',
+    description: 'AOD-9604 es un fragmento de la hormona de crecimiento humana que se estudia por su señalización metabólica y en modelos de investigación de composición corporal.',
     headline: 'El fragmento de GH para investigación metabólica.',
     keyHighlights: [
       'Revisión de catálogo centrada en los papeles de laboratorio',
@@ -149,7 +149,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   },
   'nad-plus': {
     catalogTagline: 'Un cofactor redox endógeno central para el metabolismo energético celular. La investigación abarca el ciclo NAD+/NADH, la función mitocondrial y la biología enzimática.',
-    description: 'Una entrada de investigación de longevidad, con presentación premium, contexto de kit completo y papeles de laboratorio disponibles para revisión.',
+    description: 'NAD+ es un cofactor celular central que se estudia por su papel en la biología redox, el metabolismo energético de la mitocondria, la actividad de enzimas de reparación del ADN, la señalización de sirtuinas y modelos de envejecimiento saludable.',
     headline: 'El cofactor de energía celular en el corazón de la investigación de longevidad.',
     keyHighlights: [
       'Dinucleótido de nicotinamida y adenina (NAD+)',
@@ -160,7 +160,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   },
   glutathione: {
     catalogTagline: 'Un tripéptido endógeno central para el equilibrio redox intracelular. La investigación mide el ciclo GSH/GSSG, marcadores de estrés oxidativo y sistemas antioxidantes enzimáticos.',
-    description: 'Una entrada del catálogo de investigación con variantes visibles y espacio para solicitar papeles de laboratorio de respaldo.',
+    description: 'El glutatión es un antioxidante de tres aminoácidos que se estudia por el equilibrio redox, la respuesta al estrés oxidativo, los sistemas enzimáticos de desintoxicación y la investigación de defensa celular.',
     headline: 'El antioxidante maestro para investigación redox y de detoxificación.',
     keyHighlights: [
       'Tripéptido antioxidante endógeno',
@@ -171,7 +171,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   },
   'ghk-cu': {
     catalogTagline: 'Un tripéptido unido al cobre estudiado en modelos de matriz extracelular y respuesta tisular. La investigación examina señalización del colágeno, migración celular y biología de la piel.',
-    description: 'Una entrada de investigación estética, con todas sus opciones disponibles agrupadas para facilitar la revisión del catálogo.',
+    description: 'GHK-Cu es un complejo de péptido con cobre que se estudia por la remodelación de la matriz extracelular, la señalización del colágeno, modelos de respuesta a heridas, biología de la piel e investigación estética.',
     headline: 'El péptido de cobre detrás de la investigación de piel y matriz.',
     keyHighlights: [
       'Complejo tripéptido de cobre',
@@ -182,7 +182,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   },
   'ahk-cu': {
     catalogTagline: 'Un péptido de cobre investigado en modelos foliculares y de piel. Su perfil de investigación se mantiene distinto de la literatura más amplia sobre GHK-Cu.',
-    description: 'Una entrada de investigación estética, estructurada para una presentación clara, revisión de kit y un posicionamiento premium.',
+    description: 'AHK-Cu es un complejo de péptido con cobre que se estudia por la biología del folículo, la señalización dérmica, el contexto de la matriz extracelular y modelos de investigación estética.',
     headline: 'El péptido de cobre para investigación folicular y dérmica.',
     keyHighlights: [
       'Complejo de péptido de cobre',
@@ -193,7 +193,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   },
   epithalon: {
     catalogTagline: 'Un tetrapéptido sintético estudiado en modelos de envejecimiento y ritmo circadiano. La evidencia abarca mecanismos asociados con telómeros, sistemas celulares y observaciones humanas limitadas.',
-    description: 'Una entrada de investigación de longevidad, preparada con contenido educativo premium, filtros y solicitud de registros.',
+    description: 'Epitalón es un tetrapéptido sintético que se estudia en biología del envejecimiento, investigación de péptidos de la glándula pineal, modelos relacionados con telómeros, contexto circadiano y estudios de respuesta al estrés celular.',
     headline: 'El tetrapéptido en la frontera de la investigación de longevidad.',
     keyHighlights: [
       'Tetrapéptido sintético',
@@ -204,7 +204,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   },
   cerebrolysin: {
     catalogTagline: 'Una mezcla de péptidos estudiada en modelos neurobiológicos y de respuesta neuronal. La investigación publicada examina señalización neurotrófica, cognición y contexto neurológico.',
-    description: 'Una entrada de investigación cognitiva, preparada con una presentación premium y seguimiento basado en papeles de laboratorio.',
+    description: 'Cerebrolysin es una mezcla de péptidos que se estudia en señalización neurotrófica, modelos de supervivencia neuronal, plasticidad sináptica, investigación cognitiva y contexto de vías de reparación neuronal.',
     headline: 'El péptido neurotrófico para investigación cognitiva seria.',
     keyHighlights: [
       'Mezcla de péptidos neurotróficos',
@@ -215,7 +215,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   },
   ss31: {
     catalogTagline: 'Un tetrapéptido dirigido a la mitocondria, estudiado mediante cardiolipina y función de membrana. La investigación examina bioenergética, estrés oxidativo y respuesta mitocondrial.',
-    description: 'Una entrada de investigación de longevidad, organizada para conversaciones sobre programas de investigación y futuros detalles de registro.',
+    description: 'SS-31, también conocido como elamipretide en la literatura de investigación, es un péptido dirigido a la mitocondria. Se estudia por su interacción con la cardiolipina, la estabilidad de la membrana interna, el estrés oxidativo y modelos de energía celular.',
     headline: 'Dirigido a la mitocondria. Diseñado para investigación de energía celular.',
     keyHighlights: [
       'Tetrapéptido dirigido a la mitocondria',
@@ -226,7 +226,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   },
   dsip: {
     catalogTagline: 'Un péptido relacionado con el sueño examinado en investigación del cerebro y las hormonas. Los estudios analizan arquitectura del sueño y señalización fisiológica, con evidencia humana limitada y mixta.',
-    description: 'Una entrada de investigación diseñada para una revisión concisa y seguimiento listo con papeles de laboratorio.',
+    description: 'DSIP, o péptido inductor del sueño delta, es un neuropéptido que se estudia por modelos de arquitectura del sueño, señalización cerebro-hormonal, respuesta al estrés y contexto de investigación en recuperación.',
     headline: 'El péptido del sueño para investigación del cerebro y las hormonas.',
     keyHighlights: [
       'Péptido inductor del sueño delta',
@@ -237,7 +237,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   },
   kisspeptin: {
     catalogTagline: 'Un péptido del eje reproductivo estudiado antes de la liberación de GnRH. La investigación examina señalización hipotalámico-hipofisaria y respuestas endocrinas controladas.',
-    description: 'Una entrada de investigación de bienestar sexual, diseñada para mantener la revisión del producto concisa, organizada y lista para tu solicitud.',
+    description: 'La kisspeptina es un neuropéptido que se estudia por su señalización en la cadena hormonal reproductiva, la regulación del pulso de GnRH, la respuesta de LH y FSH, modelos de pubertad y contexto de investigación endocrina.',
     headline: 'El péptido del eje reproductivo para investigación hormonal.',
     keyHighlights: [
       'Neuropéptido del eje reproductivo',
@@ -248,7 +248,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   },
   hcg: {
     catalogTagline: 'Una hormona glucoproteica estudiada mediante señalización del receptor de hormona luteinizante. La investigación incluye biología del eje reproductivo y medición de respuestas endocrinas.',
-    description: 'Una entrada de investigación de bienestar sexual, estructurada para una revisión clara, variantes visibles y conversación sobre papeles de laboratorio.',
+    description: 'La HCG es una hormona glicoproteica que se estudia por su señalización en el punto de acción de LH, modelos de esteroidogénesis gonadal, contexto de investigación en fertilidad y revisión de marcadores endocrinos.',
     headline: 'La hormona de fertilidad para investigación del eje endocrino.',
     keyHighlights: [
       'Hormona de fertilidad coriónica humana',
@@ -259,7 +259,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   },
   'hgh-191aa': {
     catalogTagline: 'Hormona de crecimiento completa de 191 aminoácidos para investigación del receptor GH. Los modelos examinan señalización del eje, respuesta de IGF-1 y marcadores metabólicos.',
-    description: 'Una entrada de investigación de rendimiento, organizada para revisar el formato, conversar sobre disponibilidad y canalizar los papeles de laboratorio.',
+    description: 'HGH 191AA se refiere a la secuencia de 191 aminoácidos de la hormona de crecimiento humana. Se estudia por su señalización en el punto de acción de GH, la respuesta de la cadena de IGF-1, el metabolismo de proteínas, la recuperación y el contexto de investigación en composición corporal.',
     headline: 'Hormona de crecimiento completa de 191 aminoácidos, lista para investigar.',
     keyHighlights: [
       'Secuencia de hormona de crecimiento humana de 191 aminoácidos',
@@ -270,7 +270,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   },
   'thymosin-alpha-1': {
     catalogTagline: 'Un péptido tímico estudiado en modelos de señalización inmunitaria innata y adaptativa. La investigación examina defensa celular y coordinación de la respuesta inmunitaria.',
-    description: 'Una entrada de investigación de salud celular, organizada para una revisión educativa y solicitudes responsables de papeles de laboratorio.',
+    description: 'La timosina alfa-1 es un péptido de señalización inmune que se estudia por la función de las células T, modelos de inmunidad innata y adaptativa, contexto de citocinas e investigación de defensa celular.',
     headline: 'El péptido de señalización inmune para investigación de defensa celular.',
     keyHighlights: [
       'Péptido tímico de señalización inmune',
@@ -281,7 +281,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   },
   'pt-141': {
     catalogTagline: 'Un activador del receptor de melanocortina estudiado en modelos de señalización central. La investigación se centra en farmacología receptora y respuesta neurobiológica, sin implicar uso aprobado.',
-    description: 'Una entrada de investigación de bienestar sexual, con los formatos disponibles agrupados para explorar rápido y acceder al catálogo de forma responsable.',
+    description: 'PT-141, también conocido como bremelanotida en la literatura, es un activador del punto de acción de melanocortina. Se estudia por su señalización en el sistema nervioso central, modelos de investigación en bienestar sexual y contexto de vías neuronales.',
     headline: 'El producto de melanocortina para investigación de bienestar.',
     keyHighlights: [
       'Agonista del receptor de melanocortina',
@@ -292,7 +292,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   },
   semax: {
     catalogTagline: 'Un análogo sintético de fragmento de ACTH investigado en modelos cognitivos y neurobiológicos. La investigación examina señalización asociada con BDNF, respuesta neuronal y conducta.',
-    description: 'Una entrada de investigación cognitiva, preparada con una presentación premium y revisión responsable de papeles de laboratorio.',
+    description: 'Semax es una versión sintética de un fragmento de ACTH que se estudia por la señalización de neuropéptidos, la expresión relacionada con BDNF, modelos de rendimiento cognitivo, respuesta al estrés e investigación en neuroprotección.',
     headline: 'El neuropéptido nootrópico para investigación cognitiva.',
     keyHighlights: [
       'Análogo neuropéptido sintético de fragmento de ACTH',
@@ -303,7 +303,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   },
   selank: {
     catalogTagline: 'Un análogo sintético de tuftsina estudiado en modelos de estrés y neuroinmunidad. La investigación examina vías de señalización asociadas con cognición y adaptación conductual.',
-    description: 'Una entrada de investigación cognitiva, con sus opciones agrupadas en una sola tarjeta clara y fácil de consultar.',
+    description: 'Selank es una versión sintética de la tuftsina que se estudia en modelos de investigación de tipo ansiolítico, señalización inmuno-neuropeptídica, respuesta al estrés, contexto del sistema de serotonina e investigación de rendimiento cognitivo.',
     headline: 'El neuropéptido para investigación de respuesta al estrés.',
     keyHighlights: [
       'Neuropéptido análogo sintético de tuftsina',
@@ -351,7 +351,7 @@ export const catalogHighlightsEs: Record<string, [string, string, string]> = {
   kisspeptin: ['Investigación de señales reproductivas', 'Estudios humanos iniciales creíbles', 'Poblaciones y parámetros limitados'],
   hcg: ['Investigación del receptor LH/CG', 'Evidencia farmacéutica aprobada limitada', 'Afirmación de pérdida de peso refutada'],
   'hgh-191aa': ['Material de referencia de GH completa', 'Investigación controlada GH/IGF', 'Afirmaciones de mejora no respaldadas'],
-  'thymosin-alpha-1': ['Investigación de regulación inmunitaria', 'Datos humanos mixtos por condición', 'Incluye hallazgos neutrales importantes'],
+  'thymosin-alpha-1': ['Investigación de regulación inmunitaria', 'Datos humanos mixtos por condición', 'Incluye resultados neutrales importantes'],
   'pt-141': ['Investigación central de melanocortina', 'Evidencia fase 3 en una población', 'Evidencia sólida · uso limitado'],
   semax: ['Investigación de péptido neuroactivo', 'Modelos de aprendizaje y respuesta cerebral', 'Evidencia principalmente preclínica'],
   selank: ['Investigación de estrés y señales GABA', 'Pequeño estudio humano inicial', 'Base de evidencia limitada'],
