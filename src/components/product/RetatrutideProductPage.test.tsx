@@ -1,19 +1,15 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { CartProvider } from '../../context/CartContext'
-import { products } from '../../data/products'
-import { getLocalizedProduct } from '../../data/productTranslations'
 import type { Locale } from '../../i18n/config'
 import { LocaleProvider } from '../../i18n/LocaleContext'
-import { RetatrutideProductPage } from './RetatrutideProductPage'
+import { ProductPage } from './ProductPage'
 
 function renderPage(locale: Locale) {
-  const product = products.find((entry) => entry.slug === 'retatrutide')
-  if (!product) throw new Error('Retatrutide is missing')
   return renderToStaticMarkup(
     <LocaleProvider locale={locale} logicalPath="/products/retatrutide">
       <CartProvider>
-        <RetatrutideProductPage product={getLocalizedProduct(product, locale)} />
+        <ProductPage slug="retatrutide" />
       </CartProvider>
     </LocaleProvider>,
   )
@@ -22,9 +18,6 @@ function renderPage(locale: Locale) {
 describe('RetatrutideProductPage', () => {
   it('restores the flagship visual research and conversion journey', () => {
     const html = renderPage('en')
-    // The flagship now uses the standard Clean Lab hero (category badge instead
-    // of a bespoke "Encore's Flagship" eyebrow); the research/conversion body
-    // journey below the hero is what this guards.
     expect(html).toContain('Retatrutide')
     expect(html).toContain('28.3%')
     expect(html).toContain('24.1 cm')

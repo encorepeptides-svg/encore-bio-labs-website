@@ -4,7 +4,7 @@ import {
   CHECKOUT_ACKNOWLEDGMENT_VERSION,
   getCheckoutAcknowledgmentLanguage,
 } from '../../data/acknowledgmentContent'
-import migration from '../../../supabase/migrations/20260727031812_add_checkout_acknowledgment_audit.sql?raw'
+import migration from '../../../supabase/migrations/20260727035545_add_checkout_acknowledgment_audit.sql?raw'
 import edgeFunction from '../../../supabase/functions/shipping-checkout/index.ts?raw'
 
 describe('checkout acknowledgment server contract', () => {

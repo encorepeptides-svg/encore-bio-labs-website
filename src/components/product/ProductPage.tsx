@@ -19,6 +19,7 @@ import { getProductResearchContent } from '../../data/productResearchContent'
 import { getProductConversionContent, isConversionProductSlug } from '../../data/productConversionContent'
 import { ProductResearchExperience } from './ProductResearchExperience'
 import { ProductConversionPage } from './ProductConversionPage'
+import { RetatrutideProductPage } from './RetatrutideProductPage'
 
 function findProductBySlug(slug: string) {
   try {
@@ -38,7 +39,7 @@ export function ProductPage({ slug }: { slug: string }) {
   const baseProduct = findProductBySlug(slug)
   const product = baseProduct ? getLocalizedProduct(baseProduct, locale) : null
   const researchContent = product ? getProductResearchContent(product.slug) : undefined
-  const conversionContent = product && isConversionProductSlug(product.slug)
+  const conversionContent = product && product.slug !== 'retatrutide' && isConversionProductSlug(product.slug)
     ? getProductConversionContent(product.slug, locale)
     : undefined
   const metadataTitle = conversionContent?.localeContent.metadata.title
@@ -75,6 +76,10 @@ export function ProductPage({ slug }: { slug: string }) {
         </div>
       </main>
     )
+  }
+
+  if (product.slug === 'retatrutide') {
+    return <RetatrutideProductPage product={product} />
   }
 
   if (conversionContent) {
