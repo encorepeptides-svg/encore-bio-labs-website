@@ -18,7 +18,7 @@ create or replace function public.is_crm_admin()
 returns boolean language sql stable security definer set search_path = '' as $$
   select coalesce((auth.jwt() -> 'app_metadata' ->> 'role') = 'crm_admin', false)
 $$;
-revoke all on function public.is_crm_admin() from public;
+revoke all on function public.is_crm_admin() from public, anon;
 grant execute on function public.is_crm_admin() to authenticated;
 
 create policy "public may submit new leads" on public.crm_leads for insert to anon
