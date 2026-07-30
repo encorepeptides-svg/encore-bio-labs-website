@@ -2,18 +2,41 @@ import { access, cp, mkdir, rm, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import type { Plugin } from 'vite'
 
-const staticSiteWorker = `const worker = {
+const staticSiteWorker = `async function withRuntimeConfig(response, env) {
+  const contentType = response.headers.get('content-type') || ''
+  if (!contentType.includes('text/html')) return response
+
+  const config = {
+    supabaseUrl: env.VITE_SUPABASE_URL || '',
+    supabaseAnonKey: env.VITE_SUPABASE_ANON_KEY || '',
+  }
+  const serialized = JSON.stringify(config).replace(/</g, '\\\\u003c')
+  const script = '<script>window.__ENCORE_RUNTIME_CONFIG__=' + serialized + '</script>'
+  const html = (await response.text()).replace('</head>', script + '</head>')
+  const headers = new Headers(response.headers)
+  headers.delete('content-length')
+  headers.delete('etag')
+  return new Response(html, { status: response.status, statusText: response.statusText, headers })
+}
+
+const worker = {
   async fetch(request, env) {
     const response = await env.ASSETS.fetch(request)
     if (response.status !== 404 || (request.method !== 'GET' && request.method !== 'HEAD')) {
-      return response
+      return withRuntimeConfig(response, env)
     }
 
     const acceptsHtml = request.headers.get('accept')?.includes('text/html') ?? false
     if (!acceptsHtml) return response
 
     const fallbackUrl = new URL('/index.html', request.url)
-    return env.ASSETS.fetch(new Request(fallbackUrl, request))
+    const fallback = await env.ASSETS.fetch(new Request(fallbackUrl))
+    if (fallback.status === 404) {
+      console.error('SPA shell is missing from the Sites asset binding', {
+        path: new URL(request.url).pathname,
+      })
+    }
+    return withRuntimeConfig(fallback, env)
   },
 }
 
