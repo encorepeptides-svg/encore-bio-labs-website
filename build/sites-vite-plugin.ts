@@ -1,28 +1,10 @@
-import { access, cp, mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises'
+import { access, cp, mkdir, readdir, rename, rm, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import type { Plugin } from 'vite'
 
-const staticSiteWorker = `function runtimeConfig(env) {
-  const config = {
-    supabaseUrl: env.VITE_SUPABASE_URL || '',
-    supabaseAnonKey: env.VITE_SUPABASE_ANON_KEY || '',
-  }
-  return JSON.stringify(config).replace(/</g, '\\\\u003c')
-}
-
-const worker = {
+const staticSiteWorker = `const worker = {
   async fetch(request, env) {
     const url = new URL(request.url)
-    if (url.pathname === '/runtime-config.js') {
-      return new Response('window.__ENCORE_RUNTIME_CONFIG__=' + runtimeConfig(env) + ';', {
-        headers: {
-          'cache-control': 'no-store',
-          'content-type': 'application/javascript; charset=utf-8',
-          'x-content-type-options': 'nosniff',
-        },
-      })
-    }
-
     const response = await env.ASSETS.fetch(request)
     if (response.status !== 404 || (request.method !== 'GET' && request.method !== 'HEAD')) {
       return response
@@ -69,11 +51,6 @@ export async function stageSitesOutput(root: string) {
     if (entry === 'client' || entry === 'server' || entry === '.openai') continue
     await rename(resolve(outputDirectory, entry), resolve(clientDirectory, entry))
   }
-
-  const clientIndex = resolve(clientDirectory, 'index.html')
-  const indexHtml = await readFile(clientIndex, 'utf8')
-  const runtimeConfigScript = '<script src="/runtime-config.js"></script>'
-  await writeFile(clientIndex, indexHtml.replace('</head>', `${runtimeConfigScript}</head>`), 'utf8')
 
   await rm(metadataDirectory, { recursive: true, force: true })
   await mkdir(metadataDirectory, { recursive: true })

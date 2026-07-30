@@ -28,4 +28,10 @@ describe('Supabase browser configuration', () => {
       supabaseAnonKey: 'local-publishable-key',
     })
   })
+
+  it('keeps production portal auth available on static hosts', () => {
+    const config = resolveSupabaseBrowserConfig({})
+    expect(config.supabaseUrl).toBe('https://rrrkjohvxbsahxxevzcg.supabase.co')
+    expect(config.supabaseAnonKey).toMatch(/^sb_publishable_/)
+  })
 })
