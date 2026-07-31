@@ -13,14 +13,20 @@ const glucoseA1c = researchBenefits.find((benefit) => benefit.id === 'glucose-a1
 const cardiometabolic = researchBenefits.find((benefit) => benefit.id === 'cardiometabolic')!
 const kneeMobility = researchBenefits.find((benefit) => benefit.id === 'knee-mobility')!
 const sleepApnea = researchBenefits.find((benefit) => benefit.id === 'sleep-apnea')!
-const appetiteSignaling = researchBenefits.find((benefit) => benefit.id === 'appetite-signaling')!
 
 export function RetatrutideBenefitsSection() {
   const { t } = useTranslation('retatrutideResearch')
   return (
-    <section id="retatrutide-full-research" className="scroll-mt-24 px-5 py-20 sm:px-8 lg:py-28" aria-label="Retatrutide research outcomes">
+    <section id="retatrutide-full-research" className="scroll-mt-24 px-5 py-20 sm:px-8 lg:py-28" aria-labelledby="retatrutide-outcomes-title">
       <div className="mx-auto max-w-7xl">
-        <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-12 lg:gap-8">
+        {/* Promoted out of the waist visual: this block previously opened with no heading of its own. */}
+        <header className="max-w-4xl">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-teal-700">{t('waistVisualEyebrow')}</p>
+          <h2 id="retatrutide-outcomes-title" className="mt-4 text-4xl font-semibold leading-[1.03] tracking-[-0.055em] sm:text-5xl">{t('waistVisualTitle')}</h2>
+          <p className="mt-5 max-w-3xl text-base leading-7 text-slate-600 sm:text-lg">{t('waistVisualBody')}</p>
+        </header>
+
+        <div className="mt-10 grid grid-cols-1 items-stretch gap-6 lg:grid-cols-12 lg:gap-8">
           <RetatrutideWaistResearchVisual metric={bodyComposition.metric!} duration={t('durationBodyComposition')} trial={t('trialBodyComposition')} className="lg:col-span-8" />
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:col-span-4 lg:flex lg:flex-col">
             <ResearchOutcomeCard benefit={glucoseA1c} size="primary" className="flex-1" />
@@ -28,11 +34,18 @@ export function RetatrutideBenefitsSection() {
           </div>
         </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:gap-8">
           <ResearchOutcomeCard benefit={kneeMobility} index={2} />
           <ResearchOutcomeCard benefit={sleepApnea} index={3} />
-          <ResearchOutcomeCard benefit={appetiteSignaling} index={4} className="sm:col-span-2 lg:col-span-1" />
         </div>
+
+        {/* Appetite signalling has no Phase 3 endpoint, so it reads as a footnote
+            rather than sitting at card weight beside four reported figures. */}
+        <p className="mt-6 flex flex-wrap gap-x-2 gap-y-1 rounded-[1.25rem] bg-slate-100/80 px-5 py-4 text-sm leading-6 text-slate-600">
+          <span className="font-semibold text-[#071724]">{t('appetiteSignalingTitle')} —</span>
+          <span>{t('appetiteSignalingDescription')}</span>
+          <span className="italic text-slate-500">{t('appetiteOngoingNote')}</span>
+        </p>
 
         <motion.div initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="relative mt-20 overflow-hidden rounded-[2.5rem] border border-white/80 bg-[radial-gradient(circle_at_82%_45%,rgba(34,211,238,.13),transparent_34%),radial-gradient(circle_at_8%_88%,rgba(16,185,129,.14),transparent_31%),linear-gradient(135deg,#f5fbf9_0%,#ffffff_43%,#edf9fb_100%)] p-6 shadow-[0_32px_100px_rgba(7,23,36,.1)] sm:p-10 lg:p-12 xl:p-14">
           <div aria-hidden="true" className="absolute inset-0 opacity-[.16] [background-image:radial-gradient(circle,rgba(15,118,110,.3)_1px,transparent_1.2px)] [background-size:30px_30px] [mask-image:linear-gradient(to_bottom,black,transparent_72%)]" />

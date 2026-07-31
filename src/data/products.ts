@@ -493,7 +493,7 @@ const productPositioning: Record<string, { headline: string; focus: string; mech
     visual: 'research-handling workflow',
   },
   retatrutide: {
-    headline: 'Map Triple-Receptor Signaling. Study Metabolic Response. Review With Precision.',
+    headline: 'The Most Advanced Peptide In Its Class.',
     focus: 'triple-receptor GLP-1, GIP, and glucagon agonist research, energy-regulation models, and body-composition pathway review',
     mechanism: ['Triple-receptor agonist review', 'GLP-1/GIP/glucagon signaling model', 'Energy-expenditure pathway observation', 'Body-composition marker record'],
     visual: 'triple-receptor pathway map',
