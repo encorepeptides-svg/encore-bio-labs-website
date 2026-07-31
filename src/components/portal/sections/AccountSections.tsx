@@ -88,7 +88,7 @@ export function SecuritySection() {
 
   async function changePassword(event: FormEvent) {
     event.preventDefault()
-    if (password.length < 12 || password !== confirm) { setMessage('mismatch'); return }
+    if (password.length < 8 || password !== confirm) { setMessage('mismatch'); return }
     setMessage(''); setSaving(true)
     try {
       const { error } = await updatePortalPassword(password)

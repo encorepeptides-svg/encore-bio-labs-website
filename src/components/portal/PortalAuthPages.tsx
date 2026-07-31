@@ -64,11 +64,14 @@ export function PortalAuthPage({ mode }: { mode: AuthMode }) {
     }
     if (mode === 'login' && !form.password) { setError(t('errorPasswordRequired')); return }
     if (mode === 'register' && step === 1) {
-      if (form.password.length < 12 || form.password !== form.confirmPassword || !form.legalName.trim() || !form.mobile.trim()) { setError(t('errorRegisterStep1')); return }
+      if (!form.legalName.trim() || !form.mobile.trim()) { setError(t('errorFieldsRequired')); return }
+        if (form.password.length < 8) { setError(t('errorPasswordTooShort')); return }
+        if (form.password !== form.confirmPassword) { setError(t('errorPasswordMismatch')); return }
       setStep(2); return
     }
     if (mode === 'register' && step === 2 && !(form.terms && form.privacy && form.ruo && form.electronic)) { setError(t('errorRegisterStep2')); return }
-    if (mode === 'reset' && (form.password.length < 12 || form.password !== form.confirmPassword)) { setError(t('errorPasswordRequirements')); return }
+    if (mode === 'reset' && form.password.length < 8) { setError(t('errorPasswordTooShort')); return }
+    if (mode === 'reset' && form.password !== form.confirmPassword) { setError(t('errorPasswordMismatch')); return }
     authSubmissionInFlightRef.current = true
     setLoading(true)
     try {
