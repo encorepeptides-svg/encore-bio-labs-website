@@ -1447,7 +1447,7 @@ function createPageContent(product: CatalogProduct): ProductPageContent {
     galleryCaptions: [
       `${product.name} research vial presentation`,
       `${profile?.visual ?? product.category} molecular backdrop`,
-      'Cold-chain and lab paperwork-ready handling context',
+      'Protective packaging and lab paperwork-ready handling context',
     ],
     specs: [
       { label: 'Research area', value: product.category },
