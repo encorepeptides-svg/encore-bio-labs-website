@@ -19,7 +19,6 @@
     }
   ],
   "rewrites": [
-    { "source": "/lp/retatrutide", "destination": "/lp/retatrutide.html" },
     { "source": "/(.*)", "destination": "/" }
   ]
 }
