@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildCartOrderMessage, buildCartPaymentRequestMessage, buildEscalationMessage, buildOrderInquiryMessage, buildWhatsAppUrl, getGeneralInquiryMessage } from './whatsapp'
+import { buildCartOrderMessage, buildCartPaymentRequestMessage, buildEscalationMessage, buildOrderInquiryMessage, buildWhatsAppUrl, buildWhatsAppUrlToLead, getGeneralInquiryMessage, normalizeLeadPhone } from './whatsapp'
 
 describe('WhatsApp message localization', () => {
   it('builds an English order inquiry message by default', () => {
@@ -54,5 +54,29 @@ describe('WhatsApp message localization', () => {
   it('builds a wa.me URL with the message URL-encoded', () => {
     const url = buildWhatsAppUrl(getGeneralInquiryMessage('es'))
     expect(url).toBe('https://wa.me/19153595448?text=' + encodeURIComponent(getGeneralInquiryMessage('es')))
+  })
+})
+
+describe('outbound lead messaging', () => {
+  it('prefixes a bare 10-digit number with the US country code', () => {
+    expect(normalizeLeadPhone('(915) 555-0123')).toBe('19155550123')
+  })
+
+  it('leaves an already-qualified international number alone', () => {
+    expect(normalizeLeadPhone('+52 656 123 4567')).toBe('526561234567')
+  })
+
+  it('returns an empty string when there are no digits to dial', () => {
+    expect(normalizeLeadPhone('no phone on file')).toBe('')
+  })
+
+  it('targets the lead rather than the business line', () => {
+    const url = buildWhatsAppUrlToLead('915-555-0123', 'Hola Diana')
+    expect(url).toContain('wa.me/19155550123')
+    expect(url).toContain('Hola%20Diana')
+  })
+
+  it('yields no link when the lead has no usable number, rather than dialling the business', () => {
+    expect(buildWhatsAppUrlToLead('', 'Hola')).toBe('')
   })
 })

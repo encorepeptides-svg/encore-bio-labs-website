@@ -7,6 +7,29 @@ export function buildWhatsAppUrl(message: string) {
   return `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(message)}`
 }
 
+/**
+ * Normalizes a lead-supplied phone number for a wa.me link.
+ *
+ * Leads type their number however they like, and wa.me requires a country
+ * code. A bare 10-digit number is assumed to be US/Canada (+1) because that is
+ * what the intake's US-facing form produces; anything longer is treated as
+ * already carrying its country code. The resolved number is shown to the
+ * operator before use — an outbound message to the wrong person is not
+ * something to guess at silently.
+ */
+export function normalizeLeadPhone(phone: string) {
+  const digits = phone.replaceAll(/\D/g, '')
+  if (!digits) return ''
+  return digits.length === 10 ? `1${digits}` : digits
+}
+
+/** Opens a chat with the LEAD (not the business line), message prefilled. */
+export function buildWhatsAppUrlToLead(phone: string, message: string) {
+  const number = normalizeLeadPhone(phone)
+  if (!number) return ''
+  return `https://wa.me/${number}?text=${encodeURIComponent(message)}`
+}
+
 export function buildOrderInquiryMessage({
   product = '',
   strength = '',

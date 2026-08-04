@@ -10,12 +10,35 @@ import { getLeads, isCrmUsingSupabase } from '../lib/crmStorage'
 import { supabase } from '../lib/supabaseClient'
 import type { Lead } from '../types/crm'
 
-function isCrmAdmin(session: Session | null) {
-  return session?.user.app_metadata.role === 'crm_admin'
+const CRM_ADMIN_ROLES = ['admin', 'super_admin'] as const
+
+// Legacy signal: the `app_metadata.role = 'crm_admin'` JWT claim. No signup or
+// onboarding flow has ever written it, so it only exists on accounts that were
+// patched by hand. It is still accepted during the transition so nobody is
+// locked out mid-deploy, and mirrors public.is_crm_admin() in the database.
+function hasLegacyCrmClaim(session: Session | null) {
+  return session?.user.app_metadata?.role === 'crm_admin'
+}
+
+// Authoritative signal: the `user_roles` table the rest of the app already uses.
+// RLS lets every authenticated user read their own rows, so this needs no
+// elevated privileges and cannot silently drift from portal admin access.
+async function hasCrmAdminRole(session: Session | null) {
+  if (!session || !supabase) return false
+  if (hasLegacyCrmClaim(session)) return true
+  const { data, error } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', session.user.id)
+    .in('role', [...CRM_ADMIN_ROLES])
+    .limit(1)
+  if (error) return false
+  return (data?.length ?? 0) > 0
 }
 
 export function CRMAdmin() {
   const [session, setSession] = useState<Session | null>(null)
+  const [isCrmAdmin, setIsCrmAdmin] = useState(false)
   const [authLoading, setAuthLoading] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -43,7 +66,21 @@ export function CRMAdmin() {
   }, [])
 
   useEffect(() => {
-    if (isCrmAdmin(session)) void loadLeads()
+    let cancelled = false
+    if (!session) {
+      setIsCrmAdmin(false)
+      return
+    }
+    setAuthLoading(true)
+    void hasCrmAdminRole(session).then((allowed) => {
+      if (cancelled) return
+      setIsCrmAdmin(allowed)
+      setAuthLoading(false)
+      if (allowed) void loadLeads()
+    })
+    return () => {
+      cancelled = true
+    }
   }, [session])
 
   async function loadLeads() {
@@ -73,8 +110,9 @@ export function CRMAdmin() {
       setError('Sign-in failed. Check your credentials and try again.')
       return
     }
-    if (!isCrmAdmin(data.session)) {
+    if (!(await hasCrmAdminRole(data.session))) {
       await supabase.auth.signOut()
+      setIsCrmAdmin(false)
       setError('This account is not authorized for CRM access.')
     }
   }
@@ -84,11 +122,11 @@ export function CRMAdmin() {
     setSelectedLead(lead)
   }
 
-  if (authLoading && !session) {
+  if (authLoading) {
     return <main id="main-content" className="grid min-h-screen place-items-center bg-[#071724] text-white"><LoaderCircle className="animate-spin" aria-label="Checking admin session" /></main>
   }
 
-  if (!isCrmAdmin(session)) {
+  if (!isCrmAdmin) {
     return (
       <main id="main-content" className="relative min-h-screen overflow-hidden bg-[#071724] px-5 py-12 text-white sm:px-8">
         <div className="molecule-field" aria-hidden="true" />
