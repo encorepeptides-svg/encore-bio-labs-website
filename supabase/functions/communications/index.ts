@@ -1,7 +1,15 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.110.1'
 
 const SUPPORT = 'support@encorebiolabs.com'
-const json = (body: unknown, status = 200, origin = '*') => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'access-control-allow-origin': origin, 'access-control-allow-headers': 'authorization, x-client-info, apikey, content-type', 'access-control-allow-methods': 'POST, OPTIONS', vary: 'Origin' } })
+// 204/205/304 carry no body: passing one to the Response constructor throws a
+// TypeError, which the platform turns into a bodiless 500 with no
+// access-control headers — so the browser blocks the real request and reports
+// only an opaque fetch failure. The preflight below hit exactly that.
+const NULL_BODY_STATUSES = new Set([101, 204, 205, 304])
+const corsHeaders = (origin: string) => ({ 'access-control-allow-origin': origin, 'access-control-allow-headers': 'authorization, x-client-info, apikey, content-type', 'access-control-allow-methods': 'POST, OPTIONS', 'access-control-max-age': '86400', vary: 'Origin' })
+const json = (body: unknown, status = 200, origin = '*') => NULL_BODY_STATUSES.has(status)
+  ? new Response(null, { status, headers: corsHeaders(origin) })
+  : new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8', ...corsHeaders(origin) } })
 const clean = (value: unknown, max: number) => typeof value === 'string' ? value.replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, max) : ''
 const email = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) && !/[\r\n]/.test(value)
 const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]!))
