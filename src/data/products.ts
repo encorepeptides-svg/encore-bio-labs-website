@@ -1733,7 +1733,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'SS-31, also known as elamipretide in research literature, is a mitochondria-targeted peptide studied for cardiolipin interaction, inner-membrane stability, oxidative stress, and cellular energy models.',
     featured: true,
-    variants: [{ label: '10 mg', format: 'Vial format', price: 149 }],
+    variants: [{ label: '10 mg', format: 'Vial format', price: 59 }],
   },
   {
     slug: 'dsip',
