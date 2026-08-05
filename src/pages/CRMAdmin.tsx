@@ -1,16 +1,19 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import { Download, LoaderCircle, LockKeyhole, RefreshCw, ShieldCheck } from 'lucide-react'
+import { Download, LoaderCircle, LockKeyhole, MessageCircle, RefreshCw, ShieldCheck } from 'lucide-react'
 import { CRMDashboard } from '../components/crm/CRMDashboard'
 import { LeadDetailDrawer } from '../components/crm/LeadDetailDrawer'
 import { LeadTable } from '../components/crm/LeadTable'
+import { WhatsAppLeadDesk } from '../components/crm/WhatsAppLeadDesk'
 import { downloadLeadsCsv } from '../lib/exportCrmCsv'
 import { getLeads, isCrmUsingSupabase } from '../lib/crmStorage'
 import { supabase } from '../lib/supabaseClient'
 import type { Lead } from '../types/crm'
 
 const CRM_ADMIN_ROLES = ['admin', 'super_admin'] as const
+
+type CrmDesk = 'website' | 'whatsapp'
 
 // Legacy signal: the `app_metadata.role = 'crm_admin'` JWT claim. No signup or
 // onboarding flow has ever written it, so it only exists on accounts that were
@@ -47,6 +50,7 @@ export function CRMAdmin() {
   const [loading, setLoading] = useState(false)
   const [leads, setLeads] = useState<Lead[]>([])
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
+  const [activeDesk, setActiveDesk] = useState<CrmDesk>('website')
 
   useEffect(() => {
     if (!supabase) {
@@ -183,9 +187,13 @@ export function CRMAdmin() {
         <header className="flex flex-col gap-5 rounded-[1.75rem] border border-slate-900/10 bg-[#071724] p-6 text-white shadow-[0_28px_90px_rgba(7,23,36,0.2)] sm:p-8 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-200">Encore Bio Labs CRM</p>
-            <h1 className="mt-4 text-4xl font-semibold tracking-[-0.055em] sm:text-5xl">Lead intelligence dashboard</h1>
+            <h1 className="mt-4 text-4xl font-semibold tracking-[-0.055em] sm:text-5xl">
+              {activeDesk === 'website' ? 'Lead intelligence dashboard' : 'WhatsApp CloseOS'}
+            </h1>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300">
-              Lightweight internal view for website inquiries, intake submissions, lead scoring, and compliant follow-up templates.
+              {activeDesk === 'website'
+                ? 'Internal view for website inquiries, intake submissions, lead scoring, and compliant follow-up templates.'
+                : 'Bilingual WhatsApp qualification, conversation review, human takeover, consent controls, and restricted service follow-up.'}
             </p>
           </div>
           <div className="grid gap-3">
@@ -203,42 +211,68 @@ export function CRMAdmin() {
           </div>
         </header>
 
+        <nav aria-label="CRM desks" className="inline-flex w-fit rounded-full border border-slate-900/10 bg-white p-1 shadow-sm">
+          <button
+            type="button"
+            onClick={() => setActiveDesk('website')}
+            aria-current={activeDesk === 'website' ? 'page' : undefined}
+            className={`h-10 rounded-full px-5 text-sm font-semibold transition ${activeDesk === 'website' ? 'bg-[#071724] text-white' : 'text-slate-600 hover:text-[#071724]'}`}
+          >
+            Website leads
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveDesk('whatsapp')}
+            aria-current={activeDesk === 'whatsapp' ? 'page' : undefined}
+            className={`inline-flex h-10 items-center gap-2 rounded-full px-5 text-sm font-semibold transition ${activeDesk === 'whatsapp' ? 'bg-[#071724] text-white' : 'text-slate-600 hover:text-[#071724]'}`}
+          >
+            <MessageCircle size={15} aria-hidden="true" />
+            WhatsApp CloseOS
+          </button>
+        </nav>
+
         {!isCrmUsingSupabase() ? <div role="alert">Supabase is required for CRM access.</div> : null}
 
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="text-sm font-semibold text-slate-500">
-            {loading ? 'Loading CRM data...' : `${leads.length} leads loaded`}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => void loadLeads()}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-slate-900/10 bg-white px-4 text-sm font-semibold text-[#071724]"
-            >
-              <RefreshCw size={15} aria-hidden="true" />
-              Retry
-            </button>
-            <button
-              type="button"
-              onClick={() => downloadLeadsCsv(leads)}
-              disabled={leads.length === 0}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[#071724] px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-45"
-            >
-              <Download size={15} aria-hidden="true" />
-              Export CSV
-            </button>
-          </div>
-        </div>
-
-        {loading ? <LoadingState /> : null}
-        {crmError ? <ErrorState message={crmError} onRetry={loadLeads} /> : null}
-        {!loading && !crmError && leads.length === 0 ? <EmptyState /> : null}
-        {!loading && !crmError && leads.length > 0 ? (
+        {activeDesk === 'website' ? (
           <>
-            <CRMDashboard leads={leads} />
-            <LeadTable leads={leads} onSelect={setSelectedLead} />
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="text-sm font-semibold text-slate-500">
+                {loading ? 'Loading CRM data...' : `${leads.length} leads loaded`}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => void loadLeads()}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-slate-900/10 bg-white px-4 text-sm font-semibold text-[#071724]"
+                >
+                  <RefreshCw size={15} aria-hidden="true" />
+                  Retry
+                </button>
+                <button
+                  type="button"
+                  onClick={() => downloadLeadsCsv(leads)}
+                  disabled={leads.length === 0}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[#071724] px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  <Download size={15} aria-hidden="true" />
+                  Export CSV
+                </button>
+              </div>
+            </div>
+
+            {loading ? <LoadingState /> : null}
+            {crmError ? <ErrorState message={crmError} onRetry={loadLeads} /> : null}
+            {!loading && !crmError && leads.length === 0 ? <EmptyState /> : null}
+            {!loading && !crmError && leads.length > 0 ? (
+              <>
+                <CRMDashboard leads={leads} />
+                <LeadTable leads={leads} onSelect={setSelectedLead} />
+              </>
+            ) : null}
           </>
-        ) : null}
+        ) : (
+          <WhatsAppLeadDesk />
+        )}
       </div>
 
       <LeadDetailDrawer lead={selectedLead} onClose={() => setSelectedLead(null)} onChange={refreshLead} />
