@@ -43,6 +43,7 @@ export type IntakeFormData = {
   lastName: string
   email: string
   phone: string
+  phoneCountry: string
   city: string
   preferredContactMethod: string
   consentResearchUseOnly: boolean
@@ -68,6 +69,7 @@ export type CustomerLead = {
   lastName: string
   email: string
   phone: string
+  phoneCountry: string
   city: string
   preferredContactMethod: string
   consentAccepted: boolean
@@ -165,6 +167,7 @@ export const defaultIntakeFormData: IntakeFormData = {
   lastName: '',
   email: '',
   phone: '',
+  phoneCountry: '',
   city: '',
   preferredContactMethod: '',
   consentResearchUseOnly: false,
@@ -194,7 +197,7 @@ export function isIntakeStepComplete(step: number, data: IntakeFormData) {
   const requiredFields: Array<Array<keyof IntakeFormData>> = [
     ['mainGoal', 'timeline'],
     ['lifestyleActivity', 'sleepQuality', 'energyLevels', 'peptideExperience', 'biometricsStatus'],
-    ['firstName', 'lastName', 'email', 'phone', 'city', 'preferredContactMethod'],
+    ['firstName', 'lastName', 'email', 'phone', 'phoneCountry', 'city', 'preferredContactMethod'],
   ]
 
   if (step < 0 || step >= requiredFields.length) return false
@@ -415,6 +418,7 @@ export function createLeadFromIntake(data: IntakeFormData, recommendation: Recom
     lastName: data.lastName,
     email: data.email,
     phone: data.phone,
+    phoneCountry: data.phoneCountry,
     city: data.city,
     preferredContactMethod: data.preferredContactMethod,
     consentAccepted: true,

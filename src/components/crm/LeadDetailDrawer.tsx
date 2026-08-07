@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import { addNote, addTimelineEvent, updateLead } from '../../lib/crmStorage'
 import { leadStatusLabel } from '../../lib/crmLabels'
 import { draftFollowUp, type FollowUpChannel } from '../../lib/crm/draftFollowUp'
-import { buildWhatsAppUrlToLead, normalizeLeadPhone } from '../../lib/whatsapp'
+import { LEAD_DIAL_CODES, buildWhatsAppUrlToLead, defaultDialCodeForLead, normalizeLeadPhone, type LeadDialCode } from '../../lib/whatsapp'
 import type { Lead, LeadStatus } from '../../types/crm'
 import { getEmailFollowUp, getInstagramDMFollowUp, getWhatsAppFollowUp } from './FollowUpTemplates'
 import { LeadStatusBadge } from './LeadStatusBadge'
@@ -35,6 +35,8 @@ export function LeadDetailDrawer({
   const [draftChannel, setDraftChannel] = useState<FollowUpChannel>('whatsapp')
   const [drafting, setDrafting] = useState<FollowUpChannel | null>(null)
   const [draftError, setDraftError] = useState('')
+  // null = follow the language-based default; set = the operator chose.
+  const [dialCode, setDialCode] = useState<LeadDialCode | null>(null)
 
   if (!lead) {
     return null
@@ -115,8 +117,11 @@ export function LeadDetailDrawer({
     }
   }
 
-  const whatsAppNumber = normalizeLeadPhone(activeLead.phone)
-  const whatsAppHref = draft && whatsAppNumber ? buildWhatsAppUrlToLead(activeLead.phone, draft) : ''
+  // The intake never asked for a country, so the code is the operator's call.
+  const activeDialCode = dialCode ?? defaultDialCodeForLead(activeLead.preferredLanguage, activeLead.country)
+  const whatsAppNumber = normalizeLeadPhone(activeLead.phone, activeDialCode)
+  const whatsAppHref = draft && whatsAppNumber ? buildWhatsAppUrlToLead(activeLead.phone, draft, activeDialCode) : ''
+  const phoneHasOwnCode = activeLead.phone.replaceAll(/\D/g, '').length > 10
   const mailtoHref = draft
     ? `mailto:${activeLead.email}?subject=${encodeURIComponent(draft.startsWith('Subject:') ? draft.slice(8).split('\n')[0].trim() : 'Encore Bio Labs')}&body=${encodeURIComponent(draft.startsWith('Subject:') ? draft.split('\n').slice(1).join('\n').trim() : draft)}`
     : ''
@@ -253,6 +258,22 @@ export function LeadDetailDrawer({
                     Copy
                   </button>
 
+                  {draftChannel === 'whatsapp' && !phoneHasOwnCode ? (
+                    <label className="inline-flex min-h-12 items-center gap-2 rounded-full border border-slate-900/10 bg-white px-4 text-sm font-semibold text-[#071724]">
+                      <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Country</span>
+                      <select
+                        value={activeDialCode}
+                        onChange={(event) => setDialCode(event.target.value as LeadDialCode)}
+                        className="bg-transparent text-sm font-semibold outline-none"
+                        aria-label="Country code for this lead's phone number"
+                      >
+                        {LEAD_DIAL_CODES.map((entry) => (
+                          <option key={entry.code} value={entry.code}>{entry.label}</option>
+                        ))}
+                      </select>
+                    </label>
+                  ) : null}
+
                   {draftChannel === 'whatsapp' && whatsAppHref ? (
                     <a
                       href={whatsAppHref}
@@ -281,7 +302,10 @@ export function LeadDetailDrawer({
                 <p className="text-xs leading-5 text-slate-500">
                   Nothing is sent automatically. Read the draft before you send it — it must not contain dosing, protocols,
                   use instructions, or promised outcomes.
-                  {draftChannel === 'whatsapp' && !whatsAppNumber ? ' This lead has no usable phone number.' : ''}
+                  {draftChannel === 'whatsapp' && !whatsAppNumber ? ' This lead did not leave a dialable phone number.' : ''}
+                  {draftChannel === 'whatsapp' && whatsAppNumber && !phoneHasOwnCode
+                    ? ' The intake never asked for a country, so check the code above matches this lead before sending.'
+                    : ''}
                 </p>
               </>
             ) : null}

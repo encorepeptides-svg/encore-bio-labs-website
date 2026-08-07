@@ -17,15 +17,50 @@ export function buildWhatsAppUrl(message: string) {
  * operator before use — an outbound message to the wrong person is not
  * something to guess at silently.
  */
-export function normalizeLeadPhone(phone: string) {
+/** Dial codes for the markets Encore actually serves. */
+export const LEAD_DIAL_CODES = [
+  { code: '52', label: 'Mexico +52' },
+  { code: '1', label: 'US / Canada +1' },
+] as const
+
+export type LeadDialCode = (typeof LEAD_DIAL_CODES)[number]['code']
+
+/**
+ * Picks the default dial code for a lead.
+ *
+ * The intake form does not ask for a country, and Mexican and US mobile numbers
+ * are both 10 digits — so a bare number is genuinely ambiguous and there is no
+ * way to infer it correctly. Preferred language is the only signal on file, and
+ * it is a hint, not a fact: the operator sees the resolved number and can
+ * switch it before sending. Guessing silently is how you message a stranger.
+ */
+export function defaultDialCodeForLead(preferredLanguage: string, country?: string): LeadDialCode {
+  // Leads captured after the intake started asking carry a real answer. Older
+  // rows all say "United States" because the RPC hard-coded it, so that value
+  // proves nothing on its own — only an explicit "Mexico" is trustworthy, and
+  // everything else falls back to the language hint.
+  if (country && country.trim().toLowerCase() === 'mexico') return '52'
+  return preferredLanguage.toLowerCase().startsWith('span') ? '52' : '1'
+}
+
+/**
+ * Normalizes a lead-supplied phone number for a wa.me link.
+ *
+ * Numbers longer than 10 digits are assumed to already carry a country code and
+ * are passed through untouched. Exactly 10 digits gets the supplied dial code.
+ * Anything shorter is not dialable and returns empty rather than producing a
+ * plausible-looking wrong number.
+ */
+export function normalizeLeadPhone(phone: string, dialCode: LeadDialCode = '52') {
   const digits = phone.replaceAll(/\D/g, '')
-  if (!digits) return ''
-  return digits.length === 10 ? `1${digits}` : digits
+  if (digits.length < 10) return ''
+  if (digits.length > 10) return digits
+  return `${dialCode}${digits}`
 }
 
 /** Opens a chat with the LEAD (not the business line), message prefilled. */
-export function buildWhatsAppUrlToLead(phone: string, message: string) {
-  const number = normalizeLeadPhone(phone)
+export function buildWhatsAppUrlToLead(phone: string, message: string, dialCode: LeadDialCode = '52') {
+  const number = normalizeLeadPhone(phone, dialCode)
   if (!number) return ''
   return `https://wa.me/${number}?text=${encodeURIComponent(message)}`
 }

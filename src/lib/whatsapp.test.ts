@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildCartOrderMessage, buildCartPaymentRequestMessage, buildEscalationMessage, buildOrderInquiryMessage, buildWhatsAppUrl, buildWhatsAppUrlToLead, getGeneralInquiryMessage, normalizeLeadPhone } from './whatsapp'
+import { buildCartOrderMessage, buildCartPaymentRequestMessage, buildEscalationMessage, buildOrderInquiryMessage, buildWhatsAppUrl, buildWhatsAppUrlToLead, defaultDialCodeForLead, getGeneralInquiryMessage, normalizeLeadPhone } from './whatsapp'
 
 describe('WhatsApp message localization', () => {
   it('builds an English order inquiry message by default', () => {
@@ -58,25 +58,36 @@ describe('WhatsApp message localization', () => {
 })
 
 describe('outbound lead messaging', () => {
-  it('prefixes a bare 10-digit number with the US country code', () => {
-    expect(normalizeLeadPhone('(915) 555-0123')).toBe('19155550123')
+  it('applies the supplied dial code to a bare 10-digit number', () => {
+    expect(normalizeLeadPhone('687 194 7695', '52')).toBe('526871947695')
+    expect(normalizeLeadPhone('(915) 555-0123', '1')).toBe('19155550123')
   })
 
-  it('leaves an already-qualified international number alone', () => {
-    expect(normalizeLeadPhone('+52 656 123 4567')).toBe('526561234567')
+  it('defaults to Mexico rather than silently assuming US', () => {
+    expect(normalizeLeadPhone('6871947695')).toBe('526871947695')
   })
 
-  it('returns an empty string when there are no digits to dial', () => {
+  it('leaves a number that already carries a country code untouched', () => {
+    expect(normalizeLeadPhone('+52 656 123 4567', '1')).toBe('526561234567')
+  })
+
+  it('refuses numbers too short to dial instead of inventing one', () => {
+    expect(normalizeLeadPhone('555-0123')).toBe('')
     expect(normalizeLeadPhone('no phone on file')).toBe('')
   })
 
-  it('targets the lead rather than the business line', () => {
-    const url = buildWhatsAppUrlToLead('915-555-0123', 'Hola Diana')
-    expect(url).toContain('wa.me/19155550123')
+  it('derives the default code from preferred language', () => {
+    expect(defaultDialCodeForLead('Spanish')).toBe('52')
+    expect(defaultDialCodeForLead('English')).toBe('1')
+  })
+
+  it('targets the lead with the chosen code', () => {
+    const url = buildWhatsAppUrlToLead('687 194 7695', 'Hola Diana', '52')
+    expect(url).toContain('wa.me/526871947695')
     expect(url).toContain('Hola%20Diana')
   })
 
-  it('yields no link when the lead has no usable number, rather than dialling the business', () => {
+  it('yields no link when the number is unusable, rather than dialling the business', () => {
     expect(buildWhatsAppUrlToLead('', 'Hola')).toBe('')
   })
 })

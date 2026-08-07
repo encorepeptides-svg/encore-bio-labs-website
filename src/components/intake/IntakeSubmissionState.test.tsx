@@ -28,7 +28,7 @@ const completeForm = {
   sleepQuality: 'Good',
   energyLevels: 'Steady',
   peptideExperience: 'New to this',
-  firstName: 'Research', lastName: 'Client', email: 'client@example.com', phone: '9155550100', city: 'El Paso',
+  firstName: 'Research', lastName: 'Client', email: 'client@example.com', phone: '9155550100', phoneCountry: 'United States', city: 'El Paso',
   preferredContactMethod: 'Email', consentResearchUseOnly: true, consentNoMedicalAdvice: true, consentAccuracy: true,
   consentContact: true, consentInternalReview: true,
 }

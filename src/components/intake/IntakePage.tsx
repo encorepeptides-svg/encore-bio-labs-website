@@ -53,6 +53,11 @@ const biometricsOptions = ['I can share them now', "I don't have them yet", 'I p
 const ageRangeOptions = ['18–29', '30–39', '40–49', '50–59', '60+', 'Prefer not to say']
 const contactOptions = ['Email', 'SMS', 'WhatsApp']
 
+// Mexican and US mobile numbers are both 10 digits, so a bare number cannot be
+// dialled reliably without knowing the country. Asked explicitly rather than
+// inferred — a wrong guess means messaging a stranger.
+const phoneCountryOptions = ['Mexico', 'United States']
+
 type TranslationFunction = (key: string, vars?: Record<string, string | number>) => string
 
 const intakeValueKeys: Record<string, string> = {
@@ -125,6 +130,8 @@ const intakeValueKeys: Record<string, string> = {
   'Prefer to discuss': 'optionPreferToDiscuss',
   Yes: 'optionYes',
   'Related category research': 'optionRelatedCategoryResearch',
+  Mexico: 'countryMexico',
+  'United States': 'countryUnitedStates',
   Email: 'contactEmail',
   SMS: 'contactSms',
   WhatsApp: 'contactWhatsapp',
@@ -500,6 +507,7 @@ export function IntakePage() {
         email: formData.email,
         phone: formData.phone,
         city: formData.city,
+        country: formData.phoneCountry,
         preferredLanguage: locale === 'es' ? 'Spanish' : 'English',
         source: 'Website intake',
         campaignSource: 'Website Intake',
@@ -791,6 +799,9 @@ export function IntakePage() {
                           onChange={updateField}
                           autoComplete="tel"
                         />
+                      </Field>
+                      <Field label={`${t('phoneCountry')} (${t('required')})`}>
+                        <SelectField name="phoneCountry" value={formData.phoneCountry} options={phoneCountryOptions} onChange={updateField} />
                       </Field>
                       <Field label={`${t('city')} (${t('required')})`}>
                         <TextInput name="city" value={formData.city} onChange={updateField} autoComplete="address-level2" />

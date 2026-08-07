@@ -47,6 +47,7 @@ function completeContact(overrides: Partial<IntakeFormData> = {}): IntakeFormDat
     preferredContactMethod: 'Email',
     email: 'client@example.com',
     phone: '9155550100',
+  phoneCountry: 'United States',
     city: 'El Paso',
     consentResearchUseOnly: true,
     consentNoMedicalAdvice: true,
