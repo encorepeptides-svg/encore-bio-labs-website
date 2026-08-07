@@ -133,6 +133,8 @@ export const checkout = {
   shippingTaxesNote: 'El envío se confirma durante la revisión del pedido. Aquí no se calculan impuestos ni un total final a pagar.',
   importFee: 'Tarifa de importación',
   shipping: 'Envío',
+  freeShippingApplied: 'Gratis',
+  volumeDiscount: 'Descuento 10% ($300+)',
   pickupCharge: 'Recolección',
   localDeliveryCharge: 'Entrega local',
   total: 'Total',

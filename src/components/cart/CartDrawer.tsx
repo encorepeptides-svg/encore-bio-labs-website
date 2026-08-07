@@ -7,6 +7,7 @@ import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { purchaseTypeLabel } from '../../i18n/displayLabels'
 import { EncoreCompleteKit } from '../EncoreCompleteKit'
 import { ProductImage } from '../ProductImage'
+import { CartPromotionNote } from './CartPromotionNote'
 
 const PREMIUM_EASE = [0.16, 1, 0.3, 1] as const
 
@@ -204,10 +205,16 @@ export function CartDrawer() {
                 </div>
                 <p className="text-xs leading-5 text-slate-500">{t('shippingNote')}</p>
               </div>
+              {items.length ? <CartPromotionNote subtotal={totals.subtotal} className="mt-3" /> : null}
               {items.length ? (
                 <div className="mt-5 grid gap-2">
                   <a href={path('/cart')} onClick={closeCart} className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition hover:bg-teal-700">{t('viewCart')}</a>
                   <a href={path('/checkout')} onClick={closeCart} className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-slate-900/10 bg-white px-5 text-sm font-semibold text-[#071724] transition hover:bg-teal-50">{t('continueToOrder')}</a>
+                  {/* Closing the drawer returns to whatever page the shopper was already on. */}
+                  <button type="button" onClick={closeCart} className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-full px-5 text-sm font-semibold text-teal-800 transition hover:text-[#071724]">
+                    <Plus size={14} aria-hidden="true" />
+                    {t('keepAdding')}
+                  </button>
                 </div>
               ) : null}
               {items.length ? (

@@ -582,9 +582,17 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
   })
   if (!safeItems.length) return response({ code: 'invalid_order_items' }, 400, origin)
   const subtotalCents = safeItems.reduce((sum, item) => sum + Number(item.line_total_cents), 0)
-  const importFeeCents = usesMexicoImportFee(destination) ? (kitCount >= 5 ? 5_000 : 2_500) : 0
-  const shippingCents = destination === 'mexico' ? 1_500 : isLocal(destination) ? verification.localDeliveryFeeCents : matchedRate?.amountCents ?? null
-  const totalCents = shippingCents === null ? null : subtotalCents + importFeeCents + shippingCents
+  // Order-value promotions. Mirrors src/lib/promotions.ts — this side is the
+  // authority for what the customer is quoted, so the two must move together.
+  // The import fee is customs, not freight, and is never waived.
+  const FREE_SHIPPING_THRESHOLD_CENTS = 20_000
+  const VOLUME_TIER_THRESHOLD_CENTS = 30_000
+  const importFeeCents = usesMexicoImportFee(destination) ? (kitCount >= 5 ? 3_500 : 2_500) : 0
+  const quotedShippingCents = destination === 'mexico' ? 1_500 : isLocal(destination) ? verification.localDeliveryFeeCents : matchedRate?.amountCents ?? null
+  const shippingWaived = quotedShippingCents !== null && quotedShippingCents > 0 && subtotalCents >= FREE_SHIPPING_THRESHOLD_CENTS
+  const shippingCents = shippingWaived ? 0 : quotedShippingCents
+  const discountCents = subtotalCents >= VOLUME_TIER_THRESHOLD_CENTS ? Math.round(subtotalCents * 0.1) : 0
+  const totalCents = shippingCents === null ? null : Math.max(0, subtotalCents + importFeeCents + shippingCents - discountCents)
   const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
   const secretKey = getSecretKey()
   if (!supabaseUrl || !secretKey) return response({ code: 'order_store_unavailable' }, 503, origin)
@@ -623,6 +631,7 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
       subtotal_cents: subtotalCents,
       import_fee_cents: importFeeCents,
       shipping_cents: shippingCents,
+      discount_cents: discountCents,
       total_cents: totalCents,
       locale,
       contact,
@@ -643,7 +652,7 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
       checkout_acknowledgment_locale: acknowledgment.locale,
       checkout_policy_versions: acknowledgment.policyVersions,
     })
-    if (!error) return response({ reference, subtotalCents, importFeeCents, shippingCents, totalCents, recorded: true, reviewRequired, verification }, 200, origin)
+    if (!error) return response({ reference, subtotalCents, importFeeCents, shippingCents, discountCents, shippingWaived, totalCents, recorded: true, reviewRequired, verification }, 200, origin)
     if (error.code !== '23505') return response({ code: 'order_store_unavailable' }, 503, origin)
   }
   return response({ code: 'order_reference_collision' }, 503, origin)
