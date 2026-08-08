@@ -51,13 +51,11 @@ export const INTERIM_PAYMENT_METHODS: InterimPaymentMethod[] = [
   {
     id: 'paypal',
     enabled: true,
-    details: ['encorebiolabs@gmail.com'],
-    // Legacy Website Payments Standard link. It prefills the recipient and the
-    // note, and the customer types the amount. Confirm it once against the live
-    // account: PayPal has been retiring _xclick, and a PayPal.Me handle is the
-    // durable replacement if this ever stops resolving.
+    // The email still receives money directly, and is what a customer uses if
+    // they would rather send from inside their own PayPal account.
+    details: ['paypal.me/encorepeptides', 'encorebiolabs@gmail.com'],
     link: {
-      url: 'https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=encorebiolabs%40gmail.com&item_name=Encore%20Bio%20Labs%20order&currency_code=USD',
+      url: 'https://paypal.me/encorepeptides',
       labelEn: 'Pay with PayPal',
       labelEs: 'Pagar con PayPal',
     },
@@ -65,10 +63,15 @@ export const INTERIM_PAYMENT_METHODS: InterimPaymentMethod[] = [
   {
     id: 'cashapp',
     enabled: true,
-    // A cash.app/$cashtag/<amount> link needs the $cashtag, which is not the
-    // same as the phone number on the account. Until that is filled in the
-    // customer sends to the number by hand.
-    details: ['9154128874'],
+    details: ['$hektoren'],
+    // cash.app/$cashtag opens the recipient's pay screen; the customer enters
+    // the amount there. Appending /<amount> would prefill it, but the total
+    // varies per order so it stays out.
+    link: {
+      url: 'https://cash.app/$hektoren',
+      labelEn: 'Pay with Cash App',
+      labelEs: 'Pagar con Cash App',
+    },
   },
   {
     id: 'zelle',
