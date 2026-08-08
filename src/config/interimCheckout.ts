@@ -23,6 +23,13 @@ export type InterimPaymentMethod = {
    * a method with no destination cannot receive money.
    */
   details: string[]
+  /**
+   * Optional one-tap payment link rendered as a button under the details.
+   * Only some rails have one: PayPal and Apple Cash (via Messages) do, Zelle
+   * has none at all, and Cash App needs a $cashtag rather than a phone number.
+   * Where there is no link the details above are what the customer copies.
+   */
+  link?: { url: string; labelEn: string; labelEs: string }
 }
 
 // Toggle methods on/off here. A method renders only when `enabled` is true AND
@@ -44,32 +51,45 @@ export const INTERIM_PAYMENT_METHODS: InterimPaymentMethod[] = [
   {
     id: 'paypal',
     enabled: true,
-    details: [
-      // 'paypal.me/<encore-handle>'  — or the PayPal email that receives requests
-    ],
+    details: ['encorebiolabs@gmail.com'],
+    // Legacy Website Payments Standard link. It prefills the recipient and the
+    // note, and the customer types the amount. Confirm it once against the live
+    // account: PayPal has been retiring _xclick, and a PayPal.Me handle is the
+    // durable replacement if this ever stops resolving.
+    link: {
+      url: 'https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=encorebiolabs%40gmail.com&item_name=Encore%20Bio%20Labs%20order&currency_code=USD',
+      labelEn: 'Pay with PayPal',
+      labelEs: 'Pagar con PayPal',
+    },
   },
   {
     id: 'cashapp',
     enabled: true,
-    details: [
-      // '$<encore-cashtag>'
-    ],
+    // A cash.app/$cashtag/<amount> link needs the $cashtag, which is not the
+    // same as the phone number on the account. Until that is filled in the
+    // customer sends to the number by hand.
+    details: ['9154128874'],
   },
   {
     id: 'zelle',
     enabled: true,
-    details: [
-      // '<zelle email or US phone number>'  (Zelle has a memo field for the reference)
-    ],
+    // Zelle has no web link by design — it lives inside each bank's own app,
+    // so this is copied, not clicked. The memo field carries the reference.
+    details: ['9153595448'],
   },
   {
     id: 'apple_pay',
     enabled: true,
     // Person-to-person Apple Pay is Apple Cash, sent through Messages to a phone
-    // number (not a public handle). Put the receiving iPhone number here.
-    details: [
-      // '<Apple Cash iPhone number>'
-    ],
+    // number (not a public handle).
+    details: ['9154128874'],
+    // Opens Messages with the recipient prefilled; the sender attaches Apple
+    // Cash there. Works on iPhone/iPad/Mac, and is inert elsewhere.
+    link: {
+      url: 'sms:+19154128874',
+      labelEn: 'Open Messages to send Apple Cash',
+      labelEs: 'Abrir Mensajes para enviar Apple Cash',
+    },
   },
   {
     id: 'venmo',

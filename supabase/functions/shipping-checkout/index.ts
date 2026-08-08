@@ -585,13 +585,23 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
   // Order-value promotions. Mirrors src/lib/promotions.ts — this side is the
   // authority for what the customer is quoted, so the two must move together.
   // The import fee is customs, not freight, and is never waived.
-  const FREE_SHIPPING_THRESHOLD_CENTS = 20_000
-  const VOLUME_TIER_THRESHOLD_CENTS = 30_000
+  // Ascending by threshold; the highest tier the subtotal clears wins outright
+  // and carries the free shipping of every tier below it.
+  const PROMOTION_TIERS = [
+    { thresholdCents: 20_000, discountRate: 0 },
+    { thresholdCents: 30_000, discountRate: 0.1 },
+    { thresholdCents: 50_000, discountRate: 0.15 },
+    { thresholdCents: 100_000, discountRate: 0.2 },
+  ]
+  const earnedTier = PROMOTION_TIERS.reduce<{ thresholdCents: number; discountRate: number } | null>(
+    (earned, tier) => (subtotalCents >= tier.thresholdCents ? tier : earned),
+    null,
+  )
   const importFeeCents = usesMexicoImportFee(destination) ? (kitCount >= 5 ? 3_500 : 2_500) : 0
   const quotedShippingCents = destination === 'mexico' ? 1_500 : isLocal(destination) ? verification.localDeliveryFeeCents : matchedRate?.amountCents ?? null
-  const shippingWaived = quotedShippingCents !== null && quotedShippingCents > 0 && subtotalCents >= FREE_SHIPPING_THRESHOLD_CENTS
+  const shippingWaived = quotedShippingCents !== null && quotedShippingCents > 0 && earnedTier !== null
   const shippingCents = shippingWaived ? 0 : quotedShippingCents
-  const discountCents = subtotalCents >= VOLUME_TIER_THRESHOLD_CENTS ? Math.round(subtotalCents * 0.1) : 0
+  const discountCents = earnedTier ? Math.round(subtotalCents * earnedTier.discountRate) : 0
   const totalCents = shippingCents === null ? null : Math.max(0, subtotalCents + importFeeCents + shippingCents - discountCents)
   const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
   const secretKey = getSecretKey()

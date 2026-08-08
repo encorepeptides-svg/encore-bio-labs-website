@@ -1,4 +1,4 @@
-import { CheckCircle2, ClipboardCopy, Instagram, MessageCircle, X } from 'lucide-react'
+import { CheckCircle2, ClipboardCopy, ExternalLink, Instagram, MessageCircle, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { getEnabledPaymentMethods, type InterimPaymentMethod, type InterimPaymentMethodId } from '../../config/interimCheckout'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
@@ -259,6 +259,17 @@ export function InterimCheckoutHandoff({
                     <ul className="mt-2 grid gap-1 text-sm text-slate-700">
                       {state.method.details.map((detail) => <li key={detail} className="font-mono text-[0.8rem]">{detail}</li>)}
                     </ul>
+                  ) : null}
+                  {state.method.link ? (
+                    <a
+                      href={state.method.link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition hover:bg-[#0d2740]"
+                    >
+                      <ExternalLink size={15} aria-hidden="true" />
+                      {locale === 'es' ? state.method.link.labelEs : state.method.link.labelEn}
+                    </a>
                   ) : null}
                   <p className="mt-3 text-sm leading-6 text-slate-600">
                     {state.method.id === 'manual_review' ? t('handoffManualReviewConfirmNote') : state.method.id === 'cash_on_delivery' ? t('handoffCodConfirmNote') : t('handoffReferenceNote', { reference: state.reference })}

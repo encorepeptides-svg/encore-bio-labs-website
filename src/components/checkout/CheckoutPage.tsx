@@ -25,7 +25,7 @@ import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { purchaseTypeLabel } from '../../i18n/displayLabels'
 import { calculateItemCount, calculateSubtotal, formatCartCurrency, type CartItem } from '../../lib/cart'
 import { isCheckoutFormValid, isValidEmail } from '../../lib/checkout'
-import { qualifiesForExpressUpgrade, qualifiesForFreeShipping, selectExpressRate } from '../../lib/promotions'
+import { promotionDiscountRate, qualifiesForExpressUpgrade, qualifiesForFreeShipping, selectExpressRate } from '../../lib/promotions'
 import {
   addressEssentialErrors,
   calculateShippingCharges,
@@ -547,7 +547,7 @@ export function CheckoutPage() {
                 <div className="flex justify-between"><span>{t('subtotal')}</span><span className="font-semibold">{formatCartCurrency(completedSummary.subtotal)}</span></div>
                 {summaryCharges.importFeeCents ? <div className="flex justify-between"><span>{t('importFee')}</span><span className="font-semibold">{formatCartCurrency(summaryCharges.importFeeCents / 100)}</span></div> : null}
                 <div className="flex justify-between"><span>{t(completedSummary.shipping.localFulfillment === 'pickup' ? 'pickupCharge' : completedSummary.shipping.localFulfillment === 'home_delivery' ? 'localDeliveryCharge' : 'shipping')}</span><span className={cn('font-semibold', summaryCharges.shippingWaived ? 'text-emerald-700' : '')}>{summaryCharges.shippingCents === null ? t('pendingConfirmation') : summaryCharges.shippingWaived ? t('freeShippingApplied') : formatCartCurrency(summaryCharges.shippingCents / 100)}</span></div>
-                {summaryCharges.discountCents ? <div className="flex justify-between text-emerald-700"><span>{t('volumeDiscount')}</span><span className="font-semibold">−{formatCartCurrency(summaryCharges.discountCents / 100)}</span></div> : null}
+                {summaryCharges.discountCents ? <div className="flex justify-between text-emerald-700"><span>{t('volumeDiscount', { rate: Math.round(promotionDiscountRate(Math.round(completedSummary.subtotal * 100)) * 100) })}</span><span className="font-semibold">−{formatCartCurrency(summaryCharges.discountCents / 100)}</span></div> : null}
                 <div className="flex justify-between text-base font-semibold"><span>{t('total')}</span><span>{summaryCharges.totalCents === null ? t('pendingConfirmation') : formatCartCurrency(summaryCharges.totalCents / 100)}</span></div>
               </div>
             </div>
@@ -656,7 +656,7 @@ export function CheckoutPage() {
               <div className="flex justify-between text-slate-600"><span>{t('subtotal')}</span><span className="font-semibold text-[#071724]">{formatCartCurrency(subtotal)}</span></div>
               {charges.importFeeCents ? <div className="flex justify-between text-slate-600"><span>{t('importFee')}</span><span className="font-semibold text-[#071724]">{formatCartCurrency(charges.importFeeCents / 100)}</span></div> : null}
               <div className="flex justify-between text-slate-600"><span>{t(formData.localFulfillment === 'pickup' ? 'pickupCharge' : formData.localFulfillment === 'home_delivery' ? 'localDeliveryCharge' : 'shipping')}</span><span className={cn('font-semibold', charges.shippingWaived ? 'text-emerald-700' : 'text-[#071724]')}>{charges.shippingCents === null ? t('pendingConfirmation') : charges.shippingWaived ? t('freeShippingApplied') : formatCartCurrency(charges.shippingCents / 100)}</span></div>
-              {charges.discountCents ? <div className="flex justify-between text-emerald-700"><span>{t('volumeDiscount')}</span><span className="font-semibold">−{formatCartCurrency(charges.discountCents / 100)}</span></div> : null}
+              {charges.discountCents ? <div className="flex justify-between text-emerald-700"><span>{t('volumeDiscount', { rate: Math.round(promotionDiscountRate(Math.round(subtotal * 100)) * 100) })}</span><span className="font-semibold">−{formatCartCurrency(charges.discountCents / 100)}</span></div> : null}
               <div className="mt-2 flex justify-between border-t border-slate-900/10 pt-3 text-base font-semibold text-[#071724]"><span>{t('total')}</span><span>{charges.totalCents === null ? t('pendingConfirmation') : formatCartCurrency(charges.totalCents / 100)}</span></div>
               {destinationUsesMexicoImportFee(formData.destination) ? <p className="mt-2 rounded-xl bg-teal-50 p-3 text-xs leading-5 text-teal-950">{t('mexicoProcessingNote')}</p> : null}
               {!paymentAllowed && verification ? <p className="mt-2 rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-950">{t('paymentBlockedPendingReview')}</p> : null}

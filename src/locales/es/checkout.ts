@@ -134,7 +134,7 @@ export const checkout = {
   importFee: 'Tarifa de importación',
   shipping: 'Envío',
   freeShippingApplied: 'Gratis',
-  volumeDiscount: 'Descuento 10% ($300+)',
+  volumeDiscount: 'Descuento por volumen {rate}%',
   pickupCharge: 'Recolección',
   localDeliveryCharge: 'Entrega local',
   total: 'Total',

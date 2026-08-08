@@ -3,14 +3,17 @@ import type { ShippingRate } from './shipping'
 /**
  * Order-value promotions.
  *
- * Two tiers, both measured against the cart subtotal before shipping, import
+ * Four tiers, all measured against the cart subtotal before shipping, import
  * fees, or any discount:
  *
- *   $200+  free shipping
- *   $300+  free 2-day express shipping AND 10% off the subtotal
+ *   $200+    free shipping
+ *   $300+    free 2-day express shipping AND 10% off the subtotal
+ *   $500+    free 2-day express shipping AND 15% off the subtotal
+ *   $1,000+  free 2-day express shipping AND 20% off the subtotal
  *
- * The $300 tier supersedes the $200 tier rather than stacking with it — there
- * is only one shipping charge to waive.
+ * Tiers supersede rather than stack — a $1,000 order takes 20%, not 10+15+20 —
+ * and each tier carries every benefit of the ones below it, so free shipping
+ * survives all the way up.
  *
  * These thresholds are duplicated in supabase/functions/shipping-checkout,
  * which recomputes every total server-side and is the authority for what a
@@ -18,54 +21,76 @@ import type { ShippingRate } from './shipping'
  * something the recorded order does not honor.
  */
 
-export const FREE_SHIPPING_THRESHOLD_CENTS = 20_000
-export const VOLUME_TIER_THRESHOLD_CENTS = 30_000
-export const VOLUME_DISCOUNT_RATE = 0.1
+export type PromotionTier = 'none' | 'free_shipping' | 'volume_10' | 'volume_15' | 'volume_20'
+export type EarnedTier = Exclude<PromotionTier, 'none'>
+
+export type PromotionTierRule = {
+  id: EarnedTier
+  thresholdCents: number
+  discountRate: number
+  express: boolean
+}
+
+/** Ordered by threshold, ascending — every lookup below relies on that order. */
+export const PROMOTION_TIERS: readonly PromotionTierRule[] = [
+  { id: 'free_shipping', thresholdCents: 20_000, discountRate: 0, express: false },
+  { id: 'volume_10', thresholdCents: 30_000, discountRate: 0.1, express: true },
+  { id: 'volume_15', thresholdCents: 50_000, discountRate: 0.15, express: true },
+  { id: 'volume_20', thresholdCents: 100_000, discountRate: 0.2, express: true },
+]
+
+export const FREE_SHIPPING_THRESHOLD_CENTS = PROMOTION_TIERS[0].thresholdCents
+export const VOLUME_TIER_THRESHOLD_CENTS = PROMOTION_TIERS[1].thresholdCents
 /** A rate has to beat this to count as the promised "2-day express". */
 export const EXPRESS_MAX_DELIVERY_DAYS = 2
 
-export type PromotionTier = 'none' | 'free_shipping' | 'volume'
+/** The highest tier the subtotal clears, or null below the first threshold. */
+export function promotionRuleFor(subtotalCents: number): PromotionTierRule | null {
+  let earned: PromotionTierRule | null = null
+  for (const tier of PROMOTION_TIERS) {
+    if (subtotalCents >= tier.thresholdCents) earned = tier
+  }
+  return earned
+}
 
 export function promotionTierFor(subtotalCents: number): PromotionTier {
-  if (subtotalCents >= VOLUME_TIER_THRESHOLD_CENTS) return 'volume'
-  if (subtotalCents >= FREE_SHIPPING_THRESHOLD_CENTS) return 'free_shipping'
-  return 'none'
+  return promotionRuleFor(subtotalCents)?.id ?? 'none'
 }
 
 export function qualifiesForFreeShipping(subtotalCents: number) {
-  return promotionTierFor(subtotalCents) !== 'none'
+  return promotionRuleFor(subtotalCents) !== null
 }
 
 export function qualifiesForExpressUpgrade(subtotalCents: number) {
-  return promotionTierFor(subtotalCents) === 'volume'
+  return promotionRuleFor(subtotalCents)?.express ?? false
+}
+
+export function promotionDiscountRate(subtotalCents: number) {
+  return promotionRuleFor(subtotalCents)?.discountRate ?? 0
 }
 
 /**
- * The 10% comes off the whole subtotal, including lines that already carry
+ * The discount comes off the whole subtotal, including lines that already carry
  * multi-vial pack savings. The two discounts stack by design.
  */
 export function promotionDiscountCents(subtotalCents: number) {
-  if (subtotalCents < VOLUME_TIER_THRESHOLD_CENTS) return 0
-  return Math.round(subtotalCents * VOLUME_DISCOUNT_RATE)
+  const rate = promotionDiscountRate(subtotalCents)
+  return rate ? Math.round(subtotalCents * rate) : 0
 }
 
 /**
  * What the shopper still has to add to reach the next tier, for the cart
  * progress note. Returns null once the top tier is reached.
  */
-export function centsToNextTier(subtotalCents: number): { tier: Exclude<PromotionTier, 'none'>; remainingCents: number } | null {
-  if (subtotalCents < FREE_SHIPPING_THRESHOLD_CENTS) {
-    return { tier: 'free_shipping', remainingCents: FREE_SHIPPING_THRESHOLD_CENTS - subtotalCents }
-  }
-  if (subtotalCents < VOLUME_TIER_THRESHOLD_CENTS) {
-    return { tier: 'volume', remainingCents: VOLUME_TIER_THRESHOLD_CENTS - subtotalCents }
-  }
-  return null
+export function centsToNextTier(subtotalCents: number): { tier: EarnedTier; remainingCents: number } | null {
+  const next = PROMOTION_TIERS.find((tier) => subtotalCents < tier.thresholdCents)
+  return next ? { tier: next.id, remainingCents: next.thresholdCents - subtotalCents } : null
 }
 
 /**
- * Picks the rate to hand a $300+ order: the quickest service at or under two
- * transit days, cheapest first when several tie on speed.
+ * Picks the rate to hand an order that earned the express upgrade: the quickest
+ * service at or under two transit days, cheapest first when several tie on
+ * speed.
  *
  * Carriers do not always quote a 2-day service to every postal code, and a rate
  * list can arrive with no transit estimate at all. Rather than dropping the
