@@ -69,9 +69,11 @@ export function InterimCheckoutHandoff({
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState(false)
   const paymentAllowed = shipping ? shippingSelectionAllowsPayment(shipping) : false
-  const enabledMethods = useMemo<InterimPaymentMethod[]>(() => paymentAllowed
-    ? getEnabledPaymentMethods()
-    : [{ id: 'manual_review', enabled: true, details: [] }], [paymentAllowed])
+  const enabledMethods = useMemo<InterimPaymentMethod[]>(() => {
+    if (!paymentAllowed || order.reviewRequired) return [{ id: 'manual_review', enabled: true, details: [] }]
+    const selected = getEnabledPaymentMethods().find((entry) => entry.id === order.paymentMethod)
+    return selected ? [selected] : [{ id: 'manual_review', enabled: true, details: [] }]
+  }, [order.paymentMethod, order.reviewRequired, paymentAllowed])
 
   if (!items.length || !enabledMethods.length) return null
 
@@ -96,7 +98,7 @@ export function InterimCheckoutHandoff({
     const handoffWindow = window.open('', '_blank', 'noopener')
     try {
       const effectiveMethod: InterimPaymentMethod = order.reviewRequired ? { id: 'manual_review', enabled: true, details: [] } : chosenMethod
-      const message = buildHandoffMessage({ reference: order.reference, items, paymentMethod: effectiveMethod.id, locale, contact, shipping, totalCents: order.totalCents })
+      const message = buildHandoffMessage({ reference: order.reference, items, paymentMethod: effectiveMethod.id, locale, contact, shipping, processingFeeCents: order.processingFeeCents, totalCents: order.totalCents })
       let copied = false
       if (state.channel === 'instagram') copied = await copyText(message)
       const url = state.channel === 'whatsapp' ? buildWhatsAppHandoffUrl(message) : buildInstagramDmUrl()

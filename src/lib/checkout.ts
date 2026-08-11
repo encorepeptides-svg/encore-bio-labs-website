@@ -16,7 +16,7 @@ export function isValidEmail(value: string) {
 }
 
 export function isCheckoutFormValid(data: CheckoutValidationData) {
-  return isValidEmail(data.email) &&
+  return (!data.email.trim() || isValidEmail(data.email)) &&
     data.phone.replace(/\D/g, '').length >= 7 &&
     [data.fullName, data.address, data.city, data.state, data.zip].every((value) => value.trim().length > 0) &&
     (data.streetNumber === undefined || data.streetNumber.trim().length > 0) &&

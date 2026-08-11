@@ -83,12 +83,16 @@ describe('interim checkout handoff', () => {
       paymentMethod: 'cash_on_delivery',
       locale: 'es',
       contact: { name: 'María Rivera', address: '123 Calle Principal', city: 'Juárez', notes: 'Llame al llegar' },
+      processingFeeCents: 200,
+      totalCents: 4_200,
     })
     expect(message).toContain('Pedido [ORD-1000]')
     expect(message).toContain('Quiero pagar con: Pago contra entrega / recolección')
     expect(message).toContain('Nombre: María Rivera')
     expect(message).toContain('Envío: 123 Calle Principal, Juárez')
     expect(message).toContain('Notas: Llame al llegar')
+    expect(message).toContain('Procesamiento por pago al recibir (5%): $2')
+    expect(message).toContain('Total: $42')
     expect(message).not.toContain('Order [')
   })
 

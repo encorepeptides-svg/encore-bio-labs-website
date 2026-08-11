@@ -3,6 +3,7 @@ import {
   addressEssentialErrors,
   addressesDiffer,
   calculateMexicoImportFeeCents,
+  calculatePaymentProcessingFeeCents,
   calculateShippingCharges,
   distanceMilesBetween,
   destinationUsesMexicoImportFee,
@@ -164,6 +165,12 @@ describe('server-mirrored charges and payment gates', () => {
   it('stacks the 10% on a Mexico order without touching the import fee', () => {
     const charges = calculateShippingCharges({ destination: 'mexico', kitCount: 5, subtotalCents: 40_000, selectedRate: null, localDeliveryFeeCents: null })
     expect(charges).toEqual({ importFeeCents: 3500, shippingCents: 0, discountCents: 4_000, shippingWaived: true, totalCents: 39_500 })
+  })
+
+  it('adds 5% for cash on delivery after discounts but not on shipping or import fees', () => {
+    expect(calculatePaymentProcessingFeeCents({ subtotalCents: 10_000, discountCents: 0, paymentMethod: 'cash_on_delivery' })).toBe(500)
+    expect(calculatePaymentProcessingFeeCents({ subtotalCents: 40_000, discountCents: 4_000, paymentMethod: 'cash_on_delivery' })).toBe(1_800)
+    expect(calculatePaymentProcessingFeeCents({ subtotalCents: 10_000, discountCents: 0, paymentMethod: 'paypal' })).toBe(0)
   })
 
   it('reports no waiver when the charge was already zero', () => {

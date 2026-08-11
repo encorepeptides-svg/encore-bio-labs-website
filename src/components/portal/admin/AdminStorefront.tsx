@@ -29,6 +29,15 @@ export function AdminStorefront() {
     return status.replaceAll('_', ' ')
   }
 
+  function paymentMethodLabel(method: string) {
+    if (method === 'cash_on_delivery') return t('adminStorefrontCashOnDelivery')
+    if (method === 'bank_transfer') return t('adminStorefrontBankTransfer')
+    if (method === 'manual_review') return t('adminStorefrontManualReview')
+    if (method === 'apple_pay') return 'Apple Pay / Apple Cash'
+    if (method === 'cashapp') return 'Cash App'
+    return method.replaceAll('_', ' ')
+  }
+
   return <>
     <p className="mt-4 max-w-2xl leading-7 text-slate-600">{t('adminStorefrontIntro')}</p>
     <label className="mt-5 flex w-fit items-center gap-2 text-sm font-semibold text-slate-700">
@@ -60,9 +69,12 @@ export function AdminStorefront() {
               </td>
               <td className="px-5 py-3 text-slate-500">{formatDate(order.created_at, true)}</td>
               <td className="px-5 py-3 capitalize text-slate-600">{order.channel}</td>
-              <td className="px-5 py-3 text-slate-600">{order.payment_method.replaceAll('_', ' ')}</td>
+              <td className="px-5 py-3 text-slate-600">{paymentMethodLabel(order.payment_method)}</td>
               <td className="px-5 py-3 text-slate-600">{contact || '—'}</td>
-              <td className="px-5 py-3 font-semibold">{order.total_cents === null ? `${formatMoney(order.subtotal_cents)} + review` : formatMoney(order.total_cents)}</td>
+              <td className="px-5 py-3 font-semibold">
+                <p>{order.total_cents === null ? `${formatMoney(order.subtotal_cents)} + review` : formatMoney(order.total_cents)}</p>
+                {order.processing_fee_cents ? <p className="mt-1 text-xs font-medium text-slate-500">{t('adminStorefrontProcessingFee', { amount: formatMoney(order.processing_fee_cents) })}</p> : null}
+              </td>
               <td className="px-5 py-3"><Badge tone={statusTone(order.status === 'pending_payment' ? 'pending' : order.status)}>{statusLabel(order.status)}</Badge></td>
               <td className="px-5 py-3">
                 {order.status === 'pending_payment' ? <div className="flex flex-wrap gap-2">

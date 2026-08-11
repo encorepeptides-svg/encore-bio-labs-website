@@ -12,9 +12,11 @@ const validForm = {
 }
 
 describe('checkout validation and persistence', () => {
-  it('requires valid contact and shipping fields', () => {
+  it('requires a phone and valid shipping fields while keeping email optional', () => {
     expect(isCheckoutFormValid(validForm)).toBe(true)
+    expect(isCheckoutFormValid({ ...validForm, email: '' })).toBe(true)
     expect(isCheckoutFormValid({ ...validForm, email: 'invalid' })).toBe(false)
+    expect(isCheckoutFormValid({ ...validForm, phone: '' })).toBe(false)
     expect(isCheckoutFormValid({ ...validForm, address: '' })).toBe(false)
   })
 

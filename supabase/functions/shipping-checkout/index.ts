@@ -27,6 +27,8 @@ type Verification = {
 
 const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8' }
 const SUPPORT_EMAIL = 'support@encorebiolabs.com'
+const CASH_ON_DELIVERY_PROCESSING_RATE = 0.05
+const PAYMENT_METHODS = ['bank_transfer', 'paypal', 'venmo', 'cashapp', 'zelle', 'apple_pay', 'cash_on_delivery'] as const
 const US_ZIP = /^\d{5}(?:-\d{4})?$/
 const MX_POSTAL_CODE = /^\d{5}$/
 const INTERNATIONAL_POSTAL_CODE = /^[\p{L}\d][\p{L}\d -]{1,11}$/u
@@ -78,7 +80,7 @@ function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]!))
 }
 
-async function notifySupport(reference: string, status: string, contact: Record<string, unknown>, items: Array<Record<string, unknown>>, subtotalCents: number, totalCents: number | null) {
+async function notifySupport(reference: string, status: string, paymentMethod: string, contact: Record<string, unknown>, items: Array<Record<string, unknown>>, subtotalCents: number, processingFeeCents: number, totalCents: number | null) {
   const token = Deno.env.get('ZOHO_OAUTH_ACCESS_TOKEN') || ''
   const accountId = Deno.env.get('ZOHO_MAIL_ACCOUNT_ID') || ''
   if (!token || !accountId) return { sent: false, error: 'Zoho Mail API credentials are not configured.' }
@@ -86,7 +88,7 @@ async function notifySupport(reference: string, status: string, contact: Record<
   const itemLines = items.map((item) => `${Math.max(1, Number(item.quantity) || 1)}× ${text(item.product)} ${text(item.variant)}`.trim())
   const statusLabel = status === 'pending_shipping_review' ? 'Pending Shipping Review' : status.replaceAll('_', ' ')
   const subject = `[${reference}] ${statusLabel}`
-  const html = `<div style="font-family:Arial,sans-serif;color:#071724;max-width:680px;margin:auto"><div style="padding:20px 24px;background:#071724;color:#d5fff9;font-size:21px;font-weight:700">Encore Bio Labs checkout</div><main style="padding:26px"><h1 style="font-size:24px">${escapeHtml(statusLabel)}</h1><p><strong>Request:</strong> ${escapeHtml(reference)}</p><p><strong>Customer:</strong> ${escapeHtml(customer)} · ${escapeHtml(text(contact.email))} · ${escapeHtml(text(contact.phone))}</p><p><strong>Items:</strong><br>${itemLines.map(escapeHtml).join('<br>')}</p><p><strong>Subtotal:</strong> $${(subtotalCents / 100).toFixed(2)}<br><strong>Total:</strong> ${totalCents === null ? 'Pending shipping review' : `$${(totalCents / 100).toFixed(2)}`}</p><p>Open the admin storefront portal to review the full shipping and acknowledgment record.</p></main></div>`
+  const html = `<div style="font-family:Arial,sans-serif;color:#071724;max-width:680px;margin:auto"><div style="padding:20px 24px;background:#071724;color:#d5fff9;font-size:21px;font-weight:700">Encore Bio Labs checkout</div><main style="padding:26px"><h1 style="font-size:24px">${escapeHtml(statusLabel)}</h1><p><strong>Request:</strong> ${escapeHtml(reference)}</p><p><strong>Customer:</strong> ${escapeHtml(customer)} · ${escapeHtml(text(contact.email))} · ${escapeHtml(text(contact.phone))}</p><p><strong>Payment:</strong> ${escapeHtml(paymentMethod.replaceAll('_', ' '))}</p><p><strong>Items:</strong><br>${itemLines.map(escapeHtml).join('<br>')}</p><p><strong>Subtotal:</strong> $${(subtotalCents / 100).toFixed(2)}<br><strong>Processing:</strong> $${(processingFeeCents / 100).toFixed(2)}<br><strong>Total:</strong> ${totalCents === null ? 'Pending shipping review' : `$${(totalCents / 100).toFixed(2)}`}</p><p>Open the admin storefront portal to review the full shipping and acknowledgment record and follow up manually.</p></main></div>`
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), 8_000)
   try {
@@ -104,8 +106,8 @@ async function notifySupport(reference: string, status: string, contact: Record<
   }
 }
 
-async function recordSupportNotification(client: ReturnType<typeof createClient>, reference: string, status: string, contact: Record<string, unknown>, items: Array<Record<string, unknown>>, subtotalCents: number, totalCents: number | null, locale: 'en' | 'es') {
-  const notification = await notifySupport(reference, status, contact, items, subtotalCents, totalCents)
+async function recordSupportNotification(client: ReturnType<typeof createClient>, reference: string, status: string, paymentMethod: string, contact: Record<string, unknown>, items: Array<Record<string, unknown>>, subtotalCents: number, processingFeeCents: number, totalCents: number | null, locale: 'en' | 'es') {
+  const notification = await notifySupport(reference, status, paymentMethod, contact, items, subtotalCents, processingFeeCents, totalCents)
   const { error } = await client.from('communication_messages').insert({
     direction: 'inbound',
     source: 'checkout_order',
@@ -115,13 +117,13 @@ async function recordSupportNotification(client: ReturnType<typeof createClient>
     sender_phone: text(contact.phone) || null,
     recipient_email: SUPPORT_EMAIL,
     subject: `[${reference}] ${status === 'pending_shipping_review' ? 'Pending Shipping Review' : 'New checkout order'}`,
-    body_text: `Checkout request ${reference} was saved with status ${status.replaceAll('_', ' ')}. Review the order in the admin storefront portal.`,
+    body_text: `Checkout request ${reference} was saved with status ${status.replaceAll('_', ' ')} and payment method ${paymentMethod.replaceAll('_', ' ')}. Review the order in the admin storefront portal and follow up manually.`,
     locale,
     delivery_status: notification.sent ? 'sent' : 'queued',
     delivery_error: notification.error,
     attempts: 1,
     last_attempt_at: new Date().toISOString(),
-    metadata: { order_reference: reference, notification_recipient: SUPPORT_EMAIL },
+    metadata: { order_reference: reference, payment_method: paymentMethod, processing_fee_cents: processingFeeCents, notification_recipient: SUPPORT_EMAIL },
   })
   if (error) console.error('[shipping-checkout] support notification record failed', { reference, code: error.code })
   else console.log('[shipping-checkout] support notification completed', { reference, delivery: notification.sent ? 'sent' : 'queued' })
@@ -612,9 +614,15 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
   const acknowledgment = checkoutAcknowledgment(body.checkoutAcknowledgment, locale)
   if (!acknowledgment) return response({ code: 'checkout_acknowledgment_required' }, 422, origin)
   const contact = body.contact && typeof body.contact === 'object' ? body.contact as Record<string, unknown> : {}
-  if (!text(contact.name) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text(contact.email)) || text(contact.phone).replace(/\D/g, '').length < 7) {
+  const contactEmail = text(contact.email)
+  if (!text(contact.name) || (contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) || text(contact.phone).replace(/\D/g, '').length < 7) {
     return response({ code: 'contact_information_incomplete' }, 422, origin)
   }
+  const requestedPaymentMethod = text(body.paymentMethod)
+  if (!PAYMENT_METHODS.includes(requestedPaymentMethod as typeof PAYMENT_METHODS[number])) {
+    return response({ code: 'invalid_payment_method' }, 422, origin)
+  }
+  const paymentMethod = requestedPaymentMethod as typeof PAYMENT_METHODS[number]
 
   const verification = await validateAddress(destination, address, kitCount, localFulfillment)
   const manualRequested = body.manualReviewRequested === true
@@ -664,7 +672,10 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
   const shippingWaived = quotedShippingCents !== null && quotedShippingCents > 0 && earnedTier !== null
   const shippingCents = shippingWaived ? 0 : quotedShippingCents
   const discountCents = earnedTier ? Math.round(subtotalCents * earnedTier.discountRate) : 0
-  const totalCents = shippingCents === null ? null : Math.max(0, subtotalCents + importFeeCents + shippingCents - discountCents)
+  const processingFeeCents = paymentMethod === 'cash_on_delivery'
+    ? Math.round(Math.max(0, subtotalCents - discountCents) * CASH_ON_DELIVERY_PROCESSING_RATE)
+    : 0
+  const totalCents = shippingCents === null ? null : Math.max(0, subtotalCents + importFeeCents + shippingCents - discountCents + processingFeeCents)
   const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
   const secretKey = getSecretKey()
   if (!supabaseUrl || !secretKey) return response({ code: 'order_store_unavailable' }, 503, origin)
@@ -700,12 +711,13 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
       order_reference: reference,
       status,
       channel,
-      payment_method: reviewRequired ? 'manual_review' : text(body.paymentMethod) || 'pending_selection',
+      payment_method: paymentMethod,
       items: safeItems,
       subtotal_cents: subtotalCents,
       import_fee_cents: importFeeCents,
       shipping_cents: shippingCents,
       discount_cents: discountCents,
+      processing_fee_cents: processingFeeCents,
       total_cents: totalCents,
       locale,
       contact,
@@ -728,8 +740,8 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
     })
     if (!error) {
       console.log('[shipping-checkout] order saved', { reference, status, destination, reviewRequired })
-      scheduleBackground(recordSupportNotification(client, reference, status, contact, safeItems, subtotalCents, totalCents, locale))
-      return response({ reference, subtotalCents, importFeeCents, shippingCents, discountCents, shippingWaived, totalCents, recorded: true, reviewRequired, verification, supportNotification: 'scheduled' }, 200, origin)
+      scheduleBackground(recordSupportNotification(client, reference, status, paymentMethod, contact, safeItems, subtotalCents, processingFeeCents, totalCents, locale))
+      return response({ reference, paymentMethod, subtotalCents, importFeeCents, shippingCents, discountCents, processingFeeCents, shippingWaived, totalCents, recorded: true, reviewRequired, verification, supportNotification: 'scheduled' }, 200, origin)
     }
     if (error.code !== '23505') {
       console.error('[shipping-checkout] order save failed', { destination, status, code: error.code })

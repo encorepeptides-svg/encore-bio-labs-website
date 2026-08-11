@@ -86,6 +86,26 @@ export type ShippingCharges = {
   totalCents: number | null
 }
 
+export const CASH_ON_DELIVERY_PROCESSING_RATE = 0.05
+
+/**
+ * Cash-on-delivery processing applies only to merchandise after promotions.
+ * Shipping and Mexico import charges are intentionally excluded so the fee is
+ * stable even when an operator still needs to confirm delivery.
+ */
+export function calculatePaymentProcessingFeeCents({
+  subtotalCents,
+  discountCents,
+  paymentMethod,
+}: {
+  subtotalCents: number
+  discountCents: number
+  paymentMethod: string
+}) {
+  if (paymentMethod !== 'cash_on_delivery') return 0
+  return Math.round(Math.max(0, subtotalCents - discountCents) * CASH_ON_DELIVERY_PROCESSING_RATE)
+}
+
 const US_ZIP = /^\d{5}(?:-\d{4})?$/
 const MX_POSTAL_CODE = /^\d{5}$/
 const INTERNATIONAL_POSTAL_CODE = /^[\p{L}\d][\p{L}\d -]{1,11}$/u

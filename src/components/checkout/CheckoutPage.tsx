@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import logo from '../../assets/images/logo/encore-logo.png'
+import { getEnabledPaymentMethods, type InterimPaymentMethodId } from '../../config/interimCheckout'
 import { useCart } from '../../context/useCart'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { purchaseTypeLabel } from '../../i18n/displayLabels'
@@ -28,6 +29,7 @@ import { isCheckoutFormValid, isValidEmail } from '../../lib/checkout'
 import { promotionDiscountRate, qualifiesForExpressUpgrade, qualifiesForFreeShipping, selectExpressRate } from '../../lib/promotions'
 import {
   addressEssentialErrors,
+  calculatePaymentProcessingFeeCents,
   calculateShippingCharges,
   destinationUsesMexicoImportFee,
   expectedCountryForDestination,
@@ -110,6 +112,21 @@ const destinationOptions: Array<{ id: DeliveryDestination; icon: LucideIcon; tit
   { id: 'local_chihuahua', icon: Truck, titleKey: 'destinationChihuahua', bodyKey: 'destinationLocalMexicoBody' },
   { id: 'international', icon: Globe2, titleKey: 'destinationInternational', bodyKey: 'destinationInternationalBody' },
 ]
+
+const paymentMethodLabelKeys: Record<InterimPaymentMethodId, string> = {
+  bank_transfer: 'paymentBankTransfer',
+  paypal: 'paymentPaypal',
+  venmo: 'paymentVenmo',
+  cashapp: 'paymentCashApp',
+  zelle: 'paymentZelle',
+  apple_pay: 'paymentApplePay',
+  cash_on_delivery: 'paymentCashOnDelivery',
+  manual_review: 'paymentManualReview',
+}
+
+const checkoutPaymentMethods = getEnabledPaymentMethods()
+const cashOnDeliveryMethod = checkoutPaymentMethods.find((method) => method.id === 'cash_on_delivery')
+const alternatePaymentMethods = checkoutPaymentMethods.filter((method) => method.id !== 'cash_on_delivery')
 
 function localDestinationDefaults(destination: DeliveryDestination) {
   if (destination === 'local_el_paso') return { state: 'TX', city: 'El Paso' }
@@ -354,6 +371,7 @@ export function CheckoutPage() {
   const [addressChoice, setAddressChoice] = useState<AddressChoice | null>(null)
   const [selectedRateId, setSelectedRateId] = useState<string | null>(null)
   const [manualReviewRequested, setManualReviewRequested] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState<InterimPaymentMethodId>('cash_on_delivery')
   const [outcome, setOutcome] = useState<'support' | null>(null)
   const [completedSummary, setCompletedSummary] = useState<CheckoutSummary | null>(null)
   const [showValidation, setShowValidation] = useState(false)
@@ -474,17 +492,21 @@ export function CheckoutPage() {
     setFormData((current) => ({ ...current, localFulfillment, destinationAcknowledged: false }))
   }
 
-  // A $300+ order was promised 2-day express, so pick that service for the
-  // shopper instead of leaving them to guess which rate the promise covers.
-  // Only ever fills an empty selection — an explicit choice is left alone.
+  // Preselect a sensible service so the shopper does not have to decipher
+  // carrier rates just to finish. Express rewards still take priority; all
+  // other orders start with the least expensive current service.
   useEffect(() => {
     if (!verification?.rates.length || selectedRateId) return
-    if (!qualifiesForExpressUpgrade(Math.round(subtotal * 100))) return
-    setSelectedRateId(selectExpressRate(verification.rates)?.id ?? null)
+    const automaticRate = qualifiesForExpressUpgrade(Math.round(subtotal * 100))
+      ? selectExpressRate(verification.rates)
+      : [...verification.rates].sort((left, right) => left.amountCents - right.amountCents)[0]
+    setSelectedRateId(automaticRate?.id ?? null)
   }, [selectedRateId, subtotal, verification])
 
   const selectedRate = verification?.rates.find((rate) => rate.id === selectedRateId) ?? null
   const charges = calculateShippingCharges({ destination: formData.destination, kitCount, subtotalCents: Math.round(subtotal * 100), selectedRate, localDeliveryFeeCents: verification?.localDeliveryFeeCents ?? null })
+  const processingFeeCents = calculatePaymentProcessingFeeCents({ subtotalCents: Math.round(subtotal * 100), discountCents: charges.discountCents, paymentMethod })
+  const checkoutTotalCents = charges.totalCents === null ? null : charges.totalCents + processingFeeCents
   const shippingSelection: ShippingSelection | null = verification ? {
     destination: formData.destination,
     address: verificationAddress,
@@ -502,7 +524,7 @@ export function CheckoutPage() {
   const poBoxAllowed = isPoBoxAddress(address) && !formData.destination.startsWith('local_')
   const checkoutAcknowledgmentComplete = isCheckoutAcknowledgmentComplete(checkoutAcknowledgments)
   const baseFormValid = pickupSelected
-    ? isValidEmail(formData.email) && formData.phone.replace(/\D/g, '').length >= 7 && Boolean(formData.fullName.trim())
+    ? (!formData.email.trim() || isValidEmail(formData.email)) && formData.phone.replace(/\D/g, '').length >= 7 && Boolean(formData.fullName.trim())
     : isCheckoutFormValid({
         ...formData,
         streetNumber: poBoxAllowed ? undefined : address.streetNumber,
@@ -541,7 +563,7 @@ export function CheckoutPage() {
       const order = await createPendingOrder({
         items,
         channel: 'checkout',
-        paymentMethod: paymentAllowed ? 'pending_selection' : 'manual_review',
+        paymentMethod,
         locale,
         contact,
         shipping: shippingSelection,
@@ -557,8 +579,6 @@ export function CheckoutPage() {
   }
 
   if (outcome && completedSummary) {
-    const summaryRate = completedSummary.shipping.verification.rates.find((rate) => rate.id === completedSummary.shipping.selectedRateId) ?? null
-    const summaryCharges = calculateShippingCharges({ destination: completedSummary.shipping.destination, kitCount: completedSummary.shipping.kitCount, subtotalCents: Math.round(completedSummary.subtotal * 100), selectedRate: summaryRate, localDeliveryFeeCents: completedSummary.shipping.verification.localDeliveryFeeCents })
     const summaryPaymentAllowed = shippingSelectionAllowsPayment(completedSummary.shipping)
     return (
       <main id="main-content" className="min-h-screen bg-[#f5f5f2]">
@@ -567,7 +587,7 @@ export function CheckoutPage() {
         <div className="mx-auto flex max-w-xl flex-col items-center px-5 py-12 text-center sm:px-8">
           <span className={cn('flex size-16 items-center justify-center rounded-full', summaryPaymentAllowed ? 'bg-teal-50 text-teal-700' : 'bg-amber-50 text-amber-700')}>{summaryPaymentAllowed ? <Check size={28} aria-hidden="true" /> : <AlertTriangle size={28} aria-hidden="true" />}</span>
           <h1 className="mt-6 text-4xl font-semibold tracking-[-0.05em] text-[#071724]">{t(summaryPaymentAllowed ? 'orderSubmittedTitle' : 'manualReviewOutcomeTitle')}</h1>
-          <p className="mt-4 text-base leading-7 text-slate-600">{t(summaryPaymentAllowed ? 'orderSubmittedBody' : 'manualReviewOutcomeBody')}</p>
+          <p className="mt-4 text-base leading-7 text-slate-600">{t(summaryPaymentAllowed ? completedSummary.order.paymentMethod === 'cash_on_delivery' ? 'cashOnDeliverySubmittedBody' : 'orderSubmittedBody' : 'manualReviewOutcomeBody')}</p>
           <div className="mt-6 rounded-2xl bg-[#071724] px-6 py-4 text-white" role="status">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-teal-200">{t('orderReferenceLabel')}</p>
             <p className="mt-1 font-mono text-3xl font-semibold">{completedSummary.order.reference}</p>
@@ -578,10 +598,12 @@ export function CheckoutPage() {
               {completedSummary.items.map((item) => <div key={item.id} className="flex items-start justify-between gap-4 text-sm"><span className="text-slate-600">{item.productName} · {item.variantLabel} · {purchaseTypeLabel(tCommon, item.purchaseType)} · {tCommon('packLabel', { pack: item.packSize })} × {item.quantity}</span><span className="shrink-0 font-semibold text-[#071724]">{formatCartCurrency(item.linePrice * item.quantity)}</span></div>)}
               <div className="grid gap-2 border-t border-slate-900/10 pt-3 text-sm">
                 <div className="flex justify-between"><span>{t('subtotal')}</span><span className="font-semibold">{formatCartCurrency(completedSummary.subtotal)}</span></div>
-                {summaryCharges.importFeeCents ? <div className="flex justify-between"><span>{t('importFee')}</span><span className="font-semibold">{formatCartCurrency(summaryCharges.importFeeCents / 100)}</span></div> : null}
-                <div className="flex justify-between"><span>{t(completedSummary.shipping.localFulfillment === 'pickup' ? 'pickupCharge' : completedSummary.shipping.localFulfillment === 'home_delivery' ? 'localDeliveryCharge' : 'shipping')}</span><span className={cn('font-semibold', summaryCharges.shippingWaived ? 'text-emerald-700' : '')}>{summaryCharges.shippingCents === null ? t('pendingConfirmation') : summaryCharges.shippingWaived ? t('freeShippingApplied') : formatCartCurrency(summaryCharges.shippingCents / 100)}</span></div>
-                {summaryCharges.discountCents ? <div className="flex justify-between text-emerald-700"><span>{t('volumeDiscount', { rate: Math.round(promotionDiscountRate(Math.round(completedSummary.subtotal * 100)) * 100) })}</span><span className="font-semibold">−{formatCartCurrency(summaryCharges.discountCents / 100)}</span></div> : null}
-                <div className="flex justify-between text-base font-semibold"><span>{t('total')}</span><span>{summaryCharges.totalCents === null ? t('pendingConfirmation') : formatCartCurrency(summaryCharges.totalCents / 100)}</span></div>
+                {completedSummary.order.importFeeCents ? <div className="flex justify-between"><span>{t('importFee')}</span><span className="font-semibold">{formatCartCurrency(completedSummary.order.importFeeCents / 100)}</span></div> : null}
+                <div className="flex justify-between"><span>{t(completedSummary.shipping.localFulfillment === 'pickup' ? 'pickupCharge' : completedSummary.shipping.localFulfillment === 'home_delivery' ? 'localDeliveryCharge' : 'shipping')}</span><span className={cn('font-semibold', completedSummary.order.shippingWaived ? 'text-emerald-700' : '')}>{completedSummary.order.shippingCents === null ? t('pendingConfirmation') : completedSummary.order.shippingWaived ? t('freeShippingApplied') : formatCartCurrency(completedSummary.order.shippingCents / 100)}</span></div>
+                {completedSummary.order.discountCents ? <div className="flex justify-between text-emerald-700"><span>{t('volumeDiscount', { rate: Math.round(promotionDiscountRate(Math.round(completedSummary.subtotal * 100)) * 100) })}</span><span className="font-semibold">−{formatCartCurrency(completedSummary.order.discountCents / 100)}</span></div> : null}
+                {completedSummary.order.processingFeeCents ? <div className="flex justify-between"><span>{t('processingFee')}</span><span className="font-semibold">{formatCartCurrency(completedSummary.order.processingFeeCents / 100)}</span></div> : null}
+                <div className="flex justify-between"><span>{t('paymentMethodTitle')}</span><span className="font-semibold text-right">{t(paymentMethodLabelKeys[completedSummary.order.paymentMethod])}</span></div>
+                <div className="flex justify-between text-base font-semibold"><span>{t('total')}</span><span>{completedSummary.order.totalCents === null ? t('pendingConfirmation') : formatCartCurrency(completedSummary.order.totalCents / 100)}</span></div>
               </div>
             </div>
           </section>
@@ -623,9 +645,9 @@ export function CheckoutPage() {
             <section className="rounded-[1.75rem] border border-white/70 bg-white/75 p-6 shadow-[0_24px_70px_rgba(7,23,36,0.06)] backdrop-blur-xl sm:p-8">
               <h2 className="text-2xl font-semibold tracking-[-0.04em] text-[#071724]">{t('contactAndShipping')}</h2>
               <div className="mt-6 grid gap-5 sm:grid-cols-2">
-                <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('email')}<input className={inputClass()} type="email" autoComplete="email" required aria-invalid={showValidation && !isValidEmail(formData.email)} value={formData.email} onChange={(event) => updateField('email', event.target.value)} />{showValidation && !isValidEmail(formData.email) ? <span className="text-xs font-medium text-rose-700">{t('emailError')}</span> : null}</label>
-                <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('phone')}<input className={inputClass()} type="tel" autoComplete="tel" required aria-invalid={showValidation && formData.phone.replace(/\D/g, '').length < 7} value={formData.phone} onChange={(event) => updateField('phone', event.target.value)} />{showValidation && formData.phone.replace(/\D/g, '').length < 7 ? <span className="text-xs font-medium text-rose-700">{t('phoneError')}</span> : null}</label>
                 <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">{t('fullName')}<input className={inputClass()} autoComplete="name" required aria-invalid={showValidation && !formData.fullName.trim()} value={formData.fullName} onChange={(event) => updateField('fullName', event.target.value)} />{showValidation && !formData.fullName.trim() ? <span className="text-xs font-medium text-rose-700">{t('fullNameError')}</span> : null}</label>
+                <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('phone')}<input className={inputClass()} type="tel" autoComplete="tel" required aria-invalid={showValidation && formData.phone.replace(/\D/g, '').length < 7} value={formData.phone} onChange={(event) => updateField('phone', event.target.value)} />{showValidation && formData.phone.replace(/\D/g, '').length < 7 ? <span className="text-xs font-medium text-rose-700">{t('phoneError')}</span> : null}</label>
+                <label className="grid gap-2 text-sm font-semibold text-[#071724]"><span>{t('email')} <span className="font-normal text-slate-400">{t('optional')}</span></span><input className={inputClass()} type="email" autoComplete="email" aria-invalid={showValidation && Boolean(formData.email.trim()) && !isValidEmail(formData.email)} value={formData.email} onChange={(event) => updateField('email', event.target.value)} />{showValidation && formData.email.trim() && !isValidEmail(formData.email) ? <span className="text-xs font-medium text-rose-700">{t('emailError')}</span> : null}</label>
                 {localDestination ? <fieldset className="sm:col-span-2">
                   <legend className="text-sm font-semibold text-[#071724]">{t('localFulfillmentTitle')}</legend>
                   <p className="mt-1 text-xs leading-5 text-slate-500">{t('localFulfillmentBody')}</p>
@@ -685,12 +707,28 @@ export function CheckoutPage() {
             <details open className="group"><summary className="flex cursor-pointer list-none items-center justify-between gap-4"><span className="text-2xl font-semibold tracking-[-0.04em] text-[#071724]">{t('cart')}</span><span className="flex items-center gap-2"><span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800">{t(itemCount === 1 ? 'itemCountOne' : 'itemCountOther', { count: itemCount })}</span><ChevronDown size={16} className="transition group-open:rotate-180" aria-hidden="true" /></span></summary>
               <div className="mt-5 grid gap-4">{items.map((item) => <article key={item.id} className="rounded-2xl border border-slate-900/10 bg-white p-4"><div className="flex items-start justify-between gap-4"><div><h3 className="text-sm font-semibold text-[#071724]">{item.productName}</h3><p className="mt-1 text-xs text-slate-500">{item.variantLabel} · {purchaseTypeLabel(tCommon, item.purchaseType)} · {tCommon('packLabel', { pack: item.packSize })}</p><p className="mt-2 text-sm font-semibold text-[#071724]">{formatCartCurrency(item.linePrice * item.quantity)}</p></div><button type="button" onClick={() => removeFromCart(item.id)} aria-label={t('removeFromOrder', { product: item.productName, variant: item.variantLabel })} className="text-slate-400 hover:text-rose-700"><Trash2 size={16} aria-hidden="true" /></button></div><div className="mt-4 inline-flex items-center rounded-full border border-slate-900/10 bg-[#f8fafc]"><button type="button" aria-label={t('decreaseQuantity', { product: item.productName, variant: item.variantLabel })} onClick={() => updateQuantity(item.id, item.quantity - 1)} className="flex size-9 items-center justify-center"><Minus size={14} aria-hidden="true" /></button><span className="min-w-8 text-center text-sm font-semibold">{item.quantity}</span><button type="button" aria-label={t('increaseQuantity', { product: item.productName, variant: item.variantLabel })} onClick={() => updateQuantity(item.id, item.quantity + 1)} className="flex size-9 items-center justify-center"><Plus size={14} aria-hidden="true" /></button></div></article>)}</div>
             </details>
+            <section className="mt-6 border-t border-slate-900/10 pt-5" aria-labelledby="checkout-payment-heading">
+              <h2 id="checkout-payment-heading" className="text-base font-semibold text-[#071724]">{t('paymentMethodTitle')}</h2>
+              <p className="mt-1 text-xs leading-5 text-slate-500">{t('paymentMethodBody')}</p>
+              {cashOnDeliveryMethod ? <label className={cn('mt-3 flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition', paymentMethod === cashOnDeliveryMethod.id ? 'border-teal-700 bg-teal-50 ring-2 ring-teal-100' : 'border-slate-200 bg-white')}>
+                <input type="radio" name="checkout-payment-method" value={cashOnDeliveryMethod.id} checked={paymentMethod === cashOnDeliveryMethod.id} onChange={() => setPaymentMethod(cashOnDeliveryMethod.id)} className="mt-1 size-4 accent-teal-700" />
+                <span className="min-w-0 flex-1"><span className="flex flex-wrap items-center justify-between gap-2 text-sm font-semibold text-[#071724]"><span>{t(paymentMethodLabelKeys[cashOnDeliveryMethod.id])}</span><span className="rounded-full bg-[#071724] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">{t('recommended')}</span></span><span className="mt-1 block text-xs font-normal leading-5 text-slate-600">{t('cashOnDeliveryBody')}</span></span>
+              </label> : null}
+              {alternatePaymentMethods.length ? <details className="group mt-3">
+                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between rounded-xl px-2 text-sm font-semibold text-teal-800"><span>{t('otherPaymentMethods')}</span><ChevronDown size={15} className="transition group-open:rotate-180" aria-hidden="true" /></summary>
+                <div className="mt-2 grid gap-2">{alternatePaymentMethods.map((method) => (
+                  <label key={method.id} className={cn('flex cursor-pointer items-center gap-3 rounded-xl border p-3 text-sm font-semibold transition', paymentMethod === method.id ? 'border-teal-700 bg-teal-50' : 'border-slate-200 bg-white')}><input type="radio" name="checkout-payment-method" value={method.id} checked={paymentMethod === method.id} onChange={() => setPaymentMethod(method.id)} className="size-4 accent-teal-700" /><span>{t(paymentMethodLabelKeys[method.id])}</span></label>
+                ))}</div>
+              </details> : null}
+            </section>
             <div className="mt-6 grid gap-2 border-t border-slate-900/10 pt-5 text-sm">
               <div className="flex justify-between text-slate-600"><span>{t('subtotal')}</span><span className="font-semibold text-[#071724]">{formatCartCurrency(subtotal)}</span></div>
               {charges.importFeeCents ? <div className="flex justify-between text-slate-600"><span>{t('importFee')}</span><span className="font-semibold text-[#071724]">{formatCartCurrency(charges.importFeeCents / 100)}</span></div> : null}
               <div className="flex justify-between text-slate-600"><span>{t(formData.localFulfillment === 'pickup' ? 'pickupCharge' : formData.localFulfillment === 'home_delivery' ? 'localDeliveryCharge' : 'shipping')}</span><span className={cn('font-semibold', charges.shippingWaived ? 'text-emerald-700' : 'text-[#071724]')}>{charges.shippingCents === null ? t('pendingConfirmation') : charges.shippingWaived ? t('freeShippingApplied') : formatCartCurrency(charges.shippingCents / 100)}</span></div>
               {charges.discountCents ? <div className="flex justify-between text-emerald-700"><span>{t('volumeDiscount', { rate: Math.round(promotionDiscountRate(Math.round(subtotal * 100)) * 100) })}</span><span className="font-semibold">−{formatCartCurrency(charges.discountCents / 100)}</span></div> : null}
-              <div className="mt-2 flex justify-between border-t border-slate-900/10 pt-3 text-base font-semibold text-[#071724]"><span>{t('total')}</span><span>{charges.totalCents === null ? t('pendingConfirmation') : formatCartCurrency(charges.totalCents / 100)}</span></div>
+              {processingFeeCents ? <div className="flex justify-between text-slate-600"><span>{t('processingFee')}</span><span className="font-semibold text-[#071724]">{formatCartCurrency(processingFeeCents / 100)}</span></div> : null}
+              <div className="mt-2 flex justify-between border-t border-slate-900/10 pt-3 text-base font-semibold text-[#071724]"><span>{t('total')}</span><span>{checkoutTotalCents === null ? t('pendingConfirmation') : formatCartCurrency(checkoutTotalCents / 100)}</span></div>
+              {processingFeeCents ? <p className="mt-1 text-xs leading-5 text-slate-500">{t('processingFeeNote')}</p> : null}
               {destinationUsesMexicoImportFee(formData.destination) ? <p className="mt-2 rounded-xl bg-teal-50 p-3 text-xs leading-5 text-teal-950">{t('mexicoProcessingNote')}</p> : null}
               {!paymentAllowed && verification ? <p className="mt-2 rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-950">{t('paymentBlockedPendingReview')}</p> : null}
               <a href={path('/legal/shipping-returns')} className="mt-2 text-xs font-semibold text-teal-800 hover:underline">{t('shippingDeliveryLink')}</a>
@@ -705,7 +743,7 @@ export function CheckoutPage() {
               aria-describedby="checkout-acknowledgment-status"
               className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-45"
             >
-              {submitting ? <><LoaderCircle size={16} className="animate-spin" aria-hidden="true" />{t('submittingOrder')}</> : <>{t('submitOrderRequest')}<ChevronRight size={16} aria-hidden="true" /></>}
+              {submitting ? <><LoaderCircle size={16} className="animate-spin" aria-hidden="true" />{t('submittingOrder')}</> : <>{t(paymentMethod === 'cash_on_delivery' ? 'placeOrderPayOnDelivery' : 'submitOrderRequest')}<ChevronRight size={16} aria-hidden="true" /></>}
             </button>
             <div className="mt-4 grid gap-1.5"><p className="flex items-center gap-1.5 text-xs font-medium text-slate-500"><ShieldCheck size={13} className="text-teal-700" aria-hidden="true" />{t('serverValidationNote')}</p><p className="flex items-center gap-1.5 text-xs font-medium text-slate-500"><PackageCheck size={13} className="text-teal-700" aria-hidden="true" />{t('inventoryReviewNote')}</p><p className="flex items-center gap-1.5 text-xs font-medium text-slate-500"><MessageCircle size={13} className="text-teal-700" aria-hidden="true" />{t('supportAvailable')} <a href="https://wa.me/19153595448" className="font-semibold text-teal-800 hover:underline">{t('contactEncoreWhatsapp')}</a></p></div>
           </aside>

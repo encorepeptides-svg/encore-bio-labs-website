@@ -9,7 +9,7 @@ import { isSupabaseConfigured, supabase } from '../supabaseClient'
 import { fetchPublicInventoryStatuses } from '../inventory'
 
 export type HandoffChannel = 'checkout' | 'whatsapp' | 'instagram'
-export type PendingPaymentMethod = InterimPaymentMethodId | 'pending_selection'
+export type PendingPaymentMethod = InterimPaymentMethodId
 
 export type OrderContact = {
   name?: string
@@ -37,6 +37,7 @@ export type PendingOrderInput = {
 
 export type PendingOrder = {
   reference: string
+  paymentMethod: InterimPaymentMethodId
   subtotalCents: number
   /** The handoff is blocked unless the server returns a recorded order. */
   recorded: boolean
@@ -44,6 +45,7 @@ export type PendingOrder = {
   importFeeCents: number
   shippingCents: number | null
   discountCents: number
+  processingFeeCents: number
   shippingWaived: boolean
   totalCents: number | null
 }
@@ -83,7 +85,7 @@ export function paymentMethodMessageLabel(method: InterimPaymentMethodId, locale
 }
 
 /** The order summary sent through WhatsApp or pasted into the Instagram DM. */
-export function buildHandoffMessage({ reference, items, paymentMethod, locale, contact, shipping, totalCents }: { reference: string; items: CartItem[]; paymentMethod: InterimPaymentMethodId; locale: Locale; contact?: OrderContact; shipping?: ShippingSelection; totalCents?: number | null }) {
+export function buildHandoffMessage({ reference, items, paymentMethod, locale, contact, shipping, processingFeeCents = 0, totalCents }: { reference: string; items: CartItem[]; paymentMethod: InterimPaymentMethodId; locale: Locale; contact?: OrderContact; shipping?: ShippingSelection; processingFeeCents?: number; totalCents?: number | null }) {
   const lines = items.map((item) => `- ${item.quantity}x ${item.productName} ${item.variantLabel} (${formatCartCurrency(item.linePrice * item.quantity)})`)
   const subtotal = calculateSubtotal(items)
   const selectedRate = shipping?.verification.rates.find((rate) => rate.id === shipping.selectedRateId) ?? null
@@ -132,6 +134,7 @@ export function buildHandoffMessage({ reference, items, paymentMethod, locale, c
         ? `Envío: ${formatCartCurrency(charges.shippingCents / 100)}${charges.shippingWaived ? (charges.discountCents ? ' (express 2 días gratis, pedido de $300+)' : ' (gratis, pedido de $200+)') : ''}`
         : 'Envío: pendiente de revisión',
       charges?.discountCents ? `Descuento 10% (pedido de $300+): -${formatCartCurrency(charges.discountCents / 100)}` : '',
+      processingFeeCents ? `Procesamiento por pago al recibir (5%): ${formatCartCurrency(processingFeeCents / 100)}` : '',
       total ? `Total: ${total}` : 'Total: pendiente de revisión',
       destinationLine ? `Destino validado: ${destinationLine}` : '',
       fulfillmentLine,
@@ -152,6 +155,7 @@ export function buildHandoffMessage({ reference, items, paymentMethod, locale, c
       ? `Shipping: ${formatCartCurrency(charges.shippingCents / 100)}${charges.shippingWaived ? (charges.discountCents ? ' (free 2-day express, $300+ order)' : ' (free, $200+ order)') : ''}`
       : 'Shipping: pending review',
     charges?.discountCents ? `10% discount ($300+ order): -${formatCartCurrency(charges.discountCents / 100)}` : '',
+    processingFeeCents ? `Pay-on-delivery processing (5%): ${formatCartCurrency(processingFeeCents / 100)}` : '',
     total ? `Total: ${total}` : 'Total: pending review',
     destinationLine ? `Validated destination: ${destinationLine}` : '',
     fulfillmentLine,
@@ -188,10 +192,12 @@ export async function createPendingOrder(input: PendingOrderInput): Promise<Pend
 
   const { data, error } = await supabase.functions.invoke<{
     reference: string
+    paymentMethod: InterimPaymentMethodId
     subtotalCents: number
     importFeeCents: number
     shippingCents: number | null
     discountCents: number
+    processingFeeCents: number
     shippingWaived: boolean
     totalCents: number | null
     recorded: boolean
@@ -244,6 +250,7 @@ export type StorefrontOrderRow = {
   import_fee_cents: number
   shipping_cents: number | null
   discount_cents: number
+  processing_fee_cents: number
   total_cents: number | null
   destination_type: string
   local_fulfillment_method: 'pickup' | 'home_delivery' | null
@@ -266,7 +273,7 @@ export type StorefrontOrderRow = {
 export async function adminFetchStorefrontOrders(): Promise<StorefrontOrderRow[]> {
   if (!supabase) throw new Error('not configured')
   const { data, error } = await supabase.from('storefront_orders')
-    .select('id,created_at,order_reference,status,channel,payment_method,items,subtotal_cents,import_fee_cents,shipping_cents,discount_cents,total_cents,destination_type,local_fulfillment_method,delivery_distance_miles,original_address,validated_address,selected_address,address_verification,shipping_service,shipping_review_required,checkout_acknowledgment_version,checkout_acknowledged_at,checkout_acknowledgment_language,checkout_acknowledgment_locale,checkout_policy_versions,contact,paid_at')
+    .select('id,created_at,order_reference,status,channel,payment_method,items,subtotal_cents,import_fee_cents,shipping_cents,discount_cents,processing_fee_cents,total_cents,destination_type,local_fulfillment_method,delivery_distance_miles,original_address,validated_address,selected_address,address_verification,shipping_service,shipping_review_required,checkout_acknowledgment_version,checkout_acknowledged_at,checkout_acknowledgment_language,checkout_acknowledgment_locale,checkout_policy_versions,contact,paid_at')
     .order('created_at', { ascending: false })
     .limit(300)
   if (error) throw error
