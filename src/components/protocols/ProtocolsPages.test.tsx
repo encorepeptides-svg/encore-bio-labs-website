@@ -58,7 +58,7 @@ describe('Protocols storefront pages', () => {
   it('uses a shared detail template with live variants, cart CTA, calculator, FAQ, and substantiated COA links', () => {
     const html = renderDetail('cellular-energy-research', 'en')
     expect(html).toContain('Cellular Energy Research Set')
-    expect(html).toContain('$259')
+    expect(html).toContain('$169')
     expect(html).not.toContain('NAD-500MG')
     expect(html).toContain('500 mg')
     expect(html).toContain('1000 mg')
@@ -70,8 +70,8 @@ describe('Protocols storefront pages', () => {
 
   it('derives configured subtotals from current variants instead of protocol copy', () => {
     const protocol = getProtocolBySlug('cellular-energy-research')!
-    expect(getConfiguredProtocolSubtotal(protocol)).toBe(259)
-    expect(getConfiguredProtocolSubtotal(protocol, { 'nad-plus': '1000 mg' })).toBe(289)
+    expect(getConfiguredProtocolSubtotal(protocol)).toBe(169)
+    expect(getConfiguredProtocolSubtotal(protocol, { 'nad-plus': '1000 mg' })).toBe(199)
   })
 
   it('carries a changed variant and every component into the existing cart API', () => {

@@ -132,6 +132,8 @@ export const checkout = {
   shippingTaxesNote: 'Shipping is confirmed during order review. Taxes and a final payable total are not calculated here.',
   importFee: 'Import fee',
   shipping: 'Shipping',
+  freeShippingApplied: 'Free',
+  volumeDiscount: '{rate}% volume discount',
   pickupCharge: 'Pickup',
   localDeliveryCharge: 'Local delivery',
   total: 'Total',

@@ -493,7 +493,7 @@ const productPositioning: Record<string, { headline: string; focus: string; mech
     visual: 'research-handling workflow',
   },
   retatrutide: {
-    headline: 'Map Triple-Receptor Signaling. Study Metabolic Response. Review With Precision.',
+    headline: 'The Most Advanced Peptide In Its Class.',
     focus: 'triple-receptor GLP-1, GIP, and glucagon agonist research, energy-regulation models, and body-composition pathway review',
     mechanism: ['Triple-receptor agonist review', 'GLP-1/GIP/glucagon signaling model', 'Energy-expenditure pathway observation', 'Body-composition marker record'],
     visual: 'triple-receptor pathway map',
@@ -1447,7 +1447,7 @@ function createPageContent(product: CatalogProduct): ProductPageContent {
     galleryCaptions: [
       `${product.name} research vial presentation`,
       `${profile?.visual ?? product.category} molecular backdrop`,
-      'Cold-chain and lab paperwork-ready handling context',
+      'Protective packaging and lab paperwork-ready handling context',
     ],
     specs: [
       { label: 'Research area', value: product.category },
@@ -1733,7 +1733,7 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'SS-31, also known as elamipretide in research literature, is a mitochondria-targeted peptide studied for cardiolipin interaction, inner-membrane stability, oxidative stress, and cellular energy models.',
     featured: true,
-    variants: [{ label: '10 mg', format: 'Vial format', price: 149 }],
+    variants: [{ label: '10 mg', format: 'Vial format', price: 59 }],
   },
   {
     slug: 'dsip',

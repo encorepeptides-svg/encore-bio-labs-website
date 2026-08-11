@@ -24,6 +24,7 @@ export const retatrutideResearch = {
   sleepApneaDescription: 'An embedded Phase 3 study evaluated changes in obstructive sleep-apnea severity, reporting fewer breathing-disruption events per hour in trial participants. The findings do not establish a cure or support discontinuing prescribed care.',
   appetiteSignalingTitle: 'Appetite & Metabolic Signaling',
   appetiteSignalingDescription: 'The combined GLP-1, GIP and glucagon receptor mechanism is being studied for its effects on appetite regulation, satiety, glucose handling and energy metabolism.',
+  appetiteOngoingNote: 'Ongoing research; no Phase 3 endpoint reported.',
 
   interconnectedEyebrow: 'Interconnected health',
   interconnectedTitle: 'One pathway of research. Multiple connected outcomes.',
@@ -55,12 +56,12 @@ export const retatrutideResearch = {
 
   qualityEyebrow: 'Quality & documentation',
   qualityTitle: 'Research confidence, documented.',
-  qualityItem1Title: 'Product identity',
-  qualityItem1Copy: 'Identity and format context are reviewed against available product documentation.',
-  qualityItem2Title: 'COA & batch records',
-  qualityItem2Copy: 'Lot-specific documentation can be requested through the qualified review process.',
-  qualityItem3Title: 'Research-use standards',
-  qualityItem3Copy: 'Catalog language, packaging, and order review maintain strict research-use positioning.',
+  qualityItem1Title: 'Independently tested',
+  qualityItem1Copy: 'Material is tested by an outside laboratory — HPLC for purity, mass spectrometry for identity. A lot-specific Certificate of Analysis is available on request during order review.',
+  qualityItem2Title: 'Tested per lot, not per shipment',
+  qualityItem2Copy: 'Purity and identity results are recorded against the specific lot your vial comes from, and that lot reference travels with your order.',
+  qualityItem3Title: 'Stable in transit, stored cold',
+  qualityItem3Copy: 'Lyophilized powder ships at ambient temperature in protective packaging — no cold chain and no spoilage window. Store unreconstituted at −20°C long term, or 4°C for up to 3 months.',
   reviewQualityStandards: 'Review quality standards',
 
   clinicalResearchSources: 'Clinical research sources',

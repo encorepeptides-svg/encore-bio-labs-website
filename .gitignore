@@ -38,3 +38,6 @@ _to_delete/
 .env.*
 !.env.example
 !**/.env.example
+
+# Supabase CLI local link state
+supabase/.temp/

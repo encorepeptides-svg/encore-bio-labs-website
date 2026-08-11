@@ -90,6 +90,7 @@ export async function submitPublicIntake({
       email: lead.email,
       phone: lead.phone,
       city: lead.city,
+      country: lead.country,
       preferred_contact_method: lead.intakeSubmission?.preferredContactMethod,
       primary_goal: lead.primaryGoal,
       interested_products: lead.interestedProducts.map((item) => item.productName),

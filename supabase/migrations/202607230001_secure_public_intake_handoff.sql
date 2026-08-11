@@ -136,15 +136,19 @@ security definer
 set search_path = ''
 as $$
 declare
-  matched_lead public.crm_leads%rowtype;
+  matched_lead_id uuid;
+  matched_first_name text;
+  matched_last_name text;
+  matched_phone text;
+  matched_preferred_language text;
   matched_payload jsonb;
   prefill_goals text[];
   prefill_interests text[];
   prefill_products text[];
   sanitized_answers jsonb;
 begin
-  select lead, intake.intake_payload
-    into matched_lead, matched_payload
+  select lead.id, lead.first_name, lead.last_name, lead.phone, lead.preferred_language, intake.intake_payload
+    into matched_lead_id, matched_first_name, matched_last_name, matched_phone, matched_preferred_language, matched_payload
   from public.crm_leads lead
   join public.crm_intake_submissions intake on intake.lead_id = lead.id
   where lead.portal_handoff_token = submitted_handoff_token
@@ -153,7 +157,7 @@ begin
   order by intake.created_at desc
   limit 1;
 
-  if matched_lead.id is null then return false; end if;
+  if matched_lead_id is null then return false; end if;
 
   prefill_goals := array(select jsonb_array_elements_text(coalesce(matched_payload #> '{portal_prefill,goals}', '[]'::jsonb)));
   prefill_interests := array(select jsonb_array_elements_text(coalesce(matched_payload #> '{portal_prefill,research_interests}', '[]'::jsonb)));
@@ -162,13 +166,13 @@ begin
     - array['firstName','lastName','email','phone','city','medicationsOrCompounds','sensitivities'];
 
   update public.crm_leads set portal_user_id = target_user_id, updated_at = now()
-  where id = matched_lead.id;
+  where id = matched_lead_id;
 
   update public.profiles
-    set legal_name = case when btrim(coalesce(legal_name, '')) = '' then btrim(concat(matched_lead.first_name, ' ', matched_lead.last_name)) else legal_name end,
-        preferred_name = case when btrim(coalesce(preferred_name, '')) = '' then matched_lead.first_name else preferred_name end,
-        mobile = case when btrim(coalesce(mobile, '')) = '' then matched_lead.phone else mobile end,
-        preferred_language = case when btrim(coalesce(preferred_language, '')) = '' then matched_lead.preferred_language else preferred_language end,
+    set legal_name = case when btrim(coalesce(legal_name, '')) = '' then btrim(concat(matched_first_name, ' ', matched_last_name)) else legal_name end,
+        preferred_name = case when btrim(coalesce(preferred_name, '')) = '' then matched_first_name else preferred_name end,
+        mobile = case when btrim(coalesce(mobile, '')) = '' then matched_phone else mobile end,
+        preferred_language = case when btrim(coalesce(preferred_language, '')) = '' then matched_preferred_language else preferred_language end,
         updated_at = now()
   where id = target_user_id;
 
@@ -185,7 +189,7 @@ begin
 end;
 $$;
 
-revoke all on function public.hydrate_public_intake(uuid, uuid, text) from public;
+revoke all on function public.hydrate_public_intake(uuid, uuid, text) from public, anon, authenticated;
 
 create or replace function public.claim_public_intake(handoff_token uuid)
 returns boolean
@@ -202,7 +206,7 @@ begin
 end;
 $$;
 
-revoke all on function public.claim_public_intake(uuid) from public;
+revoke all on function public.claim_public_intake(uuid) from public, anon;
 grant execute on function public.claim_public_intake(uuid) to authenticated;
 
 create or replace function public.handle_new_portal_user()
@@ -246,3 +250,5 @@ begin
   return new;
 end;
 $$;
+
+revoke all on function public.handle_new_portal_user() from public, anon, authenticated;

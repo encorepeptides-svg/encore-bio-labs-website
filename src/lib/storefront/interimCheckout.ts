@@ -43,6 +43,8 @@ export type PendingOrder = {
   reviewRequired: boolean
   importFeeCents: number
   shippingCents: number | null
+  discountCents: number
+  shippingWaived: boolean
   totalCents: number | null
 }
 
@@ -126,7 +128,10 @@ export function buildHandoffMessage({ reference, items, paymentMethod, locale, c
       ...lines,
       `Subtotal: ${formatCartCurrency(subtotal)}`,
       charges?.importFeeCents ? `Importación: ${formatCartCurrency(charges.importFeeCents / 100)}` : '',
-      charges?.shippingCents !== null && charges?.shippingCents !== undefined ? `Envío: ${formatCartCurrency(charges.shippingCents / 100)}` : 'Envío: pendiente de revisión',
+      charges?.shippingCents !== null && charges?.shippingCents !== undefined
+        ? `Envío: ${formatCartCurrency(charges.shippingCents / 100)}${charges.shippingWaived ? (charges.discountCents ? ' (express 2 días gratis, pedido de $300+)' : ' (gratis, pedido de $200+)') : ''}`
+        : 'Envío: pendiente de revisión',
+      charges?.discountCents ? `Descuento 10% (pedido de $300+): -${formatCartCurrency(charges.discountCents / 100)}` : '',
       total ? `Total: ${total}` : 'Total: pendiente de revisión',
       destinationLine ? `Destino validado: ${destinationLine}` : '',
       fulfillmentLine,
@@ -143,7 +148,10 @@ export function buildHandoffMessage({ reference, items, paymentMethod, locale, c
     ...lines,
     `Subtotal: ${formatCartCurrency(subtotal)}`,
     charges?.importFeeCents ? `Import fee: ${formatCartCurrency(charges.importFeeCents / 100)}` : '',
-    charges?.shippingCents !== null && charges?.shippingCents !== undefined ? `Shipping: ${formatCartCurrency(charges.shippingCents / 100)}` : 'Shipping: pending review',
+    charges?.shippingCents !== null && charges?.shippingCents !== undefined
+      ? `Shipping: ${formatCartCurrency(charges.shippingCents / 100)}${charges.shippingWaived ? (charges.discountCents ? ' (free 2-day express, $300+ order)' : ' (free, $200+ order)') : ''}`
+      : 'Shipping: pending review',
+    charges?.discountCents ? `10% discount ($300+ order): -${formatCartCurrency(charges.discountCents / 100)}` : '',
     total ? `Total: ${total}` : 'Total: pending review',
     destinationLine ? `Validated destination: ${destinationLine}` : '',
     fulfillmentLine,
@@ -183,6 +191,8 @@ export async function createPendingOrder(input: PendingOrderInput): Promise<Pend
     subtotalCents: number
     importFeeCents: number
     shippingCents: number | null
+    discountCents: number
+    shippingWaived: boolean
     totalCents: number | null
     recorded: boolean
     reviewRequired: boolean
@@ -233,6 +243,7 @@ export type StorefrontOrderRow = {
   subtotal_cents: number
   import_fee_cents: number
   shipping_cents: number | null
+  discount_cents: number
   total_cents: number | null
   destination_type: string
   local_fulfillment_method: 'pickup' | 'home_delivery' | null
@@ -255,7 +266,7 @@ export type StorefrontOrderRow = {
 export async function adminFetchStorefrontOrders(): Promise<StorefrontOrderRow[]> {
   if (!supabase) throw new Error('not configured')
   const { data, error } = await supabase.from('storefront_orders')
-    .select('id,created_at,order_reference,status,channel,payment_method,items,subtotal_cents,import_fee_cents,shipping_cents,total_cents,destination_type,local_fulfillment_method,delivery_distance_miles,original_address,validated_address,selected_address,address_verification,shipping_service,shipping_review_required,checkout_acknowledgment_version,checkout_acknowledged_at,checkout_acknowledgment_language,checkout_acknowledgment_locale,checkout_policy_versions,contact,paid_at')
+    .select('id,created_at,order_reference,status,channel,payment_method,items,subtotal_cents,import_fee_cents,shipping_cents,discount_cents,total_cents,destination_type,local_fulfillment_method,delivery_distance_miles,original_address,validated_address,selected_address,address_verification,shipping_service,shipping_review_required,checkout_acknowledgment_version,checkout_acknowledged_at,checkout_acknowledgment_language,checkout_acknowledgment_locale,checkout_policy_versions,contact,paid_at')
     .order('created_at', { ascending: false })
     .limit(300)
   if (error) throw error

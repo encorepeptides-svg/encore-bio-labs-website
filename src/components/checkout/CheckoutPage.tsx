@@ -25,6 +25,7 @@ import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { purchaseTypeLabel } from '../../i18n/displayLabels'
 import { calculateItemCount, calculateSubtotal, formatCartCurrency, type CartItem } from '../../lib/cart'
 import { isCheckoutFormValid, isValidEmail } from '../../lib/checkout'
+import { promotionDiscountRate, qualifiesForExpressUpgrade, qualifiesForFreeShipping, selectExpressRate } from '../../lib/promotions'
 import {
   addressEssentialErrors,
   calculateShippingCharges,
@@ -255,6 +256,7 @@ function VerificationPanel({
   addressChoice,
   selectedRateId,
   manualReviewRequested,
+  freeShipping,
   onAddressChoice,
   onRate,
   onEdit,
@@ -266,6 +268,7 @@ function VerificationPanel({
   addressChoice: AddressChoice | null
   selectedRateId: string | null
   manualReviewRequested: boolean
+  freeShipping: boolean
   onAddressChoice: (choice: AddressChoice) => void
   onRate: (rateId: string) => void
   onEdit: () => void
@@ -311,7 +314,14 @@ function VerificationPanel({
             {result.rates.map((rate) => (
               <label key={rate.id} className={cn('flex cursor-pointer items-start justify-between gap-3 rounded-xl border bg-white p-3', selectedRateId === rate.id ? 'border-teal-700 ring-2 ring-teal-100' : 'border-slate-200')}>
                 <span className="flex items-start gap-3"><input type="radio" name="shipping-rate" className="mt-1 accent-teal-700" checked={selectedRateId === rate.id} onChange={() => onRate(rate.id)} /><span><span className="block text-sm font-semibold text-[#071724]">{rate.carrier} · {rate.service}</span><span className="mt-1 block text-xs text-slate-500">{rate.deliveryDays !== null ? t('transportDays', { count: rate.deliveryDays }) : t('transportTimeNotProvided')}</span></span></span>
-                <span className="shrink-0 text-sm font-semibold text-[#071724]">{formatCartCurrency(rate.amountCents / 100)}</span>
+                <span className="shrink-0 text-sm font-semibold text-[#071724]">
+                  {freeShipping && rate.amountCents > 0 ? (
+                    <>
+                      <span className="mr-1.5 font-medium text-slate-400 line-through">{formatCartCurrency(rate.amountCents / 100)}</span>
+                      <span className="text-emerald-700">{formatCartCurrency(0)}</span>
+                    </>
+                  ) : formatCartCurrency(rate.amountCents / 100)}
+                </span>
               </label>
             ))}
           </div>
@@ -464,6 +474,15 @@ export function CheckoutPage() {
     setFormData((current) => ({ ...current, localFulfillment, destinationAcknowledged: false }))
   }
 
+  // A $300+ order was promised 2-day express, so pick that service for the
+  // shopper instead of leaving them to guess which rate the promise covers.
+  // Only ever fills an empty selection — an explicit choice is left alone.
+  useEffect(() => {
+    if (!verification?.rates.length || selectedRateId) return
+    if (!qualifiesForExpressUpgrade(Math.round(subtotal * 100))) return
+    setSelectedRateId(selectExpressRate(verification.rates)?.id ?? null)
+  }, [selectedRateId, subtotal, verification])
+
   const selectedRate = verification?.rates.find((rate) => rate.id === selectedRateId) ?? null
   const charges = calculateShippingCharges({ destination: formData.destination, kitCount, subtotalCents: Math.round(subtotal * 100), selectedRate, localDeliveryFeeCents: verification?.localDeliveryFeeCents ?? null })
   const shippingSelection: ShippingSelection | null = verification ? {
@@ -560,7 +579,8 @@ export function CheckoutPage() {
               <div className="grid gap-2 border-t border-slate-900/10 pt-3 text-sm">
                 <div className="flex justify-between"><span>{t('subtotal')}</span><span className="font-semibold">{formatCartCurrency(completedSummary.subtotal)}</span></div>
                 {summaryCharges.importFeeCents ? <div className="flex justify-between"><span>{t('importFee')}</span><span className="font-semibold">{formatCartCurrency(summaryCharges.importFeeCents / 100)}</span></div> : null}
-                <div className="flex justify-between"><span>{t(completedSummary.shipping.localFulfillment === 'pickup' ? 'pickupCharge' : completedSummary.shipping.localFulfillment === 'home_delivery' ? 'localDeliveryCharge' : 'shipping')}</span><span className="font-semibold">{summaryCharges.shippingCents === null ? t('pendingConfirmation') : formatCartCurrency(summaryCharges.shippingCents / 100)}</span></div>
+                <div className="flex justify-between"><span>{t(completedSummary.shipping.localFulfillment === 'pickup' ? 'pickupCharge' : completedSummary.shipping.localFulfillment === 'home_delivery' ? 'localDeliveryCharge' : 'shipping')}</span><span className={cn('font-semibold', summaryCharges.shippingWaived ? 'text-emerald-700' : '')}>{summaryCharges.shippingCents === null ? t('pendingConfirmation') : summaryCharges.shippingWaived ? t('freeShippingApplied') : formatCartCurrency(summaryCharges.shippingCents / 100)}</span></div>
+                {summaryCharges.discountCents ? <div className="flex justify-between text-emerald-700"><span>{t('volumeDiscount', { rate: Math.round(promotionDiscountRate(Math.round(completedSummary.subtotal * 100)) * 100) })}</span><span className="font-semibold">−{formatCartCurrency(summaryCharges.discountCents / 100)}</span></div> : null}
                 <div className="flex justify-between text-base font-semibold"><span>{t('total')}</span><span>{summaryCharges.totalCents === null ? t('pendingConfirmation') : formatCartCurrency(summaryCharges.totalCents / 100)}</span></div>
               </div>
             </div>
@@ -649,7 +669,7 @@ export function CheckoutPage() {
                 </>}
                 </>}
               </div>
-              <VerificationPanel result={verification} validating={validating} addressChoice={addressChoice} selectedRateId={selectedRateId} manualReviewRequested={manualReviewRequested} onAddressChoice={setAddressChoice} onRate={setSelectedRateId} onEdit={() => { setVerification(null); setManualReviewRequested(false); checkoutFormRef.current?.querySelector<HTMLInputElement>('input[autocomplete="address-line1"]')?.focus() }} onManualReview={() => setManualReviewRequested(true)} onRetry={() => void runVerification()} />
+              <VerificationPanel result={verification} validating={validating} addressChoice={addressChoice} selectedRateId={selectedRateId} manualReviewRequested={manualReviewRequested} freeShipping={qualifiesForFreeShipping(Math.round(subtotal * 100))} onAddressChoice={setAddressChoice} onRate={setSelectedRateId} onEdit={() => { setVerification(null); setManualReviewRequested(false); checkoutFormRef.current?.querySelector<HTMLInputElement>('input[autocomplete="address-line1"]')?.focus() }} onManualReview={() => setManualReviewRequested(true)} onRetry={() => void runVerification()} />
               <div className="mt-6 grid gap-5 sm:grid-cols-2">
                 <label className="grid gap-2 text-sm font-semibold text-[#071724]">{t('preferredContactMethod')}<select className={inputClass()} value={formData.preferredContact} onChange={(event) => updateField('preferredContact', event.target.value as ReviewFormData['preferredContact'])}><option value="whatsapp">{t('whatsapp')}</option><option value="email">{t('emailOption')}</option><option value="phone">{t('phoneOption')}</option></select></label>
                 <label className="grid gap-2 text-sm font-semibold text-[#071724] sm:col-span-2">{t('notes')}<textarea rows={4} className="w-full resize-none rounded-2xl border border-slate-900/10 bg-white p-4 text-sm text-[#071724] outline-none transition focus:border-teal-600/70 focus:ring-4 focus:ring-teal-100" value={formData.notes} onChange={(event) => updateField('notes', event.target.value)} /></label>
@@ -668,7 +688,8 @@ export function CheckoutPage() {
             <div className="mt-6 grid gap-2 border-t border-slate-900/10 pt-5 text-sm">
               <div className="flex justify-between text-slate-600"><span>{t('subtotal')}</span><span className="font-semibold text-[#071724]">{formatCartCurrency(subtotal)}</span></div>
               {charges.importFeeCents ? <div className="flex justify-between text-slate-600"><span>{t('importFee')}</span><span className="font-semibold text-[#071724]">{formatCartCurrency(charges.importFeeCents / 100)}</span></div> : null}
-              <div className="flex justify-between text-slate-600"><span>{t(formData.localFulfillment === 'pickup' ? 'pickupCharge' : formData.localFulfillment === 'home_delivery' ? 'localDeliveryCharge' : 'shipping')}</span><span className="font-semibold text-[#071724]">{charges.shippingCents === null ? t('pendingConfirmation') : formatCartCurrency(charges.shippingCents / 100)}</span></div>
+              <div className="flex justify-between text-slate-600"><span>{t(formData.localFulfillment === 'pickup' ? 'pickupCharge' : formData.localFulfillment === 'home_delivery' ? 'localDeliveryCharge' : 'shipping')}</span><span className={cn('font-semibold', charges.shippingWaived ? 'text-emerald-700' : 'text-[#071724]')}>{charges.shippingCents === null ? t('pendingConfirmation') : charges.shippingWaived ? t('freeShippingApplied') : formatCartCurrency(charges.shippingCents / 100)}</span></div>
+              {charges.discountCents ? <div className="flex justify-between text-emerald-700"><span>{t('volumeDiscount', { rate: Math.round(promotionDiscountRate(Math.round(subtotal * 100)) * 100) })}</span><span className="font-semibold">−{formatCartCurrency(charges.discountCents / 100)}</span></div> : null}
               <div className="mt-2 flex justify-between border-t border-slate-900/10 pt-3 text-base font-semibold text-[#071724]"><span>{t('total')}</span><span>{charges.totalCents === null ? t('pendingConfirmation') : formatCartCurrency(charges.totalCents / 100)}</span></div>
               {destinationUsesMexicoImportFee(formData.destination) ? <p className="mt-2 rounded-xl bg-teal-50 p-3 text-xs leading-5 text-teal-950">{t('mexicoProcessingNote')}</p> : null}
               {!paymentAllowed && verification ? <p className="mt-2 rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-950">{t('paymentBlockedPendingReview')}</p> : null}

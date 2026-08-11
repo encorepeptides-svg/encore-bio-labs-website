@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from 'vitest'
 import migration from '../../../supabase/migrations/202607230001_secure_public_intake_handoff.sql?raw'
+import recoveryMigration from '../../../supabase/migrations/20260730192757_restore_public_intake_submission.sql?raw'
 import { defaultIntakeFormData } from '../../data/intake'
 import authPageSource from '../../components/portal/PortalAuthPages.tsx?raw'
 import { INTAKE_SESSION_KEY, normalizeHelpNeeded, readStoredIntakeHandoff } from './intakeHandoff'
@@ -44,12 +45,27 @@ describe('secure public-intake portal handoff', () => {
     expect(migration).toContain('cardinality(public.onboarding_profiles.goals) = 0')
     expect(migration).toContain('intake_handoff_token')
     expect(migration).toContain("'client'::public.portal_role")
+    expect(migration).toContain('select lead.id, lead.first_name, lead.last_name, lead.phone, lead.preferred_language, intake.intake_payload')
+    expect(migration).not.toContain('select lead, intake.intake_payload')
   })
 
   it('keeps the internal hydration function private and only permits authenticated claims', () => {
-    expect(migration).toContain('revoke all on function public.hydrate_public_intake(uuid, uuid, text) from public')
+    expect(migration).toContain('revoke all on function public.hydrate_public_intake(uuid, uuid, text) from public, anon, authenticated')
     expect(migration).not.toContain('grant execute on function public.hydrate_public_intake')
     expect(migration).toContain('grant execute on function public.claim_public_intake(uuid) to authenticated')
+    expect(migration).toContain('revoke all on function public.claim_public_intake(uuid) from public, anon')
+    expect(migration).toContain('revoke all on function public.handle_new_portal_user() from public, anon, authenticated')
     expect(migration).toContain("if auth.uid() is null then raise exception 'authentication required'")
+  })
+
+  it('recovers a missing production CRM surface before restoring the public intake RPC', () => {
+    const tablePosition = recoveryMigration.indexOf('create table if not exists public.crm_leads')
+    const functionPosition = recoveryMigration.indexOf('create or replace function public.submit_public_intake')
+
+    expect(tablePosition).toBeGreaterThan(-1)
+    expect(functionPosition).toBeGreaterThan(tablePosition)
+    expect(recoveryMigration).toContain('revoke all on function public.submit_public_intake(jsonb) from public')
+    expect(recoveryMigration).toContain('grant execute on function public.submit_public_intake(jsonb) to anon, authenticated')
+    expect(recoveryMigration).toContain("notify pgrst, 'reload schema'")
   })
 })

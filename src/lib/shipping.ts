@@ -1,3 +1,4 @@
+import { promotionDiscountCents, qualifiesForFreeShipping } from './promotions'
 import { isSupabaseConfigured, supabase } from './supabaseClient'
 
 export type DeliveryDestination =
@@ -79,6 +80,9 @@ export type ShippingSelection = ShippingVerificationRequest & {
 export type ShippingCharges = {
   importFeeCents: number
   shippingCents: number | null
+  discountCents: number
+  /** Set when the shipping charge was waived by an order-value promotion. */
+  shippingWaived: boolean
   totalCents: number | null
 }
 
@@ -194,7 +198,7 @@ export function selectedShippingAddress(selection: Pick<ShippingSelection, 'addr
 
 export function calculateMexicoImportFeeCents(kitCount: number) {
   if (kitCount <= 0) return 0
-  return kitCount >= 5 ? 5_000 : 2_500
+  return kitCount >= 5 ? 3_500 : 2_500
 }
 
 export function calculateShippingCharges({
@@ -210,16 +214,24 @@ export function calculateShippingCharges({
   selectedRate: ShippingRate | null
   localDeliveryFeeCents: number | null
 }): ShippingCharges {
+  // The import fee is a customs cost, not freight, so free shipping never
+  // waives it — a Mexico order over the threshold still pays it.
   const importFeeCents = destinationUsesMexicoImportFee(destination) ? calculateMexicoImportFeeCents(kitCount) : 0
   let shippingCents: number | null = null
   if (destination === 'mexico') shippingCents = 1_500
   else if (destinationIsLocal(destination)) shippingCents = localDeliveryFeeCents
   else if (selectedRate) shippingCents = selectedRate.amountCents
 
+  const shippingWaived = shippingCents !== null && shippingCents > 0 && qualifiesForFreeShipping(subtotalCents)
+  if (shippingWaived) shippingCents = 0
+  const discountCents = promotionDiscountCents(subtotalCents)
+
   return {
     importFeeCents,
     shippingCents,
-    totalCents: shippingCents === null ? null : subtotalCents + importFeeCents + shippingCents,
+    discountCents,
+    shippingWaived,
+    totalCents: shippingCents === null ? null : Math.max(0, subtotalCents + importFeeCents + shippingCents - discountCents),
   }
 }
 

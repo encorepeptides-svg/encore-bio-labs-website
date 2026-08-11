@@ -37,7 +37,7 @@ export const productTranslationsEs: Record<string, ProductTextOverride> = {
   retatrutide: {
     catalogTagline: 'Un agonista triple en investigación de GIP, GLP-1 y glucagón. Se estudia en señalización de nutrientes, balance energético y composición corporal.',
     description: 'Una entrada del catálogo de investigación organizada para comparar variantes, solicitar el COA y facilitar una revisión centrada en la documentación.',
-    headline: 'Mapea la señalización de triple receptor. Estudia la respuesta metabólica. Revisa con precisión.',
+    headline: 'El péptido más avanzado de su categoría.',
     shortDescription: 'Retatrutide es un péptido sintético estudiado como agonista triple de los receptores GLP-1, GIP y glucagón, revisado en contextos de investigación para la señalización de regulación energética, modelos de composición corporal y respuesta de marcadores metabólicos.',
     keyHighlights: [
       'Agonista sintético de triple receptor (GLP-1 / GIP / glucagón)',

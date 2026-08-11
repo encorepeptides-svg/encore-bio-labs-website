@@ -644,9 +644,27 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
   })
   if (!safeItems.length) return response({ code: 'invalid_order_items' }, 400, origin)
   const subtotalCents = safeItems.reduce((sum, item) => sum + Number(item.line_total_cents), 0)
-  const importFeeCents = usesMexicoImportFee(destination) ? (kitCount >= 5 ? 5_000 : 2_500) : 0
-  const shippingCents = destination === 'mexico' ? 1_500 : isLocal(destination) ? verification.localDeliveryFeeCents : matchedRate?.amountCents ?? null
-  const totalCents = shippingCents === null ? null : subtotalCents + importFeeCents + shippingCents
+  // Order-value promotions. Mirrors src/lib/promotions.ts — this side is the
+  // authority for what the customer is quoted, so the two must move together.
+  // The import fee is customs, not freight, and is never waived.
+  // Ascending by threshold; the highest tier the subtotal clears wins outright
+  // and carries the free shipping of every tier below it.
+  const PROMOTION_TIERS = [
+    { thresholdCents: 20_000, discountRate: 0 },
+    { thresholdCents: 30_000, discountRate: 0.1 },
+    { thresholdCents: 50_000, discountRate: 0.15 },
+    { thresholdCents: 100_000, discountRate: 0.2 },
+  ]
+  const earnedTier = PROMOTION_TIERS.reduce<{ thresholdCents: number; discountRate: number } | null>(
+    (earned, tier) => (subtotalCents >= tier.thresholdCents ? tier : earned),
+    null,
+  )
+  const importFeeCents = usesMexicoImportFee(destination) ? (kitCount >= 5 ? 3_500 : 2_500) : 0
+  const quotedShippingCents = destination === 'mexico' ? 1_500 : isLocal(destination) ? verification.localDeliveryFeeCents : matchedRate?.amountCents ?? null
+  const shippingWaived = quotedShippingCents !== null && quotedShippingCents > 0 && earnedTier !== null
+  const shippingCents = shippingWaived ? 0 : quotedShippingCents
+  const discountCents = earnedTier ? Math.round(subtotalCents * earnedTier.discountRate) : 0
+  const totalCents = shippingCents === null ? null : Math.max(0, subtotalCents + importFeeCents + shippingCents - discountCents)
   const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
   const secretKey = getSecretKey()
   if (!supabaseUrl || !secretKey) return response({ code: 'order_store_unavailable' }, 503, origin)
@@ -687,6 +705,7 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
       subtotal_cents: subtotalCents,
       import_fee_cents: importFeeCents,
       shipping_cents: shippingCents,
+      discount_cents: discountCents,
       total_cents: totalCents,
       locale,
       contact,
@@ -710,7 +729,7 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
     if (!error) {
       console.log('[shipping-checkout] order saved', { reference, status, destination, reviewRequired })
       scheduleBackground(recordSupportNotification(client, reference, status, contact, safeItems, subtotalCents, totalCents, locale))
-      return response({ reference, subtotalCents, importFeeCents, shippingCents, totalCents, recorded: true, reviewRequired, verification, supportNotification: 'scheduled' }, 200, origin)
+      return response({ reference, subtotalCents, importFeeCents, shippingCents, discountCents, shippingWaived, totalCents, recorded: true, reviewRequired, verification, supportNotification: 'scheduled' }, 200, origin)
     }
     if (error.code !== '23505') {
       console.error('[shipping-checkout] order save failed', { destination, status, code: error.code })

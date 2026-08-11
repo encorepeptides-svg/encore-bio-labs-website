@@ -24,11 +24,14 @@ import { cn } from '../../lib/utils'
 import { EncoreCompleteKit } from '../EncoreCompleteKit'
 import { MetabolicPortfolio } from '../metabolic/MetabolicPortfolio'
 import { RetatrutidePathways } from '../retatrutide/RetatrutidePathways'
-import { RetatrutideResearchContext } from '../retatrutide/RetatrutideResearchContext'
+import { RetatrutideResearchAppendix } from '../retatrutide/RetatrutideResearchContext'
 import { ProductBreadcrumb, ProductHero } from './ProductPageSections'
 import { RetatrutideBenefitsSection } from './retatrutide/RetatrutideBenefitsSection'
+import { RetatrutideClassComparison } from './retatrutide/RetatrutideClassComparison'
 import { RetatrutideEvidenceStrip } from './retatrutide/RetatrutideEvidenceStrip'
+import { RetatrutideProtocolBand } from './retatrutide/RetatrutideProtocolBand'
 import { RetatrutideQualitySection } from './retatrutide/RetatrutideQualitySection'
+import { RetatrutideTrustStrip } from './retatrutide/RetatrutideTrustStrip'
 
 function PurchaseConfigurator({
   product,
@@ -144,7 +147,11 @@ export function RetatrutideProductPage({ product }: { product: Product }) {
   const [variant, setVariant] = useState<ProductVariant>(product.variants[0])
   const [selection, setSelection] = useState<PurchaseSelection>(() => getDefaultPurchaseSelection(product))
 
+  // The two highest-intent questions lead: how this differs from the drugs a
+  // buyer already knows, and how a lyophilized powder actually reaches them.
   const faqs = [
+    { question: t('faqCompareQ'), answer: t('faqCompareA') },
+    { question: t('faqShippingQ'), answer: t('faqShippingA') },
     { question: t('faq1Q'), answer: t('faq1A') },
     { question: t('faq2Q'), answer: t('faq2A') },
     { question: t('faq3Q'), answer: t('faq3A') },
@@ -162,6 +169,9 @@ export function RetatrutideProductPage({ product }: { product: Product }) {
         purchaseCta={{ href: '#retatrutide-purchase', label: t('finalConfigureCta') }}
       />
 
+      {/* Trust before price: the four proofs land above the configurator. */}
+      <RetatrutideTrustStrip />
+
       <section className="px-5 py-16 sm:px-8 sm:py-20 lg:py-24">
         <div className="mx-auto max-w-[88rem]">
           <PurchaseConfigurator product={product} variant={variant} selection={selection} onVariantChange={setVariant} onSelectionChange={setSelection} />
@@ -170,8 +180,8 @@ export function RetatrutideProductPage({ product }: { product: Product }) {
       </section>
 
       <RetatrutideEvidenceStrip />
+      <RetatrutideClassComparison />
       <RetatrutideBenefitsSection />
-      <RetatrutideResearchContext />
       <RetatrutidePathways />
       <RetatrutideQualitySection />
 
@@ -179,15 +189,24 @@ export function RetatrutideProductPage({ product }: { product: Product }) {
         <div className="mx-auto max-w-[88rem]"><EncoreCompleteKit productName={product.name} bacWaterAmount={product.bacWaterAmount} /></div>
       </section>
 
+      {/* Cross-sell sits before the FAQ so the closing CTA follows the last
+          objection handled, rather than a grid of other products. */}
+      <MetabolicPortfolio mode="product" />
+
       <section className="px-5 py-20 sm:px-8 lg:py-28">
         <div className="mx-auto max-w-4xl"><p className="text-center text-xs font-bold uppercase tracking-[0.2em] text-teal-700">{t('faqEyebrow')}</p><h2 className="mt-4 text-center text-4xl font-semibold tracking-[-0.055em] sm:text-5xl">{t('faqTitle')}</h2><div className="mt-10 divide-y divide-slate-900/8 rounded-[2rem] bg-white px-6 shadow-[0_24px_75px_rgba(7,23,36,0.07)] sm:px-8">{faqs.map((faq, index) => { const open = openFaq === index; return <div key={faq.question}><button type="button" aria-expanded={open} onClick={() => setOpenFaq(open ? -1 : index)} className="flex min-h-20 w-full items-center justify-between gap-5 py-5 text-left"><span className="text-lg font-semibold tracking-[-0.02em]">{faq.question}</span><ChevronDown size={20} className={cn('shrink-0 text-teal-700 transition', open && 'rotate-180')} /></button><AnimatePresence initial={false}>{open ? <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden"><p className="max-w-3xl pb-6 text-base leading-7 text-slate-600">{faq.answer}</p></motion.div> : null}</AnimatePresence></div>})}</div></div>
       </section>
 
-      <MetabolicPortfolio mode="product" />
+      <RetatrutideProtocolBand />
 
-      <section className="px-5 pb-24 pt-20 sm:px-8 lg:pb-32 lg:pt-28">
+      <section className="px-5 pb-20 pt-14 sm:px-8 lg:pb-24 lg:pt-16">
         <div className="mx-auto max-w-[88rem] overflow-hidden bg-[#071724] px-6 py-16 text-center text-white shadow-[0_38px_110px_rgba(7,23,36,0.22)] sm:px-10 lg:py-24"><h2 className="text-5xl font-semibold tracking-[-0.06em] sm:text-6xl">{t('beginYourResearch')}</h2><p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-slate-300">{t('finalCtaLine1')}<br />{t('finalCtaLine2')}<br />{t('finalCtaLine3')}</p><a href="#retatrutide-purchase" className="retatrutide-primary-cta mt-9 inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-teal-400 px-8 text-base font-bold text-[#071724] shadow-[0_18px_48px_rgba(20,184,166,0.28)] transition hover:-translate-y-1 hover:bg-white">{t('finalConfigureCta')}<ArrowRight size={18} aria-hidden="true" /></a></div>
       </section>
+
+      {/* Dose-arm explorer, research boundaries, timeline and lot records.
+          Every word is retained — only moved below the close so it informs
+          without interrupting. */}
+      <RetatrutideResearchAppendix />
     </main>
   )
 }

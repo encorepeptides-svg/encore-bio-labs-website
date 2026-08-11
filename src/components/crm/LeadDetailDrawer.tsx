@@ -1,7 +1,10 @@
-import { Copy, Mail, MessageCircle, X } from 'lucide-react'
+import { Copy, LoaderCircle, Mail, MessageCircle, Sparkles, X } from 'lucide-react'
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { addNote, addTimelineEvent, updateLead } from '../../lib/crmStorage'
 import { leadStatusLabel } from '../../lib/crmLabels'
+import { draftFollowUp, type FollowUpChannel } from '../../lib/crm/draftFollowUp'
+import { LEAD_DIAL_CODES, buildWhatsAppUrlToLead, defaultDialCodeForLead, normalizeLeadPhone, type LeadDialCode } from '../../lib/whatsapp'
 import type { Lead, LeadStatus } from '../../types/crm'
 import { getEmailFollowUp, getInstagramDMFollowUp, getWhatsAppFollowUp } from './FollowUpTemplates'
 import { LeadStatusBadge } from './LeadStatusBadge'
@@ -27,6 +30,14 @@ export function LeadDetailDrawer({
   onClose: () => void
   onChange: (lead: Lead) => void | Promise<void>
 }) {
+  // Hooks must run before the empty-lead early return.
+  const [draft, setDraft] = useState('')
+  const [draftChannel, setDraftChannel] = useState<FollowUpChannel>('whatsapp')
+  const [drafting, setDrafting] = useState<FollowUpChannel | null>(null)
+  const [draftError, setDraftError] = useState('')
+  // null = follow the language-based default; set = the operator chose.
+  const [dialCode, setDialCode] = useState<LeadDialCode | null>(null)
+
   if (!lead) {
     return null
   }
@@ -78,6 +89,42 @@ export function LeadDetailDrawer({
       await onChange(updated)
     }
   }
+
+  async function generateDraft(channel: FollowUpChannel) {
+    setDrafting(channel)
+    setDraftError('')
+    try {
+      const result = await draftFollowUp(activeLead.id, channel)
+      setDraft(result.draft)
+      setDraftChannel(channel)
+    } catch (error) {
+      setDraftError(error instanceof Error ? error.message : 'The follow-up draft could not be generated.')
+    } finally {
+      setDrafting(null)
+    }
+  }
+
+  // Logged when the operator actually takes the draft somewhere sendable, so
+  // the timeline reflects outreach rather than mere curiosity.
+  async function recordDraftUse(action: string) {
+    const updated = await addTimelineEvent(activeLead.id, {
+      type: 'follow_up_copied',
+      title: action,
+      description: 'AI-assisted draft, reviewed by an operator before sending.',
+    })
+    if (updated) {
+      await onChange(updated)
+    }
+  }
+
+  // The intake never asked for a country, so the code is the operator's call.
+  const activeDialCode = dialCode ?? defaultDialCodeForLead(activeLead.preferredLanguage, activeLead.country)
+  const whatsAppNumber = normalizeLeadPhone(activeLead.phone, activeDialCode)
+  const whatsAppHref = draft && whatsAppNumber ? buildWhatsAppUrlToLead(activeLead.phone, draft, activeDialCode) : ''
+  const phoneHasOwnCode = activeLead.phone.replaceAll(/\D/g, '').length > 10
+  const mailtoHref = draft
+    ? `mailto:${activeLead.email}?subject=${encodeURIComponent(draft.startsWith('Subject:') ? draft.slice(8).split('\n')[0].trim() : 'Encore Bio Labs')}&body=${encodeURIComponent(draft.startsWith('Subject:') ? draft.split('\n').slice(1).join('\n').trim() : draft)}`
+    : ''
 
   const intake = activeLead.intakeSubmission
 
@@ -155,6 +202,113 @@ export function LeadDetailDrawer({
                 Save note to timeline
               </button>
             </label>
+          </section>
+
+          <section className="grid gap-4 rounded-[1.5rem] border border-teal-600/20 bg-white/80 p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-teal-700">Generate follow-up</h3>
+              <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800">
+                Writes in {lead.preferredLanguage}
+              </span>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                disabled={drafting !== null}
+                onClick={() => void generateDraft('whatsapp')}
+                className="flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-[#071724] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#102a3d] disabled:opacity-60"
+              >
+                {drafting === 'whatsapp' ? <LoaderCircle size={16} className="animate-spin" aria-hidden="true" /> : <Sparkles size={16} aria-hidden="true" />}
+                <span>{drafting === 'whatsapp' ? 'Writing…' : 'Generate WhatsApp draft'}</span>
+              </button>
+              <button
+                type="button"
+                disabled={drafting !== null}
+                onClick={() => void generateDraft('email')}
+                className="flex min-h-14 items-center justify-center gap-2 rounded-2xl border border-slate-900/10 bg-white px-4 py-3 text-sm font-semibold text-[#071724] transition hover:bg-[#f5f5f2] disabled:opacity-60"
+              >
+                {drafting === 'email' ? <LoaderCircle size={16} className="animate-spin" aria-hidden="true" /> : <Sparkles size={16} aria-hidden="true" />}
+                <span>{drafting === 'email' ? 'Writing…' : 'Generate email draft'}</span>
+              </button>
+            </div>
+
+            {draftError ? (
+              <p role="alert" className="rounded-2xl bg-red-50 p-4 text-sm leading-6 text-red-800">{draftError}</p>
+            ) : null}
+
+            {draft ? (
+              <>
+                <label className="grid gap-2 text-sm font-semibold text-[#071724]">
+                  Draft — edit before sending
+                  <textarea
+                    value={draft}
+                    onChange={(event) => setDraft(event.target.value)}
+                    className="min-h-44 resize-y rounded-2xl border border-slate-900/10 bg-white p-4 text-sm leading-6 outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+                  />
+                </label>
+
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() => void copyText(draft).then(() => recordDraftUse('Follow-up draft copied'))}
+                    className="inline-flex min-h-12 items-center gap-2 rounded-full border border-slate-900/10 bg-white px-5 text-sm font-semibold text-[#071724]"
+                  >
+                    <Copy size={14} aria-hidden="true" />
+                    Copy
+                  </button>
+
+                  {draftChannel === 'whatsapp' && !phoneHasOwnCode ? (
+                    <label className="inline-flex min-h-12 items-center gap-2 rounded-full border border-slate-900/10 bg-white px-4 text-sm font-semibold text-[#071724]">
+                      <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Country</span>
+                      <select
+                        value={activeDialCode}
+                        onChange={(event) => setDialCode(event.target.value as LeadDialCode)}
+                        className="bg-transparent text-sm font-semibold outline-none"
+                        aria-label="Country code for this lead's phone number"
+                      >
+                        {LEAD_DIAL_CODES.map((entry) => (
+                          <option key={entry.code} value={entry.code}>{entry.label}</option>
+                        ))}
+                      </select>
+                    </label>
+                  ) : null}
+
+                  {draftChannel === 'whatsapp' && whatsAppHref ? (
+                    <a
+                      href={whatsAppHref}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() => void recordDraftUse('WhatsApp opened with draft')}
+                      className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#071724] px-5 text-sm font-semibold text-white"
+                    >
+                      <MessageCircle size={14} aria-hidden="true" />
+                      Open WhatsApp to +{whatsAppNumber}
+                    </a>
+                  ) : null}
+
+                  {draftChannel === 'email' && activeLead.email ? (
+                    <a
+                      href={mailtoHref}
+                      onClick={() => void recordDraftUse('Email opened with draft')}
+                      className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#071724] px-5 text-sm font-semibold text-white"
+                    >
+                      <Mail size={14} aria-hidden="true" />
+                      Open email to {activeLead.email}
+                    </a>
+                  ) : null}
+                </div>
+
+                <p className="text-xs leading-5 text-slate-500">
+                  Nothing is sent automatically. Read the draft before you send it — it must not contain dosing, protocols,
+                  use instructions, or promised outcomes.
+                  {draftChannel === 'whatsapp' && !whatsAppNumber ? ' This lead did not leave a dialable phone number.' : ''}
+                  {draftChannel === 'whatsapp' && whatsAppNumber && !phoneHasOwnCode
+                    ? ' The intake never asked for a country, so check the code above matches this lead before sending.'
+                    : ''}
+                </p>
+              </>
+            ) : null}
           </section>
 
           <section className="rounded-[1.5rem] border border-slate-900/10 bg-white/80 p-5">

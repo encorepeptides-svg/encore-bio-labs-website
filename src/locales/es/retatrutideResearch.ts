@@ -26,6 +26,7 @@ export const retatrutideResearch = {
   sleepApneaDescription: 'Un estudio integrado de Fase 3 evaluó cambios en la gravedad de la apnea obstructiva del sueño, reportando menos eventos de interrupción respiratoria por hora en los participantes del estudio. Los hallazgos no establecen una cura ni respaldan interrumpir la atención médica prescrita.',
   appetiteSignalingTitle: 'Apetito y señalización metabólica',
   appetiteSignalingDescription: 'El mecanismo combinado de receptores de GLP-1, GIP y glucagón se está estudiando por sus efectos en la regulación del apetito, la saciedad, el manejo de la glucosa y el metabolismo energético.',
+  appetiteOngoingNote: 'Investigación en curso; sin resultados de fase 3 reportados.',
 
   interconnectedEyebrow: 'Salud interconectada',
   interconnectedTitle: 'Una línea de investigación. Múltiples resultados conectados.',
@@ -57,12 +58,12 @@ export const retatrutideResearch = {
 
   qualityEyebrow: 'Calidad y documentación',
   qualityTitle: 'Confianza en la investigación, documentada.',
-  qualityItem1Title: 'Identidad del producto',
-  qualityItem1Copy: 'La identidad y el contexto de presentación se revisan contra la documentación de producto disponible.',
-  qualityItem2Title: 'COA y registros de lote',
-  qualityItem2Copy: 'La documentación específica por lote puede solicitarse a través del proceso de revisión calificado.',
-  qualityItem3Title: 'Estándares de uso en investigación',
-  qualityItem3Copy: 'El lenguaje del catálogo, el empaque y la revisión de pedidos mantienen un posicionamiento estricto de uso exclusivo para investigación.',
+  qualityItem1Title: 'Análisis independiente',
+  qualityItem1Copy: 'El material se analiza en un laboratorio externo: HPLC para la pureza y espectrometría de masas para la identidad. El certificado de análisis específico del lote está disponible a solicitud durante la revisión del pedido.',
+  qualityItem2Title: 'Analizado por lote, no por envío',
+  qualityItem2Copy: 'Los resultados de pureza e identidad se registran contra el lote específico del que proviene tu vial, y esa referencia de lote acompaña a tu pedido.',
+  qualityItem3Title: 'Estable en tránsito, conservado en frío',
+  qualityItem3Copy: 'El polvo liofilizado se envía a temperatura ambiente en empaque protector: sin cadena de frío ni ventana de caducidad. Conserva el vial sin reconstituir a −20 °C a largo plazo, o a 4 °C hasta por 3 meses.',
   reviewQualityStandards: 'Revisar los estándares de calidad',
 
   clinicalResearchSources: 'Fuentes de investigación clínica',

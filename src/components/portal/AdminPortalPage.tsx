@@ -1,12 +1,15 @@
 import { useTranslation } from '../../i18n/LocaleContext'
-import { adminFetchAuditLog, adminFetchOverview } from '../../lib/portal/portalData'
+import { adminFetchAuditLog } from '../../lib/portal/portalData'
 import { PortalShell } from './PortalShell'
 import { AdminApplications } from './admin/AdminApplications'
 import { AdminClients } from './admin/AdminClients'
 import { AdminDocuments } from './admin/AdminDocuments'
-import { AdminOrders } from './admin/AdminOrders'
 import { AdminInventory } from './admin/AdminInventory'
+import { AdminOperationsDashboard } from './admin/AdminOperationsDashboard'
+import { AdminOrders } from './admin/AdminOrders'
 import { AdminProtocols } from './admin/AdminProtocols'
+import { AdminSalesCRM } from './admin/AdminSalesCRM'
+import { AdminShipping } from './admin/AdminShipping'
 import { AdminStorefront } from './admin/AdminStorefront'
 import { AdminSupport } from './admin/AdminSupport'
 import { AdminCommunications } from './admin/AdminCommunications'
@@ -17,14 +20,32 @@ export function AdminPortalPage({ section = 'overview' }: { section?: string }) 
   const { t } = useTranslation('portal')
   const { t: tInventory } = useTranslation('inventory')
   const titles: Record<string, string> = {
-    overview: t('adminOperationsTitle'), applications: t('adminApplicationsTitle'), clients: t('adminNavClients'),
-    orders: t('adminNavOrders'), inventory: tInventory('title'), storefront: t('adminNavStorefront'), protocols: t('adminNavProtocols'), documents: t('adminNavDocuments'),
-    support: t('adminNavSupport'), 'audit-log': t('adminNavAudit'), settings: t('adminNavSettings'), content: t('adminNavContent'),
-    communications: 'Communications', 'customer-messages': 'Customer Messages',
+    overview: 'Administration & Sales',
+    leads: 'CRM & Leads',
+    crm: 'CRM & Leads',
+    whatsapp: 'WhatsApp Sales Desk',
+    shipping: 'Shipping & Fulfillment',
+    applications: t('adminApplicationsTitle'),
+    clients: t('adminNavClients'),
+    orders: t('adminNavOrders'),
+    inventory: tInventory('title'),
+    storefront: t('adminNavStorefront'),
+    protocols: t('adminNavProtocols'),
+    documents: t('adminNavDocuments'),
+    support: t('adminNavSupport'),
+    'audit-log': t('adminNavAudit'),
+    settings: t('adminNavSettings'),
+    content: t('adminNavContent'),
+    communications: 'Communications',
+    'customer-messages': 'Customer Messages',
   }
   const content = (() => {
     switch (section) {
-      case 'overview': return <AdminOverview />
+      case 'overview': return <AdminOperationsDashboard />
+      case 'leads':
+      case 'crm': return <AdminSalesCRM initialDesk="website" />
+      case 'whatsapp': return <AdminSalesCRM initialDesk="whatsapp" />
+      case 'shipping': return <AdminShipping />
       case 'applications': return <AdminApplications />
       case 'clients': return <AdminClients />
       case 'orders': return <AdminOrders />
@@ -41,25 +62,19 @@ export function AdminPortalPage({ section = 'overview' }: { section?: string }) 
       default: return <EmptyCard title={titles[section] ?? section} copy={t('adminModulePending')} />
     }
   })()
+
+  const intro = section === 'overview'
+    ? 'Your daily command center for leads, sales, orders, fulfillment, customer communication, and administration.'
+    : section === 'applications'
+      ? t('adminIntro')
+      : null
+
   return <PortalShell admin>
     <p className="text-xs font-bold uppercase tracking-[.18em] text-teal-700">{t('adminLabel')}</p>
     <h1 className="mt-3 text-4xl font-semibold tracking-[-.055em] sm:text-5xl">{titles[section] ?? section}</h1>
-    {section === 'overview' || section === 'applications' ? <p className="mt-4 max-w-2xl leading-7 text-slate-600">{t('adminIntro')}</p> : null}
+    {intro ? <p className="mt-4 max-w-3xl leading-7 text-slate-600">{intro}</p> : null}
     {content}
   </PortalShell>
-}
-
-function AdminOverview() {
-  const { t } = useTranslation('portal')
-  const { data, loading, error, reload } = useAsync(adminFetchOverview)
-  return <LoadState loading={loading} error={error} onRetry={reload}>
-    <div className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <Stat label={t('adminPendingApplications')} value={data ? String(data.pendingApplications) : '—'} />
-      <Stat label={t('adminActiveClients')} value={data ? String(data.activeClients) : '—'} />
-      <Stat label={t('adminOpenSupport')} value={data ? String(data.openThreads) : '—'} />
-      <Stat label={t('adminProcessingOrders')} value={data ? String(data.processingOrders) : '—'} />
-    </div>
-  </LoadState>
 }
 
 function AdminAuditLog() {
@@ -74,8 +89,4 @@ function AdminAuditLog() {
       </table>
     </div> : <EmptyCard title={t('adminNavAudit')} copy={t('adminAuditEmptyCopy')} />}
   </LoadState>
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return <div className="rounded-[1.25rem] bg-[#f8faf9] p-5"><p className="text-xs font-bold uppercase tracking-wide text-slate-500">{label}</p><p className="mt-3 text-2xl font-semibold capitalize">{value}</p></div>
 }

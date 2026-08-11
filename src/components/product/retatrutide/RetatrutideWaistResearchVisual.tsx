@@ -26,12 +26,9 @@ export function RetatrutideWaistResearchVisual({ metric, duration, trial, classN
       transition={{ duration: 0.65 }}
       className={`relative flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-teal-900/10 bg-[linear-gradient(150deg,#ffffff_0%,#fbfdfd_45%,#eefaf7_100%)] shadow-[0_20px_60px_rgba(7,23,36,.08)] ${className}`}
     >
-      <header className="px-6 pt-7 sm:px-8 sm:pt-8 lg:px-9 lg:pt-9">
-        <p className="text-xs font-bold uppercase tracking-[.2em] text-teal-700">{t('waistVisualEyebrow')}</p>
-        <h3 className="mt-3 max-w-[46rem] text-3xl font-semibold leading-[1.03] tracking-[-.05em] text-[#071724] sm:text-4xl">{t('waistVisualTitle')}</h3>
-        <p className="mt-4 max-w-[44rem] text-base leading-7 text-slate-600">{t('waistVisualBody')}</p>
-      </header>
-      <div className="mx-6 mt-7 border-t border-teal-900/8 pt-6 sm:mx-8 lg:mx-9">
+      {/* The eyebrow/title/body that used to sit here are now the section header
+          in RetatrutideBenefitsSection, so the block no longer opens headingless. */}
+      <div className="mx-6 mt-7 sm:mx-8 lg:mx-9">
         <p className="text-[.68rem] font-bold uppercase tracking-[.18em] text-teal-700">{t('waistVisualBodyCompLabel')}</p>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">{t('waistVisualBodyCompCopy', { duration, trialName })}</p>
       </div>

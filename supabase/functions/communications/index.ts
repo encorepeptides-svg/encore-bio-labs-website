@@ -1,7 +1,15 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.110.1'
 
 const SUPPORT = 'support@encorebiolabs.com'
-const json = (body: unknown, status = 200, origin = '*') => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'access-control-allow-origin': origin, 'access-control-allow-headers': 'authorization, x-client-info, apikey, content-type', 'access-control-allow-methods': 'POST, OPTIONS', vary: 'Origin' } })
+// 204/205/304 carry no body: passing one to the Response constructor throws a
+// TypeError, which the platform turns into a bodiless 500 with no
+// access-control headers — so the browser blocks the real request and reports
+// only an opaque fetch failure. The preflight below hit exactly that.
+const NULL_BODY_STATUSES = new Set([101, 204, 205, 304])
+const corsHeaders = (origin: string) => ({ 'access-control-allow-origin': origin, 'access-control-allow-headers': 'authorization, x-client-info, apikey, content-type', 'access-control-allow-methods': 'POST, OPTIONS', 'access-control-max-age': '86400', vary: 'Origin' })
+const json = (body: unknown, status = 200, origin = '*') => NULL_BODY_STATUSES.has(status)
+  ? new Response(null, { status, headers: corsHeaders(origin) })
+  : new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8', ...corsHeaders(origin) } })
 const clean = (value: unknown, max: number) => typeof value === 'string' ? value.replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, max) : ''
 const email = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) && !/[\r\n]/.test(value)
 const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]!))
@@ -13,11 +21,65 @@ function confirmation(name: string, locale: string) {
   return `<div style="font-family:Arial,sans-serif;color:#071724;max-width:640px;margin:auto"><div style="padding:24px;background:#071724;color:#d5fff9;font-weight:700;font-size:22px">encore bio labs</div><main style="padding:28px"><h1>${heading}</h1><p>${escapeHtml(name)}, ${copy}</p></main><footer style="padding:20px;color:#52606d;font-size:13px;border-top:1px solid #e5e7eb">Encore Bio Labs · <a href="mailto:${SUPPORT}">${SUPPORT}</a> · ${spanish ? 'Solo para uso de investigación' : 'Research Use Only'}</footer></div>`
 }
 
+// Zoho OAuth access tokens expire after ~1 hour, so a static
+// ZOHO_OAUTH_ACCESS_TOKEN could only ever work for an hour after someone pasted
+// it by hand. Exchange the long-lived refresh token for an access token at call
+// time instead, and cache it in module scope for the life of the isolate so a
+// burst of sends does not hammer Zoho's token endpoint.
+const ZOHO_ACCOUNTS_HOST = Deno.env.get('ZOHO_ACCOUNTS_HOST') || 'https://accounts.zoho.com'
+const TOKEN_EXPIRY_MARGIN_MS = 120_000
+let zohoToken: { accessToken: string; expiresAt: number } | null = null
+let zohoTokenInFlight: Promise<string | null> | null = null
+
+async function requestZohoAccessToken(): Promise<string | null> {
+  const refreshToken = Deno.env.get('ZOHO_OAUTH_REFRESH_TOKEN')
+  const clientId = Deno.env.get('ZOHO_OAUTH_CLIENT_ID')
+  const clientSecret = Deno.env.get('ZOHO_OAUTH_CLIENT_SECRET')
+  if (!refreshToken || !clientId || !clientSecret) return null
+
+  const response = await fetch(`${ZOHO_ACCOUNTS_HOST}/oauth/v2/token`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ refresh_token: refreshToken, client_id: clientId, client_secret: clientSecret, grant_type: 'refresh_token' }),
+  })
+  if (!response.ok) return null
+
+  const payload = await response.json().catch(() => null) as { access_token?: string; expires_in?: number; error?: string } | null
+  if (!payload?.access_token) return null
+
+  const lifetimeMs = Math.max((payload.expires_in ?? 3600) * 1000, TOKEN_EXPIRY_MARGIN_MS * 2)
+  zohoToken = { accessToken: payload.access_token, expiresAt: Date.now() + lifetimeMs - TOKEN_EXPIRY_MARGIN_MS }
+  return payload.access_token
+}
+
+async function getZohoAccessToken(): Promise<string | null> {
+  if (zohoToken && zohoToken.expiresAt > Date.now()) return zohoToken.accessToken
+  // Collapse concurrent refreshes onto a single token request.
+  zohoTokenInFlight ??= requestZohoAccessToken().finally(() => { zohoTokenInFlight = null })
+  return zohoTokenInFlight
+}
+
 async function sendZoho(to: string, subject: string, html: string) {
-  const token = Deno.env.get('ZOHO_OAUTH_ACCESS_TOKEN')
   const accountId = Deno.env.get('ZOHO_MAIL_ACCOUNT_ID')
-  if (!token || !accountId) return { sent: false, error: 'Zoho Mail API credentials are not configured; message retained for retry.' }
-  const response = await fetch(`https://mail.zoho.com/api/accounts/${accountId}/messages`, { method: 'POST', headers: { authorization: `Zoho-oauthtoken ${token}`, 'content-type': 'application/json' }, body: JSON.stringify({ fromAddress: Deno.env.get('ZOHO_FROM_EMAIL') || SUPPORT, toAddress: to, subject, content: html, mailFormat: 'html' }) })
+  if (!accountId) return { sent: false, error: 'Zoho Mail API credentials are not configured; message retained for retry.' }
+
+  let token = await getZohoAccessToken()
+  if (!token) return { sent: false, error: 'Zoho Mail API credentials are not configured; message retained for retry.' }
+
+  const post = (accessToken: string) => fetch(`https://mail.zoho.com/api/accounts/${accountId}/messages`, {
+    method: 'POST',
+    headers: { authorization: `Zoho-oauthtoken ${accessToken}`, 'content-type': 'application/json' },
+    body: JSON.stringify({ fromAddress: Deno.env.get('ZOHO_FROM_EMAIL') || SUPPORT, toAddress: to, subject, content: html, mailFormat: 'html' }),
+  })
+
+  let response = await post(token)
+  // A cached token can still be revoked early; refresh once and retry.
+  if (response.status === 401) {
+    zohoToken = null
+    token = await getZohoAccessToken()
+    if (!token) return { sent: false, error: 'Zoho Mail API rejected the refreshed access token.' }
+    response = await post(token)
+  }
   if (!response.ok) return { sent: false, error: `Zoho Mail API returned ${response.status}.` }
   return { sent: true, error: null }
 }

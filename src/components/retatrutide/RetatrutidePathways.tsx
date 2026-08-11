@@ -27,13 +27,15 @@ export function RetatrutidePathways({ id = 'triple-pathways', compact = false }:
         <div className="relative mt-10 grid gap-5 lg:grid-cols-3">
           <span className="pointer-events-none absolute left-[16%] right-[16%] top-10 hidden h-px bg-gradient-to-r from-cyan-300 via-teal-400 to-violet-300 lg:block" aria-hidden="true" />
           {pathways.map((pathway, index) => (
-            <article key={pathway.key} className="relative overflow-hidden rounded-[1.75rem] border border-slate-900/10 bg-[#F8FAFC] p-6 shadow-[0_20px_55px_rgba(7,23,36,0.07)] sm:p-7">
+            <article key={pathway.key} className="relative flex flex-col overflow-hidden rounded-[1.75rem] border border-slate-900/10 bg-[#F8FAFC] p-6 shadow-[0_20px_55px_rgba(7,23,36,0.07)] sm:p-7">
               <span className={`flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br ${pathway.accent} text-[#071724] shadow-lg`}>
                 <Network size={22} aria-hidden="true" />
               </span>
               <span className="absolute right-5 top-5 text-5xl font-semibold tracking-[-0.06em] text-slate-200">0{index + 1}</span>
               <h3 className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-[#071724]">{t(`${pathway.key}Title`)}</h3>
               <p className="mt-4 text-base leading-7 text-slate-600">{t(`${pathway.key}Body`)}</p>
+              <p className="mt-4 rounded-r-xl border-l-[3px] border-teal-400 bg-white px-4 py-3 text-sm font-semibold leading-6 text-[#071724]">{t(`${pathway.key}Jab`)}</p>
+              <p className="mt-auto pt-4 text-[0.72rem] font-bold uppercase tracking-[0.08em] text-teal-700">{t(`${pathway.key}Agonism`)}</p>
               <details className="group mt-5 rounded-xl border border-slate-900/8 bg-white p-3">
                 <summary className="flex cursor-pointer list-none items-center gap-2 text-xs font-bold text-teal-800">
                   <Info size={14} aria-hidden="true" />{t('definitionLabel')}
@@ -43,6 +45,8 @@ export function RetatrutidePathways({ id = 'triple-pathways', compact = false }:
             </article>
           ))}
         </div>
+
+        <p className="mt-8 max-w-5xl border-t border-slate-900/8 pt-5 text-xs leading-5 text-slate-500">{t('pathwaysSourceNote')}</p>
       </div>
     </section>
   )
