@@ -10,8 +10,10 @@ import {
   Headphones,
   Inbox,
   LoaderCircle,
+  Mail,
   MessageCircle,
   PackageCheck,
+  Phone,
   Settings,
   ShieldCheck,
   ShoppingCart,
@@ -20,7 +22,7 @@ import {
   UserCheck,
   UsersRound,
 } from 'lucide-react'
-import { useLocale } from '../../../i18n/LocaleContext'
+import { useLocale, useTranslation } from '../../../i18n/LocaleContext'
 import {
   adminFetchOrders,
   adminFetchOverview,
@@ -29,6 +31,8 @@ import {
   type PortalOrder,
 } from '../../../lib/portal/portalData'
 import { getLeads } from '../../../lib/crmStorage'
+import { selectStorefrontFollowUps, storefrontOrderNeedsFollowUp } from '../../../lib/storefront/adminQueue'
+import { adminFetchStorefrontOrders, type StorefrontOrderRow } from '../../../lib/storefront/interimCheckout'
 import { supabase } from '../../../lib/supabaseClient'
 import type { Lead } from '../../../types/crm'
 
@@ -51,6 +55,7 @@ type DashboardData = {
   overview: AdminOverview
   websiteLeads: Lead[]
   orders: PortalOrder[]
+  storefrontOrders: StorefrontOrderRow[]
   unreadCommunications: number
   whatsapp: WhatsAppBootstrap | null
   partial: boolean
@@ -75,21 +80,23 @@ async function fetchWhatsAppBootstrap(): Promise<WhatsAppBootstrap | null> {
 }
 
 async function loadDashboard(): Promise<DashboardData> {
-  const [overviewResult, leadsResult, ordersResult, unreadResult, whatsappResult] = await Promise.allSettled([
+  const [overviewResult, leadsResult, ordersResult, storefrontResult, unreadResult, whatsappResult] = await Promise.allSettled([
     adminFetchOverview(),
     getLeads(),
     adminFetchOrders(),
+    adminFetchStorefrontOrders(),
     adminUnreadCommunicationCount(),
     fetchWhatsAppBootstrap(),
   ])
 
-  const failures = [overviewResult, leadsResult, ordersResult, unreadResult, whatsappResult]
+  const failures = [overviewResult, leadsResult, ordersResult, storefrontResult, unreadResult, whatsappResult]
     .filter((result) => result.status === 'rejected').length
 
   return {
     overview: overviewResult.status === 'fulfilled' ? overviewResult.value : EMPTY_OVERVIEW,
     websiteLeads: leadsResult.status === 'fulfilled' ? leadsResult.value : [],
     orders: ordersResult.status === 'fulfilled' ? ordersResult.value : [],
+    storefrontOrders: storefrontResult.status === 'fulfilled' ? storefrontResult.value : [],
     unreadCommunications: unreadResult.status === 'fulfilled' ? unreadResult.value : 0,
     whatsapp: whatsappResult.status === 'fulfilled' ? whatsappResult.value : null,
     partial: failures > 0,
@@ -104,18 +111,19 @@ function isOpenFulfillment(status: string) {
   return ['pending', 'processing', 'unfulfilled', 'ready'].includes(status.toLowerCase())
 }
 
-function money(cents: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100)
+function money(cents: number, locale: 'en' | 'es') {
+  return new Intl.NumberFormat(locale === 'es' ? 'es-MX' : 'en-US', { style: 'currency', currency: 'USD' }).format(cents / 100)
 }
 
-function dateLabel(value: string) {
+function dateLabel(value: string, locale: 'en' | 'es', unknownLabel: string) {
   const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return 'Unknown date'
-  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(date)
+  if (Number.isNaN(date.getTime())) return unknownLabel
+  return new Intl.DateTimeFormat(locale === 'es' ? 'es-MX' : 'en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(date)
 }
 
 export function AdminOperationsDashboard() {
-  const { path } = useLocale()
+  const { path, locale } = useLocale()
+  const { t } = useTranslation('portal')
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -161,6 +169,8 @@ export function AdminOperationsDashboard() {
   const hotLeads = hotWebsiteLeads + (whatsapp?.hot ?? 0)
   const readyToShip = data.orders.filter((order) => isPaid(order.payment_status) && isOpenFulfillment(order.fulfillment_status)).length
   const activeFulfillment = data.orders.filter((order) => !['delivered', 'canceled', 'cancelled'].includes(order.fulfillment_status.toLowerCase())).length
+  const storefrontFollowUps = selectStorefrontFollowUps(data.storefrontOrders)
+  const storefrontFollowUpCount = data.storefrontOrders.filter(storefrontOrderNeedsFollowUp).length
   const recentLeads = [...data.websiteLeads]
     .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime())
     .slice(0, 5)
@@ -184,6 +194,14 @@ export function AdminOperationsDashboard() {
       icon: MessageCircle,
       metric: `${whatsapp?.total_conversations ?? 0} conversations`,
       status: whatsapp?.open_reviews ? `${whatsapp.open_reviews} need review` : 'Review queue clear',
+    },
+    {
+      title: t('adminDashboardStorefrontTitle'),
+      description: t('adminDashboardStorefrontDescription'),
+      href: '/admin/storefront',
+      icon: Store,
+      metric: t('adminDashboardStorefrontMetric', { count: storefrontFollowUpCount }),
+      status: t('adminDashboardStorefrontStatus'),
     },
     {
       title: 'Orders',
@@ -223,7 +241,6 @@ export function AdminOperationsDashboard() {
     { title: 'Applications', description: 'Review portal applications and onboarding decisions.', href: '/admin/applications', icon: ClipboardList, metric: `${data.overview.pendingApplications} pending` },
     { title: 'Clients', description: 'Manage client access, status, profiles, and portal relationships.', href: '/admin/clients', icon: UserCheck, metric: `${data.overview.activeClients} active` },
     { title: 'Support', description: 'Resolve open support threads and customer concerns.', href: '/admin/support', icon: Headphones, metric: `${data.overview.openThreads} open` },
-    { title: 'Storefront', description: 'Control catalog visibility, merchandising, and storefront settings.', href: '/admin/storefront', icon: Store, metric: 'Commerce controls' },
     { title: 'Documents', description: 'Upload and assign research documents and client files.', href: '/admin/documents', icon: FileText, metric: 'Document center' },
     { title: 'Protocols', description: 'Create and manage approved portal protocol records.', href: '/admin/protocols', icon: FlaskConical, metric: 'Client records' },
     { title: 'Content', description: 'Review social proof, testimonials, and publishing controls.', href: '/admin/content', icon: ShieldCheck, metric: 'Content review' },
@@ -242,6 +259,7 @@ export function AdminOperationsDashboard() {
         </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
           <QuickLink href={path('/admin/leads')} label="Work the lead pipeline" meta={`${hotLeads} high-intent leads`} />
+          <QuickLink href={path('/admin/storefront')} label={t('adminDashboardStorefrontQuickLink')} meta={t('adminDashboardStorefrontQuickMeta', { count: storefrontFollowUpCount })} />
           <QuickLink href={path('/admin/orders')} label="Process orders" meta={`${readyToShip} ready to ship`} />
           <QuickLink href={path('/admin/communications')} label="Open sales inbox" meta={`${data.unreadCommunications} unread messages`} />
         </div>
@@ -253,32 +271,62 @@ export function AdminOperationsDashboard() {
       <p>Some live counters could not be loaded, but the available administration modules remain accessible.</p>
     </div> : null}
 
+    {storefrontFollowUpCount ? <section className="flex flex-col gap-5 rounded-[1.5rem] border border-amber-300 bg-amber-50 p-5 text-amber-950 shadow-[0_16px_50px_rgba(120,53,15,.08)] sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex gap-4">
+        <span className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-amber-950 text-amber-100"><CircleAlert size={19} aria-hidden="true" /></span>
+        <div>
+          <h2 className="text-lg font-semibold">{t('adminDashboardStorefrontAlertTitle', { count: storefrontFollowUpCount })}</h2>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-amber-900/80">{t('adminDashboardStorefrontAlertCopy')}</p>
+        </div>
+      </div>
+      <a href={path('/admin/storefront')} className="shrink-0 rounded-full bg-amber-950 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-amber-900">{t('adminDashboardStorefrontAlertAction')}</a>
+    </section> : null}
+
     <section aria-label="Operations scorecard">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <Scorecard label="All active leads" value={totalLeads} detail={`${data.websiteLeads.length} website · ${whatsapp?.total_conversations ?? 0} WhatsApp`} />
         <Scorecard label="High-intent leads" value={hotLeads} detail={`${hotWebsiteLeads} website · ${whatsapp?.hot ?? 0} WhatsApp`} />
         <Scorecard label="Orders processing" value={data.overview.processingOrders} detail={`${readyToShip} paid and ready`} />
-        <Scorecard label="Needs attention" value={data.overview.openThreads + data.overview.pendingApplications + data.unreadCommunications + (whatsapp?.open_reviews ?? 0)} detail="Support, applications, inbox, and WhatsApp reviews" />
+        <Scorecard label={t('adminDashboardStorefrontScorecard')} value={storefrontFollowUpCount} detail={t('adminDashboardStorefrontScorecardDetail')} />
+        <Scorecard label="Needs attention" value={data.overview.openThreads + data.overview.pendingApplications + data.unreadCommunications + storefrontFollowUpCount + (whatsapp?.open_reviews ?? 0)} detail="Support, applications, inbox, checkout, and WhatsApp reviews" />
       </div>
     </section>
 
     <ModuleSection title="Sales & fulfillment" description="The tools you will use most often to move a lead from first message through delivery." modules={salesModules} path={path} />
 
-    <section className="grid gap-5 xl:grid-cols-2">
+    <section className="grid gap-5 xl:grid-cols-3">
       <ActivityCard title="Newest website leads" actionLabel="Open CRM" actionHref={path('/admin/leads')}>
         {recentLeads.length ? recentLeads.map((lead) => <ActivityRow
           key={lead.id}
           title={`${lead.firstName} ${lead.lastName}`.trim() || 'Unnamed lead'}
           detail={`${lead.campaignSource} · Score ${lead.leadScore.score}`}
-          meta={dateLabel(lead.createdAt)}
+          meta={dateLabel(lead.createdAt, locale, t('adminDashboardStorefrontUnknownDate'))}
         />) : <EmptyActivity copy="New website inquiries will appear here." />}
+      </ActivityCard>
+
+      <ActivityCard title={t('adminDashboardStorefrontQueueTitle')} actionLabel={t('adminDashboardStorefrontQueueAction')} actionHref={path('/admin/storefront')}>
+        {storefrontFollowUps.length ? storefrontFollowUps.map((order) => <StorefrontFollowUpRow
+          key={order.id}
+          order={order}
+          locale={locale}
+          orderHref={`${path('/admin/storefront')}?order=${encodeURIComponent(order.id)}`}
+          labels={{
+            call: t('adminDashboardStorefrontCall'),
+            email: t('adminDashboardStorefrontEmail'),
+            open: t('adminDashboardStorefrontOpen'),
+            shippingReview: t('adminStorefrontPendingShippingReview'),
+            quotePending: t('adminStorefrontQuotePending'),
+            pendingPayment: t('adminDashboardStorefrontPendingPayment'),
+            unknownDate: t('adminDashboardStorefrontUnknownDate'),
+          }}
+        />) : <EmptyActivity copy={t('adminDashboardStorefrontQueueEmpty')} />}
       </ActivityCard>
 
       <ActivityCard title="Fulfillment queue" actionLabel="Open shipping" actionHref={path('/admin/shipping')}>
         {fulfillmentQueue.length ? fulfillmentQueue.map((order) => <ActivityRow
           key={order.id}
           title={order.order_number}
-          detail={`${money(order.amount_cents)} · ${order.payment_status.replaceAll('_', ' ')}`}
+          detail={`${money(order.amount_cents, locale)} · ${order.payment_status.replaceAll('_', ' ')}`}
           meta={order.fulfillment_status.replaceAll('_', ' ')}
         />) : <EmptyActivity copy="No orders are waiting for fulfillment." />}
       </ActivityCard>
@@ -365,6 +413,46 @@ function ActivityRow({ title, detail, meta }: { title: string; detail: string; m
       <p className="mt-1 truncate text-xs text-slate-500">{detail}</p>
     </div>
     <span className="shrink-0 text-xs font-semibold capitalize text-slate-400">{meta}</span>
+  </div>
+}
+
+type StorefrontRowLabels = {
+  call: string
+  email: string
+  open: string
+  shippingReview: string
+  quotePending: string
+  pendingPayment: string
+  unknownDate: string
+}
+
+function StorefrontFollowUpRow({ order, locale, orderHref, labels }: { order: StorefrontOrderRow; locale: 'en' | 'es'; orderHref: string; labels: StorefrontRowLabels }) {
+  const name = order.contact?.name?.trim() || order.order_reference
+  const total = order.total_cents === null ? money(order.subtotal_cents, locale) : money(order.total_cents, locale)
+  const status = order.status === 'pending_shipping_review'
+    ? labels.shippingReview
+    : order.status === 'quote_pending'
+      ? labels.quotePending
+      : labels.pendingPayment
+  const phone = order.contact?.phone?.trim() ?? ''
+  const callablePhone = phone.replace(/[^+\d]/g, '')
+  const email = order.contact?.email?.trim() ?? ''
+  const contactEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : ''
+
+  return <div className="py-4 first:pt-0 last:pb-0">
+    <div className="flex items-start justify-between gap-4">
+      <div className="min-w-0">
+        <p className="truncate text-sm font-semibold text-[#071724]">{name}</p>
+        <p className="mt-1 truncate font-mono text-xs text-slate-500">{order.order_reference} · {total}</p>
+      </div>
+      <span className="shrink-0 text-xs font-semibold text-slate-400">{dateLabel(order.created_at, locale, labels.unknownDate)}</span>
+    </div>
+    <p className="mt-2 text-xs font-semibold text-amber-800">{status}</p>
+    <div className="mt-3 flex flex-wrap gap-2">
+      {callablePhone ? <a href={`tel:${callablePhone}`} className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-slate-900/10 px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"><Phone size={13} aria-hidden="true" />{labels.call}</a> : null}
+      {contactEmail ? <a href={`mailto:${encodeURIComponent(contactEmail)}`} className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-slate-900/10 px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"><Mail size={13} aria-hidden="true" />{labels.email}</a> : null}
+      <a href={orderHref} className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-[#071724] px-3 text-xs font-semibold text-white hover:bg-[#0c2537]">{labels.open}<ArrowRight size={13} aria-hidden="true" /></a>
+    </div>
   </div>
 }
 

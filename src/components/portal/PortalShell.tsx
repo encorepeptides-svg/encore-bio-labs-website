@@ -76,6 +76,7 @@ export function PortalShell({ children, admin = false }: { children: ReactNode; 
       entries: [
         ['/admin/leads', 'CRM & Leads', UsersRound],
         ['/admin/whatsapp', 'WhatsApp Sales', MessageCircle],
+        ['/admin/storefront', t('adminNavStorefront'), Store],
         ['/admin/orders', t('adminNavOrders'), ShoppingCart],
         ['/admin/shipping', 'Shipping', Truck],
         ['/admin/inventory', tInventory('nav'), Boxes],
@@ -88,7 +89,6 @@ export function PortalShell({ children, admin = false }: { children: ReactNode; 
       entries: [
         ['/admin/applications', t('adminNavApplications'), ClipboardList],
         ['/admin/clients', t('adminNavClients'), UserCheck],
-        ['/admin/storefront', t('adminNavStorefront'), Store],
         ['/admin/protocols', t('adminNavProtocols'), FlaskConical],
         ['/admin/documents', t('adminNavDocuments'), FileText],
         ['/admin/support', t('adminNavSupport'), Headphones],

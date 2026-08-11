@@ -12,6 +12,7 @@ export function AdminStorefront() {
   const [busy, setBusy] = useState('')
   const [actionError, setActionError] = useState('')
   const [showAll, setShowAll] = useState(false)
+  const focusedOrderId = new URLSearchParams(window.location.search).get('order')
 
   async function setStatus(order: StorefrontOrderRow, status: 'paid' | 'cancelled' | 'pending_payment') {
     if (!identity) return
@@ -60,7 +61,7 @@ export function AdminStorefront() {
           </tr></thead>
           <tbody>{rows.map((order) => {
             const contact = [order.contact?.name, order.contact?.phone, order.contact?.email].filter(Boolean).join(' · ')
-            return <tr key={order.id} className="border-t border-slate-900/6 align-top">
+            return <tr key={order.id} className={`border-t border-slate-900/6 align-top ${focusedOrderId === order.id ? 'bg-amber-50 ring-2 ring-inset ring-amber-300' : ''}`}>
               <td className="px-5 py-3">
                 <p className="font-mono font-semibold">{order.order_reference}</p>
                 <p className="mt-1 max-w-56 text-xs text-slate-500">{order.items.map((item) => `${item.quantity}x ${item.product} ${item.variant}`).join(', ')}</p>
