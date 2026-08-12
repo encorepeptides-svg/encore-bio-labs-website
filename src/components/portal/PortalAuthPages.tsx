@@ -25,6 +25,7 @@ export function PortalAuthPage({ mode }: { mode: AuthMode }) {
   const [intakeHandoff] = useState(readStoredIntakeHandoff)
   const [passwordUpdated, setPasswordUpdated] = useState(false)
   const [passwordDestination, setPasswordDestination] = useState('/client-login')
+  const [requestedPath] = useState(() => mode === 'login' ? new URLSearchParams(window.location.search).get('next') : null)
   const authSubmissionInFlightRef = useRef(false)
   const [form, setForm] = useState({
     legalName: intakeHandoff ? `${intakeHandoff.formData.firstName} ${intakeHandoff.formData.lastName}`.trim() : '',
@@ -35,7 +36,7 @@ export function PortalAuthPage({ mode }: { mode: AuthMode }) {
   })
 
   const authenticatedTarget = mode === 'login' && !sessionLoading && identity
-    ? getPortalLandingPath(identity)
+    ? getPortalLandingPath(identity, requestedPath)
     : null
   const destination = redirectTarget ?? authenticatedTarget
 
@@ -82,7 +83,7 @@ export function PortalAuthPage({ mode }: { mode: AuthMode }) {
         const identity = await loadPortalIdentity()
         if (!identity) throw new Error('Portal identity is unavailable.')
         setSuccess(t('successLogin'))
-        setRedirectTarget(getPortalLandingPath(identity))
+        setRedirectTarget(getPortalLandingPath(identity, requestedPath))
       } else if (mode === 'register') {
         const { error: authError } = await registerPortalAccount({ legalName: form.legalName, email: form.email, mobile: form.mobile, preferredLanguage: form.language, password: form.password, intakeHandoffToken: intakeHandoff?.handoffToken })
         if (authError) throw authError

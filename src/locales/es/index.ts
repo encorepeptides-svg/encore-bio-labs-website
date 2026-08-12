@@ -8,6 +8,7 @@ import { categoryPage } from './categoryPage'
 import { categories } from './categories'
 import { checkout } from './checkout'
 import { contact } from './contact'
+import { crm } from './crm'
 import { common } from './common'
 import { editorial } from './editorial'
 import { faq } from './faq'
@@ -59,6 +60,7 @@ export const es = {
   purchaseSelector,
   checkout,
   contact,
+  crm,
   intake,
   notFound,
   legal,

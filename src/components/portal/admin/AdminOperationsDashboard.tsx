@@ -31,6 +31,7 @@ import {
   type PortalOrder,
 } from '../../../lib/portal/portalData'
 import { getLeads } from '../../../lib/crmStorage'
+import { leadNeedsFollowUp } from '../../../lib/crmFollowUp'
 import { selectStorefrontFollowUps, storefrontOrderNeedsFollowUp } from '../../../lib/storefront/adminQueue'
 import { adminFetchStorefrontOrders, type StorefrontOrderRow } from '../../../lib/storefront/interimCheckout'
 import { supabase } from '../../../lib/supabaseClient'
@@ -124,6 +125,7 @@ function dateLabel(value: string, locale: 'en' | 'es', unknownLabel: string) {
 export function AdminOperationsDashboard() {
   const { path, locale } = useLocale()
   const { t } = useTranslation('portal')
+  const { t: tCrm } = useTranslation('crm')
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -166,6 +168,7 @@ export function AdminOperationsDashboard() {
   const whatsapp = data.whatsapp?.metrics
   const totalLeads = data.websiteLeads.length + (whatsapp?.total_conversations ?? 0)
   const hotWebsiteLeads = data.websiteLeads.filter((lead) => lead.leadScore.score >= 70).length
+  const websiteFollowUpCount = data.websiteLeads.filter((lead) => leadNeedsFollowUp(lead)).length
   const hotLeads = hotWebsiteLeads + (whatsapp?.hot ?? 0)
   const readyToShip = data.orders.filter((order) => isPaid(order.payment_status) && isOpenFulfillment(order.fulfillment_status)).length
   const activeFulfillment = data.orders.filter((order) => !['delivered', 'canceled', 'cancelled'].includes(order.fulfillment_status.toLowerCase())).length
@@ -185,7 +188,7 @@ export function AdminOperationsDashboard() {
       href: '/admin/leads',
       icon: UsersRound,
       metric: `${data.websiteLeads.length} website leads`,
-      status: hotWebsiteLeads ? `${hotWebsiteLeads} high intent` : 'Pipeline ready',
+      status: websiteFollowUpCount ? tCrm('dashboardQuickMeta', { count: websiteFollowUpCount }) : 'Pipeline ready',
     },
     {
       title: 'WhatsApp Sales Desk',
@@ -258,7 +261,7 @@ export function AdminOperationsDashboard() {
           <p className="mt-5 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">Start every work session here. Leads, WhatsApp, orders, inventory, customer communication, applications, and shipping operations are organized into one daily workspace.</p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-          <QuickLink href={path('/admin/leads')} label="Work the lead pipeline" meta={`${hotLeads} high-intent leads`} />
+          <QuickLink href={path('/admin/leads')} label="Work the lead pipeline" meta={tCrm('dashboardQuickMeta', { count: websiteFollowUpCount })} />
           <QuickLink href={path('/admin/storefront')} label={t('adminDashboardStorefrontQuickLink')} meta={t('adminDashboardStorefrontQuickMeta', { count: storefrontFollowUpCount })} />
           <QuickLink href={path('/admin/orders')} label="Process orders" meta={`${readyToShip} ready to ship`} />
           <QuickLink href={path('/admin/communications')} label="Open sales inbox" meta={`${data.unreadCommunications} unread messages`} />
@@ -270,6 +273,17 @@ export function AdminOperationsDashboard() {
       <CircleAlert size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
       <p>Some live counters could not be loaded, but the available administration modules remain accessible.</p>
     </div> : null}
+
+    {websiteFollowUpCount ? <section className="flex flex-col gap-5 rounded-[1.5rem] border border-red-300 bg-red-50 p-5 text-red-950 shadow-[0_16px_50px_rgba(127,29,29,.08)] sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex gap-4">
+        <span className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-red-950 text-red-100"><CircleAlert size={19} aria-hidden="true" /></span>
+        <div>
+          <h2 className="text-lg font-semibold">{tCrm('dashboardAlertTitle', { count: websiteFollowUpCount })}</h2>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-red-900/80">{tCrm('dashboardAlertCopy')}</p>
+        </div>
+      </div>
+      <a href={path('/admin/leads')} className="shrink-0 rounded-full bg-red-950 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-red-900">{tCrm('dashboardAlertAction')}</a>
+    </section> : null}
 
     {storefrontFollowUpCount ? <section className="flex flex-col gap-5 rounded-[1.5rem] border border-amber-300 bg-amber-50 p-5 text-amber-950 shadow-[0_16px_50px_rgba(120,53,15,.08)] sm:flex-row sm:items-center sm:justify-between">
       <div className="flex gap-4">
@@ -288,7 +302,7 @@ export function AdminOperationsDashboard() {
         <Scorecard label="High-intent leads" value={hotLeads} detail={`${hotWebsiteLeads} website · ${whatsapp?.hot ?? 0} WhatsApp`} />
         <Scorecard label="Orders processing" value={data.overview.processingOrders} detail={`${readyToShip} paid and ready`} />
         <Scorecard label={t('adminDashboardStorefrontScorecard')} value={storefrontFollowUpCount} detail={t('adminDashboardStorefrontScorecardDetail')} />
-        <Scorecard label="Needs attention" value={data.overview.openThreads + data.overview.pendingApplications + data.unreadCommunications + storefrontFollowUpCount + (whatsapp?.open_reviews ?? 0)} detail="Support, applications, inbox, checkout, and WhatsApp reviews" />
+        <Scorecard label="Needs attention" value={websiteFollowUpCount + data.overview.openThreads + data.overview.pendingApplications + data.unreadCommunications + storefrontFollowUpCount + (whatsapp?.open_reviews ?? 0)} detail={tCrm('dashboardAttentionDetail')} />
       </div>
     </section>
 

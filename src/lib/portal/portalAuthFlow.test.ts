@@ -29,4 +29,14 @@ describe('portal authentication flow', () => {
     expect(getPortalLandingPath(identity(['client'], 'onboarding_incomplete'))).toBe('/portal/intake')
     expect(getPortalLandingPath(identity(['client'], 'pending_review'))).toBe('/portal/security')
   })
+
+  it('returns an authenticated administrator to the requested CRM route', () => {
+    expect(getPortalLandingPath(identity(['admin']), '/admin/leads')).toBe('/admin/leads')
+    expect(getPortalLandingPath(identity(['client']), '/admin/leads')).toBe('/portal')
+  })
+
+  it('rejects external and malformed return paths', () => {
+    expect(getPortalLandingPath(identity(['admin']), 'https://example.com')).toBe('/admin/content')
+    expect(getPortalLandingPath(identity(['admin']), '//example.com/admin')).toBe('/admin/content')
+  })
 })

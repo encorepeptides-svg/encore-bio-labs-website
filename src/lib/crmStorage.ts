@@ -641,6 +641,30 @@ async function getSupabaseLeads() {
   )
 }
 
+async function getSupabaseLeadById(id: string) {
+  const client = assertSupabase()
+  const { data, error } = await client
+    .from('crm_leads')
+    .select('*, crm_intake_submissions(*), crm_timeline_events(*)')
+    .eq('id', id)
+    .maybeSingle()
+
+  if (error) throw error
+  if (!data) return undefined
+
+  const row = data as LeadRow & {
+    crm_intake_submissions?: IntakeRow[]
+    crm_timeline_events?: TimelineRow[]
+  }
+  return rowToLead(
+    row,
+    row.crm_intake_submissions?.[0] ? rowToIntake(row.crm_intake_submissions[0]) : undefined,
+    (row.crm_timeline_events || [])
+      .map(rowToTimeline)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+  )
+}
+
 export async function getLeads() {
   if (isCrmUsingSupabase()) {
     return getSupabaseLeads()
@@ -651,8 +675,7 @@ export async function getLeads() {
 
 export async function getLeadById(id: string) {
   if (isCrmUsingSupabase()) {
-    const leads = await getSupabaseLeads()
-    return leads.find((lead) => lead.id === id)
+    return getSupabaseLeadById(id)
   }
 
   return getLocalLeads().find((lead) => lead.id === id)
@@ -805,15 +828,62 @@ export async function updateLead(id: string, updates: Partial<Lead>) {
 
   if (isCrmUsingSupabase()) {
     const client = assertSupabase()
-    const { error } = await client.from('crm_leads').update(leadToRow(nextLead)).eq('id', id)
+    const row = leadToRow(nextLead)
+    const { data, error } = await client
+      .from('crm_leads')
+      .update({
+        first_name: row.first_name,
+        last_name: row.last_name,
+        email: row.email,
+        phone: row.phone,
+        city: row.city,
+        state: row.state,
+        country: row.country,
+        preferred_language: row.preferred_language,
+        source: row.source,
+        campaign_source: row.campaign_source,
+        interested_products: row.interested_products,
+        primary_goal: row.primary_goal,
+        budget_range: row.budget_range,
+        notes: row.notes,
+        status: row.status,
+        lead_score: row.lead_score,
+        lead_score_explanation: row.lead_score_explanation,
+        last_contacted_at: row.last_contacted_at,
+        consent_to_contact: row.consent_to_contact,
+        research_use_acknowledgment: row.research_use_acknowledgment,
+        updated_at: row.updated_at,
+      })
+      .eq('id', id)
+      .select('*')
+      .single()
     if (error) {
       throw error
     }
-    return nextLead
+    return rowToLead(data as LeadRow, current.intakeSubmission, current.timeline)
   }
 
   persistLocalLeads(getLocalLeads().map((lead) => (lead.id === id ? nextLead : lead)))
   return nextLead
+}
+
+export async function recordLeadContact(
+  id: string,
+  event: { title: string; description: string },
+) {
+  const current = await getLeadById(id)
+  if (!current) return undefined
+
+  const updated = await updateLead(id, {
+    status: current.status === 'new' ? 'contacted' : current.status,
+    lastContactedAt: new Date().toISOString(),
+  })
+  const withEvent = await addTimelineEvent(id, {
+    type: 'manual',
+    title: event.title,
+    description: event.description,
+  })
+  return withEvent || updated
 }
 
 export async function deleteLead(id: string) {
@@ -830,11 +900,14 @@ export async function deleteLead(id: string) {
 }
 
 export async function addNote(leadId: string, note: string, createdBy = 'admin') {
+  const normalizedNote = note.trim()
+  if (!normalizedNote) throw new Error('A note is required.')
+
   const nextNote: CRMNote = {
     id: createUuid(),
     leadId,
     createdAt: new Date().toISOString(),
-    note,
+    note: normalizedNote,
     createdBy,
   }
 
@@ -846,7 +919,7 @@ export async function addNote(leadId: string, note: string, createdBy = 'admin')
         id: nextNote.id,
         lead_id: leadId,
         created_at: nextNote.createdAt,
-        note,
+        note: normalizedNote,
         created_by: createdBy,
       })
       .select('*')

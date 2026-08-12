@@ -1,5 +1,5 @@
 import type { LeadStatus } from '../../types/crm'
-import { leadStatusLabel } from '../../lib/crmLabels'
+import { useTranslation } from '../../i18n/LocaleContext'
 
 const statusStyles: Record<LeadStatus, string> = {
   new: 'bg-teal-50 text-teal-800 ring-teal-700/10',
@@ -11,9 +11,18 @@ const statusStyles: Record<LeadStatus, string> = {
 }
 
 export function LeadStatusBadge({ status }: { status: LeadStatus }) {
+  const { t } = useTranslation('crm')
+  const labels: Record<LeadStatus, string> = {
+    new: t('statusNew'),
+    contacted: t('statusContacted'),
+    qualified: t('statusQualified'),
+    consultation_requested: t('statusConsultationRequested'),
+    converted: t('statusConverted'),
+    lost: t('statusLost'),
+  }
   return (
     <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ring-1 ${statusStyles[status]}`}>
-      {leadStatusLabel(status)}
+      {labels[status]}
     </span>
   )
 }
