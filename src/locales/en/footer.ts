@@ -12,6 +12,8 @@ export const footer = {
   documentation: 'Lab papers',
   faq: 'FAQ',
   clientPortal: 'Client Portal',
+  portalAccess: 'Portal access',
+  distributorAccess: 'Distributor Portal',
   adminAccess: 'Admin Access',
   website: 'Website: encorebiolabs.com',
   email: 'Email: support@encorebiolabs.com',

@@ -153,14 +153,24 @@ export function Footer() {
           <p>{t('copyright')}</p>
           <p>{tBrand('complianceDisclaimer')}</p>
         </div>
-        <div className="mt-5 flex justify-end border-t border-slate-900/8 pt-4">
+        <nav
+          aria-label={t('portalAccess')}
+          className="mt-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 border-t border-slate-900/8 pt-4 sm:justify-end sm:pr-16 lg:pr-0"
+        >
+          <a
+            href={path('/distributor')}
+            className="text-xs font-medium text-slate-400 transition hover:text-[#071724] focus:outline-none focus-visible:rounded focus-visible:ring-2 focus-visible:ring-teal-500"
+          >
+            {t('distributorAccess')}
+          </a>
+          <span className="h-3 w-px bg-slate-300" aria-hidden="true" />
           <a
             href={path('/admin')}
             className="text-xs font-medium text-slate-400 transition hover:text-[#071724] focus:outline-none focus-visible:rounded focus-visible:ring-2 focus-visible:ring-teal-500"
           >
             {t('adminAccess')}
           </a>
-        </div>
+        </nav>
       </div>
     </footer>
   )

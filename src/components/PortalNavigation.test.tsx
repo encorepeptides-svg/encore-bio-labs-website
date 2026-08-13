@@ -51,16 +51,14 @@ describe('client and administrator navigation', () => {
     expect(mobileMenu?.querySelector('a[href="/admin"]')).toBeNull()
   })
 
-  it('keeps the admin link as the final footer link and localizes both destinations in Spanish', () => {
+  it('places the distributor portal beside admin access and localizes both destinations in Spanish', () => {
     const englishFooter = renderShell('en', 'footer')
-    const englishLinks = englishFooter.querySelectorAll<HTMLAnchorElement>('footer a')
-    expect(englishLinks.item(englishLinks.length - 1).href).toMatch(/\/admin$/)
-    expect(englishLinks.item(englishLinks.length - 1).textContent).toContain('Admin Access')
+    expect(englishFooter.querySelector<HTMLAnchorElement>('a[href="/distributor"]')?.textContent).toContain('Distributor Portal')
+    expect(englishFooter.querySelector<HTMLAnchorElement>('a[href="/admin"]')?.textContent).toContain('Admin Access')
 
     const spanishFooter = renderShell('es', 'footer')
     expect(spanishFooter.querySelector<HTMLAnchorElement>('a[href="/es/client-login"]')?.textContent).toContain('Portal de clientes')
-    const spanishLinks = spanishFooter.querySelectorAll<HTMLAnchorElement>('footer a')
-    expect(spanishLinks.item(spanishLinks.length - 1).getAttribute('href')).toBe('/es/admin')
-    expect(spanishLinks.item(spanishLinks.length - 1).textContent).toContain('Acceso administrativo')
+    expect(spanishFooter.querySelector<HTMLAnchorElement>('a[href="/es/distributor"]')?.textContent).toContain('Portal de distribuidores')
+    expect(spanishFooter.querySelector<HTMLAnchorElement>('a[href="/es/admin"]')?.textContent).toContain('Acceso administrativo')
   })
 })
