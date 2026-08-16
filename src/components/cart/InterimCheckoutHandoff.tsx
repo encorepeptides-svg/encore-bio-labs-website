@@ -13,6 +13,7 @@ import {
   type OrderContact,
   type PendingOrder,
 } from '../../lib/storefront/interimCheckout'
+import { readReferralAttribution } from '../../lib/referralAttribution'
 
 const methodLabelKeys: Record<InterimPaymentMethodId, string> = {
   bank_transfer: 'payBankTransfer',
@@ -98,7 +99,7 @@ export function InterimCheckoutHandoff({
     const handoffWindow = window.open('', '_blank', 'noopener')
     try {
       const effectiveMethod: InterimPaymentMethod = order.reviewRequired ? { id: 'manual_review', enabled: true, details: [] } : chosenMethod
-      const message = buildHandoffMessage({ reference: order.reference, items, paymentMethod: effectiveMethod.id, locale, contact, shipping, processingFeeCents: order.processingFeeCents, totalCents: order.totalCents })
+      const message = buildHandoffMessage({ reference: order.reference, items, paymentMethod: effectiveMethod.id, locale, contact, shipping, processingFeeCents: order.processingFeeCents, totalCents: order.totalCents, discountCents: order.discountCents, discountSource: order.discountSource, otherPromotionWon: order.otherPromotionWon, referralCode: order.referralCode ?? readReferralAttribution()?.code })
       let copied = false
       if (state.channel === 'instagram') copied = await copyText(message)
       const url = state.channel === 'whatsapp' ? buildWhatsAppHandoffUrl(message) : buildInstagramDmUrl()

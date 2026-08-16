@@ -1,0 +1,10 @@
+project_id = "encore-bio-labs-website"
+
+[functions.distributor-onboarding]
+verify_jwt = true
+
+[functions.payment-accounting-webhook]
+verify_jwt = false
+
+[functions.distributor-attribution]
+verify_jwt = false

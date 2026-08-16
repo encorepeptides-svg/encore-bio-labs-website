@@ -32,6 +32,7 @@ const PAYMENT_METHODS = ['bank_transfer', 'paypal', 'venmo', 'cashapp', 'zelle',
 const US_ZIP = /^\d{5}(?:-\d{4})?$/
 const MX_POSTAL_CODE = /^\d{5}$/
 const INTERNATIONAL_POSTAL_CODE = /^[\p{L}\d][\p{L}\d -]{1,11}$/u
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const CHECKOUT_ACKNOWLEDGMENT_VERSION = 'checkout-ruo-v1'
 const CHECKOUT_ACKNOWLEDGMENT_IDS = ['age', 'researchOnly', 'noConsumption', 'noAdvice', 'policies']
 const ACKNOWLEDGMENT_POLICY_VERSIONS = {
@@ -72,8 +73,9 @@ function response(body: unknown, status = 200, origin: string | null = null) {
   return new Response(JSON.stringify(body), { status, headers: { ...JSON_HEADERS, ...corsHeaders(origin) } })
 }
 
-function text(value: unknown) {
-  return typeof value === 'string' ? value.trim() : ''
+function text(value: unknown, max?: number) {
+  const normalized = typeof value === 'string' ? value.trim() : ''
+  return typeof max === 'number' ? normalized.slice(0, max) : normalized
 }
 
 function escapeHtml(value: string) {
@@ -561,6 +563,65 @@ function getSecretKey() {
   }
 }
 
+function normalizeReferralCode(value: unknown) {
+  const code = text(value).toUpperCase()
+  return /^[A-Z0-9][A-Z0-9_-]{2,31}$/.test(code) ? code : null
+}
+
+function storeClient() {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
+  const secretKey = getSecretKey()
+  return supabaseUrl && secretKey
+    ? createClient(supabaseUrl, secretKey, { auth: { persistSession: false } })
+    : null
+}
+
+async function validateDistributorCode(body: Record<string, unknown>, origin: string | null) {
+  const code = normalizeReferralCode(body.code)
+  const client = storeClient()
+  const invalid = {
+    valid: false, code: null, rateBps: 0, maxCents: 0,
+    message: { en: 'This distributor code is invalid or unavailable.', es: 'Este código de distribuidor no es válido o no está disponible.' },
+  }
+  if (!code) return response(invalid, 200, origin)
+  if (!client) return response({ code: 'validation_unavailable' }, 503, origin)
+  const { data, error } = await client.from('distributor_accounts')
+    .select('referral_code,customer_discount_rate_bps,customer_discount_max_cents,customer_discount_enabled')
+    .eq('referral_code', code)
+    .eq('status', 'active')
+    .maybeSingle()
+  if (error) return response({ code: 'validation_unavailable' }, 503, origin)
+  if (!data) return response(invalid, 200, origin)
+  const enabled = data.customer_discount_enabled === true
+  return response({
+    valid: true,
+    code: data.referral_code,
+    rateBps: enabled ? data.customer_discount_rate_bps : 0,
+    maxCents: enabled ? data.customer_discount_max_cents : 0,
+    message: enabled
+      ? { en: 'Code accepted. The first eligible paid purchase receives the better of this offer or the current volume promotion.', es: 'Código aceptado. La primera compra pagada elegible recibe la mejor opción entre esta oferta y la promoción por volumen vigente.' }
+      : { en: 'Code accepted for distributor attribution. No customer incentive is currently enabled.', es: 'Código aceptado para atribución del distribuidor. Actualmente no hay un incentivo habilitado para el cliente.' },
+  }, 200, origin)
+}
+
+async function sha256(value: string) {
+  const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))
+  return [...new Uint8Array(bytes)].map((byte) => byte.toString(16).padStart(2, '0')).join('')
+}
+
+async function customerFingerprint(request: Request, client: ReturnType<typeof createClient>, contact: Record<string, unknown>) {
+  const authorization = request.headers.get('authorization') || ''
+  const token = authorization.replace(/^Bearer\s+/i, '')
+  if (token) {
+    const { data } = await client.auth.getUser(token)
+    if (data.user?.id) return sha256(`auth:${data.user.id}`)
+  }
+  const email = text(contact.email).toLowerCase()
+  const phone = text(contact.phone).replace(/\D/g, '')
+  const pepper = Deno.env.get('DISTRIBUTOR_FINGERPRINT_PEPPER') || getSecretKey()
+  return sha256(`${pepper}:contact:${email}|${phone}`)
+}
+
 function generateReference() {
   const bytes = new Uint16Array(1)
   crypto.getRandomValues(bytes)
@@ -593,7 +654,7 @@ function inventorySkuFromQuoteSku(value: unknown) {
   return text(value).toUpperCase().replace(/-(VIAL-ONLY|COMPLETE-KIT|MULTIPACK)-\d+(?:-KIT)?$/, '')
 }
 
-async function createOrder(body: Record<string, unknown>, origin: string | null) {
+async function createOrder(body: Record<string, unknown>, origin: string | null, request: Request) {
   const destination = text(body.destination) as Destination
   const localFulfillment = ['pickup', 'home_delivery'].includes(text(body.localFulfillment)) ? text(body.localFulfillment) as LocalFulfillment : null
   const address = sanitizeAddress(body.address)
@@ -648,7 +709,19 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
     const requestedLineTotal = Math.round(Number(item.line_total_cents) || 0)
     const lineTotalCents = Math.max(unitPriceCents * quantity, Math.min(100_000_000, requestedLineTotal))
     if (!text(item.sku) || !text(item.product)) return []
-    return [{ ...item, quantity, unit_price_cents: unitPriceCents, line_total_cents: lineTotalCents }]
+    return [{
+      sku: text(item.sku, 160),
+      product: text(item.product, 240),
+      product_slug: text(item.product_slug, 160) || null,
+      category_slug: text(item.category_slug, 160) || null,
+      variant: text(item.variant, 160),
+      purchase_type: text(item.purchase_type, 80),
+      pack_size: Math.max(1, Math.min(999, Math.floor(Number(item.pack_size) || 1))),
+      kit_included: item.kit_included === true,
+      quantity,
+      unit_price_cents: unitPriceCents,
+      line_total_cents: lineTotalCents,
+    }]
   })
   if (!safeItems.length) return response({ code: 'invalid_order_items' }, 400, origin)
   const subtotalCents = safeItems.reduce((sum, item) => sum + Number(item.line_total_cents), 0)
@@ -671,15 +744,69 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
   const quotedShippingCents = destination === 'mexico' ? 1_500 : isLocal(destination) ? verification.localDeliveryFeeCents : matchedRate?.amountCents ?? null
   const shippingWaived = quotedShippingCents !== null && quotedShippingCents > 0 && earnedTier !== null
   const shippingCents = shippingWaived ? 0 : quotedShippingCents
-  const discountCents = earnedTier ? Math.round(subtotalCents * earnedTier.discountRate) : 0
+  const volumeDiscountCents = earnedTier ? Math.round(subtotalCents * earnedTier.discountRate) : 0
+  const client = storeClient()
+  if (!client) return response({ code: 'order_store_unavailable' }, 503, origin)
+  const candidateReferralCode = normalizeReferralCode(body.referralCode)
+  const attributionSource = candidateReferralCode && text(body.attributionSource) === 'manual_code' ? 'manual_code' : candidateReferralCode ? 'referral_link' : null
+  const fingerprint = candidateReferralCode ? await customerFingerprint(request, client, contact) : null
+  let distributorDiscountCents = 0
+  let distributorEligibility = candidateReferralCode ? 'invalid_code' : 'not_requested'
+  let attributionAccountId: string | null = null
+  let partnerLink: { id: string; campaign_id: string | null; sub_id: string | null } | null = null
+  if (candidateReferralCode) {
+    const { data: account, error: accountError } = await client.from('distributor_accounts')
+      .select('id,customer_discount_rate_bps,customer_discount_max_cents,customer_discount_first_order_only,customer_discount_enabled')
+      .eq('referral_code', candidateReferralCode)
+      .eq('status', 'active')
+      .maybeSingle()
+    if (accountError) return response({ code: 'distributor_validation_unavailable' }, 503, origin)
+    if (account) {
+      attributionAccountId = account.id
+      distributorEligibility = account.customer_discount_enabled ? 'eligible' : 'disabled'
+      if (account.customer_discount_enabled && account.customer_discount_first_order_only) {
+        const normalizedEmail = text(contact.email).toLowerCase()
+        const normalizedPhone = text(contact.phone).replace(/\D/g, '')
+        const { data: hasPaidOrder, error: redemptionError } = await client.rpc('storefront_customer_has_paid_order', {
+          candidate_fingerprint: fingerprint,
+          normalized_email: normalizedEmail,
+          normalized_phone: normalizedPhone,
+        })
+        if (redemptionError) return response({ code: 'distributor_validation_unavailable' }, 503, origin)
+        if (hasPaidOrder === true) {
+          distributorEligibility = 'already_redeemed'
+        }
+      }
+      if (distributorEligibility === 'eligible') {
+        distributorDiscountCents = Math.min(
+          Math.round(subtotalCents * Number(account.customer_discount_rate_bps) / 10_000),
+          Number(account.customer_discount_max_cents),
+        )
+      }
+    }
+  }
+  const requestedLinkSlug = text(body.partnerLinkSlug, 40).toLowerCase()
+  if (attributionAccountId && requestedLinkSlug) {
+    const linkResult = await client.from('distributor_partner_links')
+      .select('id,campaign_id,sub_id')
+      .eq('slug', requestedLinkSlug)
+      .eq('distributor_id', attributionAccountId)
+      .eq('active', true)
+      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+      .maybeSingle()
+    if (linkResult.error) return response({ code: 'distributor_validation_unavailable' }, 503, origin)
+    partnerLink = linkResult.data
+  }
+  const volumeWins = volumeDiscountCents > 0 && volumeDiscountCents >= distributorDiscountCents
+  const discountCents = volumeWins ? volumeDiscountCents : distributorDiscountCents
+  const discountSource = discountCents === 0 ? 'none' : volumeWins ? 'volume_promotion' : 'distributor_incentive'
+  if (volumeWins && distributorDiscountCents > 0) {
+    distributorEligibility = 'better_promotion'
+  }
   const processingFeeCents = paymentMethod === 'cash_on_delivery'
     ? Math.round(Math.max(0, subtotalCents - discountCents) * CASH_ON_DELIVERY_PROCESSING_RATE)
     : 0
   const totalCents = shippingCents === null ? null : Math.max(0, subtotalCents + importFeeCents + shippingCents - discountCents + processingFeeCents)
-  const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
-  const secretKey = getSecretKey()
-  if (!supabaseUrl || !secretKey) return response({ code: 'order_store_unavailable' }, 503, origin)
-  const client = createClient(supabaseUrl, secretKey, { auth: { persistSession: false } })
 
   // Repeat availability validation on the trusted server. Exact balances never
   // leave this function, and forged client requests cannot order inactive or
@@ -707,7 +834,7 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
     const reference = generateReference()
     const status = reviewRequired ? 'pending_shipping_review' : 'pending_payment'
     const channel = text(body.channel) === 'instagram' ? 'instagram' : text(body.channel) === 'whatsapp' ? 'whatsapp' : 'checkout'
-    const { error } = await client.from('storefront_orders').insert({
+    const { data: storedOrder, error } = await client.from('storefront_orders').insert({
       order_reference: reference,
       status,
       channel,
@@ -717,9 +844,24 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
       import_fee_cents: importFeeCents,
       shipping_cents: shippingCents,
       discount_cents: discountCents,
+      volume_discount_cents: volumeDiscountCents,
+      discount_source: discountSource,
+      distributor_customer_fingerprint: fingerprint,
       processing_fee_cents: processingFeeCents,
       total_cents: totalCents,
       locale,
+      referral_code: candidateReferralCode,
+      attribution_source: attributionSource,
+      distributor_campaign_id: partnerLink?.campaign_id ?? null,
+      distributor_partner_link_id: partnerLink?.id ?? null,
+      distributor_sub_id: partnerLink?.sub_id ?? (text(body.distributorSubId, 64) || null),
+      distributor_visitor_id: UUID.test(text(body.distributorVisitorId, 36)) ? text(body.distributorVisitorId, 36) : null,
+      distributor_session_id: UUID.test(text(body.distributorSessionId, 36)) ? text(body.distributorSessionId, 36) : null,
+      distributor_utm_source: text(body.distributorUtmSource, 100) || null,
+      distributor_utm_medium: text(body.distributorUtmMedium, 100) || null,
+      distributor_utm_campaign: text(body.distributorUtmCampaign, 100) || null,
+      distributor_utm_term: text(body.distributorUtmTerm, 100) || null,
+      distributor_utm_content: text(body.distributorUtmContent, 100) || null,
       contact,
       destination_type: destination,
       local_fulfillment_method: isLocal(destination) ? localFulfillment : null,
@@ -737,11 +879,23 @@ async function createOrder(body: Record<string, unknown>, origin: string | null)
       checkout_acknowledgment_language: acknowledgment.exactLanguage,
       checkout_acknowledgment_locale: acknowledgment.locale,
       checkout_policy_versions: acknowledgment.policyVersions,
-    })
-    if (!error) {
+    }).select('referral_code,discount_cents,volume_discount_cents,distributor_discount_cents,discount_source,other_promotion_won,distributor_discount_eligibility,distributor_discount_no_benefit_reason,processing_fee_cents,total_cents').single()
+    if (!error && storedOrder) {
       console.log('[shipping-checkout] order saved', { reference, status, destination, reviewRequired })
       scheduleBackground(recordSupportNotification(client, reference, status, paymentMethod, contact, safeItems, subtotalCents, processingFeeCents, totalCents, locale))
-      return response({ reference, paymentMethod, subtotalCents, importFeeCents, shippingCents, discountCents, processingFeeCents, shippingWaived, totalCents, recorded: true, reviewRequired, verification, supportNotification: 'scheduled' }, 200, origin)
+      return response({
+        reference, paymentMethod, subtotalCents, importFeeCents, shippingCents,
+        discountCents: storedOrder.discount_cents,
+        volumeDiscountCents: storedOrder.volume_discount_cents,
+        distributorDiscountCents: storedOrder.distributor_discount_cents,
+        discountSource: storedOrder.discount_source,
+        otherPromotionWon: storedOrder.other_promotion_won,
+        distributorEligibility: storedOrder.distributor_discount_eligibility,
+        distributorNoBenefitReason: storedOrder.distributor_discount_no_benefit_reason,
+        referralCode: storedOrder.referral_code,
+        processingFeeCents: storedOrder.processing_fee_cents,
+        shippingWaived, totalCents: storedOrder.total_cents, recorded: true, reviewRequired, verification, supportNotification: 'scheduled',
+      }, 200, origin)
     }
     if (error.code !== '23505') {
       console.error('[shipping-checkout] order save failed', { destination, status, code: error.code })
@@ -765,11 +919,12 @@ Deno.serve(async (request) => {
   } catch {
     return response({ code: 'invalid_json' }, 400, origin)
   }
+  if (body.action === 'validate_distributor_code') return validateDistributorCode(body, origin)
   const destination = text(body.destination) as Destination
   if (!['us', 'mexico', 'local_el_paso', 'local_juarez', 'local_chihuahua', 'international'].includes(destination)) {
     return response({ code: 'invalid_destination' }, 400, origin)
   }
-  if (body.action === 'create_order') return createOrder(body, origin)
+  if (body.action === 'create_order') return createOrder(body, origin, request)
   if (body.action !== 'validate') return response({ code: 'invalid_action' }, 400, origin)
 
   const address = sanitizeAddress(body.address)

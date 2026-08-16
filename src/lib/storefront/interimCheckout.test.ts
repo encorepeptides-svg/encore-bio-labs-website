@@ -111,6 +111,17 @@ describe('interim checkout handoff', () => {
     expect(message).toContain('Punto de distribución: Encore Juárez · Zona Pronaf, Ciudad Juárez, Chihuahua')
   })
 
+  it('includes the validated distributor code, winning benefit, discount, and server total in WhatsApp copy', () => {
+    const message = buildHandoffMessage({
+      reference: 'ORD-2525', items: [item({ linePrice: 200, unitPrice: 100 })], paymentMethod: 'cash_on_delivery', locale: 'en',
+      discountCents: 1_000, discountSource: 'distributor_incentive', referralCode: 'LAB-25', processingFeeCents: 950, totalCents: 19_950,
+    })
+    expect(message).toContain('Distributor code: LAB-25')
+    expect(message).toContain('Distributor first-purchase discount: -$10')
+    expect(message).toContain('Pay-on-delivery processing (5%): $9.50')
+    expect(message).toContain('Total: $199.50')
+  })
+
   it('generates short human-readable references and url-encodes the wa.me link', () => {
     const reference = generateOrderReference()
     expect(reference).toMatch(/^ORD-\d{4}$/)

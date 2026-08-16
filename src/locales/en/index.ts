@@ -25,6 +25,7 @@ import { notFound } from './notFound'
 import { product } from './product'
 import { protocols } from './protocols'
 import { portal } from './portal'
+import { distributor } from './distributor'
 import { productResearch } from './productResearch'
 import { purchaseSelector } from './purchaseSelector'
 import { quality } from './quality'
@@ -68,6 +69,7 @@ export const en = {
   quality,
   about,
   portal,
+  distributor,
   productResearch,
   assistant,
   search,

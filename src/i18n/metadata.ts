@@ -101,9 +101,31 @@ export const pageMetadata: Record<string, LocalizedPageMeta> = {
     en: { title: 'Choose a New Password | Encore Bio Labs Client Portal', description: 'Choose a new password for your Encore Bio Labs client portal account.' },
     es: { title: 'Elige una nueva contraseña | Portal de clientes de Encore Bio Labs', description: 'Elige una nueva contraseña para tu cuenta del portal de clientes de Encore Bio Labs.' },
   },
+  '/distributor/login': {
+    en: { title: 'Partner Sign In | Encore Bio Labs', description: 'Secure sign in for approved Encore Bio Labs distributors.' },
+    es: { title: 'Acceso de socios | Encore Bio Labs', description: 'Acceso seguro para distribuidores aprobados por Encore Bio Labs.' },
+  },
+  '/distributor/forgot-password': {
+    en: { title: 'Recover Partner Access | Encore Bio Labs', description: 'Request a secure password reset for your Encore Bio Labs distributor account.' },
+    es: { title: 'Recuperar acceso de socios | Encore Bio Labs', description: 'Solicita de forma segura una nueva contraseña para tu cuenta de distribuidor de Encore Bio Labs.' },
+  },
+  '/distributor/reset-password': {
+    en: { title: 'Activate Partner Account | Encore Bio Labs', description: 'Create a secure password for your Encore Bio Labs distributor account.' },
+    es: { title: 'Activar cuenta de socio | Encore Bio Labs', description: 'Crea una contraseña segura para tu cuenta de distribuidor de Encore Bio Labs.' },
+  },
   '/portal': {
     en: { title: 'Client Portal | Encore Bio Labs', description: 'Your private Encore Bio Labs workspace for progress, orders, documents, and support.' },
     es: { title: 'Portal de clientes | Encore Bio Labs', description: 'Tu espacio privado de Encore Bio Labs para progreso, pedidos, documentos y soporte.' },
+  },
+  '/distributor': {
+    en: {
+      title: 'Distributor Portal | Encore Bio Labs',
+      description: 'Private distributor workspace for attributed orders, verified sales, commissions, payouts, and tracked sales links.',
+    },
+    es: {
+      title: 'Portal de Distribuidores | Encore Bio Labs',
+      description: 'Espacio privado para pedidos atribuidos, ventas verificadas, comisiones, pagos y enlaces de venta rastreables.',
+    },
   },
 }
 

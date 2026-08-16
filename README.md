@@ -86,3 +86,9 @@ Open `/intake`, submit a test intake, then sign in at `/admin/crm` with the auth
 ### Security model
 
 Anonymous visitors have insert-only access to new inquiry records. CRM reads and mutations require an authenticated JWT whose server-assigned `app_metadata.role` is `crm_admin`. Verify that anonymous selects fail before production deployment.
+
+## Distributor Portal / Portal de Distribuidores
+
+The bilingual distributor workspace lives at `/distributor`; Encore operations manages accounts and payout records at `/admin/distributors`. Apply `supabase/migrations/20260812203548_distributor_portal_phase1.sql` in staging before enabling either route. A distributor first creates a normal authenticated portal account, then an authorized administrator uses `/admin/distributors/accounts` to connect that user ID to an approved profile. / El espacio bilingüe para distribuidores está en `/distributor`; operaciones administra cuentas y pagos en `/admin/distributors`. Aplica la migración primero en staging. El distribuidor crea una cuenta autenticada del portal y después un administrador autorizado usa `/admin/distributors/accounts` para conectar su ID de usuario con el perfil aprobado.
+
+Tracked checkout orders create referrals immediately and create a commission only when the existing storefront order is marked `paid`. Payout batches remain internal ledger records; external transfers require a separate approved provider and reconciliation. / Los pedidos rastreados crean la referencia de inmediato y la comisión únicamente al marcar el pedido como `paid`. Los lotes son registros internos; la transferencia externa requiere un proveedor aprobado y conciliación.

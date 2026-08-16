@@ -159,6 +159,7 @@ Deno.serve(async (request) => {
     const payload = await request.json() as Record<string, unknown>
     const service = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
     if (payload.action === 'portal_invite') return invitePortalClient(request, payload, service, origin)
+    if (payload.action === 'distributor_invite') return json({ error: 'Use the recoverable distributor-onboarding endpoint.' }, 409, origin)
     if (payload.action !== 'contact') return json({ error: 'Unsupported action' }, 400, origin)
     if (clean(payload.website, 200)) return json({ ok: true }, 200, origin) // honeypot: no delivery or disclosure
     const name = clean(payload.name, 120), senderEmail = clean(payload.email, 254).toLowerCase(), phone = clean(payload.phone, 40), subject = clean(payload.subject, 180), body = clean(payload.message, 4000)

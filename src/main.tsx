@@ -4,6 +4,9 @@ import './index.css'
 import App from './App.tsx'
 import { stripLocalePrefix } from './i18n/config'
 import { resolveBarePathLocale } from './i18n/detectLocale'
+import { validateDistributorCode } from './lib/distributorIncentive'
+import { referralCandidate, validateAndStoreReferralCode } from './lib/referralAttribution'
+import { trackDistributorEvent } from './lib/distributorAnalytics'
 
 /**
  * Decides, before any React render happens, whether this bare (unprefixed)
@@ -18,14 +21,44 @@ function resolveRedirectTarget(): string | null {
   return `/es${path === '/' ? '' : path}${window.location.search}${window.location.hash}`
 }
 
-const redirectTarget = resolveRedirectTarget()
+async function bootstrap() {
+  const redirectTarget = resolveRedirectTarget()
+  if (redirectTarget) {
+    window.location.replace(redirectTarget)
+    return
+  }
 
-if (redirectTarget) {
-  window.location.replace(redirectTarget)
-} else {
+  const candidate = referralCandidate()
+  if (candidate) {
+    const locale = window.location.pathname === '/es' || window.location.pathname.startsWith('/es/') ? 'es' : 'en'
+    try {
+      const result = await validateAndStoreReferralCode(
+        candidate.code,
+        (code) => validateDistributorCode(code, locale),
+        {
+          source: 'referral_link',
+          landingPath: candidate.landingPath,
+          partnerLinkSlug: candidate.partnerLinkSlug,
+          subId: candidate.subId,
+          utmSource: candidate.utmSource,
+          utmMedium: candidate.utmMedium,
+          utmCampaign: candidate.utmCampaign,
+          utmTerm: candidate.utmTerm,
+          utmContent: candidate.utmContent,
+        },
+      )
+      if (result.valid && result.attribution) {
+        void trackDistributorEvent('referral_link_clicked', result.attribution)
+        void trackDistributorEvent('unique_visitor_recorded', result.attribution)
+      }
+    } catch {
+      // Keep any existing valid attribution when the validation service is unavailable.
+    }
+  }
+
   createRoot(document.getElementById('root')!).render(
-    <StrictMode>
-      <App />
-    </StrictMode>,
+    <StrictMode><App /></StrictMode>,
   )
 }
+
+void bootstrap()

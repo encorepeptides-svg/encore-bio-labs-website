@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { motion } from 'framer-motion'
 import {
   AlertCircle,
+  BadgeDollarSign,
   CheckCircle2,
   ChevronDown,
   Headphones,
@@ -193,21 +194,35 @@ export function ContactPage() {
       </section>
 
       <section className="px-5 pb-10 sm:px-8 lg:pb-16">
-        <div className="mx-auto grid max-w-[88rem] gap-4 lg:grid-cols-3">
-          {[
-            { icon: PackageSearch, title: t('productGuidanceTitle'), body: t('productGuidanceBody'), cta: t('productGuidanceCta'), href: '/catalog' },
-            { icon: MessageCircle, title: t('orderSupportTitle'), body: t('orderSupportBody'), cta: t('orderSupportCta'), href: whatsappUrl, external: true },
-            { icon: Headphones, title: t('generalTitle'), body: t('generalBody'), cta: `${t('generalCta')} · ${SUPPORT_EMAIL}`, href: supportMailto(t('generalTitle')) },
-          ].map(({ icon: Icon, title, body, cta, href, external }) => (
-            <article key={title} className="flex min-h-[17rem] flex-col rounded-[1.75rem] border border-slate-900/10 bg-white/75 p-6 shadow-[0_18px_52px_rgba(7,23,36,0.06)] backdrop-blur-xl sm:p-7">
-              <span className="flex size-12 items-center justify-center rounded-2xl bg-teal-50 text-teal-700"><Icon size={22} aria-hidden="true" /></span>
-              <h2 className="mt-6 text-xl font-semibold tracking-[-0.03em] text-[#071724]">{title}</h2>
-              <p className="mt-3 text-sm leading-6 text-slate-600">{body}</p>
-              <div className="mt-auto pt-6">
-                <CTA href={href} target={external ? '_blank' : undefined} rel={external ? 'noopener noreferrer' : undefined} tone="ghost">{cta}</CTA>
+        <div className="mx-auto max-w-[88rem]">
+          <div className="flex flex-col gap-6 overflow-hidden rounded-[1.75rem] bg-[linear-gradient(135deg,#071724,#0b3a3e)] p-6 text-white shadow-[0_24px_70px_rgba(7,23,36,0.16)] sm:p-8 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex max-w-3xl items-start gap-4 sm:gap-5">
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-teal-200/20 bg-teal-200/10 text-teal-200"><BadgeDollarSign size={23} aria-hidden="true" /></span>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-200">{t('distributorEyebrow')}</p>
+                <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">{t('distributorTitle')}</h2>
+                <p className="mt-3 text-sm leading-6 text-slate-300 sm:text-base">{t('distributorBody')}</p>
               </div>
-            </article>
-          ))}
+            </div>
+            <CTA href="/distributor/login" tone="light" className="w-full shrink-0 sm:w-auto">{t('distributorCta')}</CTA>
+          </div>
+
+          <div className="mt-4 grid gap-4 lg:grid-cols-3">
+            {[
+              { icon: PackageSearch, title: t('productGuidanceTitle'), body: t('productGuidanceBody'), cta: t('productGuidanceCta'), href: '/catalog' },
+              { icon: MessageCircle, title: t('orderSupportTitle'), body: t('orderSupportBody'), cta: t('orderSupportCta'), href: whatsappUrl, external: true },
+              { icon: Headphones, title: t('generalTitle'), body: t('generalBody'), cta: `${t('generalCta')} · ${SUPPORT_EMAIL}`, href: supportMailto(t('generalTitle')) },
+            ].map(({ icon: Icon, title, body, cta, href, external }) => (
+              <article key={title} className="flex min-h-[17rem] flex-col rounded-[1.75rem] border border-slate-900/10 bg-white/75 p-6 shadow-[0_18px_52px_rgba(7,23,36,0.06)] backdrop-blur-xl sm:p-7">
+                <span className="flex size-12 items-center justify-center rounded-2xl bg-teal-50 text-teal-700"><Icon size={22} aria-hidden="true" /></span>
+                <h2 className="mt-6 text-xl font-semibold tracking-[-0.03em] text-[#071724]">{title}</h2>
+                <p className="mt-3 text-sm leading-6 text-slate-600">{body}</p>
+                <div className="mt-auto pt-6">
+                  <CTA href={href} target={external ? '_blank' : undefined} rel={external ? 'noopener noreferrer' : undefined} tone="ghost">{cta}</CTA>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 

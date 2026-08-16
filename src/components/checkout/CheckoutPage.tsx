@@ -27,6 +27,7 @@ import { purchaseTypeLabel } from '../../i18n/displayLabels'
 import { calculateItemCount, calculateSubtotal, formatCartCurrency, type CartItem } from '../../lib/cart'
 import { isCheckoutFormValid, isValidEmail } from '../../lib/checkout'
 import { promotionDiscountRate, qualifiesForExpressUpgrade, qualifiesForFreeShipping, selectExpressRate } from '../../lib/promotions'
+import { resolveDistributorPromotion } from '../../lib/distributorIncentive'
 import {
   addressEssentialErrors,
   calculatePaymentProcessingFeeCents,
@@ -50,7 +51,10 @@ import { cn } from '../../lib/utils'
 import { EncoreCompleteKit } from '../EncoreCompleteKit'
 import { LanguageSelector } from '../LanguageSelector'
 import { InterimCheckoutHandoff } from '../cart/InterimCheckoutHandoff'
+import { DistributorCodeField } from '../cart/DistributorCodeField'
+import { useReferralAttribution } from '../../lib/useReferralAttribution'
 import { createPendingOrder, type OrderContact, type PendingOrder } from '../../lib/storefront/interimCheckout'
+import { trackDistributorEvent } from '../../lib/distributorAnalytics'
 import { CheckoutAcknowledgment } from '../acknowledgment/CheckoutAcknowledgment'
 import {
   createCheckoutAcknowledgmentAudit,
@@ -378,9 +382,13 @@ export function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState(false)
   const [checkoutAcknowledgments, setCheckoutAcknowledgments] = useState(createEmptyCheckoutAcknowledgmentState)
+  const referralAttribution = useReferralAttribution()
   const checkoutFormRef = useRef<HTMLDivElement>(null)
   const validationSequence = useRef(0)
   const subtotal = useMemo(() => calculateSubtotal(items), [items])
+  useEffect(() => {
+    if (referralAttribution) void trackDistributorEvent('checkout_started', referralAttribution, { metadata: { itemCount } })
+  }, [itemCount, referralAttribution])
   const kitCount = useMemo(() => calculateItemCount(items), [items])
   const cartAcknowledgmentKey = useMemo(
     () => items.map((item) => `${item.id}:${item.quantity}:${item.linePrice}`).sort().join('|'),
@@ -505,8 +513,15 @@ export function CheckoutPage() {
 
   const selectedRate = verification?.rates.find((rate) => rate.id === selectedRateId) ?? null
   const charges = calculateShippingCharges({ destination: formData.destination, kitCount, subtotalCents: Math.round(subtotal * 100), selectedRate, localDeliveryFeeCents: verification?.localDeliveryFeeCents ?? null })
-  const processingFeeCents = calculatePaymentProcessingFeeCents({ subtotalCents: Math.round(subtotal * 100), discountCents: charges.discountCents, paymentMethod })
-  const checkoutTotalCents = charges.totalCents === null ? null : charges.totalCents + processingFeeCents
+  const promotionPreview = resolveDistributorPromotion({
+    subtotalCents: Math.round(subtotal * 100),
+    volumeDiscountCents: charges.discountCents,
+    eligible: Boolean(referralAttribution),
+    rateBps: referralAttribution?.customerDiscountRateBps,
+    maxCents: referralAttribution?.customerDiscountMaxCents,
+  })
+  const processingFeeCents = calculatePaymentProcessingFeeCents({ subtotalCents: Math.round(subtotal * 100), discountCents: promotionPreview.discountCents, paymentMethod })
+  const checkoutTotalCents = charges.totalCents === null ? null : charges.totalCents + charges.discountCents - promotionPreview.discountCents + processingFeeCents
   const shippingSelection: ShippingSelection | null = verification ? {
     destination: formData.destination,
     address: verificationAddress,
@@ -568,6 +583,7 @@ export function CheckoutPage() {
         contact,
         shipping: shippingSelection,
         acknowledgment: createCheckoutAcknowledgmentAudit(locale),
+        referralAttribution,
       })
       setCompletedSummary({ items, subtotal, shipping: shippingSelection, contact, order })
       setOutcome('support')
@@ -600,7 +616,8 @@ export function CheckoutPage() {
                 <div className="flex justify-between"><span>{t('subtotal')}</span><span className="font-semibold">{formatCartCurrency(completedSummary.subtotal)}</span></div>
                 {completedSummary.order.importFeeCents ? <div className="flex justify-between"><span>{t('importFee')}</span><span className="font-semibold">{formatCartCurrency(completedSummary.order.importFeeCents / 100)}</span></div> : null}
                 <div className="flex justify-between"><span>{t(completedSummary.shipping.localFulfillment === 'pickup' ? 'pickupCharge' : completedSummary.shipping.localFulfillment === 'home_delivery' ? 'localDeliveryCharge' : 'shipping')}</span><span className={cn('font-semibold', completedSummary.order.shippingWaived ? 'text-emerald-700' : '')}>{completedSummary.order.shippingCents === null ? t('pendingConfirmation') : completedSummary.order.shippingWaived ? t('freeShippingApplied') : formatCartCurrency(completedSummary.order.shippingCents / 100)}</span></div>
-                {completedSummary.order.discountCents ? <div className="flex justify-between text-emerald-700"><span>{t('volumeDiscount', { rate: Math.round(promotionDiscountRate(Math.round(completedSummary.subtotal * 100)) * 100) })}</span><span className="font-semibold">−{formatCartCurrency(completedSummary.order.discountCents / 100)}</span></div> : null}
+                {completedSummary.order.discountCents ? <div className="flex justify-between text-emerald-700"><span>{completedSummary.order.discountSource === 'distributor_incentive' ? t('distributorDiscount') : t('volumeDiscount', { rate: Math.round(promotionDiscountRate(Math.round(completedSummary.subtotal * 100)) * 100) })}</span><span className="font-semibold">−{formatCartCurrency(completedSummary.order.discountCents / 100)}</span></div> : null}
+                {completedSummary.order.otherPromotionWon ? <p className="text-xs leading-5 text-slate-500">{t('betterPromotionApplied')}</p> : null}
                 {completedSummary.order.processingFeeCents ? <div className="flex justify-between"><span>{t('processingFee')}</span><span className="font-semibold">{formatCartCurrency(completedSummary.order.processingFeeCents / 100)}</span></div> : null}
                 <div className="flex justify-between"><span>{t('paymentMethodTitle')}</span><span className="font-semibold text-right">{t(paymentMethodLabelKeys[completedSummary.order.paymentMethod])}</span></div>
                 <div className="flex justify-between text-base font-semibold"><span>{t('total')}</span><span>{completedSummary.order.totalCents === null ? t('pendingConfirmation') : formatCartCurrency(completedSummary.order.totalCents / 100)}</span></div>
@@ -630,7 +647,7 @@ export function CheckoutPage() {
       <CheckoutHeader />
       <div className="pt-8"><CheckoutProgress stage="review" /></div>
       <div className="mx-auto max-w-[76rem] px-5 pb-20 sm:px-8">
-        <div className="mb-8 max-w-3xl"><p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">{t('cartReviewEyebrow')}</p><h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-[#071724] sm:text-5xl">{t('reviewInquiryTitle')}</h1><p className="mt-4 text-base leading-7 text-slate-600">{t('reviewInquiryBody')}</p></div>
+        <div className="mb-8 max-w-3xl"><p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">{t('cartReviewEyebrow')}</p><h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-[#071724] sm:text-5xl">{t('reviewInquiryTitle')}</h1><p className="mt-4 text-base leading-7 text-slate-600">{t('reviewInquiryBody')}</p>{referralAttribution ? <p className="mt-4 inline-flex rounded-full bg-teal-50 px-4 py-2 text-xs font-semibold text-teal-900">{t('distributorAttribution', { code: referralAttribution.code })}</p> : null}</div>
 
         <div ref={checkoutFormRef} className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
           <div className="grid gap-6">
@@ -708,6 +725,7 @@ export function CheckoutPage() {
               <div className="mt-5 grid gap-4">{items.map((item) => <article key={item.id} className="rounded-2xl border border-slate-900/10 bg-white p-4"><div className="flex items-start justify-between gap-4"><div><h3 className="text-sm font-semibold text-[#071724]">{item.productName}</h3><p className="mt-1 text-xs text-slate-500">{item.variantLabel} · {purchaseTypeLabel(tCommon, item.purchaseType)} · {tCommon('packLabel', { pack: item.packSize })}</p><p className="mt-2 text-sm font-semibold text-[#071724]">{formatCartCurrency(item.linePrice * item.quantity)}</p></div><button type="button" onClick={() => removeFromCart(item.id)} aria-label={t('removeFromOrder', { product: item.productName, variant: item.variantLabel })} className="text-slate-400 hover:text-rose-700"><Trash2 size={16} aria-hidden="true" /></button></div><div className="mt-4 inline-flex items-center rounded-full border border-slate-900/10 bg-[#f8fafc]"><button type="button" aria-label={t('decreaseQuantity', { product: item.productName, variant: item.variantLabel })} onClick={() => updateQuantity(item.id, item.quantity - 1)} className="flex size-9 items-center justify-center"><Minus size={14} aria-hidden="true" /></button><span className="min-w-8 text-center text-sm font-semibold">{item.quantity}</span><button type="button" aria-label={t('increaseQuantity', { product: item.productName, variant: item.variantLabel })} onClick={() => updateQuantity(item.id, item.quantity + 1)} className="flex size-9 items-center justify-center"><Plus size={14} aria-hidden="true" /></button></div></article>)}</div>
             </details>
             <section className="mt-6 border-t border-slate-900/10 pt-5" aria-labelledby="checkout-payment-heading">
+              <DistributorCodeField subtotalCents={Math.round(subtotal * 100)} />
               <h2 id="checkout-payment-heading" className="text-base font-semibold text-[#071724]">{t('paymentMethodTitle')}</h2>
               <p className="mt-1 text-xs leading-5 text-slate-500">{t('paymentMethodBody')}</p>
               {cashOnDeliveryMethod ? <label className={cn('mt-3 flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition', paymentMethod === cashOnDeliveryMethod.id ? 'border-teal-700 bg-teal-50 ring-2 ring-teal-100' : 'border-slate-200 bg-white')}>
@@ -725,7 +743,8 @@ export function CheckoutPage() {
               <div className="flex justify-between text-slate-600"><span>{t('subtotal')}</span><span className="font-semibold text-[#071724]">{formatCartCurrency(subtotal)}</span></div>
               {charges.importFeeCents ? <div className="flex justify-between text-slate-600"><span>{t('importFee')}</span><span className="font-semibold text-[#071724]">{formatCartCurrency(charges.importFeeCents / 100)}</span></div> : null}
               <div className="flex justify-between text-slate-600"><span>{t(formData.localFulfillment === 'pickup' ? 'pickupCharge' : formData.localFulfillment === 'home_delivery' ? 'localDeliveryCharge' : 'shipping')}</span><span className={cn('font-semibold', charges.shippingWaived ? 'text-emerald-700' : 'text-[#071724]')}>{charges.shippingCents === null ? t('pendingConfirmation') : charges.shippingWaived ? t('freeShippingApplied') : formatCartCurrency(charges.shippingCents / 100)}</span></div>
-              {charges.discountCents ? <div className="flex justify-between text-emerald-700"><span>{t('volumeDiscount', { rate: Math.round(promotionDiscountRate(Math.round(subtotal * 100)) * 100) })}</span><span className="font-semibold">−{formatCartCurrency(charges.discountCents / 100)}</span></div> : null}
+              {promotionPreview.discountCents ? <div className="flex justify-between text-emerald-700"><span>{promotionPreview.discountSource === 'distributor_incentive' ? t('distributorDiscountPreview') : t('volumeDiscount', { rate: Math.round(promotionDiscountRate(Math.round(subtotal * 100)) * 100) })}</span><span className="font-semibold">−{formatCartCurrency(promotionPreview.discountCents / 100)}</span></div> : null}
+              {promotionPreview.otherPromotionWon ? <p className="text-xs leading-5 text-slate-500">{t('betterPromotionApplied')}</p> : null}
               {processingFeeCents ? <div className="flex justify-between text-slate-600"><span>{t('processingFee')}</span><span className="font-semibold text-[#071724]">{formatCartCurrency(processingFeeCents / 100)}</span></div> : null}
               <div className="mt-2 flex justify-between border-t border-slate-900/10 pt-3 text-base font-semibold text-[#071724]"><span>{t('total')}</span><span>{checkoutTotalCents === null ? t('pendingConfirmation') : formatCartCurrency(checkoutTotalCents / 100)}</span></div>
               {processingFeeCents ? <p className="mt-1 text-xs leading-5 text-slate-500">{t('processingFeeNote')}</p> : null}

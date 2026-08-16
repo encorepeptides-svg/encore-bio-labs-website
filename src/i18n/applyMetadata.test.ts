@@ -9,6 +9,7 @@ describe('applyDocumentMetadata', () => {
     // updates these in place rather than creating them for meta[name=...] tags.
     document.head.innerHTML = `
       <meta name="description" content="" />
+      <meta name="robots" content="index, follow" />
       <meta name="twitter:title" content="" />
       <meta name="twitter:description" content="" />
     `
@@ -59,5 +60,13 @@ describe('applyDocumentMetadata', () => {
     expect(document.querySelector('meta[property="og:title"]')?.getAttribute('content')).toBe(meta.title)
     expect(document.querySelector('meta[property="og:locale"]')?.getAttribute('content')).toBe('es_MX')
     expect(document.querySelector('meta[name="twitter:title"]')?.getAttribute('content')).toBe(meta.title)
+  })
+
+  it('marks private auth and portal routes noindex without leaking that setting to public pages', () => {
+    applyDocumentMetadata('/distributor/login', 'en', pageMetadata['/distributor/login'].en, { noIndex: true })
+    expect(document.querySelector('meta[name="robots"]')?.getAttribute('content')).toBe('noindex, nofollow')
+
+    applyDocumentMetadata('/catalog', 'en', pageMetadata['/catalog'].en)
+    expect(document.querySelector('meta[name="robots"]')?.getAttribute('content')).toBe('index, follow')
   })
 })

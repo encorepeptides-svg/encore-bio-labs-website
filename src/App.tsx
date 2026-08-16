@@ -19,6 +19,9 @@ import {
 } from './components/social-proof/draftReviewPreviewRoute'
 import { AcknowledgmentProvider } from './components/acknowledgment/AcknowledgmentProvider'
 import { AcknowledgmentGate } from './components/acknowledgment/AcknowledgmentGate'
+import { ReferralAnalyticsConsent } from './components/ReferralAnalyticsConsent'
+import { readReferralAttribution } from './lib/referralAttribution'
+import { trackDistributorEvent } from './lib/distributorAnalytics'
 
 // Route pages are code-split so each experience only loads when it renders.
 const AboutPage = lazy(() => import('./components/AboutPage').then((m) => ({ default: m.AboutPage })))
@@ -58,6 +61,12 @@ const OnboardingPage = lazy(() => import('./components/portal/OnboardingPage').t
 const PortalIntakeRoute = lazy(() => import('./components/portal/PortalIntakeRoute').then((m) => ({ default: m.PortalIntakeRoute })))
 const ClientPortalPage = lazy(() => import('./components/portal/ClientPortalPage').then((m) => ({ default: m.ClientPortalPage })))
 const AdminPortalPage = lazy(() => import('./components/portal/AdminPortalPage').then((m) => ({ default: m.AdminPortalPage })))
+const DistributorPortalPage = lazy(() => import('./components/distributor/DistributorPortalPage').then((m) => ({ default: m.DistributorPortalPage })))
+const DistributorAdminPage = lazy(() => import('./components/distributor/DistributorAdminPage').then((m) => ({ default: m.DistributorAdminPage })))
+const DistributorOnboardingPage = lazy(() => import('./components/distributor/DistributorOnboardingPage').then((m) => ({ default: m.DistributorOnboardingPage })))
+const DistributorPremiumPreviewPage = import.meta.env.DEV
+  ? lazy(() => import('./components/distributor/DistributorPremiumPreviewPage').then((m) => ({ default: m.DistributorPremiumPreviewPage })))
+  : null
 const DraftReviewPreviewPage = import.meta.env.DEV
   ? lazy(() => import('./components/social-proof/DraftReviewPreviewPage').then((m) => ({ default: m.DraftReviewPreviewPage })))
   : null
@@ -80,6 +89,19 @@ const knownCategorySlugs = new Set([
   'cognitive-performance',
   'hormone-wellness',
 ])
+
+const CLIENT_AUTH_MODES = {
+  '/client-login': 'login',
+  '/client-register': 'register',
+  '/client-forgot-password': 'forgot',
+  '/client-reset-password': 'reset',
+} as const
+
+const DISTRIBUTOR_AUTH_MODES = {
+  '/distributor/login': 'login',
+  '/distributor/forgot-password': 'forgot',
+  '/distributor/reset-password': 'reset',
+} as const
 
 function getRouteParam(path: string, pattern: RegExp) {
   const match = path.match(pattern)
@@ -134,12 +156,15 @@ function App() {
     const categoryName = categorySlug && knownCategorySlugs.has(categorySlug)
       ? categorySlug.split('-').map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`).join(' ')
       : undefined
-    const isPortalSubRoute = normalizedPath.startsWith('/portal/') || normalizedPath.startsWith('/admin')
-    const metadataKey = isPortalSubRoute ? '/portal' : normalizedPath
+    const isDistributorRoute = normalizedPath === '/distributor' || normalizedPath.startsWith('/distributor/')
+    const isPortalSubRoute = normalizedPath === '/portal' || normalizedPath.startsWith('/portal/') || normalizedPath.startsWith('/admin')
+    const isClientAuthRoute = normalizedPath in CLIENT_AUTH_MODES
+    const isDistributorAuthRoute = normalizedPath in DISTRIBUTOR_AUTH_MODES
+    const metadataKey = isDistributorAuthRoute ? normalizedPath : isDistributorRoute ? '/distributor' : isPortalSubRoute ? '/portal' : normalizedPath
     const localizedMeta = metadataKey === draftReviewPreviewPath && !isDraftReviewPreviewPath(normalizedPath, import.meta.env.DEV)
       ? notFoundMetadata
       : pageMetadata[metadataKey] ?? (categoryName ? getCategoryMetadata(categorySlug!, categoryName) : notFoundMetadata)
-    applyDocumentMetadata(normalizedPath, locale, localizedMeta[locale])
+    applyDocumentMetadata(normalizedPath, locale, localizedMeta[locale], { noIndex: isClientAuthRoute || isDistributorRoute || isPortalSubRoute })
   }, [categorySlug, locale, logicalPath, productSlug, protocolSlug])
 
   // Restore scroll position after a language switch (a full reload) so switching
@@ -171,9 +196,18 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  useEffect(() => {
+    if (!productSlug) return
+    const attribution = readReferralAttribution()
+    if (attribution) void trackDistributorEvent('product_viewed', attribution, { productId: productSlug })
+  }, [productSlug])
+
   const page = (() => {
-    const authMode = logicalPath === '/client-login' ? 'login' : logicalPath === '/client-register' ? 'register' : logicalPath === '/client-forgot-password' ? 'forgot' : logicalPath === '/client-reset-password' ? 'reset' : undefined
-    if (authMode) return <PortalAuthPage mode={authMode} />
+    const clientAuthMode = CLIENT_AUTH_MODES[logicalPath as keyof typeof CLIENT_AUTH_MODES]
+    if (clientAuthMode) return <PortalAuthPage mode={clientAuthMode} />
+    const distributorAuthMode = DISTRIBUTOR_AUTH_MODES[logicalPath as keyof typeof DISTRIBUTOR_AUTH_MODES]
+    if (distributorAuthMode) return <PortalAuthPage mode={distributorAuthMode} audience="distributor" />
+    if (DistributorPremiumPreviewPage && import.meta.env.DEV && (logicalPath === '/distributor-preview' || logicalPath === '/distributor-preview/')) return <DistributorPremiumPreviewPage locale={locale} />
     if (logicalPath === '/portal/onboarding') return <ProtectedPortal allowOnboarding><OnboardingPage /></ProtectedPortal>
     if (logicalPath === '/portal/intake' || logicalPath === '/portal/intake/') return <ProtectedPortal allowOnboarding><PortalIntakeRoute /></ProtectedPortal>
     if (logicalPath === '/portal' || logicalPath.startsWith('/portal/')) {
@@ -181,8 +215,20 @@ function App() {
       const allowPending = section === 'security'
       return <ProtectedPortal allowOnboarding={allowPending}><ClientPortalPage section={section} /></ProtectedPortal>
     }
+    if (logicalPath === '/distributor/onboarding' || logicalPath.startsWith('/distributor/onboarding/')) {
+      const section = logicalPath === '/distributor/onboarding' || logicalPath === '/distributor/onboarding/' ? 'progress' : logicalPath.slice('/distributor/onboarding/'.length)
+      return <ProtectedPortal distributor allowDistributorOnboarding><DistributorOnboardingPage section={section} /></ProtectedPortal>
+    }
+    if (logicalPath === '/distributor' || logicalPath.startsWith('/distributor/')) {
+      const section = logicalPath === '/distributor' ? 'overview' : logicalPath.slice('/distributor/'.length)
+      return <ProtectedPortal distributor><DistributorPortalPage section={section} /></ProtectedPortal>
+    }
     if (logicalPath === '/admin' || logicalPath.startsWith('/admin/')) {
       if (logicalPath === '/admin/crm' || logicalPath.startsWith('/admin/crm/')) return <CRMAdmin />
+      if (logicalPath === '/admin/distributors' || logicalPath.startsWith('/admin/distributors/')) {
+        const section = logicalPath === '/admin/distributors' ? 'overview' : logicalPath.slice('/admin/distributors/'.length)
+        return <ProtectedPortal admin><DistributorAdminPage section={section} /></ProtectedPortal>
+      }
       const section = logicalPath === '/admin' ? 'overview' : logicalPath.slice('/admin/'.length)
       return <ProtectedPortal admin><AdminPortalPage section={section} /></ProtectedPortal>
     }
@@ -275,8 +321,8 @@ function App() {
 
     return <NotFoundPage />
   })()
-  const isPortalRoute = logicalPath === '/portal' || logicalPath.startsWith('/portal/') || logicalPath === '/admin' || logicalPath.startsWith('/admin/')
-  const isPortalAuthRoute = ['/client-login', '/client-register', '/client-forgot-password', '/client-reset-password'].includes(logicalPath)
+  const isPortalRoute = logicalPath === '/portal' || logicalPath.startsWith('/portal/') || logicalPath === '/distributor' || logicalPath.startsWith('/distributor/') || (import.meta.env.DEV && logicalPath.startsWith('/distributor-preview')) || logicalPath === '/admin' || logicalPath.startsWith('/admin/')
+  const isPortalAuthRoute = logicalPath in CLIENT_AUTH_MODES || logicalPath in DISTRIBUTOR_AUTH_MODES
   const isInternalAdminRoute = logicalPath === '/admin/crm' || logicalPath.startsWith('/admin/crm/')
   const isCheckoutRoute =
     logicalPath === '/checkout' ||
@@ -304,6 +350,7 @@ function App() {
                 {hideGlobalChrome ? null : <Footer />}
                 {hideGlobalChrome ? null : <MobileTabBar />}
                 {hideGlobalChrome ? null : <CartDrawer />}
+                {hideGlobalChrome ? null : <ReferralAnalyticsConsent />}
                 {hideGlobalChrome ? null : (
                   <Suspense fallback={null}>
                     <AssistantWidget />

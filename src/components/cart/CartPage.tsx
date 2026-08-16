@@ -6,6 +6,7 @@ import { formatCartCurrency } from '../../lib/cart'
 import { EncoreCompleteKit } from '../EncoreCompleteKit'
 import { ProductImage } from '../ProductImage'
 import { CartPromotionNote } from './CartPromotionNote'
+import { DistributorCodeField } from './DistributorCodeField'
 
 export function CartPage() {
   const { items, itemCount, subtotal, updateQuantity, removeFromCart, clearCart } = useCart()
@@ -96,6 +97,7 @@ export function CartPage() {
                 <span className="text-2xl font-semibold text-[#071724]">{formatCartCurrency(subtotal)}</span>
               </div>
               <CartPromotionNote subtotal={subtotal} className="mt-4" />
+              <DistributorCodeField subtotalCents={Math.round(subtotal * 100)} compact />
               <p className="mt-4 text-sm leading-6 text-slate-500">{t('shippingNote')}</p>
               <a href={path('/checkout')} className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition hover:bg-teal-700">{t('continueToOrder')}</a>
               <a href={path('/legal/shipping-returns')} className="mt-3 inline-flex min-h-11 w-full items-center justify-center text-sm font-semibold text-teal-800 transition hover:text-[#071724]">{t('reviewShippingDelivery')}</a>

@@ -35,11 +35,12 @@ function setMetaByProperty(property: string, content: string) {
  * indexable page gets both an English and a Spanish alternate link so
  * crawlers can discover both versions without duplicate-content ambiguity.
  */
-export function applyDocumentMetadata(logicalPath: string, locale: Locale, meta: PageMeta) {
+export function applyDocumentMetadata(logicalPath: string, locale: Locale, meta: PageMeta, options: { noIndex?: boolean } = {}) {
   document.documentElement.lang = locale
 
   document.title = meta.title
   setMetaByName('description', meta.description)
+  setMetaByName('robots', options.noIndex ? 'noindex, nofollow' : 'index, follow')
 
   const normalizedLogical = logicalPath === '/' ? '' : logicalPath
   const enUrl = `${SITE_ORIGIN}${normalizedLogical || '/'}`
