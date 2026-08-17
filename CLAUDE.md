@@ -110,3 +110,14 @@ juntos**, el servidor es la autoridad del total.
 El agente conversacional de ventas vive en
 `github.com/encorepeptides-svg/encore-closeos` (privado). Su propio `CLAUDE.md`
 tiene el contexto de ese lado.
+
+---
+
+## Espejo en Google Drive
+
+La carpeta **AI** en el Drive de Encore tiene el contexto maestro legible desde
+cualquier dispositivo:
+https://drive.google.com/drive/folders/1qe7iMYrfBMHLu72v5DO4HZGMRM8OFmwE
+
+Ese espejo es para consulta humana y para ChatGPT conectado a Drive. **Este repo
+sigue siendo la fuente de verdad**: si algo se contradice, gana lo que está aquí.
