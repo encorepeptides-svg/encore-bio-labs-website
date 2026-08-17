@@ -1,4 +1,4 @@
-import { BadgeCheck, BarChart3, FileUp, LoaderCircle, Settings2, UserRoundCheck } from 'lucide-react'
+import { Activity, BadgeCheck, BarChart3, FileUp, LoaderCircle, Settings2, ShieldAlert, UserRoundCheck } from 'lucide-react'
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { products } from '../../data/products'
 import type { Locale } from '../../i18n/config'
@@ -8,8 +8,11 @@ import { DistributorSecurity } from './DistributorPremiumExperience'
 
 type Settings = { payout_minimum_cents: number; commission_hold_days: number; payout_schedule: string; payout_day: number; analytics_enabled: boolean; premium_dashboard_enabled: boolean; growth_center_enabled: boolean; disputes_enabled: boolean; commission_rules_enabled: boolean; admin_mfa_enforcement_enabled: boolean; minimum_winner_orders: number }
 type Profit = { product_id: string; product_name: string; campaign_name: string | null; paid_orders: number; gross_revenue_cents: number; refunds_cents: number; product_cost_cents: number; shipping_subsidy_cents: number; commission_cents: number; fees_cents: number; estimated_margin_cents: number }
+type ReconciliationRun = { id: string; started_at: string; completed_at: string | null; status: 'running' | 'completed' | 'failed'; source: string; total_findings: number; critical_findings: number; warning_findings: number; error_code: string | null }
+type ReconciliationFinding = { id: string; check_key: string; severity: 'critical' | 'warning' | 'info'; entity_type: string; entity_id: string; detected_at: string; status: 'open' | 'acknowledged' | 'resolved'; details: Record<string, unknown> }
 
 export function DistributorAdminPremium({ section, accounts, userId, locale }: { section: string; accounts: DistributorAccount[]; userId: string; locale: Locale }) {
+  if (section === 'reconciliation') return <ReconciliationPanel locale={locale} />
   if (section === 'configuration') return <SettingsPanel locale={locale} />
   if (section === 'rules') return <RulesPanel accounts={accounts} userId={userId} locale={locale} />
   if (section === 'profitability') return <Profitability locale={locale} />
@@ -17,6 +20,70 @@ export function DistributorAdminPremium({ section, accounts, userId, locale }: {
   if (section === 'managers') return <ManagersAdmin accounts={accounts} userId={userId} locale={locale} />
   if (section === 'security') return <DistributorSecurity userId={userId} locale={locale} />
   return null
+}
+
+function ReconciliationPanel({ locale }: { locale: Locale }) {
+  const es = locale === 'es'
+  const [runs, setRuns] = useState<ReconciliationRun[] | null>(null)
+  const [findings, setFindings] = useState<ReconciliationFinding[] | null>(null)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let active = true
+    async function load() {
+      if (!supabase) { setRuns([]); setFindings([]); return }
+      setError('')
+      const runsResult = await supabase
+        .from('distributor_reconciliation_runs')
+        .select('id,started_at,completed_at,status,source,total_findings,critical_findings,warning_findings,error_code')
+        .order('started_at', { ascending: false })
+        .limit(20)
+      if (!active) return
+      if (runsResult.error) { setRuns([]); setFindings([]); setError(runsResult.error.message); return }
+      const nextRuns = (runsResult.data ?? []) as ReconciliationRun[]
+      setRuns(nextRuns)
+      if (!nextRuns[0]) { setFindings([]); return }
+      const findingsResult = await supabase
+        .from('distributor_reconciliation_findings')
+        .select('id,check_key,severity,entity_type,entity_id,detected_at,status,details')
+        .eq('run_id', nextRuns[0].id)
+        .order('severity', { ascending: true })
+        .order('detected_at', { ascending: false })
+        .limit(100)
+      if (!active) return
+      if (findingsResult.error) { setFindings([]); setError(findingsResult.error.message); return }
+      setFindings((findingsResult.data ?? []) as ReconciliationFinding[])
+    }
+    void load()
+    return () => { active = false }
+  }, [])
+
+  if (!runs) return <Loading />
+  const latest = runs[0]
+  const dateTime = (value: string) => new Intl.DateTimeFormat(es ? 'es-MX' : 'en-US', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' }).format(new Date(value))
+  const label = (key: string) => key.replaceAll('_', ' ')
+
+  return <section className="mt-7">
+    <Title icon={ShieldAlert} title={es ? 'Reconciliación y monitoreo' : 'Reconciliation and monitoring'} body={es ? 'Control diario, solo lectura, de pedidos, comisiones, reembolsos, pagos, atribución y altas de distribuidores. Nunca modifica saldos automáticamente.' : 'Daily, read-only control for orders, commissions, refunds, payouts, attribution, and distributor onboarding. It never changes balances automatically.'} />
+    {error ? <Error text={error} /> : null}
+    {!latest ? <div className="mt-6 rounded-[1.5rem] border border-dashed border-slate-300 p-6"><p className="font-semibold">{es ? 'Aún no hay ejecuciones.' : 'No runs yet.'}</p><p className="mt-2 text-sm text-slate-600">{es ? 'La tarea está programada diariamente a las 10:15 UTC; la primera validación se ejecuta durante el release.' : 'The task is scheduled daily at 10:15 UTC; the first validation runs during release.'}</p></div> : <>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <MonitorStat label={es ? 'Última ejecución (UTC)' : 'Latest run (UTC)'} value={dateTime(latest.started_at)} tone={latest.status === 'failed' ? 'danger' : 'neutral'} />
+        <MonitorStat label={es ? 'Estado' : 'Status'} value={latest.status === 'completed' ? (es ? 'Completada' : 'Completed') : latest.status === 'running' ? (es ? 'En curso' : 'Running') : (es ? 'Falló' : 'Failed')} tone={latest.status === 'failed' ? 'danger' : 'neutral'} />
+        <MonitorStat label={es ? 'Críticos' : 'Critical'} value={String(latest.critical_findings)} tone={latest.critical_findings ? 'danger' : 'good'} />
+        <MonitorStat label={es ? 'Advertencias' : 'Warnings'} value={String(latest.warning_findings)} tone={latest.warning_findings ? 'warning' : 'good'} />
+      </div>
+      <div className="mt-6 overflow-hidden rounded-[1.5rem] border border-slate-900/8">
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 px-5 py-4"><div><h3 className="font-semibold">{es ? 'Hallazgos de la última ejecución' : 'Latest run findings'}</h3><p className="mt-1 text-xs text-slate-500">{latest.source} · {latest.total_findings} {es ? 'hallazgos' : 'findings'}{latest.error_code ? ` · ${latest.error_code}` : ''}</p></div><Activity className="text-teal-700" size={20} /></div>
+        {!findings ? <div className="grid min-h-32 place-items-center"><LoaderCircle className="animate-spin text-teal-700" /></div> : findings.length ? <div className="divide-y divide-slate-900/8">{findings.map((finding) => <article key={finding.id} className="grid gap-3 p-5 text-sm lg:grid-cols-[10rem_1fr_16rem]"><div><span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${finding.severity === 'critical' ? 'bg-red-100 text-red-800' : finding.severity === 'warning' ? 'bg-amber-100 text-amber-900' : 'bg-slate-100 text-slate-700'}`}>{finding.severity}</span><p className="mt-2 text-xs text-slate-500">{finding.status}</p></div><div><h4 className="font-semibold capitalize text-[#071724]">{label(finding.check_key)}</h4><p className="mt-1 break-all text-xs text-slate-500">{finding.entity_type}: {finding.entity_id}</p><p className="mt-2 break-words text-xs leading-5 text-slate-600">{JSON.stringify(finding.details)}</p></div><time className="text-xs text-slate-500 lg:text-right">{dateTime(finding.detected_at)}</time></article>)}</div> : <p className="p-6 text-sm font-semibold text-emerald-800">{es ? 'Sin diferencias detectadas en esta ejecución.' : 'No discrepancies detected in this run.'}</p>}
+      </div>
+    </>}
+  </section>
+}
+
+function MonitorStat({ label, value, tone }: { label: string; value: string; tone: 'neutral' | 'good' | 'warning' | 'danger' }) {
+  const tones = { neutral: 'border-slate-900/8 bg-white', good: 'border-emerald-200 bg-emerald-50/70', warning: 'border-amber-200 bg-amber-50/70', danger: 'border-red-200 bg-red-50/70' }
+  return <article className={`rounded-[1.25rem] border p-5 ${tones[tone]}`}><p className="text-xs font-bold uppercase tracking-wide text-slate-500">{label}</p><p className="mt-3 text-xl font-semibold tracking-[-.03em] text-[#071724]">{value}</p></article>
 }
 
 function SettingsPanel({ locale }: { locale: Locale }) {
