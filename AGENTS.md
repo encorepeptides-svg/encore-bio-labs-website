@@ -99,3 +99,9 @@ This repository is the single source of truth for every Codex task working on th
 6. Report validation, commit hash, GitHub push status, and production deployment status separately.
 
 Never use `git reset --hard`, force-push, or blanket checkout/restore operations for coordination. A GitHub push is automatic under this rule; production deployment still requires an explicit request unless an approved workflow deploys `main` automatically.
+
+---
+
+**Contexto de negocio y decisiones:** ver `CLAUDE.md` en la raíz. Es la fuente
+de verdad compartida entre Claude, Codex y ChatGPT — la memoria local de cada
+herramienta no se transfiere entre computadoras.
