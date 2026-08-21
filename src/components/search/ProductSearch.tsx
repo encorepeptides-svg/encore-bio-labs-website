@@ -245,8 +245,7 @@ export function ProductSearch({ open, onClose }: ProductSearchProps) {
                             </div>
                           </div>
                           <div className="shrink-0 text-right">
-                            <p className="text-xs text-slate-500">{t('startingPriceLabel')}</p>
-                            <p className="mt-0.5 text-sm font-bold text-[#071724]">{getPriceLabel(product, tCatalog)}</p>
+                            <p className="text-sm font-bold text-[#071724]">{getPriceLabel(product, tCatalog)}</p>
                           </div>
                         </a>
                       )

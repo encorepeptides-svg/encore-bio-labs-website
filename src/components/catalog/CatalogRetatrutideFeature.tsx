@@ -1,10 +1,7 @@
-import { useState } from 'react'
 import { products } from '../../data/products'
 import { getLocalizedProduct } from '../../data/productTranslations'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
-import { money } from '../../lib/purchaseOptions'
-import { cn } from '../../lib/utils'
-import { AddToCartButton } from '../cart/AddToCartButton'
+import { getProductStartingPriceLabel } from '../../lib/productPreviewPricing'
 import { ProductLabVisual } from '../product/ProductLabVisual'
 import { ProductCardLink } from '../product/ProductCardLink'
 import { Reveal } from '../Reveal'
@@ -50,8 +47,6 @@ export function CatalogRetatrutideFeature() {
 
   const baseProduct = products.find((product) => product.slug === 'retatrutide')
   const product = baseProduct ? getLocalizedProduct(baseProduct, locale) : null
-  const firstAvailableVariant = product?.variants.find((variant) => product.stockStatus !== 'Unavailable' && variant.price > 0)
-  const [selectedVariant, setSelectedVariant] = useState(firstAvailableVariant)
   if (!product) return null
   const researchHref = path(`/products/${product.slug}#retatrutide-full-research`)
   const receptors: [string, string, string] = [
@@ -100,50 +95,35 @@ export function CatalogRetatrutideFeature() {
             <div role="group" aria-label={t('retaStrengthsLabel')} className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
               {product.variants.map((variant, index) => {
                 const available = product.stockStatus !== 'Unavailable' && variant.price > 0
-                const selected = selectedVariant === variant
                 const unavailableId = `retatrutide-variant-${index}-status`
 
                 return (
-                  <button
+                  <span
                     key={`${variant.label}-${variant.format}`}
-                    type="button"
-                    disabled={!available}
-                    aria-pressed={selected}
                     aria-describedby={!available ? unavailableId : undefined}
-                    onClick={() => setSelectedVariant(variant)}
-                    className={cn(
-                      'relative z-20 rounded-xl border px-3 py-2.5 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 disabled:cursor-not-allowed disabled:opacity-45',
-                      selected
-                        ? 'border-teal-200 bg-teal-300/20 shadow-[0_0_0_1px_rgba(94,234,212,.24)]'
-                        : 'border-white/15 bg-white/[0.07] hover:-translate-y-0.5 hover:border-teal-200/50 hover:bg-teal-300/10',
-                    )}
+                    className={`rounded-xl border border-white/15 bg-white/[0.07] px-3 py-2.5 text-left ${available ? '' : 'opacity-45'}`}
                   >
                     <span className="block text-sm font-bold text-white">{variant.label}</span>
-                    <span className="mt-0.5 block text-xs font-semibold text-teal-200">{available ? money(variant.price) : t('retaUnavailable')}</span>
+                    {!available ? <span className="mt-0.5 block text-xs font-semibold text-teal-200">{t('retaUnavailable')}</span> : null}
                     {!available ? <span id={unavailableId} className="sr-only">{t('retaUnavailableDescription', { variant: variant.label })}</span> : null}
-                  </button>
+                  </span>
                 )
               })}
             </div>
           </div>
 
-          {selectedVariant ? (
-            <div className="mt-5 grid gap-2 rounded-2xl border border-white/10 bg-black/15 p-4 text-sm sm:grid-cols-2" aria-live="polite">
-              <p className="text-slate-300"><span className="font-semibold text-white">{t('retaSelectedPrice')}:</span> {money(selectedVariant.price)}</p>
-              <p className="break-all text-slate-300"><span className="font-semibold text-white">{t('retaVariantReference')}:</span> {selectedVariant.sku ?? selectedVariant.label}</p>
-            </div>
-          ) : null}
+          <div className="mt-5 rounded-2xl border border-white/10 bg-black/15 p-4">
+            <p className="text-xl font-semibold tracking-[-0.03em] text-white">{getProductStartingPriceLabel(product, t)}</p>
+            <p className="mt-1 text-sm leading-6 text-slate-300">{t('fullPricingOnProductPage')}</p>
+          </div>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-            {selectedVariant ? (
-              <AddToCartButton
-                product={product}
-                variant={selectedVariant}
-                className="relative z-20 min-h-13 bg-[#74f0d8] px-7 py-3.5 font-bold text-[#04141e] shadow-[0_20px_48px_rgba(45,212,191,0.3)] hover:bg-white"
-              >
-                {t('retaAddVariantToCart', { variant: selectedVariant.label })}
-              </AddToCartButton>
-            ) : null}
+            <a
+              href={path(`/products/${product.slug}`)}
+              className="relative z-20 inline-flex min-h-13 items-center justify-center rounded-full bg-[#74f0d8] px-7 py-3.5 text-sm font-bold text-[#04141e] shadow-[0_20px_48px_rgba(45,212,191,0.3)] transition duration-300 hover:-translate-y-0.5 hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-200"
+            >
+              {t('viewProductPricing')}
+            </a>
             <a
               href={researchHref}
               className="relative z-20 inline-flex min-h-13 items-center justify-center rounded-full border border-white/25 bg-white/[0.06] px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:border-white/45 hover:bg-white/12 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-200"

@@ -60,7 +60,7 @@ describe('Spanish storefront experience', () => {
     expect(translate('es', 'catalog', 'retaSecondaryCta')).toBe('Revisar la investigación')
     expect(translate('es', 'catalog', 'klowEyebrow')).toBe('MEZCLA REGENERATIVA DE CUATRO PRODUCTOS')
     expect(translate('es', 'catalog', 'klowTitle')).toBe('KLOW: cuatro productos en una fórmula de investigación más completa.')
-    expect(translate('es', 'catalog', 'klowCta')).toBe('Comprar KLOW')
+    expect(translate('es', 'catalog', 'klowCta')).toBe('Ver KLOW y precios')
     expect(translate('es', 'catalog', 'klowVisualAlt')).toMatch(/KLOW.*GHK-Cu.*BPC-157.*TB-500.*KPV/)
   })
 

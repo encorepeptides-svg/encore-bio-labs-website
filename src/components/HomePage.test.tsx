@@ -31,6 +31,9 @@ describe('HomePage conversion content', () => {
     expect(html).toContain('Responsive Human Support')
     expect(html.indexOf('Responsive Human Support')).toBeLessThan(html.indexOf('Browse Catalog'))
     expect(html).toContain('Browse Catalog')
+    expect(html).toContain('Starting from $89')
+    expect(html).toContain('View Product &amp; Pricing')
+    expect(html).not.toContain('Add 10 mg to Cart')
     // The video is the hero canvas itself, not a bordered or rounded media card.
     expect(html).toContain('home-hero-video-canvas')
     expect(html).toContain('home-hero-scrim')
@@ -48,6 +51,9 @@ describe('HomePage conversion content', () => {
     expect(html).toContain('Múltiples concentraciones disponibles')
     expect(html).toContain('Atención humana ágil')
     expect(html).toContain('Ver catálogo')
+    expect(html).toContain('Desde USD $89')
+    expect(html).toContain('Ver producto y precios')
+    expect(html).not.toContain('Agregar 10 mg al carrito')
     expect(html.match(/COA disponible/g)).toHaveLength(3)
   })
 

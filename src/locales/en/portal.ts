@@ -524,8 +524,8 @@ export const portal = {
   researchMatchesKitIncluded: 'Complete Kit available',
   researchMatchesFormatReview: 'Formats ready to compare',
   researchMatchesDocs: 'Lab paperwork by request',
-  researchMatchesFrom: 'Formats from',
-  researchMatchesCta: 'Compare & choose',
+  researchMatchesFrom: 'Starting from',
+  researchMatchesCta: 'View product & pricing',
   researchMatchesDisclaimer: 'Matches organize catalog research by the topics you selected. They are not medical recommendations, treatment suggestions, or evidence that an Encore catalog material will reproduce a published study outcome.',
 
   ordersTitle: 'Orders',

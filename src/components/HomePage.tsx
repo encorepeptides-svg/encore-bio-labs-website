@@ -8,32 +8,25 @@ import {
   Star,
 } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense } from 'react'
 import { coaBySlug } from '../data/coa'
 import { products, type Product } from '../data/products'
 import { getLocalizedProduct, localizedCategoryLabel } from '../data/productTranslations'
+import { getProductStartingPriceLabel } from '../lib/productPreviewPricing'
 import { cn } from '../lib/utils'
 import { useLocale, useTranslation } from '../i18n/LocaleContext'
-import { AddToCartButton } from './cart/AddToCartButton'
 import { CTA } from './CTA'
 import { ProductLabVisual } from './product/ProductLabVisual'
 import { ProductCardLink } from './product/ProductCardLink'
 import { ResearchProfilePrompt } from './ResearchProfilePrompt'
 import heroVideo from '../assets/videos/encore-hero.mp4'
 import heroVideoPoster from '../assets/images/hero/hero-video-poster.jpg'
-import { formatMoney } from '../lib/money'
 
 const bestSellerSlugs = ['retatrutide', 'ghk-cu', 'nad-plus', 'tesamorelin']
 
 const HomeBelowFold = lazy(() =>
   import('./home/HomeBelowFold').then((module) => ({ default: module.HomeBelowFold })),
 )
-
-function getResearchOptionPrice(product: Product, t: (key: string, vars?: Record<string, string | number>) => string) {
-  const prices = product.variants.map((variant) => variant.price).filter((price) => price > 0)
-  const startingPrice = prices.length ? Math.min(...prices) : undefined
-  return startingPrice ? t('researchOptionsFrom', { price: formatMoney(startingPrice) }) : t('availabilityByRequest')
-}
 
 function getProductLine(product: Product, locale: 'en' | 'es') {
   // In Spanish, catalogTagline is localized for every product while shortDescription
@@ -48,8 +41,6 @@ function FeaturedBestSellerCard({ product: baseProduct }: { product: Product }) 
   const { t: catalogT } = useTranslation('catalog')
   const product = getLocalizedProduct(baseProduct, locale)
   const hasCoa = Boolean(coaBySlug[product.slug])
-  const firstAvailableVariant = product.variants.find((variant) => product.stockStatus !== 'Unavailable' && variant.price > 0)
-  const [selectedVariant, setSelectedVariant] = useState(firstAvailableVariant)
 
   return (
     <article className="group relative cursor-pointer overflow-hidden rounded-[1.75rem] border border-slate-900/10 bg-white shadow-[0_24px_80px_rgba(7,23,36,0.08)] transition duration-300 motion-safe:hover:-translate-y-1 hover:shadow-[0_34px_110px_rgba(20,184,166,0.16)]">
@@ -78,48 +69,29 @@ function FeaturedBestSellerCard({ product: baseProduct }: { product: Product }) 
             <div role="group" className="mt-3 flex flex-wrap gap-2" aria-label={t('availableStrengthsAria', { product: product.name })}>
               {product.variants.map((variant, index) => {
                 const available = product.stockStatus !== 'Unavailable' && variant.price > 0
-                const selected = selectedVariant === variant
                 const unavailableId = `featured-variant-${product.slug}-${index}-status`
 
                 return (
-                  <button
+                  <span
                     key={`${variant.label}-${variant.format}`}
-                    type="button"
-                    disabled={!available}
-                    aria-pressed={selected}
                     aria-describedby={!available ? unavailableId : undefined}
-                    onClick={() => setSelectedVariant(variant)}
-                    className={cn(
-                      'relative z-20 inline-flex flex-col rounded-xl border px-3 py-2 text-left text-xs transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:cursor-not-allowed disabled:opacity-45',
-                      selected
-                        ? 'border-teal-700 bg-teal-50 text-teal-900 shadow-[0_0_0_1px_rgba(15,118,110,.12)]'
-                        : 'border-slate-900/10 bg-[#f5f5f2] text-slate-600 hover:border-teal-600/40 hover:bg-teal-50',
-                    )}
+                    className={`inline-flex flex-col rounded-xl border border-slate-900/10 bg-[#f5f5f2] px-3 py-2 text-left text-xs text-slate-600 ${available ? '' : 'opacity-45'}`}
                   >
                     <span className="font-semibold">{variant.label}</span>
-                    <span className="mt-0.5 text-[0.68rem]">{available ? formatMoney(variant.price) : t('variantUnavailable')}</span>
+                    {!available ? <span className="mt-0.5 text-[0.68rem]">{t('variantUnavailable')}</span> : null}
                     {!available ? <span id={unavailableId} className="sr-only">{t('variantUnavailableDescription', { variant: variant.label })}</span> : null}
-                  </button>
+                  </span>
                 )
               })}
             </div>
           </div>
-          {selectedVariant ? (
-            <div className="grid gap-1 rounded-2xl border border-slate-900/10 bg-[#f7faf9] p-4 text-sm sm:grid-cols-2" aria-live="polite">
-              <p className="text-slate-600"><span className="font-semibold text-[#071724]">{t('selectedPrice')}:</span> {formatMoney(selectedVariant.price)}</p>
-              <p className="break-all text-slate-600"><span className="font-semibold text-[#071724]">{t('variantReference')}:</span> {selectedVariant.sku ?? selectedVariant.label}</p>
-            </div>
-          ) : (
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-700">{getResearchOptionPrice(product, t)}</p>
-          )}
+          <div className="rounded-2xl border border-slate-900/10 bg-[#f7faf9] p-4">
+            <p className="text-xl font-semibold tracking-[-0.03em] text-[#071724]">{getProductStartingPriceLabel(product, t)}</p>
+            <p className="mt-1 text-sm leading-6 text-slate-600">{t('fullPricingOnProductPage')}</p>
+          </div>
           <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-            {selectedVariant ? (
-              <AddToCartButton product={product} variant={selectedVariant} className="relative z-20 min-h-12 px-6">
-                {t('addVariantToCart', { variant: selectedVariant.label })}
-              </AddToCartButton>
-            ) : null}
             <span className="inline-flex min-h-12 items-center justify-center rounded-full border border-slate-900/10 bg-white px-6 py-3 text-sm font-semibold text-[#071724] transition group-hover:bg-teal-50">
-              {t('viewResearchDetails')}
+              {t('viewProductPricing')}
             </span>
           </div>
         </div>
@@ -170,7 +142,7 @@ function SecondaryBestSellerCard({ product: baseProduct, className }: { product:
       <div className="flex flex-1 flex-col p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
-            {getResearchOptionPrice(product, t)}
+            {getProductStartingPriceLabel(product, t)}
           </p>
           {hasCoa ? (
             <span className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-teal-700">
@@ -183,7 +155,7 @@ function SecondaryBestSellerCard({ product: baseProduct, className }: { product:
         <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">{getProductLine(product, locale)}</p>
         <div className="mt-auto pt-5">
           <span className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-slate-900/10 bg-white px-4 py-2.5 text-sm font-semibold text-[#071724] transition group-hover:bg-teal-50">
-            {t('viewResearchDetails')}
+            {t('viewProductPricing')}
           </span>
         </div>
       </div>

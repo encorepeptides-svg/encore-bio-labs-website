@@ -3,7 +3,8 @@ import type { editorial as editorialEn } from '../en/editorial'
 export const editorial = {
   relatedProductsEyebrow: 'Productos relacionados',
   relatedProductsTitle: 'Sigue explorando entradas relacionadas del catálogo.',
-  viewProduct: 'Ver producto',
+  viewProduct: 'Ver producto y precios',
+  startingFrom: 'Desde {price}',
   stillComparing: '¿Todavía estás comparando opciones?',
   findMyMatch: 'Encuentra tu opción ideal',
   fromResearchLibrary: 'De la biblioteca de investigación',

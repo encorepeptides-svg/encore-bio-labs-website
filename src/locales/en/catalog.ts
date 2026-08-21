@@ -23,7 +23,7 @@ export const catalog = {
   klowBenefitOne: 'Four products in one presentation',
   klowBenefitTwo: 'An integrated approach for recovery studies',
   klowBenefitThree: 'A simpler selection for regenerative projects',
-  klowCta: 'Buy KLOW',
+  klowCta: 'View KLOW & Pricing',
   klowCompliance: 'For research use only. Not for human or veterinary use.',
   klowVisualAlt: 'KLOW blend vial labeled with GHK-Cu, BPC-157, TB-500, and KPV for research use only',
 
@@ -47,6 +47,9 @@ export const catalog = {
   retaSecondaryCta: 'Review the Research',
   retaCompliance: 'Investigational product. For research use only. Not for human or veterinary use.',
   retaVisualAlt: 'Retatrutide investigational research product vial',
+  startingFrom: 'Starting from {price}',
+  fullPricingOnProductPage: 'See every strength, Product Only, Complete Kit, and multipack price on the product page.',
+  viewProductPricing: 'View Product & Pricing',
 
   // Closing research-use notice
   closingTitle: 'Laboratory research only',
@@ -57,8 +60,8 @@ export const catalog = {
   bestSellersEyebrow: 'Best Sellers',
   bestSellersTitle: 'The products researchers order most.',
   featuredBestseller: 'Featured Bestseller',
-  viewOptions: 'View Options',
-  view: 'View',
+  viewOptions: 'View Product & Pricing',
+  view: 'View Pricing',
   browseProducts: 'Shop Products',
 
   searchPlaceholder: 'Search products...',
@@ -86,7 +89,7 @@ export const catalog = {
 
   onFileCoa: 'On-file COA',
   docsOnRequest: 'Docs on request',
-  order: 'View Product',
+  order: 'View Product & Pricing',
   noResultsTitle: 'No products match your search.',
   noResultsBody: 'Try a different spelling, category, or research term, or clear the filters to browse the full catalog.',
   clearSearch: 'Clear search',

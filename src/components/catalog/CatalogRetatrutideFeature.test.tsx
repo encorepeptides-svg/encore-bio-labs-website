@@ -2,17 +2,14 @@
 import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { CartProvider } from '../../context/CartContext'
 import { LocaleProvider } from '../../i18n/LocaleContext'
 import { CatalogRetatrutideFeature } from './CatalogRetatrutideFeature'
-import { createMemoryStorage } from '../../test/memoryStorage'
 
-describe('CatalogRetatrutideFeature variant selection', () => {
+describe('CatalogRetatrutideFeature product preview', () => {
   let root: Root | null = null
   let container: HTMLDivElement
 
   beforeEach(() => {
-    vi.stubGlobal('localStorage', createMemoryStorage())
     vi.stubGlobal('IntersectionObserver', class {
       observe() {}
       unobserve() {}
@@ -30,35 +27,22 @@ describe('CatalogRetatrutideFeature variant selection', () => {
     vi.unstubAllGlobals()
   })
 
-  it.each(['en', 'es'] as const)('updates price, SKU and cart contents for the selected variant in %s', (locale) => {
+  it.each(['en', 'es'] as const)('shows starting pricing and routes configuration to the product page in %s', (locale) => {
     act(() => {
       root?.render(
         <LocaleProvider locale={locale} logicalPath="/catalog">
-          <CartProvider>
-            <CatalogRetatrutideFeature />
-          </CartProvider>
+          <CatalogRetatrutideFeature />
         </LocaleProvider>,
       )
     })
 
-    const variantButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent?.includes('25 mg'))
-    expect(variantButton).toBeTruthy()
-    act(() => variantButton?.click())
+    expect(container.textContent).toContain(locale === 'es' ? 'Desde USD $89' : 'Starting from $89')
+    expect(container.textContent).toContain(locale === 'es' ? 'Ver producto y precios' : 'View Product & Pricing')
+    expect(container.textContent).not.toContain(locale === 'es' ? 'Agregar 10 mg al carrito' : 'Add 10 mg to cart')
+    expect(container.textContent).not.toContain('RETATRUTIDE-10MG')
+    expect(container.querySelectorAll('button')).toHaveLength(0)
 
-    expect(variantButton?.getAttribute('aria-pressed')).toBe('true')
-    expect(container.textContent).toContain('$149')
-    expect(container.textContent).toContain('RETATRUTIDE-25MG')
-
-    const addButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent?.includes('25 mg') && button.textContent?.toLowerCase().includes(locale === 'es' ? 'carrito' : 'cart'))
-    expect(addButton).toBeTruthy()
-    expect(addButton?.classList.contains('z-20')).toBe(true)
-    act(() => addButton?.click())
-
-    const stored = JSON.parse(window.localStorage.getItem('encore-bio-labs-cart-v1') ?? '[]') as Array<{ variantLabel?: string; unitPrice?: number }>
-    expect(stored).toHaveLength(1)
-    expect(stored[0]).toMatchObject({ variantLabel: '25 mg', unitPrice: 149 })
-
-    const cardLink = container.querySelector<HTMLAnchorElement>(`a[href="${locale === 'es' ? '/es' : ''}/products/retatrutide"]`)
+    const cardLink = container.querySelector<HTMLAnchorElement>(`a[aria-label][href="${locale === 'es' ? '/es' : ''}/products/retatrutide"]`)
     expect(cardLink?.getAttribute('aria-label')).toBe(locale === 'es' ? 'Ver detalles del producto Retatrutide' : 'View Retatrutide product details')
   })
 })

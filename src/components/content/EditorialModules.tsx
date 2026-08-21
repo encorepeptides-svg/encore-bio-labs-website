@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
+import { formatMoney } from '../../lib/money'
 import { CTA } from '../CTA'
 import { Reveal } from '../Reveal'
 import { SectionHeader } from '../SectionHeader'
@@ -229,6 +230,7 @@ export type RelatedProductCard = {
   name: string
   href: string
   description?: string
+  startingPrice?: number
 }
 
 export function RelatedProductsSection({
@@ -254,6 +256,7 @@ export function RelatedProductsSection({
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">{product.category}</p>
             <h3 className="mt-3 text-xl font-semibold tracking-[-0.035em] text-[#071724]">{product.name}</h3>
             {product.description ? <p className="mt-3 text-sm leading-6 text-slate-600 line-clamp-3">{product.description}</p> : null}
+            {product.startingPrice !== undefined ? <p className="mt-4 text-sm font-bold text-[#071724]">{t('startingFrom', { price: formatMoney(product.startingPrice) })}</p> : null}
             <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-teal-800">
               {t('viewProduct')}
               <ArrowRight size={15} aria-hidden="true" className="transition group-hover:translate-x-1" />

@@ -526,8 +526,8 @@ export const portal = {
   researchMatchesKitIncluded: 'Kit completo disponible',
   researchMatchesFormatReview: 'Formatos listos para comparar',
   researchMatchesDocs: 'Documentos de laboratorio a solicitud',
-  researchMatchesFrom: 'Formatos desde',
-  researchMatchesCta: 'Comparar y elegir',
+  researchMatchesFrom: 'Desde',
+  researchMatchesCta: 'Ver producto y precios',
   researchMatchesDisclaimer: 'Las coincidencias organizan el catálogo según los temas que seleccionaste. No son recomendaciones médicas, sugerencias de tratamiento ni evidencia de que un material del catálogo de Encore reproducirá el resultado de un estudio publicado.',
 
   ordersTitle: 'Pedidos',

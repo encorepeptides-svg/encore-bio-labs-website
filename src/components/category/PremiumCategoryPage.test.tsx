@@ -37,6 +37,7 @@ describe('PremiumCategoryPage', () => {
     expect(html).toContain('id="category-portfolio"')
     expect(html).toContain('Compare Research Pathways')
     expect(html).toContain('Browse Filtered Catalog')
+    expect(html).toContain('Starting from $')
     expect(html).not.toContain('What is this category?')
     expect(html).not.toMatch(/category-(?:recovery-regeneration|longevity-cellular-health|cognitive-performance|hormone-wellness)\.png/)
 
@@ -55,6 +56,7 @@ describe('PremiumCategoryPage', () => {
     expect(html).toContain('Comparar vías de investigación')
     expect(html).toContain('Ver catálogo filtrado')
     expect(html).toContain('Preguntas frecuentes de la categoría')
+    expect(html).toContain('Desde USD $')
     expect(html).not.toContain('Choose Options')
     expect(html).not.toContain('Research Details')
     expect(html).not.toContain('Documentation by request')

@@ -1,7 +1,8 @@
 export const editorial = {
   relatedProductsEyebrow: 'Related products',
   relatedProductsTitle: 'Continue exploring adjacent catalog entries.',
-  viewProduct: 'View product',
+  viewProduct: 'View product & pricing',
+  startingFrom: 'Starting from {price}',
   stillComparing: 'Still comparing options?',
   findMyMatch: 'Find My Match',
   fromResearchLibrary: 'From the Research Library',

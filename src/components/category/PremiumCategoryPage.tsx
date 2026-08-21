@@ -19,7 +19,7 @@ import { getLocalizedProduct, localizedFormatLabel } from '../../data/productTra
 import { products, type CategoryContent, type Product, type ResearchArea } from '../../data/products'
 import { SITE_ORIGIN } from '../../i18n/config'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
-import { money } from '../../lib/purchaseOptions'
+import { getProductStartingPrice, getProductStartingPriceLabel } from '../../lib/productPreviewPricing'
 import { getCatalogFilter } from '../catalog/catalogHelpers'
 import { ProductImage } from '../ProductImage'
 import { ProductCardLink } from '../product/ProductCardLink'
@@ -30,11 +30,6 @@ const trustIcons = [PackageCheck, FileCheck2, ShieldCheck]
 function productPurchasePath(product: Product) {
   const anchor = product.slug === 'retatrutide' ? 'retatrutide-purchase' : `purchase-options-${product.slug}`
   return `/products/${product.slug}#${anchor}`
-}
-
-function getStartingPrice(product: Product) {
-  const prices = product.variants.map((variant) => variant.price).filter((price) => price > 0)
-  return prices.length ? Math.min(...prices) : null
 }
 
 function getVariantSummary(product: Product, locale: 'en' | 'es', optionsLabel: (count: number) => string) {
@@ -205,7 +200,7 @@ function ProductStatus({ product }: { product: Product }) {
 function FlagshipModule({ product }: { product: Product }) {
   const { path } = useLocale()
   const { t } = useTranslation('categoryPage')
-  const price = getStartingPrice(product)
+  const price = getProductStartingPrice(product)
 
   return (
     <section id="category-start" className="scroll-mt-24 bg-[linear-gradient(180deg,#030b18_0%,#071724_6rem,#F8FAFC_17rem)] px-5 py-14 sm:px-8 sm:py-20">
@@ -220,14 +215,14 @@ function FlagshipModule({ product }: { product: Product }) {
               <h2 className="text-4xl font-semibold tracking-[-0.055em] text-[#071724] sm:text-5xl">{product.name}</h2>
               <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">{product.description}</p>
             </div>
-            {price !== null ? <p className="text-sm font-semibold text-slate-500">{t('startingAt')} <strong className="ml-1 text-3xl text-[#071724]">{money(price)}</strong></p> : null}
+            {price !== null ? <p className="text-3xl font-semibold tracking-[-0.04em] text-[#071724]">{getProductStartingPriceLabel(product, t)}</p> : null}
           </div>
           <div className="mt-7"><ProductStatus product={product} /></div>
           <div className={`mt-8 grid gap-3 ${product.variants.length > 3 ? 'grid-cols-2 sm:grid-cols-3 xl:grid-cols-5' : 'sm:grid-cols-2'}`}>
             {product.variants.map((variant) => (
               <a key={variant.sku} href={path(productPurchasePath(product))} className="relative z-20 min-h-20 rounded-2xl border border-slate-900/10 bg-[#F8FAFC] px-4 py-4 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-400 hover:bg-white hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-600">
                 <span className="block text-sm font-bold text-[#071724]">{variant.label}</span>
-                <span className="mt-1 block text-sm font-semibold text-teal-700">{money(variant.price)}</span>
+                <span className="mt-1 block text-sm font-semibold text-teal-700">{t('viewFullPricing')}</span>
               </a>
             ))}
           </div>
@@ -259,12 +254,12 @@ function QuickProductSelector({ categoryProducts }: { categoryProducts: Product[
         </div>
         <div className="mt-9 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {categoryProducts.map((product) => {
-            const price = getStartingPrice(product)
+            const price = getProductStartingPrice(product)
             return (
-              <a key={product.slug} href={`#category-product-${product.slug}`} className="group relative min-h-48 overflow-hidden rounded-2xl border border-slate-900/10 bg-[radial-gradient(circle_at_50%_25%,rgba(45,212,191,0.2),transparent_38%),#F8FAFC] p-4 transition hover:-translate-y-1 hover:border-teal-400 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-600">
+              <a key={product.slug} href={path(`/products/${product.slug}`)} className="group relative min-h-48 overflow-hidden rounded-2xl border border-slate-900/10 bg-[radial-gradient(circle_at_50%_25%,rgba(45,212,191,0.2),transparent_38%),#F8FAFC] p-4 transition hover:-translate-y-1 hover:border-teal-400 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-600">
                 <ProductImage product={product} alt={t('productImageAlt', { product: product.name })} sizes="(min-width: 1024px) 14vw, 40vw" className="mx-auto h-28 w-full object-contain drop-shadow-[0_16px_20px_rgba(7,23,36,0.18)] transition duration-500 group-hover:scale-105" />
                 <span className="mt-2 block text-sm font-bold text-[#071724]">{product.name}</span>
-                {price !== null ? <span className="mt-1 block text-sm font-semibold text-teal-700">{t('fromPrice', { price: money(price) })}</span> : null}
+                {price !== null ? <span className="mt-1 block text-sm font-semibold text-teal-700">{getProductStartingPriceLabel(product, t)}</span> : null}
               </a>
             )
           })}
@@ -312,7 +307,7 @@ function PathwaySelector({ content, config, categoryProducts }: { content: Categ
 function ProductCard({ product, note }: { product: Product; note?: string }) {
   const { locale, path } = useLocale()
   const { t } = useTranslation('categoryPage')
-  const price = getStartingPrice(product)
+  const price = getProductStartingPrice(product)
   const variantSummary = getVariantSummary(product, locale, (count) => t(count === 1 ? 'optionCount' : 'optionsCount', { count }))
 
   return (
@@ -325,7 +320,7 @@ function ProductCard({ product, note }: { product: Product; note?: string }) {
           {note ? <p className="text-[0.66rem] font-bold uppercase tracking-[0.16em] text-teal-700">{note}</p> : null}
           <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
             <h3 className="text-2xl font-semibold tracking-[-0.05em] text-[#071724]">{product.name}</h3>
-            {price !== null ? <strong className="text-2xl tracking-[-0.04em] text-teal-800">{product.variants.length > 1 ? t('fromPrice', { price: money(price) }) : money(price)}</strong> : null}
+            {price !== null ? <strong className="text-2xl tracking-[-0.04em] text-teal-800">{getProductStartingPriceLabel(product, t)}</strong> : null}
           </div>
           <p className="mt-3 text-sm leading-6 text-slate-600">{product.description}</p>
           <ul className="mt-5 grid gap-2" aria-label={t('researchHighlights')}>

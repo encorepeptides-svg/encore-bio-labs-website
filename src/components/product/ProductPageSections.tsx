@@ -35,6 +35,7 @@ import { contentTypeLabels, researchArticles } from '../../data/research'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { buildOrderInquiryMessage, buildWhatsAppUrl } from '../../lib/whatsapp'
 import { getDefaultPurchaseSelection, type PurchaseSelection } from '../../lib/purchaseOptions'
+import { getProductStartingPrice } from '../../lib/productPreviewPricing'
 import { ProductImage } from '../ProductImage'
 
 import { PurchaseSelector } from './PurchaseSelector'
@@ -1075,6 +1076,7 @@ export function RelatedProducts({ product }: { product: Product }) {
           name: localized.name,
           href: `/products/${relatedProduct.slug}`,
           description: locale === 'es' ? localized.catalogTagline : localized.shortDescription,
+          startingPrice: getProductStartingPrice(relatedProduct) ?? undefined,
         }
       })}
     />

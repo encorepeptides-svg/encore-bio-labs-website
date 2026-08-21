@@ -57,7 +57,7 @@ function PortfolioCard({ product, compact }: { product: Product; compact: boolea
         </div>
 
         <div className="mt-auto flex flex-wrap items-end justify-between gap-4 pt-6">
-          <div><p className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-slate-400">{t('portfolioStartingPrice')}</p><p className="mt-1 text-2xl font-semibold tracking-[-0.04em] text-[#071724]">{getPriceLabel(product, t)}</p></div>
+          <p className="text-2xl font-semibold tracking-[-0.04em] text-[#071724]">{getPriceLabel(product, t)}</p>
           <span className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#071724] px-5 py-2.5 text-sm font-bold text-white transition group-hover:bg-teal-700">{t('portfolioViewProduct')}<ArrowRight size={15} aria-hidden="true" /></span>
         </div>
       </div>

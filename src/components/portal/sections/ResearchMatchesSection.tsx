@@ -7,6 +7,7 @@ import { getLocalizedProduct, localizedCategoryLabel } from '../../../data/produ
 import { getProductResearchContent } from '../../../data/productResearchContent'
 import { localizeProductResearchContent } from '../../../data/productResearchTranslations'
 import { useLocale, useTranslation } from '../../../i18n/LocaleContext'
+import { getProductStartingPrice } from '../../../lib/productPreviewPricing'
 import { fetchMyIntake } from '../../../lib/portal/portalData'
 import { Badge, LoadState, SectionIntro, useAsync } from './shared'
 
@@ -37,7 +38,7 @@ export function ResearchMatchesSection() {
           const product = getLocalizedProduct(match.product, locale)
           const baseResearch = getProductResearchContent(product.slug)
           const research = baseResearch ? localizeProductResearchContent(product, baseResearch, locale) : null
-          const fromPrice = Math.min(...product.variants.map((variant) => variant.price))
+          const fromPrice = getProductStartingPrice(product)
           const matchLabel = match.matchType === 'selected' ? t('researchMatchesSelected') : match.matchType === 'interest' ? t('researchMatchesInterest') : t('researchMatchesFeatured')
           return <article key={product.slug} className="group relative cursor-pointer overflow-hidden rounded-[1.6rem] border border-slate-900/8 bg-white shadow-[0_18px_60px_rgba(7,23,36,.08)] transition duration-300 motion-safe:hover:-translate-y-1 hover:border-teal-400/60 hover:shadow-[0_26px_76px_rgba(20,184,166,.14)]">
             <div className="grid sm:grid-cols-[12rem_1fr]">
@@ -53,7 +54,7 @@ export function ResearchMatchesSection() {
                   <span className="flex items-center gap-2"><PackageCheck size={15} className="text-teal-700" />{product.purchaseRules.kitEligible ? t('researchMatchesKitIncluded') : t('researchMatchesFormatReview')}</span>
                   <span className="flex items-center gap-2"><BadgeCheck size={15} className="text-teal-700" />{t('researchMatchesDocs')}</span>
                 </div>
-                <div className="mt-auto flex flex-wrap items-end justify-between gap-4 pt-5"><div><p className="text-xs font-bold uppercase tracking-[.12em] text-slate-500">{t('researchMatchesFrom')}</p><p className="text-2xl font-semibold text-[#071724]">{new Intl.NumberFormat(locale === 'es' ? 'es-MX' : 'en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(fromPrice)}</p></div><span className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition group-hover:bg-teal-700">{t('researchMatchesCta')}<ArrowRight size={15} /></span></div>
+                <div className="mt-auto flex flex-wrap items-end justify-between gap-4 pt-5"><div><p className="text-xs font-bold uppercase tracking-[.12em] text-slate-500">{t('researchMatchesFrom')}</p><p className="text-2xl font-semibold text-[#071724]">{fromPrice === null ? '—' : new Intl.NumberFormat(locale === 'es' ? 'es-MX' : 'en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(fromPrice)}</p></div><span className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition group-hover:bg-teal-700">{t('researchMatchesCta')}<ArrowRight size={15} /></span></div>
               </div>
             </div>
             <ProductCardLink href={path(`/products/${product.slug}`)} productName={product.name} />
