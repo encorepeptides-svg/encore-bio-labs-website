@@ -1,2 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /portal
+Disallow: /admin
+Disallow: /es/portal
+Disallow: /es/admin
+
+Sitemap: https://www.encorebiolabs.com/sitemap.xml
