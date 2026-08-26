@@ -1702,7 +1702,6 @@ const catalogProducts: CatalogProduct[] = [
       'AHK-Cu is a copper peptide complex studied for follicle biology, dermal signaling, extracellular-matrix context, and aesthetic research models.',
     featured: true,
     variants: [{ label: '50 mg', format: 'Vial format', price: 49 }],
-    purchaseRules: { kitPremium: 10 },
   },
   {
     slug: 'epithalon',
@@ -1723,7 +1722,6 @@ const catalogProducts: CatalogProduct[] = [
       'Cerebrolysin is a peptide mixture studied in neurotrophic signaling, neuronal survival models, synaptic plasticity, cognitive research, and neuro-repair pathway context.',
     featured: true,
     variants: [{ label: '10 mg', format: 'Vial format', price: 69 }],
-    purchaseRules: { kitPremium: 10 },
   },
   {
     slug: 'ss31',
@@ -1754,7 +1752,6 @@ const catalogProducts: CatalogProduct[] = [
       'Kisspeptin is a neuropeptide studied for reproductive-axis signaling, GnRH pulse regulation, LH/FSH response, puberty models, and endocrine research context.',
     featured: true,
     variants: [{ label: '10 mg', format: 'Vial format', price: 49 }],
-    purchaseRules: { kitPremium: 1 },
   },
   {
     slug: 'hcg',

@@ -100,7 +100,7 @@ export function VariantAddToCartPanel({
                   )}
                 >
                   {variant.label}
-                  {variant.price > 0 ? ` · $${formatMoney(variant.price)}` : variant.priceNeedsConfirmation ? ` · ${t('quote')}` : ''}
+                  {variant.price > 0 ? ` · ${formatMoney(variant.price)}` : variant.priceNeedsConfirmation ? ` · ${t('quote')}` : ''}
                 </button>
               )
             })}
@@ -116,7 +116,7 @@ export function VariantAddToCartPanel({
           </div>
           {selectedVariant.price > 0 ? (
             <p className="text-lg font-semibold tracking-[-0.02em] text-[#071724]">
-              ${formatMoney(selectedVariant.price)}
+              {formatMoney(selectedVariant.price)}
             </p>
           ) : null}
         </div>

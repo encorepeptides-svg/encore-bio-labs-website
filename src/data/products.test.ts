@@ -71,20 +71,20 @@ describe('product catalog integrity', () => {
 
   it('defines the exact AHK-Cu, Kisspeptin, and Cerebrolysin catalog variants', () => {
     const expected = {
-      'ahk-cu': { sku: 'AHK-CU-50MG', label: '50 mg', strength: 50, unitType: 'mg', price: 49, kitPremium: 10 },
-      kisspeptin: { sku: 'KISSPEPTIN-10MG', label: '10 mg', strength: 10, unitType: 'mg', price: 49, kitPremium: 1 },
-      cerebrolysin: { sku: 'CEREBROLYSIN-10MG', label: '10 mg', strength: 10, unitType: 'mg', price: 69, kitPremium: 10 },
+      'ahk-cu': { sku: 'AHK-CU-50MG', label: '50 mg', strength: 50, unitType: 'mg', price: 49 },
+      kisspeptin: { sku: 'KISSPEPTIN-10MG', label: '10 mg', strength: 10, unitType: 'mg', price: 49 },
+      cerebrolysin: { sku: 'CEREBROLYSIN-10MG', label: '10 mg', strength: 10, unitType: 'mg', price: 69 },
     }
 
     for (const [slug, row] of Object.entries(expected)) {
       const product = products.find((entry) => entry.slug === slug)!
-      const { kitPremium, ...variant } = row
-      expect(product.variants).toEqual([expect.objectContaining(variant)])
+      expect(product.variants).toEqual([expect.objectContaining(row)])
       expect(product.purchaseRules).toMatchObject({
         productType: 'research-vial',
         kitEligible: true,
-        kitPremium,
       })
+      // No per-product override: these products take the sitewide $10 premium.
+      expect(product.purchaseRules.kitPremium).toBeUndefined()
     }
   })
 

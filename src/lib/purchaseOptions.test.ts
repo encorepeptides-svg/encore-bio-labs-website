@@ -45,7 +45,7 @@ describe('purchase option pricing', () => {
   it('quotes the exact vial and Complete Kit totals for the updated catalog products', () => {
     const expected = {
       'ahk-cu': { vial: 49, kit: 59, premium: 10 },
-      kisspeptin: { vial: 49, kit: 50, premium: 1 },
+      kisspeptin: { vial: 49, kit: 59, premium: 10 },
       cerebrolysin: { vial: 69, kit: 79, premium: 10 },
     }
 
