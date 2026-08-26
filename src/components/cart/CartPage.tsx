@@ -7,6 +7,7 @@ import { EncoreCompleteKit } from '../EncoreCompleteKit'
 import { ProductImage } from '../ProductImage'
 import { CartPromotionNote } from './CartPromotionNote'
 import { DistributorCodeField } from './DistributorCodeField'
+import { ExpressWhatsAppCheckout } from './ExpressWhatsAppCheckout'
 
 export function CartPage() {
   const { items, itemCount, subtotal, updateQuantity, removeFromCart, clearCart } = useCart()
@@ -99,7 +100,8 @@ export function CartPage() {
               <CartPromotionNote subtotal={subtotal} className="mt-4" />
               <DistributorCodeField subtotalCents={Math.round(subtotal * 100)} compact />
               <p className="mt-4 text-sm leading-6 text-slate-500">{t('shippingNote')}</p>
-              <a href={path('/checkout')} className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition hover:bg-teal-700">{t('continueToOrder')}</a>
+              <ExpressWhatsAppCheckout items={items} />
+              <a href={path('/checkout')} className="mt-3 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#071724] px-5 text-sm font-semibold text-white transition hover:bg-teal-700">{t('continueToOrder')}</a>
               <a href={path('/legal/shipping-returns')} className="mt-3 inline-flex min-h-11 w-full items-center justify-center text-sm font-semibold text-teal-800 transition hover:text-[#071724]">{t('reviewShippingDelivery')}</a>
               <a href={path('/catalog')} className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-full border border-slate-900/10 bg-white px-5 text-sm font-semibold text-[#071724] transition hover:bg-teal-50"><Plus size={14} aria-hidden="true" />{t('keepAdding')}</a>
               <div className="mt-6 rounded-2xl bg-[#f8fafc] p-4">
