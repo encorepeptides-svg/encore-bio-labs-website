@@ -740,7 +740,7 @@ async function createOrder(body: Record<string, unknown>, origin: string | null,
     (earned, tier) => (subtotalCents >= tier.thresholdCents ? tier : earned),
     null,
   )
-  const importFeeCents = usesMexicoImportFee(destination) ? (kitCount >= 5 ? 3_500 : 2_500) : 0
+  const importFeeCents = usesMexicoImportFee(destination) ? (kitCount >= 5 ? 5_000 : 2_500) : 0
   const quotedShippingCents = destination === 'mexico' ? 1_500 : isLocal(destination) ? verification.localDeliveryFeeCents : matchedRate?.amountCents ?? null
   const shippingWaived = quotedShippingCents !== null && quotedShippingCents > 0 && earnedTier !== null
   const shippingCents = shippingWaived ? 0 : quotedShippingCents

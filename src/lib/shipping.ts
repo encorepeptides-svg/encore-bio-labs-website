@@ -218,7 +218,7 @@ export function selectedShippingAddress(selection: Pick<ShippingSelection, 'addr
 
 export function calculateMexicoImportFeeCents(kitCount: number) {
   if (kitCount <= 0) return 0
-  return kitCount >= 5 ? 3_500 : 2_500
+  return kitCount >= 5 ? 5_000 : 2_500
 }
 
 export function calculateShippingCharges({
