@@ -94,6 +94,26 @@ texto se reescribió para coincidir. Es contenido adyacente a dosificación huma
 en un sitio RUO y carga riesgo de plataforma — no "restaurar" el texto anterior
 sin consultar. También se eliminó la calculadora de dilución C₁V₁=C₂V₂.
 
+**El checkout exprés de WhatsApp cobra 5% por pago contra entrega, y solo a
+México.** El cliente elige forma de pago *antes* de abrir WhatsApp: Zelle, Cash
+App, PayPal, Apple Pay y transferencia bancaria mexicana (SPEI) van sin recargo;
+contra entrega agrega 5% sobre la mercancía después de promociones —nunca sobre
+envío ni importación— igual que `calculatePaymentProcessingFeeCents` en el
+servidor. Contra entrega se ofrece solo a destinos mexicanos (México y las
+ciudades locales Juárez/Chihuahua), no a Estados Unidos ni a El Paso.
+
+El exprés también junta la dirección completa con formato del país destino, para
+poder imprimir la etiqueta sin ida y vuelta. La etiqueta se escribe en el idioma
+del **destino**, no del comprador: una etiqueta mexicana dice `Col.`, `C.P.`,
+`México` y `Referencias` aunque el cliente navegue en inglés. Va dentro de un
+bloque monoespaciado de WhatsApp para copiarla completa. **Este camino no
+escribe ninguna fila en `storefront_orders`** —por eso el folio lleva prefijo
+`EXP-`, no hay nada que buscar en el portal.
+
+Los datos de cobro salen de `src/config/interimCheckout.ts`. **La CLABE mexicana
+sigue en blanco ahí**; mientras no se pegue, el cliente puede elegir la
+transferencia pero la cuenta se manda en el chat.
+
 ---
 
 ## Escalera de beneficios por compra
