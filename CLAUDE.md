@@ -99,8 +99,9 @@ México.** El cliente elige forma de pago *antes* de abrir WhatsApp: Zelle, Cash
 App, PayPal, Apple Pay y transferencia bancaria mexicana (SPEI) van sin recargo;
 contra entrega agrega 5% sobre la mercancía después de promociones —nunca sobre
 envío ni importación— igual que `calculatePaymentProcessingFeeCents` en el
-servidor. Contra entrega se ofrece solo a destinos mexicanos (México y las
-ciudades locales Juárez/Chihuahua), no a Estados Unidos ni a El Paso.
+servidor. Contra entrega se ofrece solo a destinos mexicanos (México y la
+ciudad local de Ciudad Juárez), no a Estados Unidos ni a El Paso, y nunca en
+pedidos de recolección.
 
 El exprés también junta la dirección completa con formato del país destino, para
 poder imprimir la etiqueta sin ida y vuelta. La etiqueta se escribe en el idioma
@@ -127,11 +128,15 @@ envío gratis); ahí el mensaje dice `TOTAL A PAGAR` y los enlaces de Cash App y
 PayPal llevan el monto precargado. Si falta una tarifa de paquetería o una cuota
 local, devuelve `null` y todo sigue diciendo "se confirma en el chat".
 
-**La ciudad de Chihuahua ya no es punto de distribución local** (decisión del
-dueño, 28-ago-2026). La distribución local queda en **El Paso y Ciudad Juárez**;
-los pedidos a Chihuahua salen como envío estándar a México con su cuota de
-importación. Se quitó de los dos checkouts, de la página de envíos y de los
-destinos aceptados por `shipping-checkout`.
+**En Chihuahua se sigue vendiendo; lo que se quitó es el inventario local**
+(decisión del dueño, 28-ago-2026). La distribución local —recolección y entrega
+a domicilio desde stock propio— queda solo en **El Paso y Ciudad Juárez**. Un
+cliente de la ciudad de Chihuahua elige **México** en el checkout y su pedido
+sale por paquetería rastreada con la misma cuota de importación y los mismos
+beneficios por monto de compra. No es una retirada del mercado: no escribas
+copy que sugiera que ya no atendemos Chihuahua. Se quitó la opción local de los
+dos checkouts, de la página de envíos y de los destinos aceptados por
+`shipping-checkout`.
 
 **Pero `local_chihuahua` NO se borra del código.** Sigue en el tipo
 `DeliveryDestination`, en `coverageFor` de la edge function y en el CHECK de
