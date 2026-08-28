@@ -10,7 +10,10 @@ import {
   expressAcknowledgment,
   expressOrderIssues,
   expressOrderReady,
+  expressDetailsArriveInChat,
+  expressPayableCents,
   expressPaymentDetails,
+  expressPaymentLink,
   expressPaymentMethodsFor,
   expressSurchargeCents,
   type ExpressOrderInput,
@@ -129,6 +132,12 @@ describe('cash on delivery', () => {
     expect(expressPaymentMethodsFor('local', 'el_paso').map((method) => method.id)).not.toContain('cod')
   })
 
+  it('is withheld from a pickup, which has no delivery to pay at', () => {
+    const juarezPickup = expressPaymentMethodsFor('local', 'juarez', 'pickup').map((method) => method.id)
+    expect(juarezPickup).not.toContain('cod')
+    expect(juarezPickup).toContain('cash_pickup')
+  })
+
   it('charges 5% of merchandise after promotions, and nothing on any other rail', () => {
     // $537 subtotal, 15% off = $456.45 of merchandise; 5% of that is $22.82.
     expect(expressSurchargeCents(53_700, 'cod')).toBe(2_282)
@@ -136,11 +145,19 @@ describe('cash on delivery', () => {
     expect(expressSurchargeCents(53_700, null)).toBe(0)
   })
 
-  it('quotes the surcharge in the message instead of folding it into a total', () => {
+  it('quotes the surcharge as its own line rather than burying it in a total', () => {
     const message = buildExpressOrderMessage(order({ items: bigOrder, destination: 'mexico', address: mxAddress, paymentMethod: 'cod' }))
     expect(message).toContain('Cash-on-delivery handling (5%): $22.82')
+    // This order clears free shipping, so every component is known and the
+    // total is stated. The surcharge still stands on its own line above it.
+    expect(message).toContain('TOTAL DUE: $504.27')
+  })
+
+  it('leaves the total open while shipping is still unknown', () => {
+    const message = buildExpressOrderMessage(order({ destination: 'mexico', address: mxAddress, paymentMethod: 'cod' }))
+    expect(message).toContain('Cash-on-delivery handling (5%): $2.95')
     expect(message).toContain('Shipping and final total: confirmed in this chat')
-    expect(message).not.toMatch(/^Total:/m)
+    expect(message).not.toContain('TOTAL DUE')
   })
 })
 
@@ -243,6 +260,91 @@ describe('express order validation', () => {
   })
 })
 
+describe('cash at pickup', () => {
+  it('is offered wherever the shopper collects in person, and nowhere else', () => {
+    // Cash handed over at the counter carries no collection cost anywhere,
+    // so unlike cash on delivery it is not restricted to Mexico.
+    expect(expressPaymentMethodsFor('local', 'el_paso', 'pickup').map((m) => m.id)).toContain('cash_pickup')
+    expect(expressPaymentMethodsFor('local', 'juarez', 'pickup').map((m) => m.id)).toContain('cash_pickup')
+    expect(expressPaymentMethodsFor('local', 'el_paso', 'ship').map((m) => m.id)).not.toContain('cash_pickup')
+    expect(expressPaymentMethodsFor('us', null).map((m) => m.id)).not.toContain('cash_pickup')
+  })
+
+  it('adds no surcharge, unlike paying a courier at the door', () => {
+    expect(expressSurchargeCents(53_700, 'cash_pickup')).toBe(0)
+    expect(expressSurchargeCents(53_700, 'cod')).toBe(2_282)
+  })
+
+  it('leads the list when the shopper is collecting', () => {
+    expect(expressPaymentMethodsFor('local', 'el_paso', 'pickup')[0].id).toBe('cash_pickup')
+  })
+})
+
+describe('the amount owed', () => {
+  // Typed rather than `as const`: the helper takes a mutable CartItem[].
+  const base: Parameters<typeof expressPayableCents>[0] = { items: [kitLine], destination: 'us', localCity: null, fulfillment: 'ship', paymentMethod: 'zelle' }
+
+  it('refuses to name a figure while shipping is still a carrier quote', () => {
+    // $59 is under the $200 free-shipping threshold, so a rate is still needed.
+    expect(expressPayableCents(base)).toBeNull()
+  })
+
+  it('names it once shipping is provably zero', () => {
+    // $537, 15% off = $456.45, shipping waived by the promotion.
+    expect(expressPayableCents({ ...base, items: bigOrder })).toBe(45_645)
+  })
+
+  it('counts a pickup as zero shipping regardless of order size', () => {
+    expect(expressPayableCents({ ...base, destination: 'local', localCity: 'el_paso', fulfillment: 'pickup', paymentMethod: 'cash_pickup' })).toBe(5_900)
+  })
+
+  it('includes the Mexico import fee and the cash-on-delivery surcharge', () => {
+    // $537 - $80.55 + $25 import + $22.82 surcharge.
+    expect(expressPayableCents({ ...base, items: bigOrder, destination: 'mexico', paymentMethod: 'cod' })).toBe(45_645 + 2_500 + 2_282)
+  })
+
+  it('states the total in the message only when it is fully known', () => {
+    expect(buildExpressOrderMessage(order({ items: bigOrder }))).toContain('TOTAL DUE: $456.45 (shipping included)')
+    expect(buildExpressOrderMessage(order())).toContain('Shipping and final total: confirmed in this chat')
+    expect(buildExpressOrderMessage(order())).not.toContain('TOTAL DUE')
+  })
+})
+
+describe('payment links', () => {
+  it('prefills the amount on rails whose link accepts one', () => {
+    expect(expressPaymentLink('cashapp', 45_645)?.url).toBe('https://cash.app/$hektoren/456.45')
+    expect(expressPaymentLink('paypal', 5_900)?.url).toBe('https://paypal.me/encorepeptides/59.00')
+  })
+
+  it('falls back to the bare link when the amount is not yet knowable', () => {
+    expect(expressPaymentLink('cashapp', null)?.url).toBe('https://cash.app/$hektoren')
+  })
+
+  it('leaves rails that cannot carry an amount untouched', () => {
+    // Apple Cash opens Messages; there is nowhere to put a number.
+    expect(expressPaymentLink('apple_pay', 45_645)?.url).toBe('sms:+19154128874')
+  })
+})
+
+describe('pickup slots', () => {
+  it('carries the requested window into the message as a preference', () => {
+    const message = buildExpressOrderMessage(order({
+      destination: 'local', localCity: 'el_paso', fulfillment: 'pickup',
+      paymentMethod: 'cash_pickup', pickupDay: 'tomorrow', pickupWindow: 'afternoon',
+    }))
+    expect(message).toContain('Prefers to collect: Tomorrow, afternoon (1–5pm)')
+  })
+
+  it('says nothing when no window was picked', () => {
+    const message = buildExpressOrderMessage(order({ destination: 'local', localCity: 'el_paso', fulfillment: 'pickup', paymentMethod: 'cash_pickup' }))
+    expect(message).not.toContain('Prefers to collect')
+  })
+
+  it('ignores a stale window on an order that is being shipped', () => {
+    expect(buildExpressOrderMessage(order({ pickupDay: 'today', pickupWindow: 'morning' }))).not.toContain('Prefers to collect')
+  })
+})
+
 describe('payment destinations', () => {
   it('shows the configured account for a rail that has one', () => {
     expect(expressPaymentDetails('zelle')?.details).toEqual(['9153595448'])
@@ -252,8 +354,16 @@ describe('payment destinations', () => {
     expect(expressPaymentDetails('cod')).toBeNull()
   })
 
-  it('hides a rail whose destination account is still unset instead of pointing money nowhere', () => {
-    // The Mexican SPEI account is a placeholder in config until the CLABE lands.
+  it('keeps the Mexican CLABE off the page and promises it in the chat instead', () => {
+    // Deliberate: an 18-digit account in public HTML is worth scraping, and
+    // sending it per order lets it be rotated without a deploy.
     expect(expressPaymentDetails('mx_bank_transfer')).toBeNull()
+    expect(expressDetailsArriveInChat('mx_bank_transfer')).toBe(true)
+    expect(expressDetailsArriveInChat('zelle')).toBe(false)
+  })
+
+  it('asks for the CLABE inside the message so the reply is one step', () => {
+    expect(buildExpressOrderMessage(order({ paymentMethod: 'mx_bank_transfer' }))).toContain('Could you send me the CLABE and the account holder name?')
+    expect(buildExpressOrderMessage(order())).not.toContain('CLABE')
   })
 })

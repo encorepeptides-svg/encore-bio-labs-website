@@ -40,6 +40,11 @@ export type ExpressPaymentMethodId =
   | 'apple_pay'
   | 'mx_bank_transfer'
   | 'cod'
+  | 'cash_pickup'
+
+/** When the shopper plans to collect a local order. */
+export type ExpressPickupDay = 'today' | 'tomorrow' | 'later'
+export type ExpressPickupWindow = 'morning' | 'afternoon' | 'evening'
 
 export type ExpressAddress = {
   /** Street plus outdoor number, as the shopper writes it on an envelope. */
@@ -71,6 +76,8 @@ export type ExpressOrderInput = {
   fulfillment: ExpressFulfillment
   address: ExpressAddress
   paymentMethod: ExpressPaymentMethodId | null
+  pickupDay?: ExpressPickupDay | null
+  pickupWindow?: ExpressPickupWindow | null
   notes?: string
   referralCode?: string | null
   /**
@@ -115,27 +122,51 @@ export function expressShipsToMexico(destination: ExpressDestination, localCity:
 
 // ---------- payment ----------
 
+/**
+ * Where a rail can be used.
+ *
+ * `any` is a prepaid rail — it works wherever the order is going. The two cash
+ * rails are mutually exclusive and split on who bears the collection risk:
+ * `pickup` is cash handed over at the distribution point, which costs Encore
+ * nothing, and `mexico_delivery` is a courier collecting cash at a door in
+ * Mexico, which is what the 5% pays for.
+ */
+export type ExpressPaymentAvailability = 'any' | 'pickup' | 'mexico_delivery'
+
 export type ExpressPaymentMethod = {
   id: ExpressPaymentMethodId
   /** Fraction added to merchandise when this rail is chosen. */
   surchargeRate: number
-  /** Mexican destinations only — the courier collects the cash. */
-  mexicoOnly: boolean
+  availability: ExpressPaymentAvailability
   /**
    * Where the destination account details come from. The express rails reuse
    * the interim checkout config so an operator changes a handle in exactly one
-   * place. Cash on delivery has no destination to show.
+   * place. The cash rails have no destination to show.
    */
   detailsId: InterimPaymentMethodId | null
+  /**
+   * Rails whose account is handed over in the chat rather than printed on the
+   * page. The Mexican CLABE is deliberately not published on the storefront —
+   * an 18-digit bank account sitting in public HTML is worth scraping, and
+   * sending it per-order lets it be rotated without a deploy.
+   */
+  detailsInChat?: boolean
+  /**
+   * Rails whose payment link accepts a trailing amount that prefills the send
+   * screen. Only used when the amount owed is fully known — see
+   * `expressPayableCents`.
+   */
+  amountInLink?: boolean
 }
 
 export const EXPRESS_PAYMENT_METHODS: readonly ExpressPaymentMethod[] = [
-  { id: 'zelle', surchargeRate: 0, mexicoOnly: false, detailsId: 'zelle' },
-  { id: 'cashapp', surchargeRate: 0, mexicoOnly: false, detailsId: 'cashapp' },
-  { id: 'paypal', surchargeRate: 0, mexicoOnly: false, detailsId: 'paypal' },
-  { id: 'apple_pay', surchargeRate: 0, mexicoOnly: false, detailsId: 'apple_pay' },
-  { id: 'mx_bank_transfer', surchargeRate: 0, mexicoOnly: false, detailsId: 'bank_transfer' },
-  { id: 'cod', surchargeRate: CASH_ON_DELIVERY_PROCESSING_RATE, mexicoOnly: true, detailsId: null },
+  { id: 'zelle', surchargeRate: 0, availability: 'any', detailsId: 'zelle' },
+  { id: 'cashapp', surchargeRate: 0, availability: 'any', detailsId: 'cashapp', amountInLink: true },
+  { id: 'paypal', surchargeRate: 0, availability: 'any', detailsId: 'paypal', amountInLink: true },
+  { id: 'apple_pay', surchargeRate: 0, availability: 'any', detailsId: 'apple_pay' },
+  { id: 'mx_bank_transfer', surchargeRate: 0, availability: 'any', detailsId: 'bank_transfer', detailsInChat: true },
+  { id: 'cash_pickup', surchargeRate: 0, availability: 'pickup', detailsId: null },
+  { id: 'cod', surchargeRate: CASH_ON_DELIVERY_PROCESSING_RATE, availability: 'mexico_delivery', detailsId: null },
 ]
 
 export function expressPaymentMethod(id: ExpressPaymentMethodId | null) {
@@ -143,17 +174,32 @@ export function expressPaymentMethod(id: ExpressPaymentMethodId | null) {
 }
 
 /**
- * The rails on offer for a destination, ordered so the one a shopper there is
- * most likely to reach for sits first. Cash on delivery is the only rail that
- * is withheld: the courier has to be able to collect the cash, which only the
- * Mexican delivery network does.
+ * The rails on offer, ordered so the one this shopper is most likely to reach
+ * for sits first.
+ *
+ * Only the two cash rails are ever withheld, and they are withheld for the same
+ * reason: the cash has to be physically collectable. Cash at pickup needs the
+ * shopper to be standing at the counter; cash on delivery needs a courier who
+ * collects, which is the Mexican delivery network only. A pickup order is never
+ * offered cash on delivery — there is no delivery to pay at.
  */
-export function expressPaymentMethodsFor(destination: ExpressDestination, localCity: ExpressLocalCity | null): ExpressPaymentMethod[] {
+export function expressPaymentMethodsFor(
+  destination: ExpressDestination,
+  localCity: ExpressLocalCity | null,
+  fulfillment: ExpressFulfillment = 'ship',
+): ExpressPaymentMethod[] {
   const mexico = expressShipsToMexico(destination, localCity)
-  const available = EXPRESS_PAYMENT_METHODS.filter((method) => !method.mexicoOnly || mexico)
-  const order: ExpressPaymentMethodId[] = mexico
-    ? ['mx_bank_transfer', 'cod', 'paypal', 'zelle', 'cashapp', 'apple_pay']
-    : ['zelle', 'cashapp', 'paypal', 'apple_pay', 'mx_bank_transfer']
+  const pickup = fulfillment === 'pickup'
+  const available = EXPRESS_PAYMENT_METHODS.filter((method) => {
+    if (method.availability === 'pickup') return pickup
+    if (method.availability === 'mexico_delivery') return mexico && !pickup
+    return true
+  })
+  const order: ExpressPaymentMethodId[] = pickup
+    ? ['cash_pickup', 'zelle', 'cashapp', 'paypal', 'apple_pay', 'mx_bank_transfer']
+    : mexico
+      ? ['mx_bank_transfer', 'cod', 'paypal', 'zelle', 'cashapp', 'apple_pay']
+      : ['zelle', 'cashapp', 'paypal', 'apple_pay', 'mx_bank_transfer']
   return [...available].sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id))
 }
 
@@ -170,15 +216,89 @@ export function expressSurchargeCents(subtotalCents: number, methodId: ExpressPa
   return Math.round(Math.max(0, subtotalCents - promotionDiscountCents(subtotalCents)) * rate)
 }
 
-/** The account details to display for a rail, or null when there is nothing to show. */
+/**
+ * The account details to display for a rail, or null when there is nothing to
+ * show — either because the rail has no account (the cash rails) or because its
+ * account is deliberately withheld from the page and sent in the chat.
+ */
 export function expressPaymentDetails(
   methodId: ExpressPaymentMethodId | null,
   methods: InterimPaymentMethod[] = INTERIM_PAYMENT_METHODS,
 ): InterimPaymentMethod | null {
-  const detailsId = expressPaymentMethod(methodId)?.detailsId
-  if (!detailsId) return null
-  const configured = methods.find((method) => method.id === detailsId)
+  const method = expressPaymentMethod(methodId)
+  if (!method?.detailsId || method.detailsInChat) return null
+  const configured = methods.find((entry) => entry.id === method.detailsId)
   return configured?.enabled && configured.details.length ? configured : null
+}
+
+/** True when the shopper is told the account arrives in the chat. */
+export function expressDetailsArriveInChat(methodId: ExpressPaymentMethodId | null) {
+  return expressPaymentMethod(methodId)?.detailsInChat === true
+}
+
+/**
+ * The exact amount owed right now, or null when any component is still unknown.
+ *
+ * The rest of this module refuses to state a final total because no server
+ * recomputed it. This function is the narrow exception, and it earns it by
+ * returning a number only when every component is deterministic on the client:
+ *
+ *   merchandise   subtotal minus `promotionDiscountCents` — the same function
+ *                 the Edge Function mirrors
+ *   import fee    `calculateMexicoImportFeeCents`, likewise mirrored
+ *   surcharge     the cash-on-delivery 5%, computed here
+ *   shipping      **only** when it is provably zero: a pickup has none, and an
+ *                 order over the free-shipping threshold has it waived
+ *
+ * A US order under $200 needs a live carrier rate, and a local home delivery
+ * needs a distance-based fee. Neither is knowable here, so both return null and
+ * the shopper is told the total is settled in the chat instead of being shown a
+ * number that the confirmation would then contradict.
+ */
+export function expressPayableCents({
+  items,
+  destination,
+  localCity,
+  fulfillment,
+  paymentMethod,
+}: Pick<ExpressOrderInput, 'items' | 'destination' | 'localCity' | 'fulfillment' | 'paymentMethod'>): number | null {
+  const subtotalCents = Math.round(calculateSubtotal(items) * 100)
+  if (subtotalCents <= 0) return null
+
+  const shippingIsProvablyZero = fulfillment === 'pickup' || qualifiesForFreeShipping(subtotalCents)
+  if (!shippingIsProvablyZero) return null
+
+  const importFeeCents = expressShipsToMexico(destination, localCity) && fulfillment === 'ship'
+    ? calculateMexicoImportFeeCents(expressKitCount(items))
+    : 0
+
+  return Math.max(
+    0,
+    subtotalCents - promotionDiscountCents(subtotalCents) + importFeeCents + expressSurchargeCents(subtotalCents, paymentMethod),
+  )
+}
+
+/**
+ * The one-tap payment link for a rail, with the amount already filled in when
+ * it is known.
+ *
+ * Cash App (`cash.app/$tag/12.34`) and PayPal (`paypal.me/name/12.34`) both
+ * read a trailing amount and open their send screen pre-filled, which removes
+ * the most common way a manual transfer goes wrong — the customer typing the
+ * wrong number. Where the amount is not yet knowable the bare link is returned,
+ * so the button still works and the customer enters the amount after we confirm
+ * it. Amounts are always in USD, matching every price on the site.
+ */
+export function expressPaymentLink(
+  methodId: ExpressPaymentMethodId | null,
+  payableCents: number | null,
+  methods: InterimPaymentMethod[] = INTERIM_PAYMENT_METHODS,
+) {
+  const method = expressPaymentMethod(methodId)
+  const link = expressPaymentDetails(methodId, methods)?.link
+  if (!method || !link) return link ?? null
+  if (!method.amountInLink || payableCents === null || payableCents <= 0) return link
+  return { ...link, url: `${link.url.replace(/\/$/, '')}/${(payableCents / 100).toFixed(2)}` }
 }
 
 // ---------- validation ----------
@@ -270,6 +390,31 @@ const localCityLabels: Record<ExpressLocalCity, string> = {
   chihuahua: 'Chihuahua, Chih.',
 }
 
+/**
+ * Pickup windows.
+ *
+ * The day is a preference rather than a booking — stock still has to be
+ * confirmed before anyone drives over — so the message says "prefers" and the
+ * exact time is agreed in the chat. Naming a window is still far better than
+ * the free-text note it replaces: it is the difference between "afternoon" and
+ * three messages establishing what afternoon means.
+ */
+export const pickupDayLabels: Record<Locale, Record<ExpressPickupDay, string>> = {
+  en: { today: 'Today', tomorrow: 'Tomorrow', later: 'Another day' },
+  es: { today: 'Hoy', tomorrow: 'Mañana', later: 'Otro día' },
+}
+
+export const pickupWindowLabels: Record<Locale, Record<ExpressPickupWindow, string>> = {
+  en: { morning: 'morning (10am–1pm)', afternoon: 'afternoon (1–5pm)', evening: 'evening (5–8pm)' },
+  es: { morning: 'mañana (10am–1pm)', afternoon: 'tarde (1–5pm)', evening: 'noche (5–8pm)' },
+}
+
+export function expressPickupSlotLabel(day: ExpressPickupDay | null | undefined, window: ExpressPickupWindow | null | undefined, locale: Locale) {
+  const key = locale === 'es' ? 'es' : 'en'
+  const parts = [day ? pickupDayLabels[key][day] : '', window ? pickupWindowLabels[key][window] : ''].filter(Boolean)
+  return parts.join(', ')
+}
+
 const paymentLabels: Record<Locale, Record<ExpressPaymentMethodId, string>> = {
   en: {
     zelle: 'Zelle',
@@ -277,6 +422,7 @@ const paymentLabels: Record<Locale, Record<ExpressPaymentMethodId, string>> = {
     paypal: 'PayPal',
     apple_pay: 'Apple Pay (Apple Cash)',
     mx_bank_transfer: 'Mexican bank transfer (SPEI)',
+    cash_pickup: 'Cash at pickup',
     cod: 'Cash on delivery (+5%)',
   },
   es: {
@@ -285,6 +431,7 @@ const paymentLabels: Record<Locale, Record<ExpressPaymentMethodId, string>> = {
     paypal: 'PayPal',
     apple_pay: 'Apple Pay (Apple Cash)',
     mx_bank_transfer: 'Transferencia bancaria en México (SPEI)',
+    cash_pickup: 'Efectivo al recoger',
     cod: 'Pago contra entrega (+5%)',
   },
 }
@@ -395,6 +542,8 @@ export function buildExpressOrderMessage({
   fulfillment,
   address,
   paymentMethod,
+  pickupDay,
+  pickupWindow,
   notes,
   referralCode,
   translatePurchaseType,
@@ -408,8 +557,10 @@ export function buildExpressOrderMessage({
   const importFeeCents = expressShipsToMexico(destination, localCity) && fulfillment === 'ship'
     ? calculateMexicoImportFeeCents(expressKitCount(items))
     : 0
+  const payableCents = expressPayableCents({ items, destination, localCity, fulfillment, paymentMethod })
   const purchaseTypeOf = translatePurchaseType ?? ((value: string) => value)
   const money = (cents: number) => formatCartCurrency(cents / 100, locale)
+  const pickupSlot = fulfillment === 'pickup' ? expressPickupSlotLabel(pickupDay, pickupWindow, locale) : ''
 
   const lines = items.map((item) => `• ${item.quantity}× ${item.productName} ${item.variantLabel} — ${purchaseTypeOf(item.purchaseType)} — ${formatCartCurrency(item.linePrice * item.quantity, locale)}`)
   const labelBlock = buildExpressLabelBlock({ locale, contact, destination, localCity, fulfillment, address })
@@ -443,15 +594,19 @@ export function buildExpressOrderMessage({
           : '',
         importFeeCents ? `Cuota de importación a México: ${money(importFeeCents)}` : '',
         surchargeCents ? `Manejo de pago contra entrega (5%): ${money(surchargeCents)}` : '',
-        'Envío y total final: se confirman en este chat',
+        payableCents === null
+          ? 'Envío y total final: se confirman en este chat'
+          : `TOTAL A PAGAR: ${money(payableCents)} (envío incluido)`,
       ]),
       section([
         '*PAGO*',
         paymentMethod ? `Quiero pagar con: ${expressPaymentLabel(paymentMethod, locale)}` : 'Forma de pago: por definir',
+        expressDetailsArriveInChat(paymentMethod) ? '¿Me pueden enviar la CLABE y el titular de la cuenta, por favor?' : '',
       ]),
       section([
         fulfillment === 'pickup' ? '*RECOLECCIÓN*' : '*DATOS PARA LA ETIQUETA*',
         `Destino: ${destinationLine}`,
+        pickupSlot ? `Prefiero recoger: ${pickupSlot}` : '',
         contact.email.trim() ? `Rastreo a: ${contact.email.trim()}` : '',
       ]),
       fence(labelBlock),
@@ -479,15 +634,19 @@ export function buildExpressOrderMessage({
         : '',
       importFeeCents ? `Mexico import fee: ${money(importFeeCents)}` : '',
       surchargeCents ? `Cash-on-delivery handling (5%): ${money(surchargeCents)}` : '',
-      'Shipping and final total: confirmed in this chat',
+      payableCents === null
+        ? 'Shipping and final total: confirmed in this chat'
+        : `TOTAL DUE: ${money(payableCents)} (shipping included)`,
     ]),
     section([
       '*PAYMENT*',
       paymentMethod ? `I'd like to pay by: ${expressPaymentLabel(paymentMethod, locale)}` : 'Payment method: to be decided',
+      expressDetailsArriveInChat(paymentMethod) ? 'Could you send me the CLABE and the account holder name?' : '',
     ]),
     section([
       fulfillment === 'pickup' ? '*PICKUP*' : '*SHIP TO — label details*',
       `Destination: ${destinationLine}`,
+      pickupSlot ? `Prefers to collect: ${pickupSlot}` : '',
       contact.email.trim() ? `Tracking to: ${contact.email.trim()}` : '',
     ]),
     fence(labelBlock),

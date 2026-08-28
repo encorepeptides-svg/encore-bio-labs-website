@@ -120,10 +120,7 @@ export function buildPartnerUrl(origin: string, referralCode: string, link: Pick
   return url.toString()
 }
 
-export async function makeQrDataUrl(url: string) {
-  const { default: QRCode } = await import('qrcode')
-  return QRCode.toDataURL(url, { width: 640, margin: 2, errorCorrectionLevel: 'M', color: { dark: '#071724', light: '#FFFFFF' } })
-}
+export { makeQrDataUrl } from './qrCode'
 
 export async function growthAssetDownloadUrl(asset: GrowthAsset, distributorId: string, partnerLinkId?: string) {
   if (!asset.object_path) throw new Error('Asset file unavailable.')

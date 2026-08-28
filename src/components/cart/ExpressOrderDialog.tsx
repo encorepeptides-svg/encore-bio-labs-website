@@ -6,13 +6,17 @@ import {
   ArrowRight,
   Banknote,
   Building2,
+  Camera,
   Check,
+  Clock,
+  Coins,
   Copy,
   CreditCard,
   Landmark,
   MapPin,
   MessageCircle,
   Package,
+  QrCode,
   ShieldCheck,
   Smartphone,
   Store,
@@ -29,6 +33,7 @@ import type { CartItem } from '../../lib/cart'
 import { calculateSubtotal, formatCartCurrency } from '../../lib/cart'
 import { promotionDiscountCents, promotionDiscountRate, qualifiesForExpressUpgrade, qualifiesForFreeShipping } from '../../lib/promotions'
 import { calculateMexicoImportFeeCents } from '../../lib/shipping'
+import { makeQrDataUrl } from '../../lib/qrCode'
 import {
   EXPRESS_LOCAL_CITIES,
   buildExpressLabelBlock,
@@ -39,9 +44,13 @@ import {
   emptyExpressContact,
   expressAcknowledgment,
   expressCountry,
+  expressDetailsArriveInChat,
   expressKitCount,
   expressOrderIssues,
+  expressPayableCents,
   expressPaymentDetails,
+  expressPaymentLink,
+  expressPaymentMethod,
   expressPaymentMethodsFor,
   expressShipsToMexico,
   expressSurchargeCents,
@@ -51,6 +60,8 @@ import {
   type ExpressFulfillment,
   type ExpressLocalCity,
   type ExpressPaymentMethodId,
+  type ExpressPickupDay,
+  type ExpressPickupWindow,
 } from '../../lib/storefront/expressCheckout'
 import { useReferralAttribution } from '../../lib/useReferralAttribution'
 import { ProductImage } from '../ProductImage'
@@ -83,6 +94,7 @@ const paymentIcons: Record<ExpressPaymentMethodId, LucideIcon> = {
   paypal: Wallet,
   apple_pay: Smartphone,
   mx_bank_transfer: Landmark,
+  cash_pickup: Coins,
   cod: Banknote,
 }
 
@@ -168,11 +180,14 @@ export function ExpressOrderDialog({ items, open, onClose }: { items: CartItem[]
   const [contact, setContact] = useState<ExpressContact>(emptyExpressContact)
   const [address, setAddress] = useState<ExpressAddress>(emptyExpressAddress)
   const [paymentMethod, setPaymentMethod] = useState<ExpressPaymentMethodId | null>(null)
+  const [pickupDay, setPickupDay] = useState<ExpressPickupDay | null>(null)
+  const [pickupWindow, setPickupWindow] = useState<ExpressPickupWindow | null>(null)
   const [notes, setNotes] = useState('')
   const [accepted, setAccepted] = useState(false)
   const [showValidation, setShowValidation] = useState(false)
   const [copied, setCopied] = useState<string | null>(null)
   const [sent, setSent] = useState(false)
+  const [qr, setQr] = useState<string | null>(null)
 
   // A returning shopper should not retype a label they already dictated once.
   // Only the ship-to details are restored; the reference, payment rail, and
@@ -187,6 +202,9 @@ export function ExpressOrderDialog({ items, open, onClose }: { items: CartItem[]
     setSent(false)
     setAccepted(false)
     setPaymentMethod(null)
+    setPickupDay(null)
+    setPickupWindow(null)
+    setQr(null)
     if (previous) {
       setContact(previous.contact)
       setAddress(previous.address)
@@ -248,6 +266,13 @@ export function ExpressOrderDialog({ items, open, onClose }: { items: CartItem[]
     setFulfillment('ship')
   }, [destination])
 
+
+  useEffect(() => {
+    if (fulfillment === 'pickup') return
+    setPickupDay(null)
+    setPickupWindow(null)
+  }, [fulfillment])
+
   const country = expressCountry(destination, localCity)
   const mexico = expressShipsToMexico(destination, localCity)
   const subtotal = calculateSubtotal(items)
@@ -256,8 +281,20 @@ export function ExpressOrderDialog({ items, open, onClose }: { items: CartItem[]
   const discountRate = promotionDiscountRate(subtotalCents)
   const surchargeCents = expressSurchargeCents(subtotalCents, paymentMethod)
   const importFeeCents = mexico && fulfillment === 'ship' ? calculateMexicoImportFeeCents(expressKitCount(items)) : 0
-  const availableMethods = useMemo(() => expressPaymentMethodsFor(destination, localCity), [destination, localCity])
+  const availableMethods = useMemo(() => expressPaymentMethodsFor(destination, localCity, fulfillment), [destination, fulfillment, localCity])
   const paymentDetails = expressPaymentDetails(paymentMethod)
+  const payableCents = expressPayableCents({ items, destination, localCity, fulfillment, paymentMethod })
+  const paymentLink = expressPaymentLink(paymentMethod, payableCents)
+  const detailsInChat = expressDetailsArriveInChat(paymentMethod)
+  // Only a rail the customer sends money on can produce a receipt to photograph.
+  const prepaidRail = Boolean(paymentMethod) && paymentMethod !== 'cod' && paymentMethod !== 'cash_pickup'
+  // A rail can stop being offered when the shopper goes back and switches to
+  // pickup or a US address; the stale choice must not survive into the message.
+  const selectionStillOffered = !paymentMethod || availableMethods.some((method) => method.id === paymentMethod)
+
+  useEffect(() => {
+    if (!selectionStillOffered) setPaymentMethod(null)
+  }, [selectionStillOffered])
 
   const issues = expressOrderIssues({ contact, destination, localCity, fulfillment, address, paymentMethod })
   const deliveryIssues = (['name', 'phone', 'street', 'neighborhood', 'city', 'state', 'postalCode'] as const).filter((field) => issues[field])
@@ -275,6 +312,8 @@ export function ExpressOrderDialog({ items, open, onClose }: { items: CartItem[]
     fulfillment,
     address,
     paymentMethod,
+    pickupDay,
+    pickupWindow,
     notes,
     referralCode: referralAttribution?.code ?? null,
     translatePurchaseType: (value: string) => purchaseTypeLabel(tCommon, value),
@@ -303,20 +342,67 @@ export function ExpressOrderDialog({ items, open, onClose }: { items: CartItem[]
     }
   }
 
+  /**
+   * Scrolls the first field that is blocking the step into view.
+   *
+   * Without this the shopper can be at the bottom of a long delivery step,
+   * press Continue, and see nothing happen — every error is rendered above the
+   * fold. Deferred a frame so it runs after the invalid styling is painted.
+   *
+   * The scroll is instant rather than smooth: focusing the field cancels an
+   * in-flight smooth scroll, which left the pane stranded partway and the field
+   * still off-screen — exactly the problem this is here to solve.
+   */
+  function revealFirstIssue() {
+    requestAnimationFrame(() => {
+      const invalid = paneRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')
+      if (!invalid) {
+        paneRef.current?.scrollTo({ top: 0 })
+        return
+      }
+      invalid.focus({ preventScroll: true })
+      invalid.scrollIntoView({ block: 'center' })
+    })
+  }
+
   function advance() {
     setShowValidation(true)
-    if (step === 0 && !deliveryReady) return
-    if (step === 1 && !paymentReady) return
+    if ((step === 0 && !deliveryReady) || (step === 1 && !paymentReady)) {
+      revealFirstIssue()
+      return
+    }
     setShowValidation(false)
     setStep((current) => (current === 2 ? current : ((current + 1) as Step)))
   }
 
   function send() {
     setShowValidation(true)
-    if (!readyToSend) return
+    if (!readyToSend) {
+      revealFirstIssue()
+      return
+    }
     persistShipTo()
     window.open(buildExpressOrderUrl(orderInput), '_blank', 'noopener,noreferrer')
     setSent(true)
+  }
+
+  /**
+   * A desktop shopper has the order in front of them and WhatsApp on their
+   * phone. The QR carries the whole prefilled wa.me link, so scanning it hands
+   * the phone the finished message rather than making them retype anything.
+   *
+   * That link runs about 1,600 characters once the label and acknowledgment are
+   * encoded, which is a ~150-module QR. It is generated at level `L` and 1024px
+   * and rendered at 18rem for that reason: at the default level and a thumbnail
+   * size each module lands on roughly one screen pixel and no phone camera can
+   * resolve it. Nothing is lost — the code lives on a screen, not on a box.
+   */
+  async function showQr() {
+    if (qr) {
+      setQr(null)
+      return
+    }
+    setQr(await makeQrDataUrl(buildExpressOrderUrl(orderInput), { width: 1024, errorCorrectionLevel: 'L' }).catch(() => null))
   }
 
   const money = (cents: number) => formatCartCurrency(cents / 100, locale)
@@ -479,9 +565,50 @@ export function ExpressOrderDialog({ items, open, onClose }: { items: CartItem[]
                     </p>
 
                     {fulfillment === 'pickup' ? (
-                      <div className="rounded-2xl border border-slate-900/10 bg-white p-4">
-                        <p className="flex items-center gap-2 text-sm font-semibold text-[#071724]"><Store size={15} aria-hidden="true" className="text-teal-700" />{t('expressPickupTitle')}</p>
-                        <p className="mt-1.5 text-xs leading-5 text-slate-500">{t('expressPickupBody')}</p>
+                      <div className="grid gap-4 rounded-2xl border border-slate-900/10 bg-white p-4">
+                        <div>
+                          <p className="flex items-center gap-2 text-sm font-semibold text-[#071724]"><Store size={15} aria-hidden="true" className="text-teal-700" />{t('expressPickupTitle')}</p>
+                          <p className="mt-1.5 text-xs leading-5 text-slate-500">{t('expressPickupBody')}</p>
+                        </div>
+                        <fieldset>
+                          <legend className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">
+                            <Clock size={13} aria-hidden="true" />
+                            {t('expressPickupWhen')} <span className="font-medium normal-case tracking-normal text-slate-400">{t('expressOptional')}</span>
+                          </legend>
+                          <div className="flex flex-wrap gap-2">
+                            {(['today', 'tomorrow', 'later'] as const).map((day) => {
+                              const selected = pickupDay === day
+                              return (
+                                <button
+                                  key={day}
+                                  type="button"
+                                  aria-pressed={selected}
+                                  onClick={() => setPickupDay(selected ? null : day)}
+                                  className={`min-h-11 rounded-full border px-3.5 text-xs font-semibold transition ${selected ? 'border-teal-700 bg-teal-600 text-white' : 'border-slate-900/12 bg-white text-slate-600 hover:border-teal-500'}`}
+                                >
+                                  {t(`expressPickupDay_${day}`)}
+                                </button>
+                              )
+                            })}
+                          </div>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {(['morning', 'afternoon', 'evening'] as const).map((window) => {
+                              const selected = pickupWindow === window
+                              return (
+                                <button
+                                  key={window}
+                                  type="button"
+                                  aria-pressed={selected}
+                                  onClick={() => setPickupWindow(selected ? null : window)}
+                                  className={`min-h-11 rounded-full border px-3.5 text-xs font-semibold transition ${selected ? 'border-teal-700 bg-teal-600 text-white' : 'border-slate-900/12 bg-white text-slate-600 hover:border-teal-500'}`}
+                                >
+                                  {t(`expressPickupWindow_${window}`)}
+                                </button>
+                              )
+                            })}
+                          </div>
+                          <p className="mt-2 text-xs leading-5 text-slate-500">{t('expressPickupSlotNote')}</p>
+                        </fieldset>
                       </div>
                     ) : (
                       <fieldset className="grid gap-4">
@@ -557,6 +684,20 @@ export function ExpressOrderDialog({ items, open, onClose }: { items: CartItem[]
                       </div>
                     ) : null}
 
+                    {paymentMethod === 'cash_pickup' ? (
+                      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                        <p className="flex items-center gap-2 text-sm font-semibold text-emerald-950"><Coins size={15} aria-hidden="true" />{t('expressCashPickupTitle')}</p>
+                        <p className="mt-1.5 text-xs leading-5 text-emerald-900">{t('expressCashPickupBody')}</p>
+                      </div>
+                    ) : null}
+
+                    {detailsInChat ? (
+                      <div className="rounded-2xl border border-slate-900/10 bg-white p-4">
+                        <p className="flex items-center gap-2 text-sm font-semibold text-[#071724]"><ShieldCheck size={15} aria-hidden="true" className="text-teal-700" />{t('expressClabeTitle')}</p>
+                        <p className="mt-1.5 text-xs leading-5 text-slate-500">{t('expressClabeBody')}</p>
+                      </div>
+                    ) : null}
+
                     {paymentDetails ? (
                       <div className="rounded-2xl border border-slate-900/10 bg-white p-4">
                         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{t('expressPaymentDetails')}</p>
@@ -571,14 +712,31 @@ export function ExpressOrderDialog({ items, open, onClose }: { items: CartItem[]
                             </li>
                           ))}
                         </ul>
-                        {paymentDetails.link ? (
-                          <a href={paymentDetails.link.url} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-teal-700 px-4 text-sm font-semibold text-teal-800 transition hover:bg-teal-50">
-                            {locale === 'es' ? paymentDetails.link.labelEs : paymentDetails.link.labelEn}
+                        {payableCents === null ? null : (
+                          <p className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-teal-50 px-3 py-2.5 text-sm">
+                            <span className="font-semibold text-teal-900">{t('expressAmountDue')}</span>
+                            <span className="text-lg font-semibold text-[#071724]">{money(payableCents)}</span>
+                          </p>
+                        )}
+                        {paymentLink ? (
+                          <a href={paymentLink.url} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-teal-700 px-4 text-sm font-semibold text-teal-800 transition hover:bg-teal-50">
+                            {locale === 'es' ? paymentLink.labelEs : paymentLink.labelEn}
+                            {expressPaymentMethod(paymentMethod)?.amountInLink && payableCents !== null ? ` · ${money(payableCents)}` : ''}
                           </a>
                         ) : null}
-                        <p className="mt-3 text-xs leading-5 text-slate-500">{t('expressPaymentReference', { reference })}</p>
+                        <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-[#f8fafc] px-3 py-2.5">
+                          <span className="min-w-0">
+                            <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{t('expressPaymentMemo')}</span>
+                            <span className="mt-0.5 block truncate font-mono text-sm text-[#071724]">{reference}</span>
+                          </span>
+                          <button type="button" onClick={() => void copy(reference, 'reference')} className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full border border-slate-900/10 bg-white px-3 text-xs font-semibold text-teal-800 transition hover:bg-teal-50">
+                            {copied === 'reference' ? <Check size={13} aria-hidden="true" strokeWidth={3} /> : <Copy size={13} aria-hidden="true" />}
+                            {t(copied === 'reference' ? 'expressCopied' : 'expressCopy')}
+                          </button>
+                        </div>
+                        <p className="mt-2 text-xs leading-5 text-slate-500">{t('expressPaymentReference', { reference })}</p>
                       </div>
-                    ) : paymentMethod && paymentMethod !== 'cod' ? (
+                    ) : paymentMethod && !detailsInChat && paymentMethod !== 'cod' && paymentMethod !== 'cash_pickup' ? (
                       <div className="rounded-2xl border border-slate-900/10 bg-white p-4">
                         <p className="text-xs leading-5 text-slate-500">{t('expressPaymentPending')}</p>
                       </div>
@@ -609,6 +767,19 @@ export function ExpressOrderDialog({ items, open, onClose }: { items: CartItem[]
                         <span className="text-xs text-slate-500">{t('expressLabelHint')}</span>
                         <button type="button" onClick={() => setStep(0)} className="text-xs font-semibold text-teal-800 hover:text-[#071724]">{t('expressEdit')}</button>
                       </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-slate-900/10 bg-white p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="flex items-center gap-2 text-sm font-semibold text-[#071724]"><QrCode size={15} aria-hidden="true" className="text-teal-700" />{t('expressQrTitle')}</p>
+                          <p className="mt-1.5 text-xs leading-5 text-slate-500">{t('expressQrBody')}</p>
+                        </div>
+                        <button type="button" onClick={() => void showQr()} aria-expanded={Boolean(qr)} className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full border border-slate-900/10 px-3 text-xs font-semibold text-teal-800 transition hover:bg-teal-50">
+                          {t(qr ? 'expressQrHide' : 'expressQrShow')}
+                        </button>
+                      </div>
+                      {qr ? <img src={qr} alt={t('expressQrAlt')} width={288} height={288} className="mx-auto mt-4 size-72 max-w-full rounded-xl border border-slate-900/10 bg-white p-1.5" /> : null}
                     </div>
 
                     <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-[0.1em] text-slate-500" htmlFor={`${fieldId}-notes`}>
@@ -643,6 +814,12 @@ export function ExpressOrderDialog({ items, open, onClose }: { items: CartItem[]
                           {copied === 'message' ? <Check size={13} aria-hidden="true" strokeWidth={3} /> : <Copy size={13} aria-hidden="true" />}
                           {t(copied === 'message' ? 'expressCopied' : 'expressCopyMessage')}
                         </button>
+                        {prepaidRail ? (
+                          <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-teal-200 bg-white p-3">
+                            <Camera size={15} aria-hidden="true" className="mt-0.5 shrink-0 text-teal-700" />
+                            <p className="text-xs leading-5 text-slate-600">{t('expressReceiptPrompt', { reference })}</p>
+                          </div>
+                        ) : null}
                       </div>
                     ) : null}
                   </div>
@@ -696,9 +873,15 @@ export function ExpressOrderDialog({ items, open, onClose }: { items: CartItem[]
                       <dd className="font-semibold text-amber-800">{money(surchargeCents)}</dd>
                     </div>
                   ) : null}
+                  {payableCents === null ? null : (
+                    <div className="mt-2 flex items-center justify-between gap-3 border-t border-slate-900/10 pt-3">
+                      <dt className="font-semibold text-[#071724]">{t('expressSummaryTotal')}</dt>
+                      <dd className="text-xl font-semibold text-[#071724]">{money(payableCents)}</dd>
+                    </div>
+                  )}
                 </dl>
 
-                <p className="mt-4 rounded-xl bg-[#f8fafc] p-3 text-xs leading-5 text-slate-500">{t('expressSummaryNote')}</p>
+                <p className="mt-4 rounded-xl bg-[#f8fafc] p-3 text-xs leading-5 text-slate-500">{t(payableCents === null ? 'expressSummaryNote' : 'expressSummaryTotalNote')}</p>
                 <a href={path('/checkout')} className="mt-auto pt-5 text-xs font-semibold text-teal-800 transition hover:text-[#071724]">{t('expressFullCheckout')}</a>
               </aside>
             </div>

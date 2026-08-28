@@ -110,9 +110,22 @@ bloque monoespaciado de WhatsApp para copiarla completa. **Este camino no
 escribe ninguna fila en `storefront_orders`** —por eso el folio lleva prefijo
 `EXP-`, no hay nada que buscar en el portal.
 
-Los datos de cobro salen de `src/config/interimCheckout.ts`. **La CLABE mexicana
-sigue en blanco ahí**; mientras no se pegue, el cliente puede elegir la
-transferencia pero la cuenta se manda en el chat.
+**La CLABE mexicana nunca se publica en el sitio** —decisión del dueño. El riel
+va marcado `detailsInChat` en `src/lib/storefront/expressCheckout.ts`: el cliente
+lo elige, el mensaje pide la cuenta, y la CLABE con el titular se manda por
+WhatsApp pedido por pedido. Deja `details: []` en `bank_transfer` dentro de
+`src/config/interimCheckout.ts`; el checkout completo lee la misma entrada y sí
+publicaría lo que se agregue ahí.
+
+**Efectivo al recoger no cobra recargo.** El 5% paga la cobranza del repartidor,
+y en una recolección no hay repartidor. Contra entrega no se ofrece en pedidos de
+recolección, y efectivo al recoger no se ofrece en pedidos con envío.
+
+**Se cotiza un total exacto solo cuando todo es determinista** —`expressPayableCents`.
+Eso pasa cuando el envío es comprobablemente cero (recolección, o pedido que ganó
+envío gratis); ahí el mensaje dice `TOTAL A PAGAR` y los enlaces de Cash App y
+PayPal llevan el monto precargado. Si falta una tarifa de paquetería o una cuota
+local, devuelve `null` y todo sigue diciendo "se confirma en el chat".
 
 ---
 
