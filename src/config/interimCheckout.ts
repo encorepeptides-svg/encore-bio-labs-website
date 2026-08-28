@@ -39,13 +39,19 @@ export type InterimPaymentMethod = {
 // Replace every <...> placeholder with the real Encore handle/details.
 export const INTERIM_PAYMENT_METHODS: InterimPaymentMethod[] = [
   {
+    // The express checkout offers this rail as "Mexican bank transfer (SPEI)",
+    // so the details below are the Mexican account: a SPEI sender needs the
+    // 18-digit CLABE and the account holder's name, and nothing else.
+    // Uncomment the four lines and paste the real values — until then the
+    // shopper can still pick the rail and the account is sent in the chat,
+    // which is better than showing an account that goes nowhere.
     id: 'bank_transfer',
     enabled: true,
     details: [
-      // 'Bank: <bank name>',
-      // 'Account: <account number>',
-      // 'Routing: <routing number>',
-      // 'Account name: Encore Bio Labs',
+      // 'Banco: <nombre del banco>',
+      // 'Titular: <nombre en la cuenta>',
+      // 'CLABE: <18 dígitos>',
+      // 'Cuenta: <número de cuenta>',
     ],
   },
   {

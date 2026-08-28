@@ -2,16 +2,61 @@ import { describe, expect, it } from 'vitest'
 import { products } from '../../data/products'
 import { createCartItem } from '../cart'
 import {
+  buildExpressLabelBlock,
   buildExpressOrderMessage,
   buildExpressOrderUrl,
   createExpressOrderReference,
+  emptyExpressAddress,
   expressAcknowledgment,
+  expressOrderIssues,
+  expressOrderReady,
+  expressPaymentDetails,
+  expressPaymentMethodsFor,
+  expressSurchargeCents,
+  type ExpressOrderInput,
 } from './expressCheckout'
 
 const kisspeptin = products.find((product) => product.slug === 'kisspeptin')!
 const retatrutide = products.find((product) => product.slug === 'retatrutide')!
 
 const kitLine = createCartItem(kisspeptin, kisspeptin.variants[0], 1, { optionId: 'complete-kit', packSize: 1, includeKit: true })
+/** 3 × $179 = $537, which clears the 15% tier and the free 2-day express. */
+const bigOrder = [createCartItem(retatrutide, retatrutide.variants[4], 3, { optionId: 'complete-kit', packSize: 1, includeKit: true })]
+
+const usAddress = {
+  street: '1234 Airway Blvd',
+  line2: 'Suite 200',
+  neighborhood: '',
+  city: 'El Paso',
+  state: 'TX',
+  postalCode: '79925',
+  references: '',
+}
+
+const mxAddress = {
+  street: 'Vicente Guerrero 1234',
+  line2: 'Int. 5',
+  neighborhood: 'Partido Romero',
+  city: 'Ciudad Juárez',
+  state: 'Chihuahua',
+  postalCode: '32030',
+  references: 'Casa blanca junto al OXXO',
+}
+
+function order(overrides: Partial<ExpressOrderInput> = {}): ExpressOrderInput {
+  return {
+    reference: 'EXP-260826-AAAA',
+    items: [kitLine],
+    locale: 'en',
+    contact: { name: '  Hector Ramirez  ', phone: '+1 915 123 4567', email: '' },
+    destination: 'us',
+    localCity: null,
+    fulfillment: 'ship',
+    address: usAddress,
+    paymentMethod: 'zelle',
+    ...overrides,
+  }
+}
 
 describe('express order reference', () => {
   it('stamps the date and stays free of ambiguous glyphs', () => {
@@ -26,88 +71,189 @@ describe('express order reference', () => {
   })
 })
 
-describe('express order message', () => {
-  it('quotes the line, the subtotal, and never invents a total', () => {
-    const message = buildExpressOrderMessage({
-      reference: 'EXP-260826-AAAA',
-      items: [kitLine],
-      locale: 'en',
-      name: '  Hector  ',
-      destination: 'mexico',
-    })
-    expect(message).toContain('- 1x Kisspeptin 10 mg · Encore Complete Kit ($59)')
-    expect(message).toContain('Subtotal: $59')
-    expect(message).toContain('Shipping and total: confirmed on WhatsApp')
-    expect(message).toContain('Name: Hector')
-    expect(message).toContain('Destination: Mexico')
+describe('shipping label', () => {
+  it('writes a US label with the street line first and City, ST ZIP last', () => {
+    const label = buildExpressLabelBlock({ ...order(), locale: 'en' })
+    expect(label).toBe([
+      'Hector Ramirez',
+      '+1 915 123 4567',
+      '1234 Airway Blvd',
+      'Suite 200',
+      'El Paso, TX 79925',
+      'United States',
+    ].join('\n'))
+  })
+
+  it('writes a Mexican label with the colonia on its own line and the C.P. ahead of the city', () => {
+    const label = buildExpressLabelBlock({ ...order({ destination: 'mexico', address: mxAddress }), locale: 'es' })
+    expect(label).toContain('Col. Partido Romero')
+    expect(label).toContain('C.P. 32030, Ciudad Juárez, Chihuahua')
+    expect(label).toContain('México')
+    // Last-mile drivers in Mexico route on the landmark, so it rides on the label.
+    expect(label).toContain('Referencias: Casa blanca junto al OXXO')
+  })
+
+  it('writes the label for the courier who reads it, not the shopper who typed it', () => {
+    // An English-speaking shopper shipping to Mexico still gets a Spanish label.
+    const mexican = buildExpressLabelBlock({ ...order({ destination: 'mexico', address: mxAddress }), locale: 'en' })
+    expect(mexican).toContain('México')
+    expect(mexican).toContain('Referencias: Casa blanca junto al OXXO')
+    // And a Spanish-speaking shopper shipping inside the US gets an English one.
+    const american = buildExpressLabelBlock({ ...order({ address: { ...usAddress, references: 'Grey door' } }), locale: 'es' })
+    expect(american).toContain('United States')
+    expect(american).toContain('Landmark: Grey door')
+  })
+
+  it('keeps the tracking email off the label and beside the destination instead', () => {
+    const contact = { name: 'Hector Ramirez', phone: '+1 915 123 4567', email: 'hector@example.com' }
+    expect(buildExpressLabelBlock({ ...order({ contact }), locale: 'en' })).not.toContain('hector@example.com')
+    expect(buildExpressOrderMessage(order({ contact }))).toContain('Tracking to: hector@example.com')
+  })
+
+  it('replaces the label with pickup details when nothing is being shipped', () => {
+    const label = buildExpressLabelBlock({ ...order({ destination: 'local', localCity: 'juarez', fulfillment: 'pickup' }), locale: 'en' })
+    expect(label).toContain('PICKUP AT DISTRIBUTION POINT')
+    expect(label).toContain('Ciudad Juárez, Chih.')
+    expect(label).not.toContain('1234 Airway Blvd')
+  })
+})
+
+describe('cash on delivery', () => {
+  it('is offered to Mexican destinations only', () => {
+    const forMexico = expressPaymentMethodsFor('mexico', null).map((method) => method.id)
+    const forUs = expressPaymentMethodsFor('us', null).map((method) => method.id)
+    expect(forMexico).toContain('cod')
+    expect(forUs).not.toContain('cod')
+    // A local order follows the city it is going to, not the "local" label.
+    expect(expressPaymentMethodsFor('local', 'juarez').map((method) => method.id)).toContain('cod')
+    expect(expressPaymentMethodsFor('local', 'el_paso').map((method) => method.id)).not.toContain('cod')
+  })
+
+  it('charges 5% of merchandise after promotions, and nothing on any other rail', () => {
+    // $537 subtotal, 15% off = $456.45 of merchandise; 5% of that is $22.82.
+    expect(expressSurchargeCents(53_700, 'cod')).toBe(2_282)
+    expect(expressSurchargeCents(53_700, 'zelle')).toBe(0)
+    expect(expressSurchargeCents(53_700, null)).toBe(0)
+  })
+
+  it('quotes the surcharge in the message instead of folding it into a total', () => {
+    const message = buildExpressOrderMessage(order({ items: bigOrder, destination: 'mexico', address: mxAddress, paymentMethod: 'cod' }))
+    expect(message).toContain('Cash-on-delivery handling (5%): $22.82')
+    expect(message).toContain('Shipping and final total: confirmed in this chat')
     expect(message).not.toMatch(/^Total:/m)
+  })
+})
+
+describe('express order message', () => {
+  it('quotes the line, the subtotal, the rail, and the label block', () => {
+    const message = buildExpressOrderMessage(order())
+    expect(message).toContain('• 1× Kisspeptin 10 mg — Encore Complete Kit — $59')
+    expect(message).toContain('Subtotal: $59')
+    expect(message).toContain("I'd like to pay by: Zelle")
+    expect(message).toContain('Destination: United States')
+    // The label travels in a monospace fence so it can be copied as one block.
+    expect(message).toContain('```\nHector Ramirez\n+1 915 123 4567\n1234 Airway Blvd\nSuite 200\nEl Paso, TX 79925\nUnited States\n```')
   })
 
   it('carries the acknowledgment into the message instead of leaving it in the browser', () => {
-    const message = buildExpressOrderMessage({ reference: 'EXP-260826-AAAA', items: [kitLine], locale: 'es', name: 'Hector', destination: 'unspecified' })
+    const message = buildExpressOrderMessage(order({ locale: 'es', destination: 'mexico', address: mxAddress }))
     expect(message).toContain(expressAcknowledgment.es)
-    // The acknowledgment stands as its own paragraph even when optional lines drop out.
-    expect(message).toContain(`\n\n${expressAcknowledgment.es}\n\n`)
-    expect(message).toContain('Pedido exprés [EXP-260826-AAAA]')
-    // An unspecified destination is left out rather than guessed at.
-    expect(message).not.toContain('Destino:')
+    expect(message).toContain('*ENCORE BIO LABS — PEDIDO EXPRÉS*')
+    expect(message).toContain('Folio EXP-260826-AAAA')
   })
 
   it('writes Spanish prices as USD so they cannot be read as pesos', () => {
-    const message = buildExpressOrderMessage({ reference: 'EXP-260826-AAAA', items: [kitLine], locale: 'es', name: 'Hector', destination: 'mexico' })
+    const message = buildExpressOrderMessage(order({ locale: 'es', destination: 'mexico', address: mxAddress }))
     expect(message).toContain('Subtotal: USD $59')
   })
 
   it('localizes the purchase type when the caller supplies a translator', () => {
-    const message = buildExpressOrderMessage({
-      reference: 'EXP-260826-AAAA',
-      items: [kitLine],
-      locale: 'es',
-      name: 'Hector',
-      destination: 'mexico',
-      translatePurchaseType: () => 'Kit Completo Encore',
-    })
-    expect(message).toContain('· Kit Completo Encore (USD $59)')
-  })
-
-  it('leaves the canonical purchase type alone without a translator', () => {
-    const message = buildExpressOrderMessage({ reference: 'EXP-260826-AAAA', items: [kitLine], locale: 'en', name: 'Hector', destination: 'us' })
-    expect(message).toContain('· Encore Complete Kit ($59)')
+    const message = buildExpressOrderMessage(order({ locale: 'es', translatePurchaseType: () => 'Kit Completo Encore' }))
+    expect(message).toContain('— Kit Completo Encore — USD $59')
   })
 
   it('states an earned promotion and the shipping benefit that comes with it', () => {
-    const bigOrder = [createCartItem(retatrutide, retatrutide.variants[4], 3, { optionId: 'complete-kit', packSize: 1, includeKit: true })]
-    const message = buildExpressOrderMessage({ reference: 'EXP-260826-AAAA', items: bigOrder, locale: 'en', name: 'Hector', destination: 'us' })
-    // 3 x $179 = $537, which earns the 15% tier and free 2-day express.
+    const message = buildExpressOrderMessage(order({ items: bigOrder }))
     expect(message).toContain('Subtotal: $537')
-    expect(message).toContain('Volume promotion: -$80.55')
+    expect(message).toContain('Volume promotion (15%): -$80.55')
     expect(message).toContain('Includes free 2-day express')
   })
 
   it('omits promotion lines an order has not earned', () => {
-    const message = buildExpressOrderMessage({ reference: 'EXP-260826-AAAA', items: [kitLine], locale: 'en', name: 'Hector', destination: 'us' })
+    const message = buildExpressOrderMessage(order())
     expect(message).not.toContain('Volume promotion')
     expect(message).not.toContain('free shipping')
   })
 
+  it('adds the Mexico import fee only when something is actually crossing', () => {
+    expect(buildExpressOrderMessage(order({ destination: 'mexico', address: mxAddress }))).toContain('Mexico import fee: $25')
+    expect(buildExpressOrderMessage(order())).not.toContain('Mexico import fee')
+    // A Juárez pickup never clears customs on Encore's account.
+    expect(buildExpressOrderMessage(order({ destination: 'local', localCity: 'juarez', fulfillment: 'pickup' }))).not.toContain('Mexico import fee')
+  })
+
   it('keeps distributor attribution and shopper notes when present', () => {
-    const message = buildExpressOrderMessage({
-      reference: 'EXP-260826-AAAA',
-      items: [kitLine],
-      locale: 'en',
-      name: 'Hector',
-      destination: 'local',
-      notes: '  Pickup after 5pm  ',
-      referralCode: 'ENCORE10',
-    })
-    expect(message).toContain('Notes: Pickup after 5pm')
+    const message = buildExpressOrderMessage(order({ notes: '  Leave with the front desk  ', referralCode: 'ENCORE10' }))
+    expect(message).toContain('Leave with the front desk')
     expect(message).toContain('Distributor code: ENCORE10')
-    expect(message).toContain('Destination: Local delivery or pickup (El Paso · Ciudad Juárez · Chihuahua)')
   })
 
   it('builds a wa.me link with the message encoded', () => {
-    const url = buildExpressOrderUrl({ reference: 'EXP-260826-AAAA', items: [kitLine], locale: 'en', name: 'Hector', destination: 'us' })
+    const url = buildExpressOrderUrl(order())
     expect(url.startsWith('https://wa.me/')).toBe(true)
-    expect(decodeURIComponent(url.split('?text=')[1])).toContain('Express order [EXP-260826-AAAA]')
+    expect(decodeURIComponent(url.split('?text=')[1])).toContain('*ENCORE BIO LABS — EXPRESS ORDER*')
+  })
+})
+
+describe('express order validation', () => {
+  const base = { contact: { name: 'Hector', phone: '9151234567', email: '' }, destination: 'us', localCity: null, fulfillment: 'ship', address: usAddress, paymentMethod: 'zelle' } as const
+
+  it('accepts a complete US order', () => {
+    expect(expressOrderIssues(base)).toEqual({})
+    expect(expressOrderReady(base)).toBe(true)
+  })
+
+  it('blocks the handoff until a payment rail is chosen', () => {
+    expect(expressOrderIssues({ ...base, paymentMethod: null }).paymentMethod).toBe('missing')
+  })
+
+  it('demands every field a carrier prints, including the phone', () => {
+    const issues = expressOrderIssues({ ...base, contact: { name: '', phone: '', email: '' }, address: emptyExpressAddress() })
+    expect(issues).toMatchObject({ name: 'missing', phone: 'missing', street: 'missing', city: 'missing', state: 'missing', postalCode: 'missing' })
+  })
+
+  it('flags a phone that is too short to dial rather than accepting it', () => {
+    expect(expressOrderIssues({ ...base, contact: { name: 'Hector', phone: '555 12', email: '' } }).phone).toBe('invalid')
+  })
+
+  it('requires the colonia on a Mexican label and not on a US one', () => {
+    expect(expressOrderIssues({ ...base, destination: 'mexico', address: { ...mxAddress, neighborhood: '' } }).neighborhood).toBe('missing')
+    expect(expressOrderIssues({ ...base, address: { ...usAddress, neighborhood: '' } }).neighborhood).toBeUndefined()
+  })
+
+  it('checks the postal-code shape for the destination country', () => {
+    expect(expressOrderIssues({ ...base, address: { ...usAddress, postalCode: '799' } }).postalCode).toBe('invalid')
+    expect(expressOrderIssues({ ...base, address: { ...usAddress, postalCode: '79925-1234' } }).postalCode).toBeUndefined()
+    expect(expressOrderIssues({ ...base, destination: 'mexico', address: { ...mxAddress, postalCode: '79925-1234' } }).postalCode).toBe('invalid')
+  })
+
+  it('asks a pickup order for nothing but a name, a phone, and a rail', () => {
+    const pickup = { ...base, destination: 'local', localCity: 'juarez', fulfillment: 'pickup', address: emptyExpressAddress() } as const
+    expect(expressOrderIssues(pickup)).toEqual({})
+  })
+})
+
+describe('payment destinations', () => {
+  it('shows the configured account for a rail that has one', () => {
+    expect(expressPaymentDetails('zelle')?.details).toEqual(['9153595448'])
+  })
+
+  it('shows nothing for cash on delivery, which has no account to pay into', () => {
+    expect(expressPaymentDetails('cod')).toBeNull()
+  })
+
+  it('hides a rail whose destination account is still unset instead of pointing money nowhere', () => {
+    // The Mexican SPEI account is a placeholder in config until the CLABE lands.
+    expect(expressPaymentDetails('mx_bank_transfer')).toBeNull()
   })
 })
