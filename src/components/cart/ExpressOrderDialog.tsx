@@ -297,7 +297,7 @@ export function ExpressOrderDialog({ items, open, onClose }: { items: CartItem[]
   }, [selectionStillOffered])
 
   const issues = expressOrderIssues({ contact, destination, localCity, fulfillment, address, paymentMethod })
-  const deliveryIssues = (['name', 'phone', 'street', 'neighborhood', 'city', 'state', 'postalCode'] as const).filter((field) => issues[field])
+  const deliveryIssues = (['name', 'phone', 'localCity', 'street', 'neighborhood', 'city', 'state', 'postalCode'] as const).filter((field) => issues[field])
   const deliveryReady = deliveryIssues.length === 0
   const paymentReady = !issues.paymentMethod
   const readyToSend = deliveryReady && paymentReady && accepted && items.length > 0
@@ -521,8 +521,9 @@ export function ExpressOrderDialog({ items, open, onClose }: { items: CartItem[]
                                   key={city}
                                   type="button"
                                   aria-pressed={selected}
+                                  aria-invalid={showValidation && Boolean(issues.localCity)}
                                   onClick={() => setLocalCity(city)}
-                                  className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-3.5 text-xs font-semibold transition ${selected ? 'border-teal-700 bg-teal-600 text-white' : 'border-teal-900/12 bg-white/70 text-slate-600 hover:border-teal-500'}`}
+                                  className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-3.5 text-xs font-semibold transition ${selected ? 'border-teal-700 bg-teal-600 text-white' : showValidation && issues.localCity ? 'border-rose-400 bg-white text-slate-600' : 'border-teal-900/12 bg-white/70 text-slate-600 hover:border-teal-500'}`}
                                 >
                                   <Icon size={14} aria-hidden="true" />
                                   {t(`expressLocalCity_${city}`)}
@@ -530,6 +531,7 @@ export function ExpressOrderDialog({ items, open, onClose }: { items: CartItem[]
                               )
                             })}
                           </div>
+                          {showValidation && issues.localCity ? <p className="mt-2 text-xs font-medium text-rose-700" role="alert">{t('expressLocalCityError')}</p> : null}
                         </fieldset>
                         <fieldset>
                           <legend className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-800">{t('expressFulfillment')}</legend>

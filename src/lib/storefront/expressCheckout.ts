@@ -303,7 +303,7 @@ export function expressPaymentLink(
 
 // ---------- validation ----------
 
-export type ExpressFieldId = 'name' | 'phone' | 'street' | 'neighborhood' | 'city' | 'state' | 'postalCode' | 'paymentMethod'
+export type ExpressFieldId = 'name' | 'phone' | 'localCity' | 'street' | 'neighborhood' | 'city' | 'state' | 'postalCode' | 'paymentMethod'
 export type ExpressFieldIssue = 'missing' | 'invalid'
 export type ExpressIssues = Partial<Record<ExpressFieldId, ExpressFieldIssue>>
 
@@ -333,6 +333,11 @@ export function expressOrderIssues({
   if (!contact.phone.trim()) issues.phone = 'missing'
   else if (contact.phone.replaceAll(/\D/g, '').length < 10) issues.phone = 'invalid'
   if (!paymentMethod) issues.paymentMethod = 'missing'
+  // A local order without a city is unactionable in both directions: a pickup
+  // names no counter to walk up to, and a delivery has nothing to prefill the
+  // city and state with. It is checked ahead of the pickup return for that
+  // reason — pickup skips the address, not the city.
+  if (destination === 'local' && !localCity) issues.localCity = 'missing'
 
   if (fulfillment === 'pickup') return issues
 

@@ -140,6 +140,7 @@ export const cart = {
   expressLocalCity_el_paso: 'El Paso, TX',
   expressLocalCity_juarez: 'Ciudad Juárez',
   expressLocalCity_chihuahua: 'Chihuahua',
+  expressLocalCityError: 'Pick the city so we know which distribution point.',
   expressFulfillment: 'How do you want it?',
   expressFulfillment_ship: 'Deliver to my address',
   expressFulfillment_pickup: 'Pick it up',

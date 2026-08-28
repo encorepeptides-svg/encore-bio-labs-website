@@ -254,9 +254,20 @@ describe('express order validation', () => {
     expect(expressOrderIssues({ ...base, destination: 'mexico', address: { ...mxAddress, postalCode: '79925-1234' } }).postalCode).toBe('invalid')
   })
 
-  it('asks a pickup order for nothing but a name, a phone, and a rail', () => {
+  it('asks a pickup order for nothing but a name, a phone, a city, and a rail', () => {
     const pickup = { ...base, destination: 'local', localCity: 'juarez', fulfillment: 'pickup', address: emptyExpressAddress() } as const
     expect(expressOrderIssues(pickup)).toEqual({})
+  })
+
+  it('will not let a local order leave without naming its city', () => {
+    // Otherwise the label reads "Local (El Paso · Ciudad Juárez · Chihuahua)"
+    // and nobody knows which counter the shopper is walking up to.
+    const noCity = { ...base, destination: 'local', localCity: null, fulfillment: 'pickup', address: emptyExpressAddress() } as const
+    expect(expressOrderIssues(noCity).localCity).toBe('missing')
+    // The city is checked even though a pickup skips the rest of the address.
+    expect(expressOrderIssues({ ...noCity, fulfillment: 'ship' }).localCity).toBe('missing')
+    // And it is irrelevant to a non-local destination.
+    expect(expressOrderIssues(base).localCity).toBeUndefined()
   })
 })
 

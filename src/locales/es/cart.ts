@@ -142,6 +142,7 @@ export const cart = {
   expressLocalCity_el_paso: 'El Paso, TX',
   expressLocalCity_juarez: 'Ciudad Juárez',
   expressLocalCity_chihuahua: 'Chihuahua',
+  expressLocalCityError: 'Elige la ciudad para saber qué punto de distribución te toca.',
   expressFulfillment: '¿Cómo lo quieres recibir?',
   expressFulfillment_ship: 'Entrega en mi dirección',
   expressFulfillment_pickup: 'Paso a recogerlo',
