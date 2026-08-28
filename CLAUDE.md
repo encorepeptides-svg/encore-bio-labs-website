@@ -127,6 +127,17 @@ envío gratis); ahí el mensaje dice `TOTAL A PAGAR` y los enlaces de Cash App y
 PayPal llevan el monto precargado. Si falta una tarifa de paquetería o una cuota
 local, devuelve `null` y todo sigue diciendo "se confirma en el chat".
 
+**La ciudad de Chihuahua ya no es punto de distribución local** (decisión del
+dueño, 28-ago-2026). La distribución local queda en **El Paso y Ciudad Juárez**;
+los pedidos a Chihuahua salen como envío estándar a México con su cuota de
+importación. Se quitó de los dos checkouts, de la página de envíos y de los
+destinos aceptados por `shipping-checkout`.
+
+**Pero `local_chihuahua` NO se borra del código.** Sigue en el tipo
+`DeliveryDestination`, en `coverageFor` de la edge function y en el CHECK de
+`destination_type`, porque los pedidos anteriores traen ese valor y el portal de
+admin tiene que poder leerlos. Quitarlo del CHECK invalidaría filas ya guardadas.
+
 ---
 
 ## Escalera de beneficios por compra

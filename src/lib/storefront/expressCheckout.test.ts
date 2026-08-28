@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { products } from '../../data/products'
 import { createCartItem } from '../cart'
 import {
+  EXPRESS_LOCAL_CITIES,
   buildExpressLabelBlock,
   buildExpressOrderMessage,
   buildExpressOrderUrl,
@@ -268,6 +269,21 @@ describe('express order validation', () => {
     expect(expressOrderIssues({ ...noCity, fulfillment: 'ship' }).localCity).toBe('missing')
     // And it is irrelevant to a non-local destination.
     expect(expressOrderIssues(base).localCity).toBeUndefined()
+  })
+})
+
+describe('local distribution', () => {
+  it('serves El Paso and Ciudad Juárez, and no longer Chihuahua city', () => {
+    expect(Object.keys(EXPRESS_LOCAL_CITIES)).toEqual(['el_paso', 'juarez'])
+  })
+
+  it('sends a Chihuahua order down the ordinary Mexico path', () => {
+    // Nothing special is needed for this: with the local option gone the
+    // shopper picks Mexico, which is carrier shipping plus the import fee.
+    const message = buildExpressOrderMessage(order({ destination: 'mexico', address: { ...mxAddress, city: 'Chihuahua' } }))
+    expect(message).toContain('Destination: Mexico')
+    expect(message).toContain('Mexico import fee')
+    expect(message).not.toContain('Local')
   })
 })
 

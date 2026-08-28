@@ -3,6 +3,18 @@ import { createClient } from 'npm:@supabase/supabase-js@2.110.1'
 declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void } | undefined
 
 type Destination = 'us' | 'mexico' | 'local_el_paso' | 'local_juarez' | 'local_chihuahua' | 'international'
+
+/**
+ * Destinations a new order may be placed against.
+ *
+ * `local_chihuahua` is deliberately absent: Chihuahua city is no longer a
+ * local-distribution point, and those orders ship as standard Mexico delivery.
+ * It stays in `Destination` and in `coverageFor` because orders placed before
+ * the change carry that value and still have to be read back, and it stays in
+ * the `destination_type` CHECK constraint for the same reason — dropping it
+ * there would invalidate rows that are already stored.
+ */
+const ORDERABLE_DESTINATIONS: Destination[] = ['us', 'mexico', 'local_el_paso', 'local_juarez', 'international']
 type LocalFulfillment = 'pickup' | 'home_delivery'
 type Address = { country: string; state: string; city: string; neighborhood: string; postalCode: string; street: string; streetNumber: string; line2: string }
 type Rate = { id: string; carrier: string; service: string; amountCents: number; currency: string; deliveryDays: number | null; deliveryDate: string | null }
@@ -666,7 +678,7 @@ async function createOrder(body: Record<string, unknown>, origin: string | null,
     const quantity = Math.max(1, Math.min(99, Math.floor(Number(item.quantity) || 1)))
     return count + packSizeFromSku(item.sku) * quantity
   }, 0))
-  if (!['us', 'mexico', 'local_el_paso', 'local_juarez', 'local_chihuahua', 'international'].includes(destination) || !items.length || !kitCount) {
+  if (!ORDERABLE_DESTINATIONS.includes(destination) || !items.length || !kitCount) {
     return response({ code: 'invalid_order_request' }, 400, origin)
   }
   if (Math.floor(Number(body.kitCount) || 0) !== kitCount) return response({ code: 'cart_quantity_mismatch' }, 409, origin)
@@ -921,7 +933,7 @@ Deno.serve(async (request) => {
   }
   if (body.action === 'validate_distributor_code') return validateDistributorCode(body, origin)
   const destination = text(body.destination) as Destination
-  if (!['us', 'mexico', 'local_el_paso', 'local_juarez', 'local_chihuahua', 'international'].includes(destination)) {
+  if (!ORDERABLE_DESTINATIONS.includes(destination)) {
     return response({ code: 'invalid_destination' }, 400, origin)
   }
   if (body.action === 'create_order') return createOrder(body, origin, request)

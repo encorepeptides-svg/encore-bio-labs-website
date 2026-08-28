@@ -113,7 +113,6 @@ const destinationOptions: Array<{ id: DeliveryDestination; icon: LucideIcon; tit
   { id: 'mexico', icon: MapPin, titleKey: 'destinationMexico', bodyKey: 'destinationMexicoBody' },
   { id: 'local_el_paso', icon: Truck, titleKey: 'destinationElPaso', bodyKey: 'destinationLocalBody' },
   { id: 'local_juarez', icon: Truck, titleKey: 'destinationJuarez', bodyKey: 'destinationLocalMexicoBody' },
-  { id: 'local_chihuahua', icon: Truck, titleKey: 'destinationChihuahua', bodyKey: 'destinationLocalMexicoBody' },
   { id: 'international', icon: Globe2, titleKey: 'destinationInternational', bodyKey: 'destinationInternationalBody' },
 ]
 
@@ -135,7 +134,6 @@ const alternatePaymentMethods = checkoutPaymentMethods.filter((method) => method
 function localDestinationDefaults(destination: DeliveryDestination) {
   if (destination === 'local_el_paso') return { state: 'TX', city: 'El Paso' }
   if (destination === 'local_juarez') return { state: 'Chihuahua', city: 'Ciudad Juárez' }
-  if (destination === 'local_chihuahua') return { state: 'Chihuahua', city: 'Chihuahua' }
   return null
 }
 

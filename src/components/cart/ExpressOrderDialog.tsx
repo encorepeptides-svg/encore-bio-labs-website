@@ -87,7 +87,7 @@ const SHIP_TO_STORAGE_KEY = 'encore-express-ship-to-v1'
 type Step = 0 | 1 | 2
 
 const destinationIcons: Record<ExpressDestination, LucideIcon> = { us: Truck, mexico: Package, local: Store }
-const localCityIcons: Record<ExpressLocalCity, LucideIcon> = { el_paso: Building2, juarez: Building2, chihuahua: Building2 }
+const localCityIcons: Record<ExpressLocalCity, LucideIcon> = { el_paso: Building2, juarez: Building2 }
 const paymentIcons: Record<ExpressPaymentMethodId, LucideIcon> = {
   zelle: Zap,
   cashapp: CreditCard,

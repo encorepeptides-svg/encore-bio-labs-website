@@ -37,7 +37,6 @@ export const checkout = {
   destinationMexicoBody: 'Dirección en México, tarifa de importación y regla de envío de USD $15.',
   destinationElPaso: 'Entrega local · El Paso',
   destinationJuarez: 'Entrega local · Ciudad Juárez',
-  destinationChihuahua: 'Entrega local · Chihuahua',
   destinationLocalBody: 'Se deben confirmar la cobertura, el costo y el horario de esta zona local.',
   destinationLocalMexicoBody: 'Aplica la tarifa de importación a México; también se confirman la cobertura, el costo y el horario local.',
   destinationInternational: 'Otro país',

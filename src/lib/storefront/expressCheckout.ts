@@ -28,8 +28,12 @@ import { buildWhatsAppHandoffUrl } from './interimCheckout'
 
 export type ExpressDestination = 'us' | 'mexico' | 'local'
 
-/** The three cities Encore serves directly, from the El Paso–Juárez corridor. */
-export type ExpressLocalCity = 'el_paso' | 'juarez' | 'chihuahua'
+/**
+ * The cities Encore distributes in directly, both sides of the El Paso–Juárez
+ * border. Chihuahua city was dropped from local distribution — those orders go
+ * out as Mexico express shipping like anywhere else in the country.
+ */
+export type ExpressLocalCity = 'el_paso' | 'juarez'
 
 export type ExpressFulfillment = 'ship' | 'pickup'
 
@@ -105,7 +109,6 @@ export function emptyExpressContact(): ExpressContact {
 export const EXPRESS_LOCAL_CITIES: Record<ExpressLocalCity, { country: 'US' | 'MX'; city: string; state: string; stateEs: string }> = {
   el_paso: { country: 'US', city: 'El Paso', state: 'TX', stateEs: 'TX' },
   juarez: { country: 'MX', city: 'Ciudad Juárez', state: 'Chihuahua', stateEs: 'Chihuahua' },
-  chihuahua: { country: 'MX', city: 'Chihuahua', state: 'Chihuahua', stateEs: 'Chihuahua' },
 }
 
 /** The country the label will carry, which drives address shape and rails. */
@@ -385,14 +388,13 @@ export function createExpressOrderReference(now: Date = new Date(), random: () =
 // ---------- labels ----------
 
 const destinationLabels: Record<Locale, Record<ExpressDestination, string>> = {
-  en: { us: 'United States', mexico: 'Mexico', local: 'Local (El Paso · Ciudad Juárez · Chihuahua)' },
-  es: { us: 'Estados Unidos', mexico: 'México', local: 'Local (El Paso · Ciudad Juárez · Chihuahua)' },
+  en: { us: 'United States', mexico: 'Mexico', local: 'Local (El Paso · Ciudad Juárez)' },
+  es: { us: 'Estados Unidos', mexico: 'México', local: 'Local (El Paso · Ciudad Juárez)' },
 }
 
 const localCityLabels: Record<ExpressLocalCity, string> = {
   el_paso: 'El Paso, TX',
   juarez: 'Ciudad Juárez, Chih.',
-  chihuahua: 'Chihuahua, Chih.',
 }
 
 /**

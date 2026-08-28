@@ -35,7 +35,6 @@ export const checkout = {
   destinationMexicoBody: 'Mexico address, import fee, and $15 shipping rule.',
   destinationElPaso: 'Local delivery · El Paso',
   destinationJuarez: 'Local delivery · Ciudad Juárez',
-  destinationChihuahua: 'Local delivery · Chihuahua',
   destinationLocalBody: 'Coverage, cost, and timing must be confirmed for this local zone.',
   destinationLocalMexicoBody: 'Mexico import fee applies; local coverage, delivery cost, and timing must also be confirmed.',
   destinationInternational: 'Another country',

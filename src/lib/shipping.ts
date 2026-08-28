@@ -1,6 +1,13 @@
 import { promotionDiscountCents, qualifiesForFreeShipping } from './promotions'
 import { isSupabaseConfigured, supabase } from './supabaseClient'
 
+/**
+ * `local_chihuahua` is no longer offered at checkout — Chihuahua city was
+ * dropped from local distribution and those orders ship as standard Mexico
+ * delivery. It stays in the union, and its helpers below stay implemented,
+ * because orders placed before the change carry that value and the admin
+ * portal still has to read them.
+ */
 export type DeliveryDestination =
   | 'us'
   | 'mexico'
