@@ -142,7 +142,6 @@ export function buildHandoffMessage({ reference, items, paymentMethod, locale, c
       `Pedido [${reference}]`,
       ...lines,
       `Subtotal: ${formatCartCurrency(subtotal)}`,
-      charges?.importFeeCents ? `Importación: ${formatCartCurrency(charges.importFeeCents / 100)}` : '',
       charges?.shippingCents !== null && charges?.shippingCents !== undefined
         ? `Envío: ${formatCartCurrency(charges.shippingCents / 100)}${charges.shippingWaived ? (charges.discountCents ? ' (express 2 días gratis, pedido de $300+)' : ' (gratis, pedido de $200+)') : ''}`
         : 'Envío: pendiente de revisión',
@@ -165,7 +164,6 @@ export function buildHandoffMessage({ reference, items, paymentMethod, locale, c
     `Order [${reference}]`,
     ...lines,
     `Subtotal: ${formatCartCurrency(subtotal)}`,
-    charges?.importFeeCents ? `Import fee: ${formatCartCurrency(charges.importFeeCents / 100)}` : '',
     charges?.shippingCents !== null && charges?.shippingCents !== undefined
       ? `Shipping: ${formatCartCurrency(charges.shippingCents / 100)}${charges.shippingWaived ? (charges.discountCents ? ' (free 2-day express, $300+ order)' : ' (free, $200+ order)') : ''}`
       : 'Shipping: pending review',

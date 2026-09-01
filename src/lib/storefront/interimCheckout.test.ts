@@ -96,7 +96,7 @@ describe('interim checkout handoff', () => {
     expect(message).not.toContain('Order [')
   })
 
-  it('identifies free local pickup and retains the Mexico import fee in the handoff', () => {
+  it('identifies free local pickup in the handoff, with no import fee to carry', () => {
     const message = buildHandoffMessage({
       reference: 'ORD-2026',
       items: [item()],
@@ -104,7 +104,7 @@ describe('interim checkout handoff', () => {
       locale: 'es',
       shipping: pickupShipping,
     })
-    expect(message).toContain('Importación: $25')
+    expect(message).not.toContain('Importación')
     expect(message).toContain('Envío: $0')
     expect(message).toContain('Recepción local: recoger en punto de distribución')
     expect(message).toContain('Centro de cobertura: 32510')

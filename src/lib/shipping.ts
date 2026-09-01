@@ -157,10 +157,6 @@ export function destinationIsLocal(destination: DeliveryDestination) {
   return destination.startsWith('local_')
 }
 
-export function destinationUsesMexicoImportFee(destination: DeliveryDestination) {
-  return destination === 'mexico' || destination === 'local_juarez' || destination === 'local_chihuahua'
-}
-
 export function localDistributionPostalCode(destination: DeliveryDestination) {
   if (destination === 'local_el_paso') return '79912'
   if (destination === 'local_chihuahua') return '31200'
@@ -238,27 +234,26 @@ export function selectedShippingAddress(selection: Pick<ShippingSelection, 'addr
   return selection.address
 }
 
-export function calculateMexicoImportFeeCents(kitCount: number) {
-  if (kitCount <= 0) return 0
-  return kitCount >= 5 ? 5_000 : 2_500
-}
-
 export function calculateShippingCharges({
   destination,
-  kitCount,
   subtotalCents,
   selectedRate,
   localDeliveryFeeCents,
 }: {
   destination: DeliveryDestination
-  kitCount: number
+  /** Still accepted, and still sent to the server, which validates it against
+   * the cart. Nothing in the charge calculation reads it since the kit-count
+   * import fee was retired. */
+  kitCount?: number
   subtotalCents: number
   selectedRate: ShippingRate | null
   localDeliveryFeeCents: number | null
 }): ShippingCharges {
-  // The import fee is a customs cost, not freight, so free shipping never
-  // waives it — a Mexico order over the threshold still pays it.
-  const importFeeCents = destinationUsesMexicoImportFee(destination) ? calculateMexicoImportFeeCents(kitCount) : 0
+  // The Mexico import fee was retired: nothing charges one any more, and a
+  // Mexico order now pays freight and nothing else. The field survives at zero
+  // because `storefront_orders.import_fee_cents` still holds real amounts for
+  // orders placed while the fee existed, and the admin portal renders them.
+  const importFeeCents = 0
   let shippingCents: number | null = null
   if (destination === 'mexico') shippingCents = MEXICO_FLAT_SHIPPING_CENTS
   else if (destinationIsLocal(destination)) shippingCents = localDeliveryFeeCents

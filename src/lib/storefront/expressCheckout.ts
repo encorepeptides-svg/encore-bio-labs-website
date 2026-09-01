@@ -3,7 +3,7 @@ import { INTERIM_PAYMENT_METHODS, type InterimPaymentMethod, type InterimPayment
 import type { CartItem } from '../cart'
 import { calculateSubtotal, formatCartCurrency } from '../cart'
 import { promotionDiscountCents, promotionDiscountRate, qualifiesForExpressUpgrade, qualifiesForFreeShipping } from '../promotions'
-import { CASH_ON_DELIVERY_PROCESSING_RATE, calculateMexicoImportFeeCents } from '../shipping'
+import { CASH_ON_DELIVERY_PROCESSING_RATE } from '../shipping'
 import { buildWhatsAppHandoffUrl } from './interimCheckout'
 
 /**
@@ -22,8 +22,8 @@ import { buildWhatsAppHandoffUrl } from './interimCheckout'
  *
  * Because no server recomputes anything here, this message must never state a
  * final total. Subtotal, earned promotions, and the cash-on-delivery surcharge
- * are quoted; shipping, the Mexico import fee, and the total are explicitly
- * left as "confirmed on WhatsApp".
+ * are quoted; shipping and the total are explicitly left as "confirmed on
+ * WhatsApp" unless every component is known.
  */
 
 export type ExpressDestination = 'us' | 'mexico' | 'local'
@@ -118,7 +118,7 @@ export function expressCountry(destination: ExpressDestination, localCity: Expre
   return localCity ? EXPRESS_LOCAL_CITIES[localCity].country : 'US'
 }
 
-/** Mexican destinations carry the published import fee and can pay on delivery. */
+/** Mexican destinations are the only ones that may pay the courier on delivery. */
 export function expressShipsToMexico(destination: ExpressDestination, localCity: ExpressLocalCity | null) {
   return expressCountry(destination, localCity) === 'MX'
 }
@@ -208,7 +208,7 @@ export function expressPaymentMethodsFor(
 
 /**
  * The cash-on-delivery surcharge, charged on merchandise after promotions and
- * never on shipping or the import fee. This mirrors
+ * never on shipping. This mirrors
  * `calculatePaymentProcessingFeeCents` in `lib/shipping` so the number quoted
  * in the chat matches the one the server computes if the order is later moved
  * onto the full checkout.
@@ -248,7 +248,6 @@ export function expressDetailsArriveInChat(methodId: ExpressPaymentMethodId | nu
  *
  *   merchandise   subtotal minus `promotionDiscountCents` — the same function
  *                 the Edge Function mirrors
- *   import fee    `calculateMexicoImportFeeCents`, likewise mirrored
  *   surcharge     the cash-on-delivery 5%, computed here
  *   shipping      **only** when it is provably zero: a pickup has none, and an
  *                 order over the free-shipping threshold has it waived
@@ -260,8 +259,6 @@ export function expressDetailsArriveInChat(methodId: ExpressPaymentMethodId | nu
  */
 export function expressPayableCents({
   items,
-  destination,
-  localCity,
   fulfillment,
   paymentMethod,
 }: Pick<ExpressOrderInput, 'items' | 'destination' | 'localCity' | 'fulfillment' | 'paymentMethod'>): number | null {
@@ -271,13 +268,9 @@ export function expressPayableCents({
   const shippingIsProvablyZero = fulfillment === 'pickup' || qualifiesForFreeShipping(subtotalCents)
   if (!shippingIsProvablyZero) return null
 
-  const importFeeCents = expressShipsToMexico(destination, localCity) && fulfillment === 'ship'
-    ? calculateMexicoImportFeeCents(expressKitCount(items))
-    : 0
-
   return Math.max(
     0,
-    subtotalCents - promotionDiscountCents(subtotalCents) + importFeeCents + expressSurchargeCents(subtotalCents, paymentMethod),
+    subtotalCents - promotionDiscountCents(subtotalCents) + expressSurchargeCents(subtotalCents, paymentMethod),
   )
 }
 
@@ -534,11 +527,6 @@ export const expressAcknowledgment: Record<Locale, string> = {
   es: 'Tengo al menos 18 años. Entiendo que estos productos se venden exclusivamente para investigación de laboratorio, que no se utilizarán para consumo humano o animal, y que Encore Bio Labs no proporciona consejos médicos, dosis ni instrucciones de administración.',
 }
 
-/** Counts the Complete Kits in the cart, which is what the import fee scales on. */
-export function expressKitCount(items: CartItem[]) {
-  return items.reduce((total, item) => (item.kitIncluded ? total + item.packSize * item.quantity : total), 0)
-}
-
 export function buildExpressOrderMessage({
   reference,
   items,
@@ -561,9 +549,6 @@ export function buildExpressOrderMessage({
   const discountCents = promotionDiscountCents(subtotalCents)
   const discountRate = promotionDiscountRate(subtotalCents)
   const surchargeCents = expressSurchargeCents(subtotalCents, paymentMethod)
-  const importFeeCents = expressShipsToMexico(destination, localCity) && fulfillment === 'ship'
-    ? calculateMexicoImportFeeCents(expressKitCount(items))
-    : 0
   const payableCents = expressPayableCents({ items, destination, localCity, fulfillment, paymentMethod })
   const purchaseTypeOf = translatePurchaseType ?? ((value: string) => value)
   const money = (cents: number) => formatCartCurrency(cents / 100, locale)
@@ -599,7 +584,6 @@ export function buildExpressOrderMessage({
         qualifiesForFreeShipping(subtotalCents)
           ? qualifiesForExpressUpgrade(subtotalCents) ? 'Incluye express de 2 días gratis' : 'Incluye envío gratis'
           : '',
-        importFeeCents ? `Cuota de importación a México: ${money(importFeeCents)}` : '',
         surchargeCents ? `Manejo de pago contra entrega (5%): ${money(surchargeCents)}` : '',
         payableCents === null
           ? 'Envío y total final: se confirman en este chat'
@@ -639,7 +623,6 @@ export function buildExpressOrderMessage({
       qualifiesForFreeShipping(subtotalCents)
         ? qualifiesForExpressUpgrade(subtotalCents) ? 'Includes free 2-day express' : 'Includes free shipping'
         : '',
-      importFeeCents ? `Mexico import fee: ${money(importFeeCents)}` : '',
       surchargeCents ? `Cash-on-delivery handling (5%): ${money(surchargeCents)}` : '',
       payableCents === null
         ? 'Shipping and final total: confirmed in this chat'

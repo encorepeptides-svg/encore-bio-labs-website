@@ -32,7 +32,6 @@ import {
   addressEssentialErrors,
   calculatePaymentProcessingFeeCents,
   calculateShippingCharges,
-  destinationUsesMexicoImportFee,
   expectedCountryForDestination,
   isPoBoxAddress,
   localDistributionPostalCode,
@@ -746,7 +745,7 @@ export function CheckoutPage() {
               {processingFeeCents ? <div className="flex justify-between text-slate-600"><span>{t('processingFee')}</span><span className="font-semibold text-[#071724]">{formatCartCurrency(processingFeeCents / 100)}</span></div> : null}
               <div className="mt-2 flex justify-between border-t border-slate-900/10 pt-3 text-base font-semibold text-[#071724]"><span>{t('total')}</span><span>{checkoutTotalCents === null ? t('pendingConfirmation') : formatCartCurrency(checkoutTotalCents / 100)}</span></div>
               {processingFeeCents ? <p className="mt-1 text-xs leading-5 text-slate-500">{t('processingFeeNote')}</p> : null}
-              {destinationUsesMexicoImportFee(formData.destination) ? <p className="mt-2 rounded-xl bg-teal-50 p-3 text-xs leading-5 text-teal-950">{t('mexicoProcessingNote')}</p> : null}
+              {expectedCountryForDestination(formData.destination) === 'MX' ? <p className="mt-2 rounded-xl bg-teal-50 p-3 text-xs leading-5 text-teal-950">{t('mexicoProcessingNote')}</p> : null}
               {!paymentAllowed && verification ? <p className="mt-2 rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-950">{t('paymentBlockedPendingReview')}</p> : null}
               <a href={path('/legal/shipping-returns')} className="mt-2 text-xs font-semibold text-teal-800 hover:underline">{t('shippingDeliveryLink')}</a>
             </div>

@@ -32,7 +32,6 @@ import { purchaseTypeLabel } from '../../i18n/displayLabels'
 import type { CartItem } from '../../lib/cart'
 import { calculateSubtotal, formatCartCurrency } from '../../lib/cart'
 import { promotionDiscountCents, promotionDiscountRate, qualifiesForExpressUpgrade, qualifiesForFreeShipping } from '../../lib/promotions'
-import { calculateMexicoImportFeeCents } from '../../lib/shipping'
 import { makeQrDataUrl } from '../../lib/qrCode'
 import {
   EXPRESS_LOCAL_CITIES,
@@ -45,14 +44,12 @@ import {
   expressAcknowledgment,
   expressCountry,
   expressDetailsArriveInChat,
-  expressKitCount,
   expressOrderIssues,
   expressPayableCents,
   expressPaymentDetails,
   expressPaymentLink,
   expressPaymentMethod,
   expressPaymentMethodsFor,
-  expressShipsToMexico,
   expressSurchargeCents,
   type ExpressAddress,
   type ExpressContact,
@@ -274,13 +271,11 @@ export function ExpressOrderDialog({ items, open, onClose }: { items: CartItem[]
   }, [fulfillment])
 
   const country = expressCountry(destination, localCity)
-  const mexico = expressShipsToMexico(destination, localCity)
   const subtotal = calculateSubtotal(items)
   const subtotalCents = Math.round(subtotal * 100)
   const discountCents = promotionDiscountCents(subtotalCents)
   const discountRate = promotionDiscountRate(subtotalCents)
   const surchargeCents = expressSurchargeCents(subtotalCents, paymentMethod)
-  const importFeeCents = mexico && fulfillment === 'ship' ? calculateMexicoImportFeeCents(expressKitCount(items)) : 0
   const availableMethods = useMemo(() => expressPaymentMethodsFor(destination, localCity, fulfillment), [destination, fulfillment, localCity])
   const paymentDetails = expressPaymentDetails(paymentMethod)
   const payableCents = expressPayableCents({ items, destination, localCity, fulfillment, paymentMethod })
@@ -861,12 +856,6 @@ export function ExpressOrderDialog({ items, open, onClose }: { items: CartItem[]
                     <div className="flex items-center justify-between gap-3">
                       <dt className="text-emerald-700">{t(qualifiesForExpressUpgrade(subtotalCents) ? 'expressSummaryExpress' : 'expressSummaryFreeShipping')}</dt>
                       <dd className="font-semibold text-emerald-700">{money(0)}</dd>
-                    </div>
-                  ) : null}
-                  {importFeeCents ? (
-                    <div className="flex items-center justify-between gap-3">
-                      <dt className="text-slate-500">{t('expressSummaryImportFee')}</dt>
-                      <dd className="font-semibold text-[#071724]">{money(importFeeCents)}</dd>
                     </div>
                   ) : null}
                   {surchargeCents ? (

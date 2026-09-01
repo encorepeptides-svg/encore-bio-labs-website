@@ -151,7 +151,7 @@ describe('cash on delivery', () => {
     expect(message).toContain('Cash-on-delivery handling (5%): $22.82')
     // This order clears free shipping, so every component is known and the
     // total is stated. The surcharge still stands on its own line above it.
-    expect(message).toContain('TOTAL DUE: $504.27')
+    expect(message).toContain('TOTAL DUE: $479.27')
   })
 
   it('leaves the total open while shipping is still unknown', () => {
@@ -203,11 +203,14 @@ describe('express order message', () => {
     expect(message).not.toContain('free shipping')
   })
 
-  it('adds the Mexico import fee only when something is actually crossing', () => {
-    expect(buildExpressOrderMessage(order({ destination: 'mexico', address: mxAddress }))).toContain('Mexico import fee: $25')
-    expect(buildExpressOrderMessage(order())).not.toContain('Mexico import fee')
-    // A Juárez pickup never clears customs on Encore's account.
-    expect(buildExpressOrderMessage(order({ destination: 'local', localCity: 'juarez', fulfillment: 'pickup' }))).not.toContain('Mexico import fee')
+  it('quotes no import fee on any destination now that the fee is retired', () => {
+    for (const input of [
+      order({ destination: 'mexico', address: mxAddress }),
+      order(),
+      order({ destination: 'local', localCity: 'juarez', fulfillment: 'pickup' }),
+    ]) {
+      expect(buildExpressOrderMessage(input)).not.toContain('import fee')
+    }
   })
 
   it('keeps distributor attribution and shopper notes when present', () => {
@@ -279,10 +282,9 @@ describe('local distribution', () => {
 
   it('sends a Chihuahua order down the ordinary Mexico path', () => {
     // Nothing special is needed for this: with the local option gone the
-    // shopper picks Mexico, which is carrier shipping plus the import fee.
+    // shopper picks Mexico, which is ordinary flat-rate carrier shipping.
     const message = buildExpressOrderMessage(order({ destination: 'mexico', address: { ...mxAddress, city: 'Chihuahua' } }))
     expect(message).toContain('Destination: Mexico')
-    expect(message).toContain('Mexico import fee')
     expect(message).not.toContain('Local')
   })
 })
@@ -325,9 +327,9 @@ describe('the amount owed', () => {
     expect(expressPayableCents({ ...base, destination: 'local', localCity: 'el_paso', fulfillment: 'pickup', paymentMethod: 'cash_pickup' })).toBe(5_900)
   })
 
-  it('includes the Mexico import fee and the cash-on-delivery surcharge', () => {
-    // $537 - $80.55 + $25 import + $22.82 surcharge.
-    expect(expressPayableCents({ ...base, items: bigOrder, destination: 'mexico', paymentMethod: 'cod' })).toBe(45_645 + 2_500 + 2_282)
+  it('includes the cash-on-delivery surcharge, and no longer an import fee', () => {
+    // $537 - $80.55 + $22.82 surcharge. Shipping is waived at this value.
+    expect(expressPayableCents({ ...base, items: bigOrder, destination: 'mexico', paymentMethod: 'cod' })).toBe(45_645 + 2_282)
   })
 
   it('states the total in the message only when it is fully known', () => {

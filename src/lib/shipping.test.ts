@@ -2,11 +2,9 @@ import { describe, expect, it } from 'vitest'
 import {
   addressEssentialErrors,
   addressesDiffer,
-  calculateMexicoImportFeeCents,
   calculatePaymentProcessingFeeCents,
   calculateShippingCharges,
   distanceMilesBetween,
-  destinationUsesMexicoImportFee,
   emptyShippingAddress,
   isPoBoxAddress,
   localDistributionPostalCode,
@@ -111,42 +109,39 @@ describe('shipping address validation and coverage', () => {
 })
 
 describe('server-mirrored charges and payment gates', () => {
-  it.each([[1, 2500], [4, 2500], [5, 5000], [8, 5000]])('calculates the Mexico import fee for %i kits', (kits, expected) => {
-    expect(calculateMexicoImportFeeCents(kits)).toBe(expected)
-  })
-
-  it('applies the Mexico import fee to shipped and local Mexico destinations only', () => {
-    expect(destinationUsesMexicoImportFee('mexico')).toBe(true)
-    expect(destinationUsesMexicoImportFee('local_juarez')).toBe(true)
-    expect(destinationUsesMexicoImportFee('local_chihuahua')).toBe(true)
-    expect(destinationUsesMexicoImportFee('local_el_paso')).toBe(false)
-    expect(destinationUsesMexicoImportFee('us')).toBe(false)
+  it('charges no import fee on any destination, including Mexico', () => {
+    // The fee was retired. The field stays on the result at zero because
+    // storefront_orders.import_fee_cents still holds real amounts for orders
+    // placed while it existed.
+    for (const destination of ['mexico', 'local_juarez', 'local_el_paso', 'us'] as const) {
+      expect(calculateShippingCharges({ destination, kitCount: 8, subtotalCents: 10_000, selectedRate: null, localDeliveryFeeCents: 0 }).importFeeCents).toBe(0)
+    }
   })
 
   // Subtotals here stay under $200 on purpose: at or above it the free-shipping
   // promotion takes over, which the promotions block below covers separately.
   it('applies the supplied Mexico shipping rule and recomputes the final total', () => {
-    expect(calculateShippingCharges({ destination: 'mexico', kitCount: 4, subtotalCents: 10_000, selectedRate: verified.rates[0], localDeliveryFeeCents: null })).toEqual({ importFeeCents: 2500, shippingCents: 2000, discountCents: 0, shippingWaived: false, totalCents: 14_500 })
-    expect(calculateShippingCharges({ destination: 'mexico', kitCount: 5, subtotalCents: 10_000, selectedRate: verified.rates[0], localDeliveryFeeCents: null }).totalCents).toBe(17_000)
+    expect(calculateShippingCharges({ destination: 'mexico', kitCount: 4, subtotalCents: 10_000, selectedRate: verified.rates[0], localDeliveryFeeCents: null })).toEqual({ importFeeCents: 0, shippingCents: 2000, discountCents: 0, shippingWaived: false, totalCents: 12_000 })
+    expect(calculateShippingCharges({ destination: 'mexico', kitCount: 5, subtotalCents: 10_000, selectedRate: verified.rates[0], localDeliveryFeeCents: null }).totalCents).toBe(12_000)
   })
 
   it('does not invent local charges when the zone fee is not configured', () => {
     expect(calculateShippingCharges({ destination: 'local_el_paso', kitCount: 1, subtotalCents: 10_000, selectedRate: null, localDeliveryFeeCents: null })).toEqual({ importFeeCents: 0, shippingCents: null, discountCents: 0, shippingWaived: false, totalCents: null })
-    expect(calculateShippingCharges({ destination: 'local_juarez', kitCount: 4, subtotalCents: 10_000, selectedRate: null, localDeliveryFeeCents: null })).toEqual({ importFeeCents: 2500, shippingCents: null, discountCents: 0, shippingWaived: false, totalCents: null })
+    expect(calculateShippingCharges({ destination: 'local_juarez', kitCount: 4, subtotalCents: 10_000, selectedRate: null, localDeliveryFeeCents: null })).toEqual({ importFeeCents: 0, shippingCents: null, discountCents: 0, shippingWaived: false, totalCents: null })
   })
 
   it('keeps distribution-point pickup free while preserving Mexico import fees', () => {
     expect(calculateShippingCharges({ destination: 'local_el_paso', kitCount: 1, subtotalCents: 10_000, selectedRate: null, localDeliveryFeeCents: 0 })).toEqual({ importFeeCents: 0, shippingCents: 0, discountCents: 0, shippingWaived: false, totalCents: 10_000 })
-    expect(calculateShippingCharges({ destination: 'local_juarez', kitCount: 4, subtotalCents: 10_000, selectedRate: null, localDeliveryFeeCents: 0 })).toEqual({ importFeeCents: 2500, shippingCents: 0, discountCents: 0, shippingWaived: false, totalCents: 12_500 })
+    expect(calculateShippingCharges({ destination: 'local_juarez', kitCount: 4, subtotalCents: 10_000, selectedRate: null, localDeliveryFeeCents: 0 })).toEqual({ importFeeCents: 0, shippingCents: 0, discountCents: 0, shippingWaived: false, totalCents: 10_000 })
   })
 
   it('combines the import fee with the $10 local Mexico home-delivery charge', () => {
-    expect(calculateShippingCharges({ destination: 'local_chihuahua', kitCount: 5, subtotalCents: 10_000, selectedRate: null, localDeliveryFeeCents: 1000 })).toEqual({ importFeeCents: 5000, shippingCents: 1000, discountCents: 0, shippingWaived: false, totalCents: 16_000 })
+    expect(calculateShippingCharges({ destination: 'local_chihuahua', kitCount: 5, subtotalCents: 10_000, selectedRate: null, localDeliveryFeeCents: 1000 })).toEqual({ importFeeCents: 0, shippingCents: 1000, discountCents: 0, shippingWaived: false, totalCents: 11_000 })
   })
 
-  it('waives the shipping charge at $200 but keeps charging Mexico customs', () => {
+  it('waives the shipping charge at $200, leaving a Mexico order paying merchandise only', () => {
     const charges = calculateShippingCharges({ destination: 'mexico', kitCount: 4, subtotalCents: 20_000, selectedRate: verified.rates[0], localDeliveryFeeCents: null })
-    expect(charges).toEqual({ importFeeCents: 2500, shippingCents: 0, discountCents: 0, shippingWaived: true, totalCents: 22_500 })
+    expect(charges).toEqual({ importFeeCents: 0, shippingCents: 0, discountCents: 0, shippingWaived: true, totalCents: 20_000 })
   })
 
   it('leaves the charge alone one cent below the free-shipping threshold', () => {
@@ -162,9 +157,9 @@ describe('server-mirrored charges and payment gates', () => {
     expect(charges.totalCents).toBe(27_000)
   })
 
-  it('stacks the 10% on a Mexico order without touching the import fee', () => {
+  it('stacks the 10% on a Mexico order that now carries no other charge', () => {
     const charges = calculateShippingCharges({ destination: 'mexico', kitCount: 5, subtotalCents: 40_000, selectedRate: null, localDeliveryFeeCents: null })
-    expect(charges).toEqual({ importFeeCents: 5000, shippingCents: 0, discountCents: 4_000, shippingWaived: true, totalCents: 41_000 })
+    expect(charges).toEqual({ importFeeCents: 0, shippingCents: 0, discountCents: 4_000, shippingWaived: true, totalCents: 36_000 })
   })
 
   it('adds 5% for cash on delivery after discounts but not on shipping or import fees', () => {

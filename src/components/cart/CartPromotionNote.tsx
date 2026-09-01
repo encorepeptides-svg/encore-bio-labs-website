@@ -80,7 +80,6 @@ export function CartPromotionNote({ subtotal, className = '' }: { subtotal: numb
         })}
       </ul>
 
-      {earned ? <p className="mt-2 pl-6 text-[0.7rem] leading-4 text-slate-500">{t('promoImportFeeNote')}</p> : null}
     </div>
   )
 }

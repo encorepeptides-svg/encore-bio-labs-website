@@ -200,10 +200,6 @@ function isLocal(destination: Destination) {
   return destination.startsWith('local_')
 }
 
-function usesMexicoImportFee(destination: Destination) {
-  return destination === 'mexico' || destination === 'local_juarez' || destination === 'local_chihuahua'
-}
-
 function localIdentityMatches(address: Address, destination: Destination) {
   const rule = localRule(destination)
   if (!rule) return true
@@ -759,7 +755,10 @@ async function createOrder(body: Record<string, unknown>, origin: string | null,
     (earned, tier) => (subtotalCents >= tier.thresholdCents ? tier : earned),
     null,
   )
-  const importFeeCents = usesMexicoImportFee(destination) ? (kitCount >= 5 ? 5_000 : 2_500) : 0
+  // The Mexico import fee was retired. Zero is still written to
+  // `import_fee_cents` rather than dropped, so the column keeps its meaning for
+  // the orders placed while the fee existed.
+  const importFeeCents = 0
   const quotedShippingCents = destination === 'mexico' ? MEXICO_FLAT_SHIPPING_CENTS : isLocal(destination) ? verification.localDeliveryFeeCents : matchedRate?.amountCents ?? null
   const shippingWaived = quotedShippingCents !== null && quotedShippingCents > 0 && earnedTier !== null
   const shippingCents = shippingWaived ? 0 : quotedShippingCents

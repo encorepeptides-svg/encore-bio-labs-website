@@ -155,9 +155,17 @@ juntos**, el servidor es la autoridad del total.
 **Envío plano a México: USD $20 a todo el país** (subió de $15 el 28-ago-2026).
 Es `MEXICO_FLAT_SHIPPING_CENTS`, y como la escalera, está **duplicado** en
 `src/lib/shipping.ts` y en `supabase/functions/shipping-checkout` — muévelos
-juntos. La promoción de envío gratis desde $200 lo cancela igual que a cualquier
-flete; la cuota de importación no, porque es aduana y no flete. Los pedidos
-locales no lo pagan: tienen su propia tarifa de entrega.
+juntos. La promoción de envío gratis desde $200 lo cancela. Los pedidos locales
+no lo pagan: tienen su propia tarifa de entrega (recoger gratis, domicilio $10).
+
+**La cuota de importación a México se eliminó** (28-ago-2026). Ya no existe el
+cargo de $25/$50 por número de kits: un pedido a México paga flete y nada más.
+Se borraron `calculateMexicoImportFeeCents` y `destinationUsesMexicoImportFee`.
+
+**Pero el campo `importFeeCents` / `import_fee_cents` se queda en cero**, no se
+borra. Las órdenes creadas mientras la cuota existía traen montos reales ahí y el
+portal de admin las muestra. Misma lógica que con `local_chihuahua`: se deja de
+cobrar, no se pierde la capacidad de leer el historial.
 
 ---
 
