@@ -194,7 +194,10 @@ describe('express order message', () => {
     const message = buildExpressOrderMessage(order({ items: bigOrder }))
     expect(message).toContain('Subtotal: $537')
     expect(message).toContain('Volume promotion (15%): -$80.55')
-    expect(message).toContain('Includes free 2-day express')
+    // Express is no longer the reward — every order gets it — so what this
+    // order earns is the shipping being free, stated separately from service.
+    expect(message).toContain('Includes free shipping')
+    expect(message).toContain('Service: 2-day EXPRESS')
   })
 
   it('omits promotion lines an order has not earned', () => {
@@ -352,6 +355,22 @@ describe('payment links', () => {
   it('leaves rails that cannot carry an amount untouched', () => {
     // Apple Cash opens Messages; there is nowhere to put a number.
     expect(expressPaymentLink('apple_pay', 45_645)?.url).toBe('sms:+19154128874')
+  })
+})
+
+describe('booked service', () => {
+  it('tells the operator to send it express', () => {
+    expect(buildExpressOrderMessage(order())).toContain('Service: 2-day EXPRESS')
+  })
+
+  it('drops to standard for cash on delivery, where a courier collects', () => {
+    const message = buildExpressOrderMessage(order({ destination: 'mexico', address: mxAddress, paymentMethod: 'cod' }))
+    expect(message).toContain('Service: standard (cash on delivery)')
+  })
+
+  it('says nothing about a carrier on a pickup, which has none', () => {
+    const message = buildExpressOrderMessage(order({ destination: 'local', localCity: 'juarez', fulfillment: 'pickup', paymentMethod: 'cash_pickup' }))
+    expect(message).not.toContain('Service:')
   })
 })
 

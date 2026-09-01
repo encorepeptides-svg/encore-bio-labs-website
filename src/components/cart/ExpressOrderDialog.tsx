@@ -31,7 +31,7 @@ import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { purchaseTypeLabel } from '../../i18n/displayLabels'
 import type { CartItem } from '../../lib/cart'
 import { calculateSubtotal, formatCartCurrency } from '../../lib/cart'
-import { promotionDiscountCents, promotionDiscountRate, qualifiesForExpressUpgrade, qualifiesForFreeShipping } from '../../lib/promotions'
+import { promotionDiscountCents, promotionDiscountRate, qualifiesForFreeShipping } from '../../lib/promotions'
 import { makeQrDataUrl } from '../../lib/qrCode'
 import {
   EXPRESS_LOCAL_CITIES,
@@ -854,7 +854,7 @@ export function ExpressOrderDialog({ items, open, onClose }: { items: CartItem[]
                   ) : null}
                   {qualifiesForFreeShipping(subtotalCents) ? (
                     <div className="flex items-center justify-between gap-3">
-                      <dt className="text-emerald-700">{t(qualifiesForExpressUpgrade(subtotalCents) ? 'expressSummaryExpress' : 'expressSummaryFreeShipping')}</dt>
+                      <dt className="text-emerald-700">{t('expressSummaryExpress')}</dt>
                       <dd className="font-semibold text-emerald-700">{money(0)}</dd>
                     </div>
                   ) : null}

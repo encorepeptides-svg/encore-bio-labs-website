@@ -4,7 +4,6 @@ import {
   centsToNextTier,
   promotionDiscountCents,
   promotionTierFor,
-  qualifiesForExpressUpgrade,
   qualifiesForFreeShipping,
   selectExpressRate,
 } from './promotions'
@@ -32,14 +31,11 @@ describe('order-value promotion tiers', () => {
   it('treats each threshold as inclusive', () => {
     expect(qualifiesForFreeShipping(20_000)).toBe(true)
     expect(qualifiesForFreeShipping(19_999)).toBe(false)
-    expect(qualifiesForExpressUpgrade(30_000)).toBe(true)
-    expect(qualifiesForExpressUpgrade(29_999)).toBe(false)
   })
 
-  it('keeps free shipping and express at every tier above the first', () => {
+  it('keeps free shipping at every tier above the first', () => {
     for (const subtotal of [30_000, 50_000, 100_000, 250_000]) {
       expect(qualifiesForFreeShipping(subtotal)).toBe(true)
-      expect(qualifiesForExpressUpgrade(subtotal)).toBe(true)
     }
   })
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  shippingServiceFor,
   addressEssentialErrors,
   addressesDiffer,
   calculatePaymentProcessingFeeCents,
@@ -105,6 +106,13 @@ describe('shipping address validation and coverage', () => {
     expect(addressEssentialErrors(elPaso, 'us')).not.toContain('neighborhood')
     const mexico = { ...elPaso, country: 'MX', state: 'Chihuahua', city: 'Chihuahua', postalCode: '31000', neighborhood: '' }
     expect(addressEssentialErrors(mexico, 'mexico')).toContain('neighborhood')
+  })
+})
+
+describe('booked carrier service', () => {
+  it('ships every order express, and cash on delivery standard', () => {
+    expect(shippingServiceFor(false)).toBe('express')
+    expect(shippingServiceFor(true)).toBe('standard')
   })
 })
 

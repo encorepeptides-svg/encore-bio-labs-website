@@ -110,6 +110,25 @@ export const CASH_ON_DELIVERY_PROCESSING_RATE = 0.05
  */
 export const MEXICO_FLAT_SHIPPING_CENTS = 2_000
 
+export type ShippingService = 'express' | 'standard'
+
+/**
+ * The carrier service an order is booked on.
+ *
+ * Every order ships 2-day express, whatever it is worth. The one exception is
+ * cash on delivery, where a courier collects the money at the door and that
+ * network runs a standard service.
+ *
+ * This is an instruction to whoever books the shipment, not a price: below the
+ * free-shipping threshold the customer is still quoted and charged the cheapest
+ * rate the carrier returned, and Encore absorbs the difference. Nothing needs
+ * to be stored for it — cash on delivery is already on the order as
+ * `payment_method`, so the service is derivable from any record.
+ */
+export function shippingServiceFor(cashOnDelivery: boolean): ShippingService {
+  return cashOnDelivery ? 'standard' : 'express'
+}
+
 /**
  * Cash-on-delivery processing applies only to merchandise after promotions.
  * Shipping and Mexico import charges are intentionally excluded so the fee is

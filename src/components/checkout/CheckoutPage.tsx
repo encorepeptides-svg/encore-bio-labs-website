@@ -26,7 +26,7 @@ import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { purchaseTypeLabel } from '../../i18n/displayLabels'
 import { calculateItemCount, calculateSubtotal, formatCartCurrency, type CartItem } from '../../lib/cart'
 import { isCheckoutFormValid, isValidEmail } from '../../lib/checkout'
-import { promotionDiscountRate, qualifiesForExpressUpgrade, qualifiesForFreeShipping, selectExpressRate } from '../../lib/promotions'
+import { promotionDiscountRate, qualifiesForFreeShipping, selectExpressRate } from '../../lib/promotions'
 import { resolveDistributorPromotion } from '../../lib/distributorIncentive'
 import {
   addressEssentialErrors,
@@ -498,11 +498,16 @@ export function CheckoutPage() {
   }
 
   // Preselect a sensible service so the shopper does not have to decipher
-  // carrier rates just to finish. Express rewards still take priority; all
-  // other orders start with the least expensive current service.
+  // carrier rates just to finish.
+  //
+  // Every order ships express, but that must never show up as a larger number
+  // than the shopper would otherwise have been quoted: Encore absorbs the
+  // difference. So the express rate is preselected only once shipping is
+  // waived, where it costs the shopper nothing; below the threshold they keep
+  // the cheapest service on offer and the upgrade happens at dispatch.
   useEffect(() => {
     if (!verification?.rates.length || selectedRateId) return
-    const automaticRate = qualifiesForExpressUpgrade(Math.round(subtotal * 100))
+    const automaticRate = qualifiesForFreeShipping(Math.round(subtotal * 100))
       ? selectExpressRate(verification.rates)
       : [...verification.rates].sort((left, right) => left.amountCents - right.amountCents)[0]
     setSelectedRateId(automaticRate?.id ?? null)

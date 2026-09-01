@@ -2,8 +2,8 @@ import type { Locale } from '../../i18n/config'
 import { INTERIM_PAYMENT_METHODS, type InterimPaymentMethod, type InterimPaymentMethodId } from '../../config/interimCheckout'
 import type { CartItem } from '../cart'
 import { calculateSubtotal, formatCartCurrency } from '../cart'
-import { promotionDiscountCents, promotionDiscountRate, qualifiesForExpressUpgrade, qualifiesForFreeShipping } from '../promotions'
-import { CASH_ON_DELIVERY_PROCESSING_RATE } from '../shipping'
+import { promotionDiscountCents, promotionDiscountRate, qualifiesForFreeShipping } from '../promotions'
+import { CASH_ON_DELIVERY_PROCESSING_RATE, shippingServiceFor } from '../shipping'
 import { buildWhatsAppHandoffUrl } from './interimCheckout'
 
 /**
@@ -553,6 +553,10 @@ export function buildExpressOrderMessage({
   const purchaseTypeOf = translatePurchaseType ?? ((value: string) => value)
   const money = (cents: number) => formatCartCurrency(cents / 100, locale)
   const pickupSlot = fulfillment === 'pickup' ? expressPickupSlotLabel(pickupDay, pickupWindow, locale) : ''
+  // The service Encore books, which is an instruction rather than a price —
+  // below the free-shipping threshold the shopper is still charged the cheapest
+  // rate and Encore covers the upgrade. Pickups have no carrier to book.
+  const service = fulfillment === 'pickup' ? null : shippingServiceFor(paymentMethod === 'cod')
 
   const lines = items.map((item) => `• ${item.quantity}× ${item.productName} ${item.variantLabel} — ${purchaseTypeOf(item.purchaseType)} — ${formatCartCurrency(item.linePrice * item.quantity, locale)}`)
   const labelBlock = buildExpressLabelBlock({ locale, contact, destination, localCity, fulfillment, address })
@@ -581,9 +585,7 @@ export function buildExpressOrderMessage({
         ...lines,
         `Subtotal: ${money(subtotalCents)}`,
         discountCents ? `Promoción por volumen (${Math.round(discountRate * 100)}%): -${money(discountCents)}` : '',
-        qualifiesForFreeShipping(subtotalCents)
-          ? qualifiesForExpressUpgrade(subtotalCents) ? 'Incluye express de 2 días gratis' : 'Incluye envío gratis'
-          : '',
+        qualifiesForFreeShipping(subtotalCents) ? 'Incluye envío gratis' : '',
         surchargeCents ? `Manejo de pago contra entrega (5%): ${money(surchargeCents)}` : '',
         payableCents === null
           ? 'Envío y total final: se confirman en este chat'
@@ -597,6 +599,7 @@ export function buildExpressOrderMessage({
       section([
         fulfillment === 'pickup' ? '*RECOLECCIÓN*' : '*DATOS PARA LA ETIQUETA*',
         `Destino: ${destinationLine}`,
+        service ? `Servicio: ${service === 'express' ? 'EXPRESS de 2 días' : 'estándar (pago contra entrega)'}` : '',
         pickupSlot ? `Prefiero recoger: ${pickupSlot}` : '',
         contact.email.trim() ? `Rastreo a: ${contact.email.trim()}` : '',
       ]),
@@ -620,9 +623,7 @@ export function buildExpressOrderMessage({
       ...lines,
       `Subtotal: ${money(subtotalCents)}`,
       discountCents ? `Volume promotion (${Math.round(discountRate * 100)}%): -${money(discountCents)}` : '',
-      qualifiesForFreeShipping(subtotalCents)
-        ? qualifiesForExpressUpgrade(subtotalCents) ? 'Includes free 2-day express' : 'Includes free shipping'
-        : '',
+      qualifiesForFreeShipping(subtotalCents) ? 'Includes free shipping' : '',
       surchargeCents ? `Cash-on-delivery handling (5%): ${money(surchargeCents)}` : '',
       payableCents === null
         ? 'Shipping and final total: confirmed in this chat'
@@ -636,6 +637,7 @@ export function buildExpressOrderMessage({
     section([
       fulfillment === 'pickup' ? '*PICKUP*' : '*SHIP TO — label details*',
       `Destination: ${destinationLine}`,
+      service ? `Service: ${service === 'express' ? '2-day EXPRESS' : 'standard (cash on delivery)'}` : '',
       pickupSlot ? `Prefers to collect: ${pickupSlot}` : '',
       contact.email.trim() ? `Tracking to: ${contact.email.trim()}` : '',
     ]),

@@ -7,13 +7,17 @@ import type { ShippingRate } from './shipping'
  * fees, or any discount:
  *
  *   $200+    free shipping
- *   $300+    free 2-day express shipping AND 10% off the subtotal
- *   $500+    free 2-day express shipping AND 15% off the subtotal
- *   $1,000+  free 2-day express shipping AND 20% off the subtotal
+ *   $300+    10% off the subtotal
+ *   $500+    15% off the subtotal
+ *   $1,000+  20% off the subtotal
  *
  * Tiers supersede rather than stack — a $1,000 order takes 20%, not 10+15+20 —
  * and each tier carries every benefit of the ones below it, so free shipping
  * survives all the way up.
+ *
+ * Express is deliberately absent from this ladder. Every order ships express
+ * regardless of value (see `shippingServiceFor` in ./shipping), so it is no
+ * longer something an order earns by being large.
  *
  * These thresholds are duplicated in supabase/functions/shipping-checkout,
  * which recomputes every total server-side and is the authority for what a
@@ -28,15 +32,14 @@ export type PromotionTierRule = {
   id: EarnedTier
   thresholdCents: number
   discountRate: number
-  express: boolean
 }
 
 /** Ordered by threshold, ascending — every lookup below relies on that order. */
 export const PROMOTION_TIERS: readonly PromotionTierRule[] = [
-  { id: 'free_shipping', thresholdCents: 20_000, discountRate: 0, express: false },
-  { id: 'volume_10', thresholdCents: 30_000, discountRate: 0.1, express: true },
-  { id: 'volume_15', thresholdCents: 50_000, discountRate: 0.15, express: true },
-  { id: 'volume_20', thresholdCents: 100_000, discountRate: 0.2, express: true },
+  { id: 'free_shipping', thresholdCents: 20_000, discountRate: 0 },
+  { id: 'volume_10', thresholdCents: 30_000, discountRate: 0.1 },
+  { id: 'volume_15', thresholdCents: 50_000, discountRate: 0.15 },
+  { id: 'volume_20', thresholdCents: 100_000, discountRate: 0.2 },
 ]
 
 export const FREE_SHIPPING_THRESHOLD_CENTS = PROMOTION_TIERS[0].thresholdCents
@@ -59,10 +62,6 @@ export function promotionTierFor(subtotalCents: number): PromotionTier {
 
 export function qualifiesForFreeShipping(subtotalCents: number) {
   return promotionRuleFor(subtotalCents) !== null
-}
-
-export function qualifiesForExpressUpgrade(subtotalCents: number) {
-  return promotionRuleFor(subtotalCents)?.express ?? false
 }
 
 export function promotionDiscountRate(subtotalCents: number) {

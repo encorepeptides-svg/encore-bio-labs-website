@@ -158,6 +158,24 @@ Es `MEXICO_FLAT_SHIPPING_CENTS`, y como la escalera, está **duplicado** en
 juntos. La promoción de envío gratis desde $200 lo cancela. Los pedidos locales
 no lo pagan: tienen su propia tarifa de entrega (recoger gratis, domicilio $10).
 
+**Todo pedido se envía express de 2 días, salvo pago contra entrega**
+(decisión del dueño, 01-sep-2026). Es `shippingServiceFor(cashOnDelivery)` en
+`src/lib/shipping.ts`. Contra entrega va en servicio estándar porque el
+repartidor cobra en la puerta y esa red no corre express.
+
+**Express es una instrucción de despacho, no un precio.** Debajo de los $200 el
+cliente sigue viendo y pagando la tarifa más barata que devolvió la paquetería, y
+**Encore absorbe la diferencia** —el dueño lo eligió así explícitamente para que
+el envío nunca se le encarezca a nadie. Por eso el checkout solo preselecciona la
+tarifa express cuando el envío ya es gratis ($200+), donde no le cuesta nada al
+cliente. El mensaje de WhatsApp sí lleva `Servicio: EXPRESS de 2 días` para que
+sepas qué contratar.
+
+**El express salió de la escalera de promociones.** Ya no se gana por monto: el
+flag `express` de `PROMOTION_TIERS` se eliminó y los niveles de $300/$500/$1,000
+son solo descuento. No hace falta guardar nada en la base — contra entrega ya
+está en `payment_method`, así que el servicio se deduce de cualquier orden.
+
 **La cuota de importación a México se eliminó** (28-ago-2026). Ya no existe el
 cargo de $25/$50 por número de kits: un pedido a México paga flete y nada más.
 Se borraron `calculateMexicoImportFeeCents` y `destinationUsesMexicoImportFee`.
