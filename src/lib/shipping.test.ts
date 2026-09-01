@@ -126,8 +126,8 @@ describe('server-mirrored charges and payment gates', () => {
   // Subtotals here stay under $200 on purpose: at or above it the free-shipping
   // promotion takes over, which the promotions block below covers separately.
   it('applies the supplied Mexico shipping rule and recomputes the final total', () => {
-    expect(calculateShippingCharges({ destination: 'mexico', kitCount: 4, subtotalCents: 10_000, selectedRate: verified.rates[0], localDeliveryFeeCents: null })).toEqual({ importFeeCents: 2500, shippingCents: 1500, discountCents: 0, shippingWaived: false, totalCents: 14_000 })
-    expect(calculateShippingCharges({ destination: 'mexico', kitCount: 5, subtotalCents: 10_000, selectedRate: verified.rates[0], localDeliveryFeeCents: null }).totalCents).toBe(16_500)
+    expect(calculateShippingCharges({ destination: 'mexico', kitCount: 4, subtotalCents: 10_000, selectedRate: verified.rates[0], localDeliveryFeeCents: null })).toEqual({ importFeeCents: 2500, shippingCents: 2000, discountCents: 0, shippingWaived: false, totalCents: 14_500 })
+    expect(calculateShippingCharges({ destination: 'mexico', kitCount: 5, subtotalCents: 10_000, selectedRate: verified.rates[0], localDeliveryFeeCents: null }).totalCents).toBe(17_000)
   })
 
   it('does not invent local charges when the zone fee is not configured', () => {
@@ -152,7 +152,7 @@ describe('server-mirrored charges and payment gates', () => {
   it('leaves the charge alone one cent below the free-shipping threshold', () => {
     const charges = calculateShippingCharges({ destination: 'mexico', kitCount: 1, subtotalCents: 19_999, selectedRate: null, localDeliveryFeeCents: null })
     expect(charges.shippingWaived).toBe(false)
-    expect(charges.shippingCents).toBe(1_500)
+    expect(charges.shippingCents).toBe(2_000)
   })
 
   it('takes 10% off and ships free at $300', () => {

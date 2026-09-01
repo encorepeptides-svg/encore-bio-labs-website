@@ -32,7 +32,7 @@ export const checkout = {
   destinationUs: 'United States',
   destinationUsBody: 'Full U.S. address and current carrier services.',
   destinationMexico: 'Mexico',
-  destinationMexicoBody: 'Mexico address, import fee, and $15 shipping rule.',
+  destinationMexicoBody: 'Mexico address, import fee, and flat $20 shipping anywhere in the country.',
   destinationElPaso: 'Local delivery · El Paso',
   destinationJuarez: 'Local delivery · Ciudad Juárez',
   destinationLocalBody: 'Coverage, cost, and timing must be confirmed for this local zone.',

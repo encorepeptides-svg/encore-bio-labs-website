@@ -15,6 +15,13 @@ type Destination = 'us' | 'mexico' | 'local_el_paso' | 'local_juarez' | 'local_c
  * there would invalidate rows that are already stored.
  */
 const ORDERABLE_DESTINATIONS: Destination[] = ['us', 'mexico', 'local_el_paso', 'local_juarez', 'international']
+
+/**
+ * Flat carrier charge for a shipped Mexico order, anywhere in the country.
+ * Mirrors MEXICO_FLAT_SHIPPING_CENTS in src/lib/shipping.ts — this side is the
+ * authority for what the customer is charged, so the two must move together.
+ */
+const MEXICO_FLAT_SHIPPING_CENTS = 2_000
 type LocalFulfillment = 'pickup' | 'home_delivery'
 type Address = { country: string; state: string; city: string; neighborhood: string; postalCode: string; street: string; streetNumber: string; line2: string }
 type Rate = { id: string; carrier: string; service: string; amountCents: number; currency: string; deliveryDays: number | null; deliveryDate: string | null }
@@ -753,7 +760,7 @@ async function createOrder(body: Record<string, unknown>, origin: string | null,
     null,
   )
   const importFeeCents = usesMexicoImportFee(destination) ? (kitCount >= 5 ? 5_000 : 2_500) : 0
-  const quotedShippingCents = destination === 'mexico' ? 1_500 : isLocal(destination) ? verification.localDeliveryFeeCents : matchedRate?.amountCents ?? null
+  const quotedShippingCents = destination === 'mexico' ? MEXICO_FLAT_SHIPPING_CENTS : isLocal(destination) ? verification.localDeliveryFeeCents : matchedRate?.amountCents ?? null
   const shippingWaived = quotedShippingCents !== null && quotedShippingCents > 0 && earnedTier !== null
   const shippingCents = shippingWaived ? 0 : quotedShippingCents
   const volumeDiscountCents = earnedTier ? Math.round(subtotalCents * earnedTier.discountRate) : 0

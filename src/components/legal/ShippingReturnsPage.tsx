@@ -8,7 +8,7 @@ const copy = {
     intro: 'Review destination rules, Mexico charges, local-delivery coverage, address verification, and the timing information that must be confirmed before payment.',
     mexicoTitle: '1. Shipping to Mexico',
     mexicoIntro: 'The import fee applies to shipped Mexico orders and local delivery in Ciudad Juárez. It is based on the total number of kits and is recalculated whenever quantity changes.',
-    mexicoLocalNote: 'For local orders in Ciudad Juárez, the same $25 or $50 import fee applies to both distribution-point pickup and home delivery. The $15 carrier-shipping charge does not apply. Pickup is free; eligible home delivery adds $10.',
+    mexicoLocalNote: 'For local orders in Ciudad Juárez, the same $25 or $50 import fee applies to both distribution-point pickup and home delivery. The $20 carrier-shipping charge does not apply. Pickup is free; eligible home delivery adds $10.',
     kits: 'Kits', import: 'Import fee', shipping: 'Shipping', additional: 'Total additional charges',
     oneFour: '1–4 kits', fivePlus: '5+ kits',
     timing: 'Estimated total time = up to 48 hours of processing or dispatch + the confirmed carrier transport or local-delivery time.',
@@ -29,7 +29,7 @@ const copy = {
     intro: 'Consulta las reglas por destino, los cargos para México, la cobertura local, la verificación de direcciones y los tiempos que deben confirmarse antes del pago.',
     mexicoTitle: '1. Envíos a México',
     mexicoIntro: 'La tarifa de importación aplica a los pedidos enviados a México y a la entrega local en Ciudad Juárez. Depende de la cantidad total de kits y se vuelve a calcular cada vez que cambia la cantidad.',
-    mexicoLocalNote: 'Para pedidos locales en Ciudad Juárez aplica la misma tarifa de importación de USD $25 o USD $50, tanto para recoger en punto de distribución como para entrega a domicilio. No se cobran los USD $15 de paquetería. Recoger es gratis; la entrega a domicilio elegible agrega USD $10.',
+    mexicoLocalNote: 'Para pedidos locales en Ciudad Juárez aplica la misma tarifa de importación de USD $25 o USD $50, tanto para recoger en punto de distribución como para entrega a domicilio. No se cobran los USD $20 de paquetería. Recoger es gratis; la entrega a domicilio elegible agrega USD $10.',
     kits: 'Kits', import: 'Tarifa de importación', shipping: 'Envío', additional: 'Cargos adicionales totales',
     oneFour: '1–4 kits', fivePlus: '5 kits o más',
     timing: 'Tiempo estimado total = hasta 48 horas de procesamiento o despacho + el tiempo confirmado de transporte o entrega local.',
@@ -58,7 +58,7 @@ export function ShippingReturnsPage() {
         <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
           <table className="w-full min-w-[34rem] text-left text-sm">
             <thead className="bg-[#071724] text-white"><tr><th className="px-4 py-3">{page.kits}</th><th className="px-4 py-3">{page.import}</th><th className="px-4 py-3">{page.shipping}</th><th className="px-4 py-3">{page.additional}</th></tr></thead>
-            <tbody><tr className="border-b border-slate-200"><td className="px-4 py-3 font-semibold">{page.oneFour}</td><td className="px-4 py-3">$25 USD</td><td className="px-4 py-3">$15 USD</td><td className="px-4 py-3 font-semibold">$40 USD</td></tr><tr><td className="px-4 py-3 font-semibold">{page.fivePlus}</td><td className="px-4 py-3">$50 USD</td><td className="px-4 py-3">$15 USD</td><td className="px-4 py-3 font-semibold">$65 USD</td></tr></tbody>
+            <tbody><tr className="border-b border-slate-200"><td className="px-4 py-3 font-semibold">{page.oneFour}</td><td className="px-4 py-3">$25 USD</td><td className="px-4 py-3">$20 USD</td><td className="px-4 py-3 font-semibold">$45 USD</td></tr><tr><td className="px-4 py-3 font-semibold">{page.fivePlus}</td><td className="px-4 py-3">$50 USD</td><td className="px-4 py-3">$20 USD</td><td className="px-4 py-3 font-semibold">$70 USD</td></tr></tbody>
           </table>
         </div>
         <p className="rounded-2xl border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700">{page.mexicoLocalNote}</p>

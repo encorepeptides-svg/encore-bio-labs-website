@@ -34,7 +34,7 @@ export const checkout = {
   destinationUs: 'Estados Unidos',
   destinationUsBody: 'Dirección completa en EE. UU. y servicios vigentes del transportista.',
   destinationMexico: 'México',
-  destinationMexicoBody: 'Dirección en México, tarifa de importación y regla de envío de USD $15.',
+  destinationMexicoBody: 'Dirección en México, tarifa de importación y envío plano de USD $20 a todo el país.',
   destinationElPaso: 'Entrega local · El Paso',
   destinationJuarez: 'Entrega local · Ciudad Juárez',
   destinationLocalBody: 'Se deben confirmar la cobertura, el costo y el horario de esta zona local.',

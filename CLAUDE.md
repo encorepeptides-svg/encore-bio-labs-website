@@ -152,6 +152,13 @@ cuánto falta para el siguiente escalón. Implementado en `src/lib/promotions.ts
 duplicado en `supabase/functions/shipping-checkout` — **los dos deben moverse
 juntos**, el servidor es la autoridad del total.
 
+**Envío plano a México: USD $20 a todo el país** (subió de $15 el 28-ago-2026).
+Es `MEXICO_FLAT_SHIPPING_CENTS`, y como la escalera, está **duplicado** en
+`src/lib/shipping.ts` y en `supabase/functions/shipping-checkout` — muévelos
+juntos. La promoción de envío gratis desde $200 lo cancela igual que a cualquier
+flete; la cuota de importación no, porque es aduana y no flete. Los pedidos
+locales no lo pagan: tienen su propia tarifa de entrega.
+
 ---
 
 ## Proyecto hermano

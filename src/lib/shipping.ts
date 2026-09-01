@@ -96,6 +96,21 @@ export type ShippingCharges = {
 export const CASH_ON_DELIVERY_PROCESSING_RATE = 0.05
 
 /**
+ * Flat carrier charge for a shipped Mexico order, anywhere in the country.
+ *
+ * Mexico is quoted at one published rate rather than a live carrier rate, so
+ * this number is the whole freight quote for the destination. It is waived by
+ * the free-shipping promotion like any other freight, and it is never applied
+ * to a local order, which pays its own delivery fee instead.
+ *
+ * Duplicated in supabase/functions/shipping-checkout, which recomputes every
+ * total server-side and is the authority for what a customer is actually
+ * charged. Change both together or the cart will quote one figure and the
+ * recorded order another.
+ */
+export const MEXICO_FLAT_SHIPPING_CENTS = 2_000
+
+/**
  * Cash-on-delivery processing applies only to merchandise after promotions.
  * Shipping and Mexico import charges are intentionally excluded so the fee is
  * stable even when an operator still needs to confirm delivery.
@@ -245,7 +260,7 @@ export function calculateShippingCharges({
   // waives it — a Mexico order over the threshold still pays it.
   const importFeeCents = destinationUsesMexicoImportFee(destination) ? calculateMexicoImportFeeCents(kitCount) : 0
   let shippingCents: number | null = null
-  if (destination === 'mexico') shippingCents = 1_500
+  if (destination === 'mexico') shippingCents = MEXICO_FLAT_SHIPPING_CENTS
   else if (destinationIsLocal(destination)) shippingCents = localDeliveryFeeCents
   else if (selectedRate) shippingCents = selectedRate.amountCents
 
