@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState, type MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import {
@@ -27,6 +27,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import logo from '../../assets/images/logo/encore-logo.png'
+import { BUSINESS_WHATSAPP_PHONE } from '../../config/interimCheckout'
 import { useLocale, useTranslation } from '../../i18n/LocaleContext'
 import { purchaseTypeLabel } from '../../i18n/displayLabels'
 import type { CartItem } from '../../lib/cart'
@@ -370,14 +371,28 @@ export function ExpressOrderDialog({ items, open, onClose }: { items: CartItem[]
     setStep((current) => (current === 2 ? current : ((current + 1) as Step)))
   }
 
-  function send() {
+  /**
+   * Hands the order to WhatsApp.
+   *
+   * This is the click handler on an anchor, not a button, and that is the whole
+   * point: `window.open` is blocked outright inside in-app browsers — the
+   * webviews Instagram, Facebook and TikTok open links in — and by pop-up
+   * blockers elsewhere. A shopper hit Send and nothing happened, with no error
+   * to react to. A user-initiated anchor navigation is never blocked, and where
+   * `target="_blank"` is ignored the webview simply navigates to WhatsApp
+   * instead, which is the same destination.
+   *
+   * So the default is allowed to proceed and only cancelled when the order is
+   * not ready to send.
+   */
+  function send(event: MouseEvent<HTMLAnchorElement>) {
     setShowValidation(true)
     if (!readyToSend) {
+      event.preventDefault()
       revealFirstIssue()
       return
     }
     persistShipTo()
-    window.open(buildExpressOrderUrl(orderInput), '_blank', 'noopener,noreferrer')
     setSent(true)
   }
 
@@ -803,22 +818,36 @@ export function ExpressOrderDialog({ items, open, onClose }: { items: CartItem[]
                     </label>
                     {showValidation && !accepted ? <p className="-mt-3 text-xs font-medium text-rose-700" role="alert">{t('expressAcknowledgmentError')}</p> : null}
 
-                    {sent ? (
-                      <div className="rounded-2xl border border-[#25d366]/40 bg-[#f6fdf8] p-4">
-                        <p className="flex items-center gap-2 text-sm font-semibold text-[#071724]"><Check size={15} aria-hidden="true" className="text-[#128c7e]" strokeWidth={3} />{t('expressSentTitle')}</p>
-                        <p className="mt-1.5 text-xs leading-5 text-slate-600">{t('expressSentBody')}</p>
-                        <button type="button" onClick={() => void copy(message, 'message')} className="mt-3 inline-flex min-h-10 items-center gap-1.5 rounded-full border border-slate-900/10 bg-white px-3.5 text-xs font-semibold text-teal-800 transition hover:bg-teal-50">
+                    {/*
+                      * Always offered, not just after sending. Whether WhatsApp
+                      * actually opened is unknowable from here, and a shopper
+                      * whose browser swallowed the hand-off has no error to
+                      * react to — so the way out is on screen before they need
+                      * it rather than behind a state they may never reach.
+                      */}
+                    <div className={`rounded-2xl border p-4 ${sent ? 'border-[#25d366]/40 bg-[#f6fdf8]' : 'border-slate-900/10 bg-white'}`}>
+                      <p className="flex items-center gap-2 text-sm font-semibold text-[#071724]">
+                        {sent ? <Check size={15} aria-hidden="true" className="text-[#128c7e]" strokeWidth={3} /> : <MessageCircle size={15} aria-hidden="true" className="text-teal-700" />}
+                        {t(sent ? 'expressSentTitle' : 'expressFallbackTitle')}
+                      </p>
+                      <p className="mt-1.5 text-xs leading-5 text-slate-600">{t(sent ? 'expressSentBody' : 'expressFallbackBody')}</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <button type="button" onClick={() => void copy(message, 'message')} className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-slate-900/10 bg-white px-3.5 text-xs font-semibold text-teal-800 transition hover:bg-teal-50">
                           {copied === 'message' ? <Check size={13} aria-hidden="true" strokeWidth={3} /> : <Copy size={13} aria-hidden="true" />}
                           {t(copied === 'message' ? 'expressCopied' : 'expressCopyMessage')}
                         </button>
-                        {prepaidRail ? (
-                          <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-teal-200 bg-white p-3">
-                            <Camera size={15} aria-hidden="true" className="mt-0.5 shrink-0 text-teal-700" />
-                            <p className="text-xs leading-5 text-slate-600">{t('expressReceiptPrompt', { reference })}</p>
-                          </div>
-                        ) : null}
+                        <a href={`https://wa.me/${BUSINESS_WHATSAPP_PHONE}`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-slate-900/10 bg-white px-3.5 text-xs font-semibold text-teal-800 transition hover:bg-teal-50">
+                          <MessageCircle size={13} aria-hidden="true" />
+                          {t('expressOpenChat')}
+                        </a>
                       </div>
-                    ) : null}
+                      {sent && prepaidRail ? (
+                        <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-teal-200 bg-white p-3">
+                          <Camera size={15} aria-hidden="true" className="mt-0.5 shrink-0 text-teal-700" />
+                          <p className="text-xs leading-5 text-slate-600">{t('expressReceiptPrompt', { reference })}</p>
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
                 ) : null}
               </div>
@@ -895,10 +924,16 @@ export function ExpressOrderDialog({ items, open, onClose }: { items: CartItem[]
                     <ArrowRight size={15} aria-hidden="true" />
                   </button>
                 ) : (
-                  <button type="button" onClick={send} className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#25d366] px-5 text-sm font-semibold text-[#071724] transition hover:bg-[#1eb855] lg:flex-none lg:min-w-[14rem]">
+                  <a
+                    href={readyToSend ? buildExpressOrderUrl(orderInput) : '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={send}
+                    className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#25d366] px-5 text-sm font-semibold text-[#071724] transition hover:bg-[#1eb855] lg:flex-none lg:min-w-[14rem]"
+                  >
                     <MessageCircle size={16} aria-hidden="true" />
                     {t('expressSubmit')}
-                  </button>
+                  </a>
                 )}
               </div>
               <p className="mt-2.5 text-center text-xs leading-5 text-slate-500 sm:text-right">{t('expressFootnote')}</p>
