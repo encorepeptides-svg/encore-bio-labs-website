@@ -36,7 +36,7 @@ describe('product catalog integrity', () => {
 
   it('contains the complete active catalog with unique variant SKUs', () => {
     expect(products).toHaveLength(24)
-    expect(products.reduce((count, product) => count + product.variants.length, 0)).toBe(30)
+    expect(products.reduce((count, product) => count + product.variants.length, 0)).toBe(31)
     const skus = products.flatMap((product) => product.variants.map((variant) => variant.sku))
     expect(skus.every(Boolean)).toBe(true)
     expect(new Set(skus).size).toBe(skus.length)

@@ -12,7 +12,8 @@ describe('purchase option pricing', () => {
       { label: '15 mg', strength: 15, base: 109, badge: undefined },
       { label: '20 mg', strength: 20, base: 129, badge: 'Most Popular' },
       { label: '25 mg', strength: 25, base: 149, badge: undefined },
-      { label: '30 mg', strength: 30, base: 169, badge: 'Best Value' },
+      { label: '30 mg', strength: 30, base: 169, badge: undefined },
+      { label: '40 mg', strength: 40, base: 209, badge: 'Best Value' },
     ]
 
     for (const row of expected) {

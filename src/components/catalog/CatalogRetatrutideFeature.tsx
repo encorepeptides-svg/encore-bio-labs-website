@@ -92,7 +92,7 @@ export function CatalogRetatrutideFeature() {
 
           <div id="retatrutide-strengths" className="mt-6 scroll-mt-32">
             <p className="text-xs font-bold uppercase tracking-[0.17em] text-teal-200/80">{t('retaStrengthsLabel')}</p>
-            <div role="group" aria-label={t('retaStrengthsLabel')} className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
+            <div role="group" aria-label={t('retaStrengthsLabel')} className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
               {product.variants.map((variant, index) => {
                 const available = product.stockStatus !== 'Unavailable' && variant.price > 0
                 const unavailableId = `retatrutide-variant-${index}-status`

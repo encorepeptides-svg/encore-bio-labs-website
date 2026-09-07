@@ -130,7 +130,7 @@ export const productConversionContent: Record<PilotProductSlug, ProductConversio
         hero: {
           eyebrow: 'Metabolic pathway research',
           headline: 'Three metabolic pathways. One advanced research molecule.',
-          support: 'An investigational triple-agonist studied across GLP-1, GIP, and glucagon pathways, available in five clearly priced research strengths.',
+          support: 'An investigational triple-agonist studied across GLP-1, GIP, and glucagon pathways, available in six clearly priced research strengths.',
           evidenceLabel: 'Advanced human trials',
           evidenceTooltip: 'This rating describes published research on the molecule or related regulated pharmaceutical material. It does not establish outcomes for Encore Research Use Only material.',
           strengthsLabel: 'Available strengths',
@@ -195,7 +195,7 @@ export const productConversionContent: Record<PilotProductSlug, ProductConversio
         },
         formats: {
           eyebrow: 'Available formats',
-          heading: 'Five strengths, one transparent pricing structure.',
+          heading: 'Six strengths, one transparent pricing structure.',
           body: 'Every price below comes from the same canonical product data used by the configurator and cart.',
           strengthLabel: 'Strength',
           vialLabel: 'Vial only',
@@ -233,7 +233,7 @@ export const productConversionContent: Record<PilotProductSlug, ProductConversio
         hero: {
           eyebrow: 'Investigación de vías metabólicas',
           headline: 'Tres vías metabólicas. Una molécula avanzada de investigación.',
-          support: 'Un triple agonista en investigación estudiado en las vías GLP-1, GIP y glucagón, disponible en cinco concentraciones de investigación con precios claros.',
+          support: 'Un triple agonista en investigación estudiado en las vías GLP-1, GIP y glucagón, disponible en seis concentraciones de investigación con precios claros.',
           evidenceLabel: 'Ensayos avanzados en humanos',
           evidenceTooltip: 'Esta clasificación describe la investigación publicada sobre la molécula o material farmacéutico regulado relacionado. No establece resultados para el material de Encore destinado solo a investigación.',
           strengthsLabel: 'Concentraciones disponibles',
@@ -298,7 +298,7 @@ export const productConversionContent: Record<PilotProductSlug, ProductConversio
         },
         formats: {
           eyebrow: 'Formatos disponibles',
-          heading: 'Cinco concentraciones, una estructura de precios transparente.',
+          heading: 'Seis concentraciones, una estructura de precios transparente.',
           body: 'Cada precio proviene de los mismos datos canónicos utilizados por el configurador y el carrito.',
           strengthLabel: 'Concentración',
           vialLabel: 'Solo vial',

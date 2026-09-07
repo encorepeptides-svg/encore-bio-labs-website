@@ -1579,6 +1579,7 @@ const catalogProducts: CatalogProduct[] = [
       { label: '20 mg', format: 'Vial format', price: 129 },
       { label: '25 mg', format: 'Vial format', price: 149 },
       { label: '30 mg', format: 'Vial format', price: 169 },
+      { label: '40 mg', format: 'Vial format', price: 209 },
     ],
     purchaseRules: { multipackQuantities: [2, 3, 5] },
   },

@@ -127,6 +127,9 @@ export function getRetatrutideVariantBadge(product: Product, variant: ProductVar
     : { starter: 'Starter', mostPopular: 'Most Popular', bestValue: 'Best Value' }
   if (variant === measurable[0]) return labels.starter
   if (variant.strength === 20) return labels.mostPopular
-  if (variant.strength === 30) return labels.bestValue
+  // Best Value always rides the top strength — it has the lowest price per mg,
+  // so pinning it to a fixed number would go stale the next time a larger vial
+  // is added above it.
+  if (variant === measurable[measurable.length - 1]) return labels.bestValue
   return undefined
 }

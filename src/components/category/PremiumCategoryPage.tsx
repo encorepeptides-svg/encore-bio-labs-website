@@ -218,7 +218,7 @@ function FlagshipModule({ product }: { product: Product }) {
             {price !== null ? <p className="text-3xl font-semibold tracking-[-0.04em] text-[#071724]">{getProductStartingPriceLabel(product, t)}</p> : null}
           </div>
           <div className="mt-7"><ProductStatus product={product} /></div>
-          <div className={`mt-8 grid gap-3 ${product.variants.length > 3 ? 'grid-cols-2 sm:grid-cols-3 xl:grid-cols-5' : 'sm:grid-cols-2'}`}>
+          <div className={`mt-8 grid gap-3 ${product.variants.length > 3 ? 'grid-cols-2 sm:grid-cols-3 xl:grid-cols-6' : 'sm:grid-cols-2'}`}>
             {product.variants.map((variant) => (
               <a key={variant.sku} href={path(productPurchasePath(product))} className="relative z-20 min-h-20 rounded-2xl border border-slate-900/10 bg-[#F8FAFC] px-4 py-4 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-400 hover:bg-white hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-600">
                 <span className="block text-sm font-bold text-[#071724]">{variant.label}</span>

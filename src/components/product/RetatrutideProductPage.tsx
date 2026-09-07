@@ -72,10 +72,10 @@ function PurchaseConfigurator({
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-teal-700">{t('selectFormat')}</p>
           <h2 className="mt-2 text-3xl font-semibold tracking-[-0.045em] text-[#071724]">{t('chooseStrength')}</h2>
         </div>
-        <p className="text-sm text-slate-500">{t('fiveFormats')}</p>
+        <p className="text-sm text-slate-500">{t('activeFormats', { count: product.variants.length })}</p>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {product.variants.map((entry) => {
           const active = entry === variant
           const badge = getRetatrutideVariantBadge(product, entry, locale)
