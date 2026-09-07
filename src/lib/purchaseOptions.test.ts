@@ -87,6 +87,17 @@ describe('purchase option pricing', () => {
     expect(hgh.variants[0].strength).toBe(60)
     expect(hghQuote.pricePerMeasure).toBe(2.25)
 
+    // The 4 x 30 IU kit carries twice the total IU of the 4 x 15 IU one, so its
+    // price per IU has to come in under it — the same volume step every other
+    // ladder in the catalog makes. Total strength is the sum across vials, not
+    // the per-vial figure printed on the label.
+    const hghDouble = hgh.variants[1]
+    const hghDoubleQuote = quotePurchase(hgh, hghDouble, { optionId: 'vial-only', packSize: 1, includeKit: false })
+    expect(hghDouble).toMatchObject({ sku: 'HGH191AA-4X30IU', price: 195, strength: 120, unitType: 'IU' })
+    expect(hghDoubleQuote.pricePerMeasure).toBe(1.625)
+    expect(hghDoubleQuote.pricePerMeasure!).toBeLessThan(hghQuote.pricePerMeasure!)
+    expect(quotePurchase(hgh, hghDouble, { optionId: 'complete-kit', packSize: 1, includeKit: true }).linePrice).toBe(205)
+
     const hcg = products.find((product) => product.slug === 'hcg')!
     const hcgKit = quotePurchase(hcg, hcg.variants[0], { optionId: 'complete-kit', packSize: 1, includeKit: true })
     expect(hcgKit.pricePerMeasure).toBe(0.013)

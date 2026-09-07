@@ -1772,7 +1772,10 @@ const catalogProducts: CatalogProduct[] = [
     description:
       'HGH 191AA refers to the 191-amino-acid human growth hormone sequence studied for GH receptor signaling, IGF-1 axis response, protein metabolism, recovery, and body-composition research context.',
     featured: true,
-    variants: [{ sku: 'HGH191AA-4X15IU', label: '4 × 15 IU vials', format: 'Multi-vial format', price: 135, strength: 60, unitType: 'IU' }],
+    variants: [
+      { sku: 'HGH191AA-4X15IU', label: '4 × 15 IU vials', format: 'Multi-vial format', price: 135, strength: 60, unitType: 'IU' },
+      { sku: 'HGH191AA-4X30IU', label: '4 × 30 IU vials', format: 'Multi-vial format', price: 195, strength: 120, unitType: 'IU' },
+    ],
     purchaseRules: { productType: 'ready-to-use', kitEligible: true, multipackEligible: false },
   },
   {
