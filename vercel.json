@@ -19,6 +19,9 @@
     }
   ],
   "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
+    { "source": "/portal/:path*", "destination": "/portal/index.html" },
+    { "source": "/es/portal/:path*", "destination": "/es/portal/index.html" },
+    { "source": "/admin/:path*", "destination": "/admin/index.html" },
+    { "source": "/es/admin/:path*", "destination": "/es/admin/index.html" }
   ]
 }

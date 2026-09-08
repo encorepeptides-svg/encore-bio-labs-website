@@ -7,7 +7,7 @@ export const LOCALE_PREFIX: Record<Locale, string> = { en: '', es: '/es' }
 export const LOCALE_STORAGE_KEY = 'encore.locale'
 export const LATAM_BANNER_DISMISSED_KEY = 'encore.latamSuggestionDismissed'
 
-export const SITE_ORIGIN = 'https://encorebiolabs.com'
+export const SITE_ORIGIN = 'https://www.encorebiolabs.com'
 
 /**
  * ISO 3166-1 alpha-2 codes for Latin America + Spanish-relevant Caribbean

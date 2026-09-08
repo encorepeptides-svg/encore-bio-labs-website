@@ -29,7 +29,7 @@ describe('applyDocumentMetadata', () => {
     applyDocumentMetadata('/catalog', 'en', meta)
     expect(document.title).toBe(meta.title)
     expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toBe(meta.description)
-    expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe('https://encorebiolabs.com/catalog')
+    expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe('https://www.encorebiolabs.com/catalog')
   })
 
   it('renders distinct Spanish metadata on the Spanish route, with a /es canonical URL', () => {
@@ -37,7 +37,7 @@ describe('applyDocumentMetadata', () => {
     applyDocumentMetadata('/catalog', 'es', meta)
     expect(document.title).toBe(meta.title)
     expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toBe(meta.description)
-    expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe('https://encorebiolabs.com/es/catalog')
+    expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe('https://www.encorebiolabs.com/es/catalog')
   })
 
   it('English and Spanish titles/descriptions are never identical placeholders', () => {
@@ -49,9 +49,9 @@ describe('applyDocumentMetadata', () => {
 
   it('emits hreflang alternates for en, es, and x-default', () => {
     applyDocumentMetadata('/catalog', 'en', pageMetadata['/catalog'].en)
-    expect(document.querySelector('link[rel="alternate"][hreflang="en"]')?.getAttribute('href')).toBe('https://encorebiolabs.com/catalog')
-    expect(document.querySelector('link[rel="alternate"][hreflang="es"]')?.getAttribute('href')).toBe('https://encorebiolabs.com/es/catalog')
-    expect(document.querySelector('link[rel="alternate"][hreflang="x-default"]')?.getAttribute('href')).toBe('https://encorebiolabs.com/catalog')
+    expect(document.querySelector('link[rel="alternate"][hreflang="en"]')?.getAttribute('href')).toBe('https://www.encorebiolabs.com/catalog')
+    expect(document.querySelector('link[rel="alternate"][hreflang="es"]')?.getAttribute('href')).toBe('https://www.encorebiolabs.com/es/catalog')
+    expect(document.querySelector('link[rel="alternate"][hreflang="x-default"]')?.getAttribute('href')).toBe('https://www.encorebiolabs.com/catalog')
   })
 
   it('localizes Open Graph and Twitter tags', () => {
