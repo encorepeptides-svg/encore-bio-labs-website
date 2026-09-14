@@ -9,9 +9,9 @@ import {
 function completeForm(overrides: Partial<PortalOnboardingForm> = {}): PortalOnboardingForm {
   return {
     legalName: 'Research Client', preferredName: '', mobile: '9155550100', language: 'English', timeZone: 'America/Denver',
-    dateOfBirth: '1985-01-01', height: '70', startingWeight: '190', currentWeight: '185', waist: '34', units: 'imperial',
+    dateOfBirth: '1985-01-01',
     goals: ['wellness'], researchInterests: ['longevity-cellular-health'], interestedProducts: ['nad-plus'],
-    activity: 'Moderate', exercise: '3', sleep: '7.5', water: '3', appetite: '3', energy: '3', stress: '3', wellness: '3',
+    activity: 'Moderate', exercise: '3', sleep: '7.5', water: '3', energy: '3', stress: '3', wellness: '3',
     emailNotifications: true, portalNotifications: true, orderUpdates: true, checkinReminders: true, documentNotifications: true, supportNotifications: true,
     signature: 'Research Client', terms: true, privacy: true, ruo: true, noMedical: true, electronic: true, progressData: true, photos: false,
     ...overrides,
@@ -28,7 +28,7 @@ describe('portal onboarding completion', () => {
 
   it.each([
     [0, { mobile: '' }],
-    [1, { currentWeight: '' }],
+    [1, { dateOfBirth: '' }],
     [2, { goals: [] }],
     [3, { interestedProducts: [] }],
     [4, { exercise: '' }],
@@ -43,7 +43,6 @@ describe('portal onboarding completion', () => {
 
   it('rejects invalid numeric values and permits the optional preferred name and photo consent', () => {
     expect(isPortalOnboardingComplete(completeForm({ preferredName: '', photos: false }))).toBe(true)
-    expect(isPortalOnboardingStepComplete(1, completeForm({ height: '0' }))).toBe(false)
     expect(isPortalOnboardingStepComplete(4, completeForm({ exercise: '-1' }))).toBe(false)
     expect(isPortalOnboardingStepComplete(4, completeForm({ sleep: 'Infinity' }))).toBe(false)
     expect(isPortalOnboardingStepComplete(4, completeForm({ water: '6' }))).toBe(false)

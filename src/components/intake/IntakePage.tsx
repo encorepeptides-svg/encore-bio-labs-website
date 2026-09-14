@@ -40,7 +40,6 @@ import {
 } from '../../lib/portal/intakeHandoff'
 
 const stepKeys = ['stepGoal', 'stepSituation', 'stepReview'] as const
-const sexOptions = ['Female', 'Male', 'Intersex', 'Prefer not to say']
 const activityOptions = ['Sedentary', 'Light', 'Moderate', 'Very active', 'Athletic']
 const sleepOptions = ['Excellent', 'Good', 'Inconsistent', 'Poor']
 const energyOptions = ['Steady', 'Afternoon dips', 'Low most days', 'Variable']
@@ -49,8 +48,6 @@ const priorityOptions = ['Best product fit', 'Simple next steps', 'Clear pricing
 const timelineOptions = ['Ready now', 'Within 1 month', 'Within 1–3 months', 'Just exploring']
 const helpOptions = ['Recommend a starting point', 'Compare a few options', 'Confirm a product I have in mind', 'Answer questions first']
 const concernOptions = ['Weight or body composition', 'Energy', 'Recovery', 'Sleep', 'Focus or performance', 'Healthy aging', 'General wellness']
-const biometricsOptions = ['I can share them now', "I don't have them yet", 'I prefer to discuss them']
-const ageRangeOptions = ['18–29', '30–39', '40–49', '50–59', '60+', 'Prefer not to say']
 const contactOptions = ['Email', 'SMS', 'WhatsApp']
 
 // Mexican and US mobile numbers are both 10 digits, so a bare number cannot be
@@ -88,21 +85,10 @@ const intakeValueKeys: Record<string, string> = {
   'Focus or performance': 'concernFocus',
   'Healthy aging': 'concernHealthyAging',
   'General wellness': 'concernGeneralWellness',
-  'I can share them now': 'biometricsReady',
-  "I don't have them yet": 'biometricsNotReady',
-  'I prefer to discuss them': 'biometricsDiscuss',
   'New to this': 'experienceNew',
   'Some experience': 'experienceSome',
   'Very experienced': 'experienceVery',
   'I want guidance': 'experienceGuidance',
-  '18–29': 'age18To29',
-  '30–39': 'age30To39',
-  '40–49': 'age40To49',
-  '50–59': 'age50To59',
-  '60+': 'age60Plus',
-  Female: 'optionFemale',
-  Male: 'optionMale',
-  Intersex: 'optionIntersex',
   'Prefer not to say': 'optionPreferNotToSay',
   Sedentary: 'optionSedentary',
   Light: 'optionLight',
@@ -519,10 +505,14 @@ export function IntakePage() {
         intakeSubmission: {
           id: crypto.randomUUID(),
           submittedAt: nextLead.createdAt,
-          age: formData.age,
-          sex: formData.sex,
-          weight: formData.currentWeight,
-          height: formData.height,
+          // The intake no longer asks for age, sex, height, or weight. These
+          // stay on the payload as empty strings because crm_intake_submissions
+          // still holds them for submissions taken while the block existed, and
+          // the CRM lead drawer reads those historical rows.
+          age: '',
+          sex: '',
+          weight: '',
+          height: '',
           mainGoal: formData.mainGoal || 'General Research Review',
           currentRoutine: [
             formData.topPriorities.length ? `Priorities: ${formData.topPriorities.join(', ')}` : '',
@@ -530,7 +520,6 @@ export function IntakePage() {
             formData.helpNeeded.length ? `Support needed: ${formData.helpNeeded.join(', ')}` : '',
             formData.currentConcerns.length ? `Current focus: ${formData.currentConcerns.join(', ')}` : '',
             formData.lifestyleActivity,
-            `Measurements: ${formData.biometricsStatus}`,
           ]
             .filter(Boolean)
             .join(' · '),
@@ -735,30 +724,6 @@ export function IntakePage() {
                         <SelectField name="peptideExperience" value={formData.peptideExperience} options={peptideExperienceOptions} onChange={updateField} />
                       </Field>
                     </div>
-                    <QuestionGroup legend={t('biometricsQuestion')} hint={t('biometricsHelp')}>
-                      <ChoiceGrid name="biometricsStatus" value={formData.biometricsStatus} options={biometricsOptions} onChange={updateField} />
-                    </QuestionGroup>
-
-                    {formData.biometricsStatus === 'I can share them now' ? (
-                      <div className="grid gap-4 rounded-[1.5rem] border border-slate-900/10 bg-[#f5f5f2]/70 p-4 md:grid-cols-2 sm:p-5">
-                        <Field label={`${t('ageRange')} (${t('required')})`}>
-                          <SelectField name="age" value={formData.age} options={ageRangeOptions} onChange={updateField} />
-                        </Field>
-                        <Field label={`${t('biologicalSex')} (${t('required')})`}>
-                          <SelectField name="sex" value={formData.sex} options={sexOptions} onChange={updateField} />
-                        </Field>
-                        <Field label={`${t('height')} (${t('required')})`}>
-                          <TextInput name="height" value={formData.height} onChange={updateField} placeholder={t('heightPlaceholder')} />
-                        </Field>
-                        <Field label={`${t('currentWeight')} (${t('required')})`}>
-                          <TextInput name="currentWeight" value={formData.currentWeight} onChange={updateField} placeholder={t('weightPlaceholder')} />
-                        </Field>
-                        <Field label={`${t('goalWeight')} (${t('required')})`}>
-                          <TextInput name="goalWeight" value={formData.goalWeight} onChange={updateField} placeholder={t('weightPlaceholder')} />
-                        </Field>
-                      </div>
-                    ) : null}
-
                     {formData.peptideExperience === 'New to this' ? (
                       <div role="status" className="rounded-2xl border border-teal-700/20 bg-teal-50 p-4 text-sm leading-6 text-teal-950">
                         {t('newExperienceReassurance')}

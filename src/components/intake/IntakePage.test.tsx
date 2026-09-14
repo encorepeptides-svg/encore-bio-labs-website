@@ -33,7 +33,6 @@ function completeSituation(overrides: Partial<IntakeFormData> = {}): IntakeFormD
     sleepQuality: 'Inconsistent',
     energyLevels: 'Variable',
     peptideExperience: 'New to this',
-    biometricsStatus: "I don't have them yet",
     interestedProducts: ['NAD+'],
     ...overrides,
   }
@@ -84,28 +83,19 @@ describe('direct client intake flow', () => {
     expect(isIntakeStepComplete(0, completeGoals())).toBe(true)
   })
 
-  it('requires all visible situation answers while accepting an explicit unavailable-measurements response', () => {
+  it('requires all visible situation answers', () => {
     expect(isIntakeStepComplete(1, completeGoals())).toBe(false)
     expect(isIntakeStepComplete(1, completeSituation({ currentConcerns: [] }))).toBe(false)
-    expect(isIntakeStepComplete(1, completeSituation({ biometricsStatus: '' }))).toBe(false)
     expect(isIntakeStepComplete(1, completeSituation({ interestedProducts: [] }))).toBe(true)
     expect(isIntakeStepComplete(1, completeSituation({ peptideExperience: 'Some experience', interestedProducts: [] }))).toBe(true)
     expect(isIntakeStepComplete(1, completeSituation())).toBe(true)
-    expect(completeSituation().age).toBe('')
-    expect(completeSituation().currentWeight).toBe('')
   })
 
-  it('requires every displayed measurement when the client elects to share biometrics', () => {
-    const ready = completeSituation({
-      biometricsStatus: 'I can share them now',
-      age: '30–39',
-      sex: 'Prefer not to say',
-      height: '70 in',
-      currentWeight: '180 lb',
-      goalWeight: '170 lb',
-    })
-    expect(isIntakeStepComplete(1, ready)).toBe(true)
-    expect(isIntakeStepComplete(1, { ...ready, height: '' })).toBe(false)
+  it('collects no body measurement anywhere in the intake form data', () => {
+    const data = completeSituation() as Record<string, unknown>
+    for (const key of ['biometricsStatus', 'age', 'sex', 'height', 'currentWeight', 'goalWeight', 'bodyFat', 'waist']) {
+      expect(data).not.toHaveProperty(key)
+    }
   })
 
   it('keeps contact and all compliance acknowledgments required', () => {
@@ -139,7 +129,7 @@ describe('direct client intake flow', () => {
     expect(lead.lifestyleAnswers.timeline).toBe('Ready now')
     expect(lead.lifestyleAnswers.helpNeeded).toEqual(['Recommend a starting point'])
     expect(lead.lifestyleAnswers.currentConcerns).toEqual(['Energy', 'Sleep'])
-    expect(lead.lifestyleAnswers.biometricsStatus).toBe("I don't have them yet")
+    expect(lead.lifestyleAnswers.biometricsStatus).toBeUndefined()
   })
 
   it('clears hidden product interests for first-time clients and keeps them for other experience levels', () => {
@@ -177,8 +167,17 @@ describe('direct client intake flow', () => {
     expect(goalHtml).toContain('¿En qué necesitas más ayuda?')
     expect(goalHtml).toContain('¿Cuándo quieres avanzar?')
     expect(situationHtml).toContain('Ayúdanos a entender qué está pasando ahora.')
-    expect(situationHtml).toContain('Todavía no las tengo')
+    expect(situationHtml).toContain('¿Qué tan familiarizado estás con estos productos?')
     expect(translate('es', 'intake', 'stepSituation')).not.toBe(translate('en', 'intake', 'stepSituation'))
-    expect(translate('es', 'intake', 'biometricsHelp')).not.toBe(translate('en', 'intake', 'biometricsHelp'))
+    expect(translate('es', 'intake', 'experienceQuestion')).not.toBe(translate('en', 'intake', 'experienceQuestion'))
+  })
+
+  it('renders no body-measurement input on the situation step in either language', () => {
+    for (const locale of ['en', 'es'] as const) {
+      const html = renderStep(locale, 1, completeGoals())
+      for (const name of ['biometricsStatus', 'age', 'sex', 'height', 'currentWeight', 'goalWeight']) {
+        expect(html).not.toContain(`name="${name}"`)
+      }
+    }
   })
 })

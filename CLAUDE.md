@@ -86,13 +86,134 @@ caja. Clases canónicas: `.home-hero-video-canvas`, `.home-hero-scrim`,
 `.home-hero-atmosphere`. No reintroducir las variantes en caja
 (`home-hero-video-stage`/`-media`) ni el naming paralelo `hero-bleed-*`.
 
-**La calculadora del portal muestra unidades de jeringa U-100** (1 unidad = 10
-µL), no microlitros. El dueño lo indicó con el conflicto de cumplimiento
-señalado y reconocido: `AGENTS.md` prohíbe enmarcar dosis o inyección, y el texto
-de límites del portal decía que la herramienta NO daba unidades de jeringa. Ese
-texto se reescribió para coincidir. Es contenido adyacente a dosificación humana
-en un sitio RUO y carga riesgo de plataforma — no "restaurar" el texto anterior
-sin consultar. También se eliminó la calculadora de dilución C₁V₁=C₂V₂.
+**La calculadora reporta unidades de banco —µL, mL, mg/mL, µg/µL— y nunca
+unidades de jeringa U-100** (decisión del dueño, 02-sep-2026; **revierte** la
+decisión anterior de mostrar U-100). U-100 es una escala de jeringa de insulina
+humana: reportar la transferencia ahí convierte matemática de preparación en
+instrucción de administración dentro de un catálogo RUO, y era el activo de
+mayor riesgo del sitio frente a un banco adquirente o a la FDA. El microlitro
+lleva la misma información con más resolución, así que en el laboratorio no se
+pierde nada.
+
+`syringeUnits` y `massMgPerUnit` se eliminaron de `calculateAliquotPlan` en
+`src/lib/portal/labCalculators.ts`; en su lugar está `microgramsPerMicroliter`.
+Hay pruebas de regresión que fallan si esas llaves regresan, y otras que fallan
+si aparece "U-100", "syringe" o "jeringa" en el render. No las quites.
+
+El vocabulario de la interfaz también pasó de administración ("cuánto extraer",
+"unidades", "fuerza") a laboratorio ("volumen de alícuota", "µL",
+"concentración") en los dos idiomas, y el texto de límites ya no dice "sigue la
+orientación de un profesional calificado" —eso presuponía uso humano.
+
+**La calculadora NO es solo del portal.** También se renderiza en
+`/protocols/<slug>`, que es una ruta pública sin sesión (`src/App.tsx`). Cualquier
+cambio de cumplimiento aquí es cambio de cara pública, no interno.
+
+La calculadora de dilución C₁V₁=C₂V₂ sigue fuera de la interfaz;
+`calculateWorkingDilution` y `calculateStockConcentration` permanecen en el
+archivo sin ningún consumidor en la UI.
+
+**Se eliminaron las calculadoras de IMC y de cambio de peso** del portal
+(decisión del dueño, 04-sep-2026). Vivían en
+`src/components/portal/sections/CalculatorsSection.tsx` junto a la calculadora de
+alícuotas. Calcular el IMC de una persona, o su cambio porcentual de peso, es
+seguimiento de desenlace humano y no trabajo de laboratorio —y el cambio
+porcentual de peso es exactamente el endpoint que reportan los ensayos de GLP-1,
+así que en un catálogo RUO era la herramienta más difícil de defender del portal.
+La sección ahora solo contiene la calculadora de alícuotas. **No devuelvas
+herramientas de composición corporal al portal.**
+
+Se borraron sus llaves exclusivas (`bmiTitle`, `bmiHeightIn`, `bmiResult`,
+`changeTitle`, `changeNet`, `changePercent`) en los dos idiomas.
+
+**El portal ya no registra composición corporal ni apetito** (decisión del
+dueño, 04-sep-2026). Se quitaron de la interfaz: estatura, peso inicial, peso
+actual y cintura del onboarding; peso y cintura de `ProgressSection` y
+`CheckInsSection`; la calificación de apetito del onboarding y del check-in
+semanal; y los cuatro mosaicos de medidas más el apetito de
+`IntakeResultsSection`. El apetito era el peor de todos: la supresión del
+apetito es el efecto farmacológico principal de un GLP-1, así que registrarlo
+por cliente y a lo largo del tiempo documenta consumo humano.
+
+Quedan energía, sueño, estrés, bienestar, agua y notas —son bienestar genérico,
+no composición corporal.
+
+**El paso 1 del onboarding ahora es solo fecha de nacimiento.** La verificación
+de edad (18+) sí es un requisito RUO legítimo y se queda. También desapareció el
+selector de unidades imperial/métrico: solo existía para estatura, peso y
+cintura.
+
+**Esto obligó a una migración.** `portal_client_intake_is_complete` exigía
+`starting_weight_kg`, `current_weight_kg`, `waist_cm`, `height_cm` y
+`appetite_rating`, y esa función bloquea tanto `submit_portal_onboarding` como
+el trigger `require_complete_intake_before_activation`. Quitar los campos sin
+tocar la función habría dejado a **todo registro nuevo permanentemente
+incompleto**, sin auto-aprobación y sin mensaje de error útil. La migración es
+`20260904120000_drop_body_composition_intake_requirements.sql`.
+
+**Las columnas NO se borran** —misma lógica que `local_chihuahua` y
+`import_fee_cents`. `onboarding_profiles.height_cm/starting_weight_kg/`
+`current_weight_kg/waist_cm/appetite_rating` y las llaves `weight_kg`/`waist_cm`
+dentro del JSONB `measurements` de `progress_entries` y `weekly_checkins` siguen
+existiendo con los valores históricos. El portal ya no las lee ni las escribe.
+**Purgar esa información guardada es una decisión aparte que el dueño no ha
+tomado** —y es irreversible, así que no la tomes tú.
+
+**Se eliminó el campo "Peso objetivo" (`goalWeight`) del intake público**
+(decisión del dueño, 04-sep-2026). Era el peor elemento del sitio: no existe
+lectura de investigación para preguntarle a un cliente su peso objetivo —un
+laboratorio que compra un estándar de referencia no tiene uno—, así que ese
+campo solo convertía la tienda en una consulta de pérdida de peso sin clínico.
+
+Se quitó de `IntakeFormData` y de `CustomerLead` en `src/data/intake.ts`, del
+estado inicial, de la validación del paso 1, de `createLeadFromIntake`, del
+campo en `IntakePage.tsx`, de la columna y del detalle en `AdminLeadsPage.tsx`,
+y de las llaves de los dos idiomas. **Nunca se guardó en la base**: `leadToRow`
+en `src/lib/crmStorage.ts` no lo mapeaba y no hay columna `goal_weight`, así
+que no hubo migración ni datos históricos que conservar.
+
+**Se eliminó el bloque completo de biometría del intake público** (decisión del
+dueño, 04-sep-2026). Ya no existe la pregunta "¿tienes tus medidas?"
+(`biometricsStatus`) ni los campos que revelaba: edad, sexo, estatura y peso
+actual. También se borraron `bodyFat`, `waist` y `activityLevel`, que estaban en
+los tipos pero nunca se mostraron. El paso 2 del intake ahora pregunta solo por
+enfoque actual, actividad, sueño, energía y experiencia.
+
+`IntakeFormData` ya no tiene ninguno de esos campos. En `CustomerLead` **sí se
+dejaron como opcionales** (`age?`, `sex?`, `height?`, `currentWeight?`,
+`bodyFat?`, `waist?`, `activityLevel?`) porque hay leads viejos guardados en
+localStorage que los traen y `mapLegacyLead` en `src/lib/crmStorage.ts` todavía
+los migra al CRM. `createLeadFromIntake` nunca los escribe.
+
+`crm_intake_submissions` conserva sus columnas `age/sex/weight/height` y el
+cajón de detalle del CRM (`LeadDetailDrawer.tsx`) las sigue leyendo para las
+solicitudes históricas; el intake nuevo manda cadenas vacías. No hizo falta
+migración: todas esas columnas tienen `default ''` o son nulables.
+
+En `AdminLeadsPage.tsx` se quitó la columna "Current weight" de la tabla y la
+sección "Biometrics" pasó a llamarse "Disclosures" con solo medicamentos y
+sensibilidades.
+
+El `biometricsBoost` del puntaje de confianza (4 puntos por haber compartido
+medidas) se reemplazó por `researchFocusBoost`, que da los mismos 4 puntos por
+haber indicado un enfoque de investigación. El rango del puntaje no cambia.
+
+**Las metas del portal ya no dicen "seguimiento"** (05-sep-2026). `goalWeight` y
+`goalBodyComp` pasaron a "Metabolic research interest" / "Body-composition
+research interest" (y sus equivalentes en español) porque el portal dejó de
+rastrear esas dos cosas: seguir prometiendo "tracking" era simplemente falso.
+Las otras cuatro metas conservan "tracking" porque energía, bienestar,
+recuperación y documentos sí siguen existiendo.
+
+**Solo cambiaron las etiquetas, no los valores.** En la base se siguen guardando
+`weight-management` y `body-composition`; renombrar el valor reescribiría lo que
+respondieron clientes anteriores. Misma razón por la que las etiquetas nuevas se
+mantienen cerca del significado original en vez de convertirse en otra cosa.
+
+Pendiente y sin decidir: en el intake público, la pregunta "¿En qué te estás
+enfocando ahora?" sigue ofreciendo estados personales (peso, energía, sueño,
+recuperación…) en vez de áreas de investigación. Reformular la pregunta y sus
+siete opciones es el cambio de redacción más grande que queda.
 
 **El checkout exprés de WhatsApp cobra 5% por pago contra entrega, y solo a
 México.** El cliente elige forma de pago *antes* de abrir WhatsApp: Zelle, Cash

@@ -53,10 +53,11 @@ export function GuidedAliquotCalculator({
   const hasFieldError = Boolean(target.error || mass.error || diluent.error)
   const invalidTarget = isPositiveFinite(targetMg) && isPositiveFinite(massMg) && targetMg > massMg
   const result = hasFieldError || invalidTarget ? null : calculateAliquotPlan(massMg, diluentMl, targetMg)
-  const drawUnits = result?.syringeUnits ?? null
-  const milligramsPerUnit = result?.massMgPerUnit ?? null
-  const meterMaximum = drawUnits != null ? Math.max(100, Math.ceil(drawUnits / 25) * 25) : 100
-  const meterFill = drawUnits != null ? Math.max(2, Math.min(100, (drawUnits / meterMaximum) * 100)) : 0
+  const transferMicroliters = result?.transferVolumeMicroliters ?? null
+  const microgramsPerMicroliter = result?.microgramsPerMicroliter ?? null
+  // Anchored to 1000 µL so the bar reads as a fraction of a 1 mL transfer.
+  const meterMaximum = transferMicroliters != null ? Math.max(1000, Math.ceil(transferMicroliters / 250) * 250) : 1000
+  const meterFill = transferMicroliters != null ? Math.max(2, Math.min(100, (transferMicroliters / meterMaximum) * 100)) : 0
 
   function chooseProduct(slug: string) {
     setProductSlug(slug)
@@ -118,7 +119,7 @@ export function GuidedAliquotCalculator({
         <div className="bg-[#071724] p-5 text-white sm:p-7" aria-live="polite">
           <p className="text-xs font-bold uppercase tracking-[.16em] text-teal-200">{t('aliquotResultsTitle')}</p>
           <p className="mt-5 text-sm font-semibold text-slate-300">{t('aliquotTransferVolume')}</p>
-          <p data-testid="aliquot-draw-units" className="mt-1 text-5xl font-semibold tracking-[-.06em]">{drawUnits != null ? formatResult(drawUnits) : '—'}<span className="ml-2 text-xl tracking-normal text-teal-200">{t('aliquotUnitsLabel')}</span></p>
+          <p data-testid="aliquot-transfer-volume" className="mt-1 text-5xl font-semibold tracking-[-.06em]">{transferMicroliters != null ? formatResult(transferMicroliters) : '—'}<span className="ml-2 text-xl tracking-normal text-teal-200">{t('aliquotUnitsLabel')}</span></p>
           <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4">
             <div className="flex items-center justify-between gap-3 text-xs font-semibold text-slate-300"><span>{t('aliquotMeterLabel')}</span><span>{formatResult(meterMaximum)} {t('aliquotUnitsLabel')}</span></div>
             <div className="relative mt-3 h-7 overflow-hidden rounded-full border border-white/15 bg-white/8"><div className="absolute inset-y-0 left-0 rounded-full bg-[linear-gradient(90deg,#2dd4bf,#99f6e4)] transition-[width] duration-500" style={{ width: `${meterFill}%` }} /><div className="absolute inset-0 flex justify-evenly">{[1, 2, 3].map((mark) => <span key={mark} className="h-full w-px bg-white/15" />)}</div></div>
@@ -127,10 +128,10 @@ export function GuidedAliquotCalculator({
           <div className="mt-4 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2">
             <ResultDark label={t('aliquotConcentration')} value={result ? `${formatResult(result.concentrationMgPerMl)} mg/mL` : '—'} />
             <ResultDark label={t('aliquotCount')} value={result ? formatResult(result.aliquotsPerVial) : '—'} />
-            <ResultDark label={t('aliquotMicroConcentration')} value={milligramsPerUnit != null ? t('aliquotMilligramsPerUnit', { value: formatResult(milligramsPerUnit) }) : '—'} />
+            <ResultDark label={t('aliquotMicroConcentration')} value={microgramsPerMicroliter != null ? t('aliquotMicrogramsPerMicroliter', { value: formatResult(microgramsPerMicroliter) }) : '—'} />
             <ResultDark label={t('aliquotTotalVolume')} value={result ? `${formatResult(diluentMl)} mL` : '—'} />
           </div>
-          <p className="mt-5 rounded-xl bg-white/5 p-3 text-xs leading-5 text-slate-300">{result && drawUnits != null && milligramsPerUnit != null ? t('aliquotFormula', { target: formatResult(targetMg), concentration: formatResult(milligramsPerUnit), volume: formatResult(drawUnits) }) : t('aliquotFormulaEmpty')}</p>
+          <p className="mt-5 rounded-xl bg-white/5 p-3 text-xs leading-5 text-slate-300">{result && transferMicroliters != null ? t('aliquotFormula', { target: formatResult(targetMg), concentration: formatResult(result.concentrationMgPerMl), volumeMl: formatResult(result.transferVolumeMl), volume: formatResult(transferMicroliters) }) : t('aliquotFormulaEmpty')}</p>
           <div className="mt-5 flex flex-wrap gap-2">
             {selectedProduct ? <a href={path(`/products/${selectedProduct.slug}`)} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-teal-300 px-5 text-sm font-semibold text-[#071724]">{t('aliquotProductCta', { product: selectedProduct.name })}<ArrowRight size={15} aria-hidden="true" /></a> : null}
             <a href={path(secondaryHref)} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/15 px-5 text-sm font-semibold text-white"><PackageSearch size={16} aria-hidden="true" />{t('aliquotResearchMatchesCta')}</a>

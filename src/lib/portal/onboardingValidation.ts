@@ -5,11 +5,6 @@ export type PortalOnboardingForm = {
   language: string
   timeZone: string
   dateOfBirth: string
-  height: string
-  startingWeight: string
-  currentWeight: string
-  waist: string
-  units: string
   goals: string[]
   researchInterests: string[]
   interestedProducts: string[]
@@ -17,7 +12,6 @@ export type PortalOnboardingForm = {
   exercise: string
   sleep: string
   water: string
-  appetite: string
   energy: string
   stress: string
   wellness: string
@@ -39,7 +33,7 @@ export type PortalOnboardingForm = {
 
 const requiredConsentKeys = ['terms', 'privacy', 'ruo', 'noMedical', 'electronic', 'progressData'] as const
 const notificationKeys = ['emailNotifications', 'portalNotifications', 'orderUpdates', 'checkinReminders', 'documentNotifications', 'supportNotifications'] as const
-const ratingKeys = ['water', 'appetite', 'energy', 'stress', 'wellness'] as const
+const ratingKeys = ['water', 'energy', 'stress', 'wellness'] as const
 
 function isPositiveNumber(value: string, max = Number.POSITIVE_INFINITY) {
   const number = Number(value)
@@ -56,16 +50,9 @@ export function isPortalOnboardingStepComplete(step: number, form: PortalOnboard
     return [form.legalName, form.mobile, form.language, form.timeZone].every((value) => value.trim().length > 0)
   }
 
-  if (step === 1) {
-    return Boolean(
-      form.dateOfBirth.trim() &&
-      (form.units === 'imperial' || form.units === 'metric') &&
-      isPositiveNumber(form.height) &&
-      isPositiveNumber(form.startingWeight) &&
-      isPositiveNumber(form.currentWeight) &&
-      isPositiveNumber(form.waist),
-    )
-  }
+  // Step 1 is date of birth alone. Height, weight, waist, and the appetite
+  // rating were removed: the portal does not record body composition.
+  if (step === 1) return Boolean(form.dateOfBirth.trim())
 
   if (step === 2) return form.goals.length > 0
   if (step === 3) return form.researchInterests.length > 0 && form.interestedProducts.length > 0

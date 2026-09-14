@@ -63,7 +63,7 @@ describe('Protocols storefront pages', () => {
     expect(html).toContain('500 mg')
     expect(html).toContain('1000 mg')
     expect(html).toContain('Add complete set to cart')
-    expect(html).toContain('How much to draw')
+    expect(html).toContain('Aliquot volume')
     expect(html).toContain('View NAD+ COA')
     expect(html.match(/<details/g)).toHaveLength(6)
   })

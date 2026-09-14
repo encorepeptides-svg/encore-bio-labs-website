@@ -64,8 +64,6 @@ export function AdminLeadsPage({ leadId }: { leadId?: string }) {
                       'Date submitted',
                       'City',
                       'Main goal',
-                      'Current weight',
-                      'Goal weight',
                       'Recommended products',
                       'Consent',
                       'Review status',
@@ -89,8 +87,6 @@ export function AdminLeadsPage({ leadId }: { leadId?: string }) {
                       <td className="border-b border-slate-900/10 px-3 py-4 text-slate-600">{formatDate(lead.createdAt)}</td>
                       <td className="border-b border-slate-900/10 px-3 py-4 text-slate-600">{lead.city}</td>
                       <td className="border-b border-slate-900/10 px-3 py-4 text-slate-600">{lead.mainGoal}</td>
-                      <td className="border-b border-slate-900/10 px-3 py-4 text-slate-600">{lead.currentWeight}</td>
-                      <td className="border-b border-slate-900/10 px-3 py-4 text-slate-600">{lead.goalWeight}</td>
                       <td className="border-b border-slate-900/10 px-3 py-4 text-slate-600">
                         {lead.recommendedProducts.map((product) => product.name).join(', ')}
                       </td>
@@ -275,17 +271,9 @@ function LeadDetail({
               </div>
             </DetailSection>
 
-            <DetailSection title="Biometrics" icon={<Database size={18} aria-hidden="true" />}>
+            <DetailSection title="Disclosures" icon={<Database size={18} aria-hidden="true" />}>
               <DetailGrid
                 items={[
-                  ['Age', lead.age],
-                  ['Biological sex', lead.sex],
-                  ['Height', lead.height],
-                  ['Current weight', lead.currentWeight],
-                  ['Goal weight', lead.goalWeight],
-                  ['Body fat', lead.bodyFat],
-                  ['Waist', lead.waist],
-                  ['Activity level', lead.activityLevel],
                   ['Medications or products', lead.medicationsOrCompounds],
                   ['Sensitivities', lead.sensitivities],
                 ]}

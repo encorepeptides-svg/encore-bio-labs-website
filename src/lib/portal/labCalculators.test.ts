@@ -15,23 +15,28 @@ describe('research-only lab calculators', () => {
     expect(calculateWorkingDilution(1, 2, 10)).toBeNull()
   })
 
-  it('calculates a guided research aliquot plan', () => {
+  it('calculates a guided research aliquot plan in bench units', () => {
     expect(calculateAliquotPlan(10, 2, 1)).toEqual({
       totalMassMg: 10,
       targetAliquotMg: 1,
       concentrationMgPerMl: 5,
-      massMgPerUnit: 0.05,
+      microgramsPerMicroliter: 5,
       transferVolumeMl: 0.2,
       transferVolumeMicroliters: 200,
-      syringeUnits: 20,
       aliquotsPerVial: 10,
     })
+  })
+
+  it('never reports a transfer in U-100 syringe units', () => {
+    const result = calculateAliquotPlan(10, 2, 1)
+    expect(result).not.toHaveProperty('syringeUnits')
+    expect(result).not.toHaveProperty('massMgPerUnit')
   })
 
   it('supports non-round laboratory volumes', () => {
     const result = calculateAliquotPlan(10, 1.5, 0.5)
     expect(result?.transferVolumeMicroliters).toBeCloseTo(75)
-    expect(result?.syringeUnits).toBeCloseTo(7.5)
+    expect(result?.transferVolumeMl).toBeCloseTo(0.075)
     expect(result?.concentrationMgPerMl).toBeCloseTo(6.6667, 4)
   })
 
@@ -57,8 +62,8 @@ describe('research-only lab calculators', () => {
           const expectedVolumeMl = targetMg / expectedConcentration
           expect(result?.concentrationMgPerMl).toBeCloseTo(expectedConcentration, 10)
           expect(result?.transferVolumeMl).toBeCloseTo(expectedVolumeMl, 10)
-          expect(result?.syringeUnits).toBeCloseTo(expectedVolumeMl * 100, 10)
-          expect(result?.massMgPerUnit).toBeCloseTo(expectedConcentration / 100, 10)
+          expect(result?.transferVolumeMicroliters).toBeCloseTo(expectedVolumeMl * 1000, 10)
+          expect(result?.microgramsPerMicroliter).toBeCloseTo(expectedConcentration, 10)
           expect(result?.aliquotsPerVial).toBeCloseTo(vialMg / targetMg, 10)
         }
       }

@@ -27,8 +27,12 @@ export type IntakeResult = {
   research_interests: string[]; interested_products: string[]
   public_intake_answers?: { topPriorities?: string[]; helpNeeded?: string[] | string; currentConcerns?: string[] }
 }
-export type ProgressEntry = { id: string; entry_date: string; measurements: { weight_kg?: number; waist_cm?: number }; scores: { energy?: number; wellness?: number }; notes: string | null }
-export type WeeklyCheckin = { id: string; week_start: string; measurements: { weight_kg?: number; waist_cm?: number }; scores: { energy?: number; appetite?: number; sleep?: number; stress?: number }; support_concern: boolean; notes: string | null }
+// `measurements` is deliberately absent from both shapes. The column still
+// exists and older rows still carry weight_kg/waist_cm, but the portal no
+// longer reads or writes body measurements, and `scores` no longer carries an
+// appetite rating. Do not add them back.
+export type ProgressEntry = { id: string; entry_date: string; scores: { energy?: number; wellness?: number }; notes: string | null }
+export type WeeklyCheckin = { id: string; week_start: string; scores: { energy?: number; sleep?: number; stress?: number }; support_concern: boolean; notes: string | null }
 export type PortalDocument = { id: string; created_at: string; category: string; title: string; version: string; storage_path: string; product_slug: string | null; expires_at: string | null }
 export type SupportThread = { id: string; created_at: string; updated_at: string; category: string; subject: string; status: string; priority: string; user_id: string }
 export type SupportMessage = { id: string; thread_id: string; author_id: string; created_at: string; message: string }
@@ -65,12 +69,12 @@ export async function fetchMyIntake(userId: string): Promise<IntakeResult | null
 }
 
 export async function fetchProgressEntries(): Promise<ProgressEntry[]> {
-  const { data, error } = await db().from('progress_entries').select('id,entry_date,measurements,scores,notes').is('deleted_at', null).order('entry_date', { ascending: false }).limit(120)
+  const { data, error } = await db().from('progress_entries').select('id,entry_date,scores,notes').is('deleted_at', null).order('entry_date', { ascending: false }).limit(120)
   if (error) throw error
   return (data ?? []) as ProgressEntry[]
 }
 
-export async function saveProgressEntry(userId: string, entry: { entry_date: string; measurements: ProgressEntry['measurements']; scores: ProgressEntry['scores']; notes: string }) {
+export async function saveProgressEntry(userId: string, entry: { entry_date: string; scores: ProgressEntry['scores']; notes: string }) {
   const { error } = await db().from('progress_entries').insert({ user_id: userId, ...entry, notes: entry.notes || null })
   if (error) throw error
 }
@@ -185,12 +189,12 @@ export async function submitPortalReview(userId: string, input: {
 }
 
 export async function fetchCheckins(): Promise<WeeklyCheckin[]> {
-  const { data, error } = await db().from('weekly_checkins').select('id,week_start,measurements,scores,support_concern,notes').order('week_start', { ascending: false }).limit(60)
+  const { data, error } = await db().from('weekly_checkins').select('id,week_start,scores,support_concern,notes').order('week_start', { ascending: false }).limit(60)
   if (error) throw error
   return (data ?? []) as WeeklyCheckin[]
 }
 
-export async function saveCheckin(userId: string, checkin: { week_start: string; measurements: WeeklyCheckin['measurements']; scores: WeeklyCheckin['scores']; support_concern: boolean; notes: string }) {
+export async function saveCheckin(userId: string, checkin: { week_start: string; scores: WeeklyCheckin['scores']; support_concern: boolean; notes: string }) {
   const { error } = await db().from('weekly_checkins').upsert({ user_id: userId, ...checkin, notes: checkin.notes || null }, { onConflict: 'user_id,week_start' })
   if (error) throw error
 }

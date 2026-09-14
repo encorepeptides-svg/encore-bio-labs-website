@@ -18,15 +18,6 @@ export type IntakeFormData = {
   timeline: string
   helpNeeded: string[]
   currentConcerns: string[]
-  biometricsStatus: string
-  age: string
-  sex: string
-  height: string
-  currentWeight: string
-  goalWeight: string
-  bodyFat: string
-  activityLevel: string
-  waist: string
   medicationsOrCompounds: string
   sensitivities: string
   lifestyleActivity: string
@@ -74,14 +65,19 @@ export type CustomerLead = {
   preferredContactMethod: string
   consentAccepted: boolean
   consentTimestamp: string
-  age: string
-  sex: string
-  height: string
-  currentWeight: string
-  goalWeight: string
-  bodyFat: string
-  waist: string
-  activityLevel: string
+  /**
+   * Historical only — the intake no longer asks for body measurements, so
+   * `createLeadFromIntake` never sets these. They stay optional because leads
+   * captured while the biometrics block existed are still in localStorage, and
+   * `mapLegacyLead` migrates those values into the CRM. Do not collect them.
+   */
+  age?: string
+  sex?: string
+  height?: string
+  currentWeight?: string
+  bodyFat?: string
+  waist?: string
+  activityLevel?: string
   medicationsOrCompounds: string
   sensitivities: string
   mainGoal: MainGoal
@@ -142,15 +138,6 @@ export const defaultIntakeFormData: IntakeFormData = {
   timeline: '',
   helpNeeded: [],
   currentConcerns: [],
-  biometricsStatus: '',
-  age: '',
-  sex: '',
-  height: '',
-  currentWeight: '',
-  goalWeight: '',
-  bodyFat: '',
-  activityLevel: '',
-  waist: '',
   medicationsOrCompounds: '',
   sensitivities: '',
   lifestyleActivity: '',
@@ -196,7 +183,7 @@ export function updateIntakeStringField(
 export function isIntakeStepComplete(step: number, data: IntakeFormData) {
   const requiredFields: Array<Array<keyof IntakeFormData>> = [
     ['mainGoal', 'timeline'],
-    ['lifestyleActivity', 'sleepQuality', 'energyLevels', 'peptideExperience', 'biometricsStatus'],
+    ['lifestyleActivity', 'sleepQuality', 'energyLevels', 'peptideExperience'],
     ['firstName', 'lastName', 'email', 'phone', 'phoneCountry', 'city', 'preferredContactMethod'],
   ]
 
@@ -212,10 +199,7 @@ export function isIntakeStepComplete(step: number, data: IntakeFormData) {
   }
 
   if (step === 1) {
-    const sharedBiometricsComplete = data.biometricsStatus !== 'I can share them now' ||
-      [data.age, data.sex, data.height, data.currentWeight, data.goalWeight].every((value) => value.trim().length > 0)
-
-    return fieldsComplete && data.currentConcerns.length > 0 && sharedBiometricsComplete
+    return fieldsComplete && data.currentConcerns.length > 0
   }
 
   if (step === 2) {
@@ -388,9 +372,12 @@ export function generateRecommendation(data: IntakeFormData): Recommendation {
   const matched = recommendationMap[goal]
   const interestedProductBoost = data.interestedProducts.length > 0 ? 4 : 0
   const experienceBoost = data.peptideExperience && data.peptideExperience !== 'No' ? 3 : 0
-  const biometricsBoost = data.age && data.height && data.currentWeight ? 4 : 0
+  // The former biometrics boost is gone with the biometrics block. Its 4 points
+  // now come from a stated research focus, so the score keeps the same range
+  // without scoring a visitor on having handed over body measurements.
+  const researchFocusBoost = data.currentConcerns.length > 0 ? 4 : 0
   const supportContextBoost = data.helpNeeded.length > 1 ? 1 : 0
-  const confidenceScore = Math.min(94, 82 + interestedProductBoost + experienceBoost + biometricsBoost + supportContextBoost)
+  const confidenceScore = Math.min(94, 82 + interestedProductBoost + experienceBoost + researchFocusBoost + supportContextBoost)
 
   return {
     primaryCategory: matched.primaryCategory,
@@ -423,14 +410,6 @@ export function createLeadFromIntake(data: IntakeFormData, recommendation: Recom
     preferredContactMethod: data.preferredContactMethod,
     consentAccepted: true,
     consentTimestamp: new Date().toISOString(),
-    age: data.age,
-    sex: data.sex,
-    height: data.height,
-    currentWeight: data.currentWeight,
-    goalWeight: data.goalWeight,
-    bodyFat: data.bodyFat,
-    waist: data.waist,
-    activityLevel: data.activityLevel,
     medicationsOrCompounds: data.medicationsOrCompounds,
     sensitivities: data.sensitivities,
     mainGoal,
@@ -439,7 +418,6 @@ export function createLeadFromIntake(data: IntakeFormData, recommendation: Recom
       timeline: data.timeline,
       helpNeeded: data.helpNeeded,
       currentConcerns: data.currentConcerns,
-      biometricsStatus: data.biometricsStatus,
       lifestyleActivity: data.lifestyleActivity,
       exerciseDays: data.exerciseDays,
       sleepQuality: data.sleepQuality,
