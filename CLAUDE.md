@@ -48,6 +48,53 @@ Cuatro proveedores que no se conocen entre sí:
 en la UI como en la política RLS `is_crm_admin()`. Ningún flujo de registro pone
 ese claim — hay que aplicarlo por SQL, usuario por usuario.
 
+**Trampa de los secretos:** `supabase secrets set --env-file` acepta valores
+vacíos sin avisar, y en las funciones `Deno.env.get('X') || ''` hace que un
+secreto vacío se comporte exactamente igual que uno ausente. Un archivo con
+líneas en blanco deja los secretos "puestos" y la función igual de rota, sin
+ningún error que lo delate. Para ver cuáles están vacíos, compara el digest
+que imprime `supabase secrets list` contra el SHA-256 de la cadena vacía
+(`e3b0c44298fc1c14...`).
+
+### El historial de migraciones está desincronizado en las dos direcciones
+
+**La carpeta `supabase/migrations/` NO describe el esquema de producción.** Al
+15-sep-2026: 28 migraciones coinciden, **16 locales nunca se aplicaron** —son
+de julio y agosto— y **38 se aplicaron en la base sin archivo local**, entre el
+30-jul-2026 y el 06-sep-2026 (2 de julio, 31 de agosto, 5 de septiembre). Ese
+segundo número es el que importa: alguien estuvo aplicando cambios de esquema
+desde el panel de Supabase, así que el repo dejó de ser la fuente de verdad del
+esquema de la base.
+
+**Nunca corras `supabase db push` a secas.** Dispara las 16 pendientes —viejas
+y sin revisar— contra un esquema que lleva dos meses derivando por su cuenta.
+Cualquiera de ellas puede chocar con un cambio hecho desde el panel, o
+deshacerlo en silencio.
+
+**Para aplicar UNA sola migración**, córrela por la API de administración y
+registra su versión a mano. Así se aplicó
+`20260904120000_drop_body_composition_intake_requirements.sql`:
+
+```bash
+supabase db query --linked -f supabase/migrations/<archivo>.sql
+supabase db query --linked "insert into supabase_migrations.schema_migrations (version, name) values ('<version>', '<nombre>') on conflict (version) do nothing"
+```
+
+Sin el segundo paso, `supabase migration list --linked` la sigue reportando
+pendiente y el próximo `db push` la repite.
+
+**El CLI no necesita la contraseña de Postgres.** `supabase link --project-ref
+rrrkjohvxbsahxxevzcg --yes` enlaza sin pedirla, y `db query --linked` se
+autentica con el access token contra la API de administración, no con
+credenciales de la base. Si el CLI responde "Cannot find project ref", vuelve a
+correr `link`: el archivo `supabase/.temp/linked-project.json` existe pero esta
+versión del CLI no lo lee.
+
+**Reconciliar sigue pendiente**, y es trabajo aparte: revisar las 16 locales una
+por una —aplicar, borrar, o marcar como obsoletas— y bajar a archivos las 38
+remotas con `supabase db pull`. Mientras tanto, cada `db push` es una trampa y
+los comandos de arriba son la única vía segura.
+
 ---
 
 ## Tono y mensajería
