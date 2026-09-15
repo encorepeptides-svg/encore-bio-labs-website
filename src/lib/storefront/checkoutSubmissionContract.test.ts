@@ -29,6 +29,24 @@ describe('checkout submission contract', () => {
     expect(handoff).toContain('order.reference')
   })
 
+  it('authenticates to Zoho with the refresh token, never a static access token', () => {
+    // A static ZOHO_OAUTH_ACCESS_TOKEN expires after an hour, and the project
+    // deliberately does not configure one. Reading it again would make every
+    // order notification fail silently with 'credentials are not configured',
+    // which is exactly how this shipped broken once already.
+    expect(edgeFunction).not.toContain("Deno.env.get('ZOHO_OAUTH_ACCESS_TOKEN')")
+    expect(edgeFunction).toContain("Deno.env.get('ZOHO_OAUTH_REFRESH_TOKEN')")
+    expect(edgeFunction).toContain("Deno.env.get('ZOHO_OAUTH_CLIENT_ID')")
+    expect(edgeFunction).toContain("Deno.env.get('ZOHO_OAUTH_CLIENT_SECRET')")
+    expect(edgeFunction).toContain("grant_type: 'refresh_token'")
+    expect(edgeFunction).toContain('/oauth/v2/token')
+  })
+
+  it('caches the Zoho token per isolate and retries once when it is rejected', () => {
+    expect(edgeFunction).toContain('zohoTokenInFlight ??= requestZohoAccessToken()')
+    expect(edgeFunction).toContain('if (mailResponse.status === 401)')
+  })
+
   it('persists the selected payment method and adds the server-authoritative 5% cash-on-delivery fee', () => {
     expect(checkoutPage).toContain("useState<InterimPaymentMethodId>('cash_on_delivery')")
     expect(checkoutPage).toContain('paymentMethod,')

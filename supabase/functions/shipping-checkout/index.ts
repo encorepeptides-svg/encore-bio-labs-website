@@ -101,10 +101,64 @@ function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]!))
 }
 
+/**
+ * Zoho OAuth access tokens expire after about an hour, so a static
+ * ZOHO_OAUTH_ACCESS_TOKEN could only ever have worked for the hour after
+ * someone pasted one in by hand — which is why it is not a configured variable
+ * and must not become one. Exchange the long-lived refresh token for an access
+ * token at call time instead, and cache it in module scope for the life of the
+ * isolate so a burst of orders does not hammer Zoho's token endpoint.
+ *
+ * The same exchange lives in the communications function. Edge functions in
+ * this project are self-contained and never import across directories, so the
+ * two copies have to move together.
+ */
+const ZOHO_ACCOUNTS_HOST = Deno.env.get('ZOHO_ACCOUNTS_HOST') || 'https://accounts.zoho.com'
+const ZOHO_TOKEN_EXPIRY_MARGIN_MS = 120_000
+let zohoToken: { accessToken: string; expiresAt: number } | null = null
+let zohoTokenInFlight: Promise<string | null> | null = null
+
+async function requestZohoAccessToken(): Promise<string | null> {
+  const refreshToken = Deno.env.get('ZOHO_OAUTH_REFRESH_TOKEN')
+  const clientId = Deno.env.get('ZOHO_OAUTH_CLIENT_ID')
+  const clientSecret = Deno.env.get('ZOHO_OAUTH_CLIENT_SECRET')
+  if (!refreshToken || !clientId || !clientSecret) return null
+
+  const response = await fetch(`${ZOHO_ACCOUNTS_HOST}/oauth/v2/token`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ refresh_token: refreshToken, client_id: clientId, client_secret: clientSecret, grant_type: 'refresh_token' }),
+    signal: AbortSignal.timeout(8_000),
+  }).catch(() => null)
+  if (!response?.ok) return null
+
+  const payload = await response.json().catch(() => null) as { access_token?: string; expires_in?: number } | null
+  if (!payload?.access_token) return null
+
+  const lifetimeMs = Math.max((payload.expires_in ?? 3600) * 1000, ZOHO_TOKEN_EXPIRY_MARGIN_MS * 2)
+  zohoToken = { accessToken: payload.access_token, expiresAt: Date.now() + lifetimeMs - ZOHO_TOKEN_EXPIRY_MARGIN_MS }
+  return payload.access_token
+}
+
+async function getZohoAccessToken(): Promise<string | null> {
+  if (zohoToken && zohoToken.expiresAt > Date.now()) return zohoToken.accessToken
+  // Collapse concurrent refreshes onto a single token request.
+  zohoTokenInFlight ??= requestZohoAccessToken().finally(() => { zohoTokenInFlight = null })
+  return zohoTokenInFlight
+}
+
 async function notifySupport(reference: string, status: string, paymentMethod: string, contact: Record<string, unknown>, items: Array<Record<string, unknown>>, subtotalCents: number, processingFeeCents: number, totalCents: number | null) {
-  const token = Deno.env.get('ZOHO_OAUTH_ACCESS_TOKEN') || ''
+  // These two failures are reported separately on purpose. Collapsing them into
+  // one "not configured" message is what hid the static-token bug: the path was
+  // dead for weeks and every order recorded a delivery_error that read like an
+  // ordinary missing-secret, so nobody looked.
   const accountId = Deno.env.get('ZOHO_MAIL_ACCOUNT_ID') || ''
-  if (!token || !accountId) return { sent: false, error: 'Zoho Mail API credentials are not configured.' }
+  const credentialsPresent = Boolean(
+    Deno.env.get('ZOHO_OAUTH_REFRESH_TOKEN') && Deno.env.get('ZOHO_OAUTH_CLIENT_ID') && Deno.env.get('ZOHO_OAUTH_CLIENT_SECRET'),
+  )
+  if (!accountId || !credentialsPresent) return { sent: false, error: 'Zoho Mail API credentials are not configured.' }
+  let token = await getZohoAccessToken()
+  if (!token) return { sent: false, error: 'Zoho Mail API refused the refresh token exchange.' }
   const customer = text(contact.name) || 'Checkout customer'
   const itemLines = items.map((item) => `${Math.max(1, Number(item.quantity) || 1)}× ${text(item.product)} ${text(item.variant)}`.trim())
   const statusLabel = status === 'pending_shipping_review' ? 'Pending Shipping Review' : status.replaceAll('_', ' ')
@@ -112,13 +166,21 @@ async function notifySupport(reference: string, status: string, paymentMethod: s
   const html = `<div style="font-family:Arial,sans-serif;color:#071724;max-width:680px;margin:auto"><div style="padding:20px 24px;background:#071724;color:#d5fff9;font-size:21px;font-weight:700">Encore Bio Labs checkout</div><main style="padding:26px"><h1 style="font-size:24px">${escapeHtml(statusLabel)}</h1><p><strong>Request:</strong> ${escapeHtml(reference)}</p><p><strong>Customer:</strong> ${escapeHtml(customer)} · ${escapeHtml(text(contact.email))} · ${escapeHtml(text(contact.phone))}</p><p><strong>Payment:</strong> ${escapeHtml(paymentMethod.replaceAll('_', ' '))}</p><p><strong>Items:</strong><br>${itemLines.map(escapeHtml).join('<br>')}</p><p><strong>Subtotal:</strong> $${(subtotalCents / 100).toFixed(2)}<br><strong>Processing:</strong> $${(processingFeeCents / 100).toFixed(2)}<br><strong>Total:</strong> ${totalCents === null ? 'Pending shipping review' : `$${(totalCents / 100).toFixed(2)}`}</p><p>Open the admin storefront portal to review the full shipping and acknowledgment record and follow up manually.</p></main></div>`
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), 8_000)
+  const post = (accessToken: string) => fetch(`https://mail.zoho.com/api/accounts/${accountId}/messages`, {
+    method: 'POST',
+    headers: { authorization: `Zoho-oauthtoken ${accessToken}`, 'content-type': 'application/json' },
+    body: JSON.stringify({ fromAddress: Deno.env.get('ZOHO_FROM_EMAIL') || SUPPORT_EMAIL, toAddress: SUPPORT_EMAIL, subject, content: html, mailFormat: 'html' }),
+    signal: controller.signal,
+  })
   try {
-    const mailResponse = await fetch(`https://mail.zoho.com/api/accounts/${accountId}/messages`, {
-      method: 'POST',
-      headers: { authorization: `Zoho-oauthtoken ${token}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ fromAddress: Deno.env.get('ZOHO_FROM_EMAIL') || SUPPORT_EMAIL, toAddress: SUPPORT_EMAIL, subject, content: html, mailFormat: 'html' }),
-      signal: controller.signal,
-    })
+    let mailResponse = await post(token)
+    // A cached token can be revoked before it expires; drop it and retry once.
+    if (mailResponse.status === 401) {
+      zohoToken = null
+      token = await getZohoAccessToken()
+      if (!token) return { sent: false, error: 'Zoho Mail API rejected the refreshed access token.' }
+      mailResponse = await post(token)
+    }
     return mailResponse.ok ? { sent: true, error: null } : { sent: false, error: `Zoho Mail API returned ${mailResponse.status}.` }
   } catch (error) {
     return { sent: false, error: error instanceof Error ? error.message : 'Notification delivery failed.' }
